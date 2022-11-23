@@ -7,7 +7,9 @@ require (
 	github.com/cosmos/cosmos-sdk v0.45.11
 	github.com/cosmos/ibc-go/v3 v3.3.0
 	github.com/ignite/cli v0.22.2
+	github.com/prometheus/client_golang v1.13.0
 	github.com/spf13/cast v1.5.0
+	github.com/spf13/cobra v1.6.0
 	github.com/stretchr/testify v1.8.0
 	github.com/tendermint/spn v0.2.1-0.20220610090138-44b136f042c4
 	github.com/tendermint/tendermint v0.34.23

@@ -74,7 +74,7 @@ func BenchmarkSimulation(b *testing.B) {
 
 	encoding := cosmoscmd.MakeEncodingConfig(app.ModuleBasics)
 
-	app := app.New(
+	app := app.NewRollapp(
 		logger,
 		db,
 		nil,
