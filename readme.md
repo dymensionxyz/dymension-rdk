@@ -1,8 +1,50 @@
 # rollapp
 **rollapp** is a blockchain built using Cosmos SDK and Tendermint and created with [Ignite CLI](https://ignite.com/cli).
 
-## Get started
+The Rollapp chain is already wired with CosmWasm module and using Dymension settlement.
+Scaffolded with igniteCLI@v0.22.2
 
+
+## Get started
+### Build
+either using 
+`go install` from `cmd/rollappd/`
+or
+`ignite chain build`
+
+
+### Init
+set configuration params at `scripts/shared.sh`
+
+run
+`sh scripts/init_rollapp.sh`
+
+
+This will initilize the rollapp with single initial staked account
+
+### Register rollapp on settlement
+run
+`sh scripts/register_rollapp.sh`
+
+validate using 
+`dymd q rollapp list-rollapp`
+
+
+### Register sequencer for rollapp on settlement
+run
+`sh scripts/register_sequencer.sh`
+
+validate using 
+`dymd q sequencer list-sequencer`
+
+
+### Run rollapp
+run
+`sh scripts/run_rollapp.sh`
+
+
+
+## Using ignite (WIP. not tested)
 ```
 ignite chain serve
 ```

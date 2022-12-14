@@ -1,4 +1,6 @@
-source shared.sh
+BASEDIR=$(dirname "$0")
+echo "$BASEDIR"
+source "$BASEDIR"/shared.sh
 
 
 TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000000000000urap}
@@ -17,10 +19,7 @@ sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$CHAIN_DIR"/config/genes
 sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$CHAIN_DIR"/config/genesis.json
 
 
-
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test
-$EXECUTABLE keys add alice --keyring-backend test
 $EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test
-$EXECUTABLE add-genesis-account alice "$TOKEN_AMOUNT" --keyring-backend test
 $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test
 $EXECUTABLE collect-gentxs
