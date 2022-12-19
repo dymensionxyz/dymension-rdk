@@ -3,7 +3,9 @@ echo "$BASEDIR"
 source "$BASEDIR"/shared.sh
 
 
-SETTLEMENT_CONFIG="{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$HOME/.dymension/\", \"keyring_backend\":\"test\"}"
+#TODO: print run configuration
+
+SETTLEMENT_CONFIG="{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\"}"
 SETTLEMENT_CONFIG_MOCK="{\"root_dir\": \""$HOME"/.rollapp\", \"db_path\": \"data\"}" \
 
 
