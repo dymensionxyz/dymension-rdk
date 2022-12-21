@@ -11,7 +11,6 @@ import (
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // Implements ValidatorSet interface
@@ -52,17 +51,4 @@ func NewKeeper(
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
-}
-
-//Implement required methods for IBC expected keeper
-func (k Keeper) GetHistoricalInfo(ctx sdk.Context, height int64) (stakingtypes.HistoricalInfo, bool) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.GetHistoricalInfoKey(height)
-
-	value := store.Get(key)
-	if value == nil {
-		return stakingtypes.HistoricalInfo{}, false
-	}
-
-	return stakingtypes.MustUnmarshalHistoricalInfo(k.cdc, value), true
 }

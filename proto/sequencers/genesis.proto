@@ -3,6 +3,8 @@ package rollapp.sequencers.types;
 
 import "gogoproto/gogo.proto";
 import "sequencers/params.proto";
+import "cosmos/staking/v1beta1/staking.proto";
+
 // this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "github.com/dymensionxyz/rollapp/x/sequencers/types";
@@ -11,4 +13,9 @@ option go_package = "github.com/dymensionxyz/rollapp/x/sequencers/types";
 message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false];
   // this line is used by starport scaffolding # genesis/proto/state
+
+  // delegations defines the validator set at genesis.
+  repeated cosmos.staking.v1beta1.Validator validators = 2 [(gogoproto.nullable) = false];
+
+  bool exported = 3;
 }

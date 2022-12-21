@@ -19,13 +19,6 @@ func (k Keeper) MaxValidators(ctx sdk.Context) (res uint32) {
 	return
 }
 
-// MaxEntries - Maximum number of simultaneous unbonding
-// delegations or redelegations (per pair/trio)
-func (k Keeper) MaxEntries(ctx sdk.Context) (res uint32) {
-	k.paramstore.Get(ctx, types.KeyMaxEntries, &res)
-	return
-}
-
 // HistoricalEntries = number of historical info entries
 // to persist in store
 func (k Keeper) HistoricalEntries(ctx sdk.Context) (res uint32) {
@@ -33,28 +26,12 @@ func (k Keeper) HistoricalEntries(ctx sdk.Context) (res uint32) {
 	return
 }
 
-// BondDenom - Bondable coin denomination
-func (k Keeper) BondDenom(ctx sdk.Context) (res string) {
-	k.paramstore.Get(ctx, types.KeyBondDenom, &res)
-	return
-}
-
-// PowerReduction - is the amount of staking tokens required for 1 unit of consensus-engine power.
-// Currently, this returns a global variable that the app developer can tweak.
-// TODO: we might turn this into an on-chain param:
-// https://github.com/cosmos/cosmos-sdk/issues/8365
-func (k Keeper) PowerReduction(ctx sdk.Context) sdk.Int {
-	return sdk.DefaultPowerReduction
-}
-
 // Get all parameteras as types.Params
 func (k Keeper) GetParams(ctx sdk.Context) types.Params {
 	return types.NewParams(
-		k.GetUnbondingTime(ctx),
+		k.UnbondingTime(ctx),
 		k.MaxValidators(ctx),
-		k.MaxEntries(ctx),
 		k.HistoricalEntries(ctx),
-		k.BondDenom(ctx),
 	)
 }
 

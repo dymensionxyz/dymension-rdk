@@ -8,5 +8,5 @@ import (
 
 // x/sequencers module sentinel errors
 var (
-	ErrSample = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrNoSequencerOnGenesis = sdkerrors.Register(ModuleName, 1, "sequencer on genesis required")
 )
