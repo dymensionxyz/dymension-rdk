@@ -1,0 +1,12 @@
+syntax = "proto3";
+package rollapp.sequencers.types;
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/dymensionxyz/rollapp/x/sequencers/types";
+
+
+// Params defines the parameters for the module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+
+}

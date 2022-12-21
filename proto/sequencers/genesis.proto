@@ -1,0 +1,14 @@
+syntax = "proto3";
+package rollapp.sequencers.types;
+
+import "gogoproto/gogo.proto";
+import "sequencers/params.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/dymensionxyz/rollapp/x/sequencers/types";
+
+// GenesisState defines the test module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  // this line is used by starport scaffolding # genesis/proto/state
+}
