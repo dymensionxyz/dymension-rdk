@@ -4,14 +4,12 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-//FIXME
 var _ types.QueryServer = Keeper{}
 
 func (k Keeper) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
@@ -31,7 +29,7 @@ func (k Keeper) Validators(c context.Context, req *types.QueryValidatorsRequest)
 	ctx := sdk.UnwrapSDKContext(c)
 
 	return &types.QueryValidatorsResponse{
-		Sequencers: k.GetAllSequencer(ctx),
+		Sequencers: k.GetAllValidators(ctx),
 	}, nil
 }
 
@@ -41,23 +39,34 @@ func (k Keeper) Validator(c context.Context, req *types.QueryValidatorRequest) (
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
-	val, ok := k.GetSequencer(ctx, req.ValidatorAddr)
+
+	addr, err := sdk.ValAddressFromBech32(req.ValidatorAddr)
+	if err != nil {
+		panic(err)
+	}
+
+	val, found := k.GetValidator(ctx, addr)
+	if !found {
+		return nil, types.ErrSequencerNotFound
+	}
 
 	return &types.QueryValidatorResponse{
-		Validator: ,
+		Validator: val,
 	}, nil
 }
 
-// HistoricalInfo queries the historical info for given height.
-//Implement required methods for IBC expected keeper
-func (k Keeper) HistoricalInfo(ctx sdk.Context, height int64) (types.HistoricalInfo, bool) {
-	store := ctx.KVStore(k.storeKey)
-	key := types.GetHistoricalInfoKey(height)
-
-	value := store.Get(key)
-	if value == nil {
-		return stakingtypes.HistoricalInfo{}, false
+// Validator queries validator info for given validator address.
+func (k Keeper) HistoricalInfo(c context.Context, req *types.QueryHistoricalInfoRequest) (*types.QueryHistoricalInfoResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(c)
+	histInfo, found := k.GetHistoricalInfo(ctx, req.Height)
+	if !found {
+		return nil, types.ErrHistoricalInfoNotFound
 	}
 
-	return types.MustUnmarshalHistoricalInfo(k.cdc, value), true
+	return &types.QueryHistoricalInfoResponse{
+		Hist: &histInfo,
+	}, nil
 }

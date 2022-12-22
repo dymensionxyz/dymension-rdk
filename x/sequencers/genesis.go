@@ -44,9 +44,9 @@ func ValidateGenesis(data *types.GenesisState) error {
 	// }
 
 	//FIXME
-	if len(data.Validators) == 0 {
-		return types.ErrNoSequencerOnGenesis
-	}
+	// if len(data.Validators) == 0 {
+	// 	return types.ErrNoSequencerOnGenesis
+	// }
 
 	return data.Params.Validate()
 }

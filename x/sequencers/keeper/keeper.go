@@ -9,8 +9,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
-
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 )
 
 // Implements ValidatorSet interface
@@ -24,8 +22,6 @@ type Keeper struct {
 	storeKey   sdk.StoreKey
 	memKey     sdk.StoreKey
 	paramstore paramtypes.Subspace
-
-	stakingKeeper stakingkeeper.Keeper
 }
 
 func NewKeeper(
@@ -33,7 +29,6 @@ func NewKeeper(
 	storeKey,
 	memKey sdk.StoreKey,
 	ps paramtypes.Subspace,
-
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -41,7 +36,6 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-
 		cdc:        cdc,
 		storeKey:   storeKey,
 		memKey:     memKey,
