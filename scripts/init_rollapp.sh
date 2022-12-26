@@ -21,5 +21,9 @@ sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$CHAIN_DIR"/config/genes
 
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test
 $EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test
+
+read -p "Press any key to continue generating genesis validator..."
+
+
 $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test
 $EXECUTABLE collect-gentxs
