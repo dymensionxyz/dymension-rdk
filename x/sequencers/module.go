@@ -40,7 +40,6 @@ func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
-//TODO: review if propogating call to staking module required
 func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino)                {}
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino)     {}
 func (a AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {}
@@ -52,7 +51,6 @@ func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 
 // ValidateGenesis performs genesis state validation for the capability module.
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
-	//FIXME: good call to use staking module types?
 	var genState types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
