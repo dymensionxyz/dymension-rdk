@@ -6,6 +6,33 @@ import (
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 )
 
+/* -------------------------------------------------------------------------- */
+/*                                    Alias func                              */
+/* -------------------------------------------------------------------------- */
+// Validator gets the Validator interface for a particular address
+func (k Keeper) Validator(ctx sdk.Context, address sdk.ValAddress) stakingtypes.ValidatorI {
+	val, found := k.GetValidator(ctx, address)
+	if !found {
+		return nil
+	}
+
+	return val
+}
+
+// ValidatorByConsAddr gets the validator interface for a particular pubkey
+func (k Keeper) ValidatorByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) stakingtypes.ValidatorI {
+	val, found := k.GetValidatorByConsAddr(ctx, addr)
+	if !found {
+		return nil
+	}
+
+	return val
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               implementation                              */
+/* -------------------------------------------------------------------------- */
+
 // get a single validator
 func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator stakingtypes.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)

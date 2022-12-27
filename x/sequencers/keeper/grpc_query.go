@@ -10,9 +10,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var _ types.QueryServer = Keeper{}
+type Querier struct {
+	Keeper
+}
 
-func (k Keeper) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+var _ types.QueryServer = Querier{}
+
+// var _ types.QueryServer = Keeper{}
+
+func (k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -22,7 +28,7 @@ func (k Keeper) Params(c context.Context, req *types.QueryParamsRequest) (*types
 }
 
 // Validators queries all sequencers that match the given status.
-func (k Keeper) Validators(c context.Context, req *types.QueryValidatorsRequest) (*types.QueryValidatorsResponse, error) {
+func (k Querier) Validators(c context.Context, req *types.QueryValidatorsRequest) (*types.QueryValidatorsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -34,7 +40,7 @@ func (k Keeper) Validators(c context.Context, req *types.QueryValidatorsRequest)
 }
 
 // Validator queries validator info for given validator address.
-func (k Keeper) Validator(c context.Context, req *types.QueryValidatorRequest) (*types.QueryValidatorResponse, error) {
+func (k Querier) Validator(c context.Context, req *types.QueryValidatorRequest) (*types.QueryValidatorResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
@@ -56,7 +62,7 @@ func (k Keeper) Validator(c context.Context, req *types.QueryValidatorRequest) (
 }
 
 // Validator queries validator info for given validator address.
-func (k Keeper) HistoricalInfo(c context.Context, req *types.QueryHistoricalInfoRequest) (*types.QueryHistoricalInfoResponse, error) {
+func (k Querier) HistoricalInfo(c context.Context, req *types.QueryHistoricalInfoRequest) (*types.QueryHistoricalInfoResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}

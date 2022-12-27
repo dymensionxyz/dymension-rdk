@@ -10,7 +10,7 @@ import (
 // bondedVotes is a list of (validator address, validator voted on last block flag) for all
 // validators in the bonded set.
 func (k Keeper) AllocateTokens(
-	ctx sdk.Context, previousProposer sdk.ConsAddress) {
+	ctx sdk.Context, blockProposer sdk.ConsAddress) {
 
 	logger := k.Logger(ctx)
 
@@ -33,10 +33,10 @@ func (k Keeper) AllocateTokens(
 	communityTax := feesCollected.MulDecTruncate(k.GetCommunityTax(ctx))
 	remaining := feesCollected.Sub(proposerReward).Sub(communityTax)
 
-	logger.Info("Proposer address", "address", previousProposer.String())
+	logger.Info("Proposer address", "address", blockProposer.String())
 
 	// calculate and pay previous proposer reward
-	proposerValidator := k.stakingKeeper.ValidatorByConsAddr(ctx, previousProposer)
+	proposerValidator := k.stakingKeeper.ValidatorByConsAddr(ctx, blockProposer)
 	if proposerValidator == nil {
 		logger.Error("failed to find the validator for this block. fees allocated to community pool")
 		feePool.CommunityPool = feePool.CommunityPool.Add(feesCollected...)
