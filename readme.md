@@ -5,13 +5,13 @@
 ![banner](https://user-images.githubusercontent.com/109034310/204804891-bdc0f7bc-4b17-4b4a-99ff-25153d3887ee.jpg)
 
 
-<style>
+<!-- <style>
 img[src*="#thumbnail"] {
      display: block;
   margin-left: auto;
   margin-right: auto;
 }
-</style> 
+</style>  -->
 
 [![license](https://img.shields.io/github/license/cosmos/cosmos-sdk.svg#thumbnail)](https://github.com/dymensionxyz/rdk/blob/main/LICENSE)
 
@@ -19,8 +19,7 @@ img[src*="#thumbnail"] {
 Dymension RDK, which stands for *RollApp Development Kit* is based on the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework, modified and enhanced for building autonomous RollApps (app-specfic-rollups) on top of the [Dymension Hub](https://github.com/dymensionxyz/dymension). 
 
 The RDK provides the following capabilites ***on top*** of the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework: 
-* The RDK is coupled with the [Dymint](https://github.com/dymensionxyz/dymint) client to form RollApp's consensus and networking layer,
-while ***the Dymension Hub is securing the rollapp***
+* The RDK is coupled with the [Dymint](https://github.com/dymensionxyz/dymint) client to form RollApp's blazing speed consensus and networking layer, while ***the Dymension Hub is securing the rollapp***
 * Custom modules that converts a cosmos based PoS (proof-of-stake) chain to a rollapp
 * wasm and EVM support (based on CosmWasm and Ethermint)
 
@@ -52,7 +51,7 @@ make install
 ```
 or
 ```shell
-cd `cmd/rollappd/`
+cd cmd/rollappd/
 go install
 ```
 
@@ -62,13 +61,13 @@ This will build the ```rollappd``` binary
 ### Initial configuration
 set custom configuration params at `scripts/shared.sh`
 
-run
+
 >sh scripts/init_rollapp.sh
 
 This will initilize the rollapp with single initial staked account
 
 ### Register rollapp on settlement
-run
+
 >sh scripts/register_rollapp.sh
 
 validate using 
@@ -76,7 +75,7 @@ validate using
 
 
 ### Register sequencer for rollapp on settlement
-run
+
 >sh scripts/register_sequencer.sh
 
 validate using 
@@ -84,7 +83,7 @@ validate using
 
 
 ### Run rollapp
-run
+
 >sh scripts/run_rollapp.sh
 
 
