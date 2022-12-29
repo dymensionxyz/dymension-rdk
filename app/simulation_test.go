@@ -13,6 +13,7 @@ import (
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 	"github.com/dymensionxyz/rollapp/app"
+	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -72,9 +73,11 @@ func BenchmarkSimulation(b *testing.B) {
 		require.NoError(b, err)
 	})
 
-	encoding := cosmoscmd.MakeEncodingConfig(app.ModuleBasics)
+	encoding := params.EncodingConfig{
+		EncodingConfig: cosmoscmd.MakeEncodingConfig(app.ModuleBasics),
+	}
 
-	app := app.NewRollapp(
+	simApp := app.NewRollapp(
 		logger,
 		db,
 		nil,
@@ -86,8 +89,7 @@ func BenchmarkSimulation(b *testing.B) {
 		simapp.EmptyAppOptions{},
 	)
 
-	simApp, ok := app.(SimApp)
-	require.True(b, ok, "can't use simapp")
+	var _ SimApp = simApp
 
 	// Run randomized simulations
 	_, simParams, simErr := simulation.SimulateFromSeed(
