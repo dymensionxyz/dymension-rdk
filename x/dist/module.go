@@ -60,13 +60,14 @@ func NewAppModule(
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	defer telemetry.ModuleMeasureSince(types.ModuleName, time.Now(), telemetry.MetricKeyBeginBlocker)
 
-	//In cosmos we pay the previous proposer. here we pay for the proposer
-	//FIXME: use previous proposer as in cosmos sdk
-	consAddr := sdk.ConsAddress(req.Header.ProposerAddress)
-
 	// TODO this is Tendermint-dependent
 	// ref https://github.com/cosmos/cosmos-sdk/issues/3095
 	if ctx.BlockHeight() > 1 {
-		am.keeper.AllocateTokens(ctx, consAddr)
+		previousProposer := am.keeper.GetPreviousProposerConsAddr(ctx)
+		am.keeper.AllocateTokens(ctx, previousProposer)
 	}
+
+	// record the proposer for when we payout on the next block
+	consAddr := sdk.ConsAddress(req.Header.ProposerAddress)
+	am.keeper.SetPreviousProposerConsAddr(ctx, consAddr)
 }

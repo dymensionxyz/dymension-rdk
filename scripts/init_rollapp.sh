@@ -19,6 +19,8 @@ sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$CHAIN_DIR"/config/genes
 sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$CHAIN_DIR"/config/genesis.json
 
 
+#TODO: set rewards precentegas correctly
+
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test
 $EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test
 

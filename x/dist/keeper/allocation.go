@@ -33,7 +33,7 @@ func (k Keeper) AllocateTokens(
 	communityTax := feesCollected.MulDecTruncate(k.GetCommunityTax(ctx))
 	remaining := feesCollected.Sub(proposerReward).Sub(communityTax)
 
-	logger.Info("Proposer address", "address", blockProposer.String())
+	logger.Debug("Proposer address", "address", blockProposer.String())
 
 	// calculate and pay previous proposer reward
 	proposerValidator := k.stakingKeeper.ValidatorByConsAddr(ctx, blockProposer)
@@ -48,7 +48,7 @@ func (k Keeper) AllocateTokens(
 	feePool.CommunityPool = feePool.CommunityPool.Add(communityTax...)
 	k.SetFeePool(ctx, feePool)
 
-	//Until we'll have a different use case for the "remainer" of the fees, allocate them to the proposer as well
+	//TODO: the remaining fees should be allocated to power voters. allocated to proposer currently
 	proposerReward = proposerReward.Add(remaining...)
 	k.AllocateTokensToValidator(ctx, proposerValidator, proposerReward)
 
@@ -59,11 +59,6 @@ func (k Keeper) AllocateTokens(
 			sdk.NewAttribute(types.AttributeKeyValidator, proposerValidator.GetOperator().String()),
 		),
 	)
-
-	/*
-		//allocate remaining tokens proportionally by applocative power distribution
-	*/
-
 }
 
 // AllocateTokensToValidator allocate tokens to a particular validator, splitting according to commission
