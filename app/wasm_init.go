@@ -1,6 +1,7 @@
 package app
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -9,8 +10,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-//TODO: enable and test the wasmProposal logic
 var (
+	//TODO: set with compilation flag
+	WasmEnabledFlag = true
+
 	// If EnableSpecificWasmProposals is "", and this is "true", then enable all x/wasm proposals.
 	// If EnableSpecificWasmProposals is "", and this is not "true", then disable all x/wasm proposals.
 	WasmProposalsEnabled = "false"
@@ -21,6 +24,9 @@ var (
 
 	// use this for clarity in argument list
 	EmptyWasmOpts []wasm.Option
+
+	WasmDir    string
+	WasmConfig types.WasmConfig
 )
 
 var (
@@ -39,6 +45,20 @@ var (
 	// Bech32PrefixConsPub defines the Bech32 prefix of a consensus node public key
 	Bech32PrefixConsPub = Bech32Prefix + sdk.PrefixValidator + sdk.PrefixConsensus + sdk.PrefixPublic
 )
+
+func WasmEnabled() bool {
+	return WasmEnabledFlag
+}
+
+func InitWasmConfig(homePath string, appOpts servertypes.AppOptions) {
+	WasmDir = filepath.Join(homePath, "wasm")
+
+	var err error
+	WasmConfig, err = wasm.ReadWasmConfig(appOpts)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func GetWasmOpts(appOpts servertypes.AppOptions) []wasm.Option {
 	var wasmOpts []wasm.Option
