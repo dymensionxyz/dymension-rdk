@@ -1,50 +1,109 @@
-# rollapp
-**rollapp** is a blockchain built using Cosmos SDK and Tendermint and created with [Ignite CLI](https://ignite.com/cli).
+<div align="center">
+  <h1> Dymension Rollapp </h1>
+</div>
 
-The Rollapp chain is already wired with CosmWasm module and using Dymension settlement.
-Scaffolded with igniteCLI@v0.22.2
+![banner](https://user-images.githubusercontent.com/109034310/204804891-bdc0f7bc-4b17-4b4a-99ff-25153d3887ee.jpg)
 
 
-## Get started
-### Build
-either using 
-`go install` from `cmd/rollappd/`
+<!-- <style>
+img[src*="#thumbnail"] {
+     display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>  -->
+
+[![license](https://img.shields.io/github/license/cosmos/cosmos-sdk.svg#thumbnail)](https://github.com/dymensionxyz/rdk/blob/main/LICENSE)
+
+
+Dymension RDK, which stands for *RollApp Development Kit* is based on the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework, modified and enhanced for building autonomous RollApps (app-specfic-rollups) on top of the [Dymension Hub](https://github.com/dymensionxyz/dymension). 
+
+The RDK provides the following capabilites ***on top*** of the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework: 
+* The RDK is coupled with the [Dymint](https://github.com/dymensionxyz/dymint) client to form RollApp's blazing speed consensus and networking layer, while ***the Dymension Hub is securing the rollapp***
+* Custom modules that converts a cosmos based PoS (proof-of-stake) chain to a rollapp
+* wasm and EVM support (based on CosmWasm and Ethermint)
+
+### Learn more
+For more information about Dymension RollApps please visit the [documentation center](https://docs.dymension.xyz/)
+
+To learn how the Cosmos SDK works from a high-level perspective, see the Cosmos SDK [High-Level Intro](https://docs.cosmos.network/main/intro/overview.html).
+
+If you want to get started quickly and learn how to build on top of Cosmos SDK, visit [Cosmos SDK Tutorials](https://tutorials.cosmos.network). You can also fork the tutorial's repository to get started building your own Cosmos SDK application.
+
+---
+
+This repository hosts `rollappd`, the first implementation of a dymension rollapp.
+
+
+**Note**: Requires [Go 1.18](https://go.dev/)
+
+**Note**: This code was intiially scaffolded with igniteCLI@v0.22.2
+
+For critical security issues & disclosure, see [SECURITY.md](SECURITY.md).
+
+
+## Quick guide
+Get started with [building RollApps](https://docs.dymension.xyz/developers/getting-started/intro) 
+
+## Installing / Getting started
+```
+make install
+```
 or
-`ignite chain build`
+```shell
+cd cmd/rollappd/
+go install
+```
+
+This will build the ```rollappd``` binary
 
 
-### Init
-set configuration params at `scripts/shared.sh`
+### Initial configuration
+set custom configuration params at `scripts/shared.sh`
 
-run
-`sh scripts/init_rollapp.sh`
 
+>sh scripts/init_rollapp.sh
 
 This will initilize the rollapp with single initial staked account
 
 ### Register rollapp on settlement
-run
-`sh scripts/register_rollapp.sh`
+
+>sh scripts/register_rollapp.sh
 
 validate using 
-`dymd q rollapp list-rollapp`
+>dymd q rollapp list-rollapp
 
 
 ### Register sequencer for rollapp on settlement
-run
-`sh scripts/register_sequencer.sh`
+
+>sh scripts/register_sequencer.sh
 
 validate using 
-`dymd q sequencer list-sequencer`
+>dymd q sequencer list-sequencer
 
 
 ### Run rollapp
-run
-`sh scripts/run_rollapp.sh`
+
+>sh scripts/run_rollapp.sh
+
+
+## Developers guide
+TODO
 
 
 
-## Using ignite (WIP. not tested)
+
+
+
+
+
+<!-- 
+# Future features (WIP)
+
+## Fully support ignite 
+### using ignite as developing framework
+Rollapp customization should allow the usage of `ignite` for scaffolding custom modules
+### using ignite to run rollapp
 ```
 ignite chain serve
 ```
@@ -91,4 +150,4 @@ curl https://get.ignite.com/dymensionxyz/rollapp@latest! | sudo bash
 - [Tutorials](https://docs.ignite.com/guide)
 - [Ignite CLI docs](https://docs.ignite.com)
 - [Cosmos SDK docs](https://docs.cosmos.network)
-- [Developer Chat](https://discord.gg/ignite)
+- [Developer Chat](https://discord.gg/ignite) -->
