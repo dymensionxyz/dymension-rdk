@@ -3,7 +3,6 @@ package app_test
 import (
 	"os"
 	"testing"
-	"time"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -13,11 +12,10 @@ import (
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 	"github.com/dymensionxyz/rollapp/app"
+	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 func init() {
@@ -35,23 +33,6 @@ type SimApp interface {
 	BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock
 	EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock
 	InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain
-}
-
-var defaultConsensusParams = &abci.ConsensusParams{
-	Block: &abci.BlockParams{
-		MaxBytes: 200000,
-		MaxGas:   2000000,
-	},
-	Evidence: &tmproto.EvidenceParams{
-		MaxAgeNumBlocks: 302400,
-		MaxAgeDuration:  504 * time.Hour, // 3 weeks is the max duration
-		MaxBytes:        10000,
-	},
-	Validator: &tmproto.ValidatorParams{
-		PubKeyTypes: []string{
-			tmtypes.ABCIPubKeyTypeEd25519,
-		},
-	},
 }
 
 // BenchmarkSimulation run the chain simulation
@@ -72,9 +53,11 @@ func BenchmarkSimulation(b *testing.B) {
 		require.NoError(b, err)
 	})
 
-	encoding := cosmoscmd.MakeEncodingConfig(app.ModuleBasics)
+	encoding := params.EncodingConfig{
+		EncodingConfig: cosmoscmd.MakeEncodingConfig(app.ModuleBasics),
+	}
 
-	app := app.NewRollapp(
+	simApp := app.NewRollapp(
 		logger,
 		db,
 		nil,
@@ -86,8 +69,7 @@ func BenchmarkSimulation(b *testing.B) {
 		simapp.EmptyAppOptions{},
 	)
 
-	simApp, ok := app.(SimApp)
-	require.True(b, ok, "can't use simapp")
+	var _ SimApp = simApp
 
 	// Run randomized simulations
 	_, simParams, simErr := simulation.SimulateFromSeed(

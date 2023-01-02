@@ -39,11 +39,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
-
-	// distr "github.com/cosmos/cosmos-sdk/x/distribution"
-	// distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
-	// distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
-	// distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/evidence"
 	evidencekeeper "github.com/cosmos/cosmos-sdk/x/evidence/keeper"
 	evidencetypes "github.com/cosmos/cosmos-sdk/x/evidence/types"
@@ -67,11 +62,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/slashing"
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
-
-	// "github.com/cosmos/cosmos-sdk/x/staking"
-	// stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	// stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
@@ -123,6 +113,20 @@ const (
 	Name                 = "rollapp"
 )
 
+var (
+	kvstorekeys = []string{
+		authtypes.StoreKey, authz.ModuleName,
+		banktypes.StoreKey,
+		agenttypes.StoreKey, seqtypes.StoreKey,
+		minttypes.StoreKey, distrtypes.StoreKey,
+		slashingtypes.StoreKey,
+		govtypes.StoreKey, paramstypes.StoreKey,
+		ibchost.StoreKey, upgradetypes.StoreKey,
+		feegrant.StoreKey,
+		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, monitoringptypes.StoreKey,
+	}
+)
+
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -140,7 +144,9 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 	)
 
 	//Adding wasm proposalHandlers
-	govProposalHandlers = append(govProposalHandlers, wasmclient.ProposalHandlers...)
+	if WasmEnabled() {
+		govProposalHandlers = append(govProposalHandlers, wasmclient.ProposalHandlers...)
+	}
 
 	return govProposalHandlers
 }
@@ -173,7 +179,6 @@ var (
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		monitoringp.AppModuleBasic{},
-		wasm.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -187,8 +192,6 @@ var (
 		govtypes.ModuleName:          {authtypes.Burner},
 		ibctransfertypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
-
-		wasm.ModuleName: {authtypes.Burner},
 	}
 )
 
@@ -204,6 +207,12 @@ func init() {
 	}
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
+
+	if WasmEnabled() {
+		ModuleBasics[wasm.ModuleName] = wasm.AppModuleBasic{}
+		maccPerms[wasm.ModuleName] = []string{authtypes.Burner}
+		kvstorekeys = append(kvstorekeys, wasm.StoreKey)
+	}
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -272,6 +281,12 @@ func NewRollapp(
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
+
+	//Init and add wasm modules and store if enabled
+	if WasmEnabled() {
+		InitWasmConfig(homePath, appOpts)
+	}
+
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -283,12 +298,7 @@ func NewRollapp(
 
 	//TODO: add sequencer storekey
 	keys := sdk.NewKVStoreKeys(
-		authtypes.StoreKey, authz.ModuleName, banktypes.StoreKey,
-		agenttypes.StoreKey, seqtypes.StoreKey,
-		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
-		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, monitoringptypes.StoreKey,
-		wasm.StoreKey,
+		kvstorekeys...,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -315,7 +325,6 @@ func NewRollapp(
 	// grant capabilities for the ibc and ibc-transfer modules
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
-	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
 
 	// add keepers
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
@@ -376,7 +385,7 @@ func NewRollapp(
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
 		// The gov proposal types can be individually enabled
-	if len(GetWasmEnabledProposals()) != 0 {
+	if WasmEnabled() && len(GetWasmEnabledProposals()) != 0 {
 		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, GetWasmEnabledProposals()))
 	}
 
@@ -418,20 +427,15 @@ func NewRollapp(
 	)
 	monitoringModule := monitoringp.NewAppModule(appCodec, app.MonitoringKeeper)
 
-	wasmDir := filepath.Join(homePath, "wasm")
-	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
-	if err != nil {
-		panic(err)
-	}
-	app.WasmKeeper = app.initWasmKeeper(wasmDir, wasmConfig, nil, GetWasmOpts(appOpts))
-
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
 	ibcRouter.AddRoute(monitoringptypes.ModuleName, monitoringModule)
 
 	//wire up x/wasm to IBC
-	ibcRouter.AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper))
+	if WasmEnabled() {
+		ibcRouter.AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper))
+	}
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/****  Module Options ****/
@@ -443,7 +447,7 @@ func NewRollapp(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
-	app.mm = module.NewManager(
+	modules := []module.AppModule{
 		genutil.NewAppModule(
 			app.AccountKeeper, app.AgentsKeeper, app.BaseApp.DeliverTx,
 			encodingConfig.TxConfig,
@@ -467,15 +471,23 @@ func NewRollapp(
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
 		monitoringModule,
-		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AgentsKeeper, app.AccountKeeper, app.BankKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
-	)
+	}
+
+	//Init wasm if enabled
+	if WasmEnabled() {
+		modules = append(modules,
+			wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AgentsKeeper, app.AccountKeeper, app.BankKeeper),
+		)
+	}
+
+	app.mm = module.NewManager(modules...)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
 	// there is nothing left over in the validator fee pool, so as to keep the
 	// CanWithdrawInvariant invariant.
 	// NOTE: staking module is required if HistoricalEntries param > 0
-	app.mm.SetOrderBeginBlockers(
+	beginBlockersList := []string{
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
@@ -496,11 +508,10 @@ func NewRollapp(
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		monitoringptypes.ModuleName,
-		wasm.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
-	)
+	}
 
-	app.mm.SetOrderEndBlockers(
+	endBlockersList := []string{
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		agenttypes.ModuleName,
@@ -521,15 +532,15 @@ func NewRollapp(
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
 		monitoringptypes.ModuleName,
-		wasm.ModuleName,
-	)
+		// this line is used by starport scaffolding # stargate/app/endBlockers
+	}
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
 	// NOTE: Capability module must occur first so that it can initialize any capabilities
 	// so that other modules that want to create or claim capabilities afterwards in InitChain
 	// can do so safely.
-	app.mm.SetOrderInitGenesis(
+	initGenesisList := []string{
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		authz.ModuleName,
@@ -550,8 +561,18 @@ func NewRollapp(
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
 		monitoringptypes.ModuleName,
-		wasm.ModuleName,
-	)
+		// this line is used by starport scaffolding # stargate/app/initGenesis
+	}
+
+	if WasmEnabled() {
+		beginBlockersList = append(beginBlockersList, wasm.ModuleName)
+		endBlockersList = append(endBlockersList, wasm.ModuleName)
+		initGenesisList = append(initGenesisList, wasm.ModuleName)
+	}
+
+	app.mm.SetOrderBeginBlockers(beginBlockersList...)
+	app.mm.SetOrderEndBlockers(endBlockersList...)
+	app.mm.SetOrderInitGenesis(initGenesisList...)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
@@ -571,7 +592,8 @@ func NewRollapp(
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.AgentsKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
-		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AgentsKeeper, app.AccountKeeper, app.BankKeeper),
+		//TODO: add wasm to simulation
+		// wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AgentsKeeper, app.AccountKeeper, app.BankKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		monitoringModule,
@@ -598,7 +620,7 @@ func NewRollapp(
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
 			IBCKeeper:         app.IBCKeeper,
-			WasmConfig:        &wasmConfig,
+			WasmConfig:        &WasmConfig,
 			TXCounterStoreKey: keys[wasm.StoreKey],
 		},
 	)
@@ -619,7 +641,12 @@ func NewRollapp(
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	app.ScopedMonitoringKeeper = scopedMonitoringKeeper
-	app.ScopedWasmKeeper = scopedWasmKeeper
+
+	//Init wasm keepers
+	if WasmEnabled() {
+		app.WasmKeeper = app.initWasmKeeper(WasmDir, WasmConfig, nil, GetWasmOpts(appOpts))
+		app.ScopedWasmKeeper = app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
+	}
 
 	return app
 }

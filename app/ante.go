@@ -43,8 +43,6 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // after setup context to enforce limits early
-		wasmkeeper.NewCountTXDecorator(options.TXCounterStoreKey),
 		ante.NewRejectExtensionOptionsDecorator(),
 		ante.NewMempoolFeeDecorator(),
 		ante.NewValidateBasicDecorator(),
@@ -58,6 +56,13 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewAnteDecorator(options.IBCKeeper),
+	}
+
+	if WasmEnabled() {
+		//Wasm wants to be registered right after setup decorator
+		decorators := append(anteDecorators[:3], anteDecorators[1:]...)
+		decorators[1] = wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit)
+		decorators[2] = wasmkeeper.NewCountTXDecorator(options.TXCounterStoreKey)
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
