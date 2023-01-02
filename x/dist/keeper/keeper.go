@@ -16,6 +16,8 @@ type Keeper struct {
 	bankKeeper    disttypes.BankKeeper
 	stakingKeeper disttypes.StakingKeeper
 
+	blockedAddrs map[string]bool
+
 	feeCollectorName string
 }
 
@@ -31,6 +33,7 @@ func NewKeeper(
 		authKeeper:       ak,
 		bankKeeper:       bk,
 		stakingKeeper:    sk,
+		blockedAddrs:     blockedAddrs,
 		feeCollectorName: feeCollectorName,
 	}
 }
