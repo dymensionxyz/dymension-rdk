@@ -296,7 +296,6 @@ func NewRollapp(
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
 
-	//TODO: add sequencer storekey
 	keys := sdk.NewKVStoreKeys(
 		kvstorekeys...,
 	)
@@ -366,7 +365,7 @@ func NewRollapp(
 	)
 
 	app.SequencersKeeper = *seqkeeper.NewKeeper(
-		appCodec, keys[seqtypes.StoreKey], keys[seqtypes.MemStoreKey], app.GetSubspace(seqtypes.ModuleName),
+		appCodec, keys[seqtypes.StoreKey], app.GetSubspace(seqtypes.ModuleName),
 	)
 
 	// ... other modules keepers

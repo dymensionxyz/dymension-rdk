@@ -53,6 +53,8 @@ func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper,
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
+
+	//TODO: agents should allow empty set on genesis
 	am.AppModule.InitGenesis(ctx, cdc, data)
 	return []abci.ValidatorUpdate{}
 }

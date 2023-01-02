@@ -9,14 +9,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	"github.com/dymensionxyz/rollapp/testutil/sample"
 	sequencerssimulation "github.com/dymensionxyz/rollapp/x/sequencers/simulation"
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 )
 
 // avoid unused import issue
 var (
-	_ = sample.AccAddress
 	_ = sequencerssimulation.FindAccount
 	_ = simappparams.StakePerAccount
 	_ = simulation.MsgEntryKind

@@ -23,15 +23,13 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-// AppModule embeds the Cosmos SDK's x/staking AppModuleBasic.
+// AppModule embeds the Cosmos SDK's x/distribution AppModuleBasic.
 type AppModuleBasic struct {
 	distribution.AppModuleBasic
 }
 
-// AppModule embeds the Cosmos SDK's x/staking AppModule where we only override
-// specific methods.
+// AppModule embeds the Cosmos SDK's x/distribution AppModule where we only override specific methods.
 type AppModule struct {
-	// embed the Cosmos SDK's x/staking AppModule
 	distribution.AppModule
 
 	keeper        keeper.Keeper
@@ -40,8 +38,7 @@ type AppModule struct {
 	stakingKeeper types.StakingKeeper
 }
 
-// NewAppModule creates a new AppModule object using the native x/staking module
-// AppModule constructor.
+// NewAppModule creates a new AppModule object using the native x/distribution AppModule constructor.
 func NewAppModule(
 	cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper,
 	bk types.BankKeeper, sk stakingkeeper.Keeper,

@@ -7,6 +7,17 @@ import (
 	"time"
 )
 
+// GetParams returns the total set of sequencers parameters.
+func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
+	k.paramstore.GetParamSet(ctx, &params)
+	return params
+}
+
+// SetParams sets the sequencers parameters to the param space.
+func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	k.paramstore.SetParamSet(ctx, &params)
+}
+
 // UnbondingTime
 func (k Keeper) UnbondingTime(ctx sdk.Context) (res time.Duration) {
 	k.paramstore.Get(ctx, types.KeyUnbondingTime, &res)
@@ -24,18 +35,4 @@ func (k Keeper) MaxValidators(ctx sdk.Context) (res uint32) {
 func (k Keeper) HistoricalEntries(ctx sdk.Context) (res uint32) {
 	k.paramstore.Get(ctx, types.KeyHistoricalEntries, &res)
 	return
-}
-
-// Get all parameteras as types.Params
-func (k Keeper) GetParams(ctx sdk.Context) types.Params {
-	return types.NewParams(
-		k.UnbondingTime(ctx),
-		k.MaxValidators(ctx),
-		k.HistoricalEntries(ctx),
-	)
-}
-
-// set the params
-func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
-	k.paramstore.SetParamSet(ctx, &params)
 }

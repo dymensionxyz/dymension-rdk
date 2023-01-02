@@ -33,18 +33,9 @@ var (
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
-// ParamTable for staking module
+// ParamTable for sequencers module
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
-}
-
-// NewParams creates a new Params instance
-func NewParams(unbondingTime time.Duration, maxValidators, historicalEntries uint32) Params {
-	return Params{
-		UnbondingTime:     unbondingTime,
-		MaxValidators:     maxValidators,
-		HistoricalEntries: historicalEntries,
-	}
 }
 
 // Implements params.ParamSet
@@ -58,11 +49,11 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
-	return NewParams(
-		DefaultUnbondingTime,
-		DefaultMaxValidators,
-		DefaultHistoricalEntries,
-	)
+	return Params{
+		UnbondingTime:     DefaultUnbondingTime,
+		MaxValidators:     DefaultMaxValidators,
+		HistoricalEntries: DefaultHistoricalEntries,
+	}
 }
 
 // String returns a human readable string representation of the parameters.
