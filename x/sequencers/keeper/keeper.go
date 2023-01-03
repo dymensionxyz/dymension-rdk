@@ -20,7 +20,6 @@ import (
 type Keeper struct {
 	cdc        codec.BinaryCodec
 	storeKey   sdk.StoreKey
-	memKey     sdk.StoreKey
 	paramstore paramtypes.Subspace
 }
 
