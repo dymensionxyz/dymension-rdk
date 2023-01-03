@@ -50,7 +50,7 @@ func (k Keeper) AllocateTokens(
 
 	//TODO: the remaining fees should be allocated to power voters. allocated to proposer currently
 	proposerReward = proposerReward.Add(remaining...)
-	k.AllocateTokensToValidator(ctx, proposerValidator, proposerReward)
+	k.AllocateTokensToSequencer(ctx, proposerValidator, proposerReward)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
@@ -59,6 +59,10 @@ func (k Keeper) AllocateTokens(
 			sdk.NewAttribute(types.AttributeKeyValidator, proposerValidator.GetOperator().String()),
 		),
 	)
+}
+
+func (k Keeper) AllocateTokensToSequencer(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.DecCoins) {
+	k.AllocateTokensToValidator(ctx, val, tokens)
 }
 
 // AllocateTokensToValidator allocate tokens to a particular validator, splitting according to commission
