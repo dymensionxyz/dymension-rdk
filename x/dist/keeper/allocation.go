@@ -7,8 +7,6 @@ import (
 )
 
 // AllocateTokens handles distribution of the collected fees
-// bondedVotes is a list of (validator address, validator voted on last block flag) for all
-// validators in the bonded set.
 func (k Keeper) AllocateTokens(
 	ctx sdk.Context, blockProposer sdk.ConsAddress) {
 
@@ -22,84 +20,62 @@ func (k Keeper) AllocateTokens(
 	feesCollected := sdk.NewDecCoinsFromCoins(feesCollectedInt...)
 	feePool := k.GetFeePool(ctx)
 
+	remainingFees := feesCollected
+
 	// transfer collected fees to the distribution module account
 	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, k.feeCollectorName, types.ModuleName, feesCollectedInt)
 	if err != nil {
 		panic(err)
 	}
 
-	//Calcualte base distriubtion
+	/* ---------------------------- Pay the proposer ---------------------------- */
+	proposerValidator := k.seqKeeper.ValidatorByConsAddr(ctx, blockProposer)
 	proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
-	communityTax := feesCollected.MulDecTruncate(k.GetCommunityTax(ctx))
-	remaining := feesCollected.Sub(proposerReward).Sub(communityTax)
-
-	logger.Debug("Proposer address", "address", blockProposer.String())
 
 	// calculate and pay previous proposer reward
-	proposerValidator := k.seqKeeper.ValidatorByConsAddr(ctx, blockProposer)
 	if proposerValidator == nil {
-		logger.Error("failed to find the validator for this block. fees allocated to community pool")
-		feePool.CommunityPool = feePool.CommunityPool.Add(feesCollected...)
-		k.SetFeePool(ctx, feePool)
-		return
+		logger.Error("failed to find the validator for this block. reward not allocated")
+		proposerReward = sdk.DecCoins{}
 	}
 
-	// allocate community funding
-	feePool.CommunityPool = feePool.CommunityPool.Add(communityTax...)
+	proposerCoins, proposerRemainder := proposerReward.TruncateDecimal()
+	if !proposerCoins.IsZero() {
+		err := k.AllocateTokensToSequencer(ctx, proposerValidator, proposerCoins)
+		if err != nil {
+			logger.Error("failed to reward the proposer")
+		}
+
+		remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
+
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				types.EventTypeProposerReward,
+				sdk.NewAttribute(sdk.AttributeKeyAmount, proposerReward.String()),
+				sdk.NewAttribute(types.AttributeKeyValidator, proposerValidator.GetOperator().String()),
+			),
+		)
+	}
+
+	/* ---------------------- reward the agents/validators ---------------------- */
+	//TODO: the remaining fees should be allocated to power voters.
+	// communityTax := k.GetCommunityTax(ctx)
+	// agentsReward := feesCollected.MulDecTruncate(communityTax).Sub(proposerReward)
+	// agentsMultiplier := sdk.OneDec().Sub(proposerMultiplier).Sub(communityTax)
+	// (compare with remainingFees)
+	//iterate agents
+	//calculate powerFraction
+	//allocate tokens
+	//update remainingFees
+
+	/* ------------------------- fund the community pool ------------------------ */
+	feePool.CommunityPool = feePool.CommunityPool.Add(remainingFees...)
 	k.SetFeePool(ctx, feePool)
-
-	//TODO: the remaining fees should be allocated to power voters. allocated to proposer currently
-	proposerReward = proposerReward.Add(remaining...)
-	k.AllocateTokensToSequencer(ctx, proposerValidator, proposerReward)
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeProposerReward,
-			sdk.NewAttribute(sdk.AttributeKeyAmount, proposerReward.String()),
-			sdk.NewAttribute(types.AttributeKeyValidator, proposerValidator.GetOperator().String()),
-		),
-	)
 }
 
-func (k Keeper) AllocateTokensToSequencer(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.DecCoins) {
-	//k.AllocateTokensToValidator(ctx, val, tokens)
-	//FIXME: allocate fund directly to sequencer
-
-	k.Logger(ctx).Info("CALLED!")
-}
-
-// AllocateTokensToValidator allocate tokens to a particular validator, splitting according to commission
-func (k Keeper) AllocateTokensToValidator(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.DecCoins) {
-	// split tokens between validator and delegators according to commission
-	commission := tokens.MulDec(val.GetCommission())
-	shared := tokens.Sub(commission)
-
-	// update current commission
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeCommission,
-			sdk.NewAttribute(sdk.AttributeKeyAmount, commission.String()),
-			sdk.NewAttribute(types.AttributeKeyValidator, val.GetOperator().String()),
-		),
-	)
-	currentCommission := k.GetValidatorAccumulatedCommission(ctx, val.GetOperator())
-	currentCommission.Commission = currentCommission.Commission.Add(commission...)
-	k.SetValidatorAccumulatedCommission(ctx, val.GetOperator(), currentCommission)
-
-	// update current rewards
-	currentRewards := k.GetValidatorCurrentRewards(ctx, val.GetOperator())
-	currentRewards.Rewards = currentRewards.Rewards.Add(shared...)
-	k.SetValidatorCurrentRewards(ctx, val.GetOperator(), currentRewards)
-
-	// update outstanding rewards
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeRewards,
-			sdk.NewAttribute(sdk.AttributeKeyAmount, tokens.String()),
-			sdk.NewAttribute(types.AttributeKeyValidator, val.GetOperator().String()),
-		),
-	)
-	outstanding := k.GetValidatorOutstandingRewards(ctx, val.GetOperator())
-	outstanding.Rewards = outstanding.Rewards.Add(tokens...)
-	k.SetValidatorOutstandingRewards(ctx, val.GetOperator(), outstanding)
+func (k Keeper) AllocateTokensToSequencer(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.Coins) error {
+	if tokens.IsZero() {
+		return nil
+	}
+	accAddr := sdk.AccAddress(val.GetOperator())
+	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, accAddr, tokens)
 }
