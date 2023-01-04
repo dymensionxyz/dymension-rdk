@@ -21,12 +21,15 @@ service Query {
 
   // Sequencer queries validator info for given validator address.
   rpc Sequencer(QuerySequencerRequest) returns (QuerySequencerResponse) {
-    option (google.api.http).get = "/dymensionxyz/rollapp/sequencers/sequencers/{sequencer_addr}";
+    option (google.api.http).get =
+        "/dymensionxyz/rollapp/sequencers/sequencers/{sequencer_addr}";
   }
 
   // HistoricalInfo queries the historical info for given height.
-  rpc HistoricalInfo(QueryHistoricalInfoRequest) returns (QueryHistoricalInfoResponse) {
-    option (google.api.http).get = "/dymensionxyz/rollapp/sequencers/historical_info/{height}";
+  rpc HistoricalInfo(QueryHistoricalInfoRequest)
+      returns (QueryHistoricalInfoResponse) {
+    option (google.api.http).get =
+        "/dymensionxyz/rollapp/sequencers/historical_info/{height}";
   }
 
   // Parameters queries the staking parameters.
@@ -47,7 +50,8 @@ message QuerySequencersRequest {
 // QuerySequencersResponse is response type for the Query/Sequencers RPC method
 message QuerySequencersResponse {
   // sequencers contains all the queried sequencers.
-  repeated cosmos.staking.v1beta1.Validator sequencers = 1 [(gogoproto.nullable) = false];
+  repeated cosmos.staking.v1beta1.Validator sequencers = 1
+      [ (gogoproto.nullable) = false ];
 
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -62,7 +66,8 @@ message QuerySequencerRequest {
 // QuerySequencerResponse is response type for the Query/Sequencer RPC method
 message QuerySequencerResponse {
   // sequencer defines the the sequencer info.
-  cosmos.staking.v1beta1.Validator sequencer = 1 [(gogoproto.nullable) = false];
+  cosmos.staking.v1beta1.Validator sequencer = 1
+      [ (gogoproto.nullable) = false ];
 }
 
 // QueryHistoricalInfoRequest is request type for the Query/HistoricalInfo RPC
@@ -79,16 +84,13 @@ message QueryHistoricalInfoResponse {
   cosmos.staking.v1beta1.HistoricalInfo hist = 1;
 }
 
-
-
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [(gogoproto.nullable) = false];
+  Params params = 1 [ (gogoproto.nullable) = false ];
 }
-
 
 // this line is used by starport scaffolding # 3
