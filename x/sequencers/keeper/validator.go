@@ -51,7 +51,6 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator st
 // get a single validator by consensus address
 func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingtypes.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
-
 	opAddr := store.Get(types.GetValidatorByConsAddrKey(consAddr))
 	if opAddr == nil {
 		return validator, false
@@ -69,12 +68,13 @@ func (k Keeper) SetValidator(ctx sdk.Context, validator stakingtypes.Validator) 
 
 // validator index
 func (k Keeper) SetValidatorByConsAddr(ctx sdk.Context, validator stakingtypes.Validator) error {
-	consPk, err := validator.GetConsAddr()
+	consAddr, err := validator.GetConsAddr()
 	if err != nil {
 		return err
 	}
 	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetValidatorByConsAddrKey(consPk), validator.GetOperator())
+	store.Set(types.GetValidatorByConsAddrKey(consAddr), validator.GetOperator())
+
 	return nil
 }
 
@@ -94,71 +94,3 @@ func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []stakingtypes.Val
 
 	return validators
 }
-
-// // GetSequencer returns a sequencer from its index
-// func (k Keeper) GetSequencer(ctx sdk.Context, sequencerAddress string) (val stakingtypes.Validator, found bool) {
-// 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.KeyPrefix(types.ValidatorsKey))
-
-// 	// k.paramstore.Get(ctx, types.KeyHistoricalEntries, &res)
-
-// 	store := ctx.KVStore(k.storeKey)
-// 	validators = make([]types.Validator, maxRetrieve)
-
-// 	iterator := sdk.KVStorePrefixIterator(store, types.ValidatorsKey)
-// 	defer iterator.Close()
-
-// 	value := store.Get(key)
-// 	if value == nil {
-// 		return stakingtypes.HistoricalInfo{}, false
-// 	}
-
-// 	*/
-
-// 	b := store.Get(types.val(
-// 		sequencerAddress,
-// 	))
-// 	if b == nil {
-// 		return val, false
-// 	}
-
-// 	k.cdc.MustUnmarshal(b, &val)
-// 	return val, true
-// }
-
-// // GetAllSequencer returns all sequencer
-// func (k Keeper) GetAllSequencer(ctx sdk.Context) (list []stakingtypes.Validator) {
-// 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.GetValidatorKey())
-// 	iterator := sdk.KVStorePrefixIterator(store, []byte{})
-
-// 	// nolint: errcheck
-// 	defer iterator.Close()
-
-// 	for ; iterator.Valid(); iterator.Next() {
-// 		var val types.Sequencer
-// 		k.cdc.MustUnmarshal(iterator.Value(), &val)
-// 		list = append(list, val)
-// 	}
-
-// 	return
-// }
-
-// // unmarshal a redelegation from a store value
-// func MustUnmarshalValidator(cdc codec.BinaryCodec, value []byte) stakingtypes.Validator {
-// 	validator, err := UnmarshalValidator(cdc, value)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	return validator
-// }
-
-// // unmarshal a redelegation from a store value
-// func UnmarshalValidator(cdc codec.BinaryCodec, value []byte) (v stakingtypes.Validator, err error) {
-// 	err = cdc.Unmarshal(value, &v)
-// 	return v, err
-// }
-
-// // return the redelegation
-// func MustMarshalValidator(cdc codec.BinaryCodec, validator *Validator) []byte {
-// 	return cdc.MustMarshal(validator)
-// }

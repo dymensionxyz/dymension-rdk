@@ -36,7 +36,7 @@ func (k Keeper) AllocateTokens(
 	logger.Debug("Proposer address", "address", blockProposer.String())
 
 	// calculate and pay previous proposer reward
-	proposerValidator := k.stakingKeeper.ValidatorByConsAddr(ctx, blockProposer)
+	proposerValidator := k.seqKeeper.ValidatorByConsAddr(ctx, blockProposer)
 	if proposerValidator == nil {
 		logger.Error("failed to find the validator for this block. fees allocated to community pool")
 		feePool.CommunityPool = feePool.CommunityPool.Add(feesCollected...)
