@@ -57,15 +57,21 @@ func (k Keeper) AllocateTokens(
 	}
 
 	/* ---------------------- reward the agents/validators ---------------------- */
-	//TODO: the remaining fees should be allocated to power voters.
-	// communityTax := k.GetCommunityTax(ctx)
-	// agentsReward := feesCollected.MulDecTruncate(communityTax).Sub(proposerReward)
-	// agentsMultiplier := sdk.OneDec().Sub(proposerMultiplier).Sub(communityTax)
-	// (compare with remainingFees)
-	//iterate agents
-	//calculate powerFraction
-	//allocate tokens
-	//update remainingFees
+	totalPreviousPower := k.stakingKeeper.GetLastTotalPower(ctx)
+
+	agentsMultipler := sdk.OneDec().Sub(k.GetBaseProposerReward(ctx)).Sub(k.GetCommunityTax(ctx))
+	agentsRewards := feesCollected.MulDecTruncate(agentsMultipler)
+
+	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingtypes.ValidatorI) (stop bool) {
+		valPower := validator.GetConsensusPower(sdk.DefaultPowerReduction)
+		powerFraction := sdk.NewDec(valPower).QuoTruncate(sdk.NewDecFromInt(totalPreviousPower))
+
+		reward := agentsRewards.MulDecTruncate(powerFraction)
+		k.AllocateTokensToValidator(ctx, validator, reward)
+		remainingFees = remainingFees.Sub(reward)
+
+		return false
+	})
 
 	/* ------------------------- fund the community pool ------------------------ */
 	feePool.CommunityPool = feePool.CommunityPool.Add(remainingFees...)
