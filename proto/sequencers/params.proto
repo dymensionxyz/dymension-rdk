@@ -17,7 +17,7 @@ message Params {
       [(gogoproto.nullable) = false, (gogoproto.stdduration) = true, (gogoproto.moretags) = "yaml:\"unbonding_time\""];
   
       // max_validators is the maximum number of validators.
-  uint32 max_validators = 2 [(gogoproto.moretags) = "yaml:\"max_validators\""];
+  uint32 max_sequencers = 2 [(gogoproto.moretags) = "yaml:\"max_sequencers\""];
 
   // historical_entries is the number of historical entries to persist.
   uint32 historical_entries = 3 [(gogoproto.moretags) = "yaml:\"historical_entries\""];

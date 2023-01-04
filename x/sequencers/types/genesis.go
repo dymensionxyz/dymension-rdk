@@ -11,7 +11,7 @@ const DefaultIndex uint64 = 1
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		Params:     DefaultParams(),
-		Validators: []stakingtypes.Validator{},
+		Sequencers: []stakingtypes.Validator{},
 		Exported:   false,
 	}
 }

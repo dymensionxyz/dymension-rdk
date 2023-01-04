@@ -27,26 +27,26 @@ func (k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*type
 	return &types.QueryParamsResponse{Params: k.GetParams(ctx)}, nil
 }
 
-// Validators queries all sequencers that match the given status.
-func (k Querier) Validators(c context.Context, req *types.QueryValidatorsRequest) (*types.QueryValidatorsResponse, error) {
+// Sequencers queries all sequencers that match the given status.
+func (k Querier) Sequencers(c context.Context, req *types.QuerySequencersRequest) (*types.QuerySequencersResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	return &types.QueryValidatorsResponse{
+	return &types.QuerySequencersResponse{
 		Sequencers: k.GetAllValidators(ctx),
 	}, nil
 }
 
-// Validator queries validator info for given validator address.
-func (k Querier) Validator(c context.Context, req *types.QueryValidatorRequest) (*types.QueryValidatorResponse, error) {
+// Sequencer queries validator info for given validator address.
+func (k Querier) Sequencer(c context.Context, req *types.QuerySequencerRequest) (*types.QuerySequencerResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
 	}
 	ctx := sdk.UnwrapSDKContext(c)
 
-	addr, err := sdk.ValAddressFromBech32(req.ValidatorAddr)
+	addr, err := sdk.ValAddressFromBech32(req.SequencerAddr)
 	if err != nil {
 		panic(err)
 	}
@@ -56,12 +56,11 @@ func (k Querier) Validator(c context.Context, req *types.QueryValidatorRequest) 
 		return nil, types.ErrSequencerNotFound
 	}
 
-	return &types.QueryValidatorResponse{
-		Validator: val,
+	return &types.QuerySequencerResponse{
+		Sequencer: val,
 	}, nil
 }
 
-// Validator queries validator info for given validator address.
 func (k Querier) HistoricalInfo(c context.Context, req *types.QueryHistoricalInfoRequest) (*types.QueryHistoricalInfoResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")

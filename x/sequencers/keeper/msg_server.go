@@ -1,17 +1,10 @@
 package keeper
 
 import (
-	"context"
-
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 )
 
 // this line is used by starport scaffolding # proto/tx/rpc
-
-// CreateValidator defines a method for creating a new validator.
-func (m msgServer) CreateSequencer(_ context.Context, _ *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
-	panic("not implemented") // TODO: Implement
-}
 
 type msgServer struct {
 	Keeper

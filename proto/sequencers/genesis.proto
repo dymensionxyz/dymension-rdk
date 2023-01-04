@@ -15,7 +15,7 @@ message GenesisState {
   // this line is used by starport scaffolding # genesis/proto/state
 
   // delegations defines the validator set at genesis.
-  repeated cosmos.staking.v1beta1.Validator validators = 2 [(gogoproto.nullable) = false];
+  repeated cosmos.staking.v1beta1.Validator sequencers = 2 [(gogoproto.nullable) = false];
 
   bool exported = 3;
 }

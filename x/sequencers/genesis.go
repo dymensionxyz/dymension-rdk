@@ -40,11 +40,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 }
 
 func ValidateGenesis(data *types.GenesisState) error {
-	// if err := staking.ValidateGenesis(data.Validators); err != nil {
-	// 	return err
-	// }
-
-	//FIXME
+	//TODO: Add validation when gentx for sequencers works
 	// if len(data.Validators) == 0 {
 	// 	return types.ErrNoSequencerOnGenesis
 	// }

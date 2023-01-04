@@ -62,7 +62,10 @@ func (k Keeper) AllocateTokens(
 }
 
 func (k Keeper) AllocateTokensToSequencer(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.DecCoins) {
-	k.AllocateTokensToValidator(ctx, val, tokens)
+	//k.AllocateTokensToValidator(ctx, val, tokens)
+	//FIXME: allocate fund directly to sequencer
+
+	k.Logger(ctx).Info("CALLED!")
 }
 
 // AllocateTokensToValidator allocate tokens to a particular validator, splitting according to commission

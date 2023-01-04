@@ -23,7 +23,7 @@ func CmdQuerySequencers() *cobra.Command {
 			fmt.Sprintf(`Query details about all sequencers on a network.
 
 Example:
-$ %s query %s validators
+$ %s query %s sequencers
 `,
 				version.AppName, types.ModuleName,
 			),
@@ -38,11 +38,11 @@ $ %s query %s validators
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			params := &types.QueryValidatorsRequest{
+			params := &types.QuerySequencersRequest{
 				Pagination: pageReq,
 			}
 
-			res, err := queryClient.Validators(context.Background(), params)
+			res, err := queryClient.Sequencers(context.Background(), params)
 			if err != nil {
 				return err
 			}
@@ -83,11 +83,11 @@ $ %s query %s sequencer %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 				return err
 			}
 
-			params := &types.QueryValidatorRequest{
-				ValidatorAddr: addr.String(),
+			params := &types.QuerySequencerRequest{
+				SequencerAddr: addr.String(),
 			}
 
-			res, err := queryClient.Validator(context.Background(), params)
+			res, err := queryClient.Sequencer(context.Background(), params)
 			if err != nil {
 				return err
 			}

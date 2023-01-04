@@ -31,26 +31,26 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryValidatorsRequest is request type for Query/Validators RPC method.
-type QueryValidatorsRequest struct {
+// QuerySequencersRequest is request type for Query/Sequencers RPC method.
+type QuerySequencersRequest struct {
 	// status enables to query for sequencers matching a given status.
 	Status string `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
 	// pagination defines an optional pagination for the request.
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
-func (m *QueryValidatorsRequest) Reset()         { *m = QueryValidatorsRequest{} }
-func (m *QueryValidatorsRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryValidatorsRequest) ProtoMessage()    {}
-func (*QueryValidatorsRequest) Descriptor() ([]byte, []int) {
+func (m *QuerySequencersRequest) Reset()         { *m = QuerySequencersRequest{} }
+func (m *QuerySequencersRequest) String() string { return proto.CompactTextString(m) }
+func (*QuerySequencersRequest) ProtoMessage()    {}
+func (*QuerySequencersRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1707b8f76abec2d9, []int{0}
 }
-func (m *QueryValidatorsRequest) XXX_Unmarshal(b []byte) error {
+func (m *QuerySequencersRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryValidatorsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QuerySequencersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryValidatorsRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QuerySequencersRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -60,52 +60,52 @@ func (m *QueryValidatorsRequest) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-func (m *QueryValidatorsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryValidatorsRequest.Merge(m, src)
+func (m *QuerySequencersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QuerySequencersRequest.Merge(m, src)
 }
-func (m *QueryValidatorsRequest) XXX_Size() int {
+func (m *QuerySequencersRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryValidatorsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryValidatorsRequest.DiscardUnknown(m)
+func (m *QuerySequencersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QuerySequencersRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryValidatorsRequest proto.InternalMessageInfo
+var xxx_messageInfo_QuerySequencersRequest proto.InternalMessageInfo
 
-func (m *QueryValidatorsRequest) GetStatus() string {
+func (m *QuerySequencersRequest) GetStatus() string {
 	if m != nil {
 		return m.Status
 	}
 	return ""
 }
 
-func (m *QueryValidatorsRequest) GetPagination() *query.PageRequest {
+func (m *QuerySequencersRequest) GetPagination() *query.PageRequest {
 	if m != nil {
 		return m.Pagination
 	}
 	return nil
 }
 
-// QueryValidatorsResponse is response type for the Query/Validators RPC method
-type QueryValidatorsResponse struct {
+// QuerySequencersResponse is response type for the Query/Sequencers RPC method
+type QuerySequencersResponse struct {
 	// sequencers contains all the queried sequencers.
 	Sequencers []types.Validator `protobuf:"bytes,1,rep,name=sequencers,proto3" json:"sequencers"`
 	// pagination defines the pagination in the response.
 	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 }
 
-func (m *QueryValidatorsResponse) Reset()         { *m = QueryValidatorsResponse{} }
-func (m *QueryValidatorsResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryValidatorsResponse) ProtoMessage()    {}
-func (*QueryValidatorsResponse) Descriptor() ([]byte, []int) {
+func (m *QuerySequencersResponse) Reset()         { *m = QuerySequencersResponse{} }
+func (m *QuerySequencersResponse) String() string { return proto.CompactTextString(m) }
+func (*QuerySequencersResponse) ProtoMessage()    {}
+func (*QuerySequencersResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1707b8f76abec2d9, []int{1}
 }
-func (m *QueryValidatorsResponse) XXX_Unmarshal(b []byte) error {
+func (m *QuerySequencersResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryValidatorsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QuerySequencersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryValidatorsResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QuerySequencersResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -115,50 +115,50 @@ func (m *QueryValidatorsResponse) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-func (m *QueryValidatorsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryValidatorsResponse.Merge(m, src)
+func (m *QuerySequencersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QuerySequencersResponse.Merge(m, src)
 }
-func (m *QueryValidatorsResponse) XXX_Size() int {
+func (m *QuerySequencersResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryValidatorsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryValidatorsResponse.DiscardUnknown(m)
+func (m *QuerySequencersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QuerySequencersResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryValidatorsResponse proto.InternalMessageInfo
+var xxx_messageInfo_QuerySequencersResponse proto.InternalMessageInfo
 
-func (m *QueryValidatorsResponse) GetSequencers() []types.Validator {
+func (m *QuerySequencersResponse) GetSequencers() []types.Validator {
 	if m != nil {
 		return m.Sequencers
 	}
 	return nil
 }
 
-func (m *QueryValidatorsResponse) GetPagination() *query.PageResponse {
+func (m *QuerySequencersResponse) GetPagination() *query.PageResponse {
 	if m != nil {
 		return m.Pagination
 	}
 	return nil
 }
 
-// QueryValidatorRequest is response type for the Query/Validator RPC method
-type QueryValidatorRequest struct {
-	// validator_addr defines the validator address to query for.
-	ValidatorAddr string `protobuf:"bytes,1,opt,name=validator_addr,json=validatorAddr,proto3" json:"validator_addr,omitempty"`
+// QuerySequencerRequest is response type for the Query/Sequencer RPC method
+type QuerySequencerRequest struct {
+	// sequencer_addr defines the sequencer address to query for.
+	SequencerAddr string `protobuf:"bytes,1,opt,name=sequencer_addr,json=sequencerAddr,proto3" json:"sequencer_addr,omitempty"`
 }
 
-func (m *QueryValidatorRequest) Reset()         { *m = QueryValidatorRequest{} }
-func (m *QueryValidatorRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryValidatorRequest) ProtoMessage()    {}
-func (*QueryValidatorRequest) Descriptor() ([]byte, []int) {
+func (m *QuerySequencerRequest) Reset()         { *m = QuerySequencerRequest{} }
+func (m *QuerySequencerRequest) String() string { return proto.CompactTextString(m) }
+func (*QuerySequencerRequest) ProtoMessage()    {}
+func (*QuerySequencerRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1707b8f76abec2d9, []int{2}
 }
-func (m *QueryValidatorRequest) XXX_Unmarshal(b []byte) error {
+func (m *QuerySequencerRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryValidatorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QuerySequencerRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryValidatorRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QuerySequencerRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -168,43 +168,43 @@ func (m *QueryValidatorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byt
 		return b[:n], nil
 	}
 }
-func (m *QueryValidatorRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryValidatorRequest.Merge(m, src)
+func (m *QuerySequencerRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QuerySequencerRequest.Merge(m, src)
 }
-func (m *QueryValidatorRequest) XXX_Size() int {
+func (m *QuerySequencerRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryValidatorRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryValidatorRequest.DiscardUnknown(m)
+func (m *QuerySequencerRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QuerySequencerRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryValidatorRequest proto.InternalMessageInfo
+var xxx_messageInfo_QuerySequencerRequest proto.InternalMessageInfo
 
-func (m *QueryValidatorRequest) GetValidatorAddr() string {
+func (m *QuerySequencerRequest) GetSequencerAddr() string {
 	if m != nil {
-		return m.ValidatorAddr
+		return m.SequencerAddr
 	}
 	return ""
 }
 
-// QueryValidatorResponse is response type for the Query/Validator RPC method
-type QueryValidatorResponse struct {
-	// validator defines the the validator info.
-	Validator types.Validator `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator"`
+// QuerySequencerResponse is response type for the Query/Sequencer RPC method
+type QuerySequencerResponse struct {
+	// sequencer defines the the sequencer info.
+	Sequencer types.Validator `protobuf:"bytes,1,opt,name=sequencer,proto3" json:"sequencer"`
 }
 
-func (m *QueryValidatorResponse) Reset()         { *m = QueryValidatorResponse{} }
-func (m *QueryValidatorResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryValidatorResponse) ProtoMessage()    {}
-func (*QueryValidatorResponse) Descriptor() ([]byte, []int) {
+func (m *QuerySequencerResponse) Reset()         { *m = QuerySequencerResponse{} }
+func (m *QuerySequencerResponse) String() string { return proto.CompactTextString(m) }
+func (*QuerySequencerResponse) ProtoMessage()    {}
+func (*QuerySequencerResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_1707b8f76abec2d9, []int{3}
 }
-func (m *QueryValidatorResponse) XXX_Unmarshal(b []byte) error {
+func (m *QuerySequencerResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryValidatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QuerySequencerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryValidatorResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QuerySequencerResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -214,21 +214,21 @@ func (m *QueryValidatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-func (m *QueryValidatorResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryValidatorResponse.Merge(m, src)
+func (m *QuerySequencerResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QuerySequencerResponse.Merge(m, src)
 }
-func (m *QueryValidatorResponse) XXX_Size() int {
+func (m *QuerySequencerResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryValidatorResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryValidatorResponse.DiscardUnknown(m)
+func (m *QuerySequencerResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QuerySequencerResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryValidatorResponse proto.InternalMessageInfo
+var xxx_messageInfo_QuerySequencerResponse proto.InternalMessageInfo
 
-func (m *QueryValidatorResponse) GetValidator() types.Validator {
+func (m *QuerySequencerResponse) GetSequencer() types.Validator {
 	if m != nil {
-		return m.Validator
+		return m.Sequencer
 	}
 	return types.Validator{}
 }
@@ -411,10 +411,10 @@ func (m *QueryParamsResponse) GetParams() Params {
 }
 
 func init() {
-	proto.RegisterType((*QueryValidatorsRequest)(nil), "rollapp.sequencers.types.QueryValidatorsRequest")
-	proto.RegisterType((*QueryValidatorsResponse)(nil), "rollapp.sequencers.types.QueryValidatorsResponse")
-	proto.RegisterType((*QueryValidatorRequest)(nil), "rollapp.sequencers.types.QueryValidatorRequest")
-	proto.RegisterType((*QueryValidatorResponse)(nil), "rollapp.sequencers.types.QueryValidatorResponse")
+	proto.RegisterType((*QuerySequencersRequest)(nil), "rollapp.sequencers.types.QuerySequencersRequest")
+	proto.RegisterType((*QuerySequencersResponse)(nil), "rollapp.sequencers.types.QuerySequencersResponse")
+	proto.RegisterType((*QuerySequencerRequest)(nil), "rollapp.sequencers.types.QuerySequencerRequest")
+	proto.RegisterType((*QuerySequencerResponse)(nil), "rollapp.sequencers.types.QuerySequencerResponse")
 	proto.RegisterType((*QueryHistoricalInfoRequest)(nil), "rollapp.sequencers.types.QueryHistoricalInfoRequest")
 	proto.RegisterType((*QueryHistoricalInfoResponse)(nil), "rollapp.sequencers.types.QueryHistoricalInfoResponse")
 	proto.RegisterType((*QueryParamsRequest)(nil), "rollapp.sequencers.types.QueryParamsRequest")
@@ -425,46 +425,46 @@ func init() { proto.RegisterFile("sequencers/query.proto", fileDescriptor_1707b8
 
 var fileDescriptor_1707b8f76abec2d9 = []byte{
 	// 638 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x94, 0x4d, 0x6b, 0x13, 0x41,
-	0x18, 0xc7, 0x33, 0x7d, 0x09, 0x74, 0x8a, 0x3d, 0x8c, 0xb5, 0x0d, 0xab, 0xac, 0xeb, 0xa2, 0x35,
-	0x88, 0xee, 0xb4, 0xb1, 0x1e, 0x7c, 0x21, 0xd0, 0xe2, 0x2b, 0x78, 0xa8, 0x01, 0x05, 0xbd, 0x84,
-	0x49, 0x76, 0xba, 0x19, 0x4c, 0x76, 0xb6, 0x3b, 0x93, 0x92, 0x58, 0x7a, 0xf1, 0x2e, 0x08, 0x1e,
-	0xfd, 0x08, 0x1e, 0xbc, 0xf8, 0x01, 0x3c, 0xf6, 0x58, 0xf0, 0xe2, 0x49, 0x24, 0xf1, 0x83, 0x48,
-	0x66, 0x67, 0x37, 0xbb, 0x6d, 0x42, 0x92, 0x5b, 0x66, 0xf6, 0xf9, 0xff, 0x9f, 0xdf, 0xf3, 0xec,
-	0x3f, 0x0b, 0xd7, 0x04, 0x3d, 0x68, 0x53, 0xbf, 0x4e, 0x43, 0x81, 0x0f, 0xda, 0x34, 0xec, 0x3a,
-	0x41, 0xc8, 0x25, 0x47, 0x85, 0x90, 0x37, 0x9b, 0x24, 0x08, 0x9c, 0xe1, 0x73, 0x47, 0x76, 0x03,
-	0x2a, 0x8c, 0x55, 0x8f, 0x7b, 0x5c, 0x15, 0xe1, 0xc1, 0xaf, 0xa8, 0xde, 0xb8, 0x5e, 0xe7, 0xa2,
-	0xc5, 0x05, 0x16, 0x92, 0xbc, 0x67, 0xbe, 0x87, 0x0f, 0xb7, 0x6a, 0x54, 0x92, 0xad, 0xf8, 0xac,
-	0xab, 0xae, 0x78, 0x9c, 0x7b, 0x4d, 0x8a, 0x49, 0xc0, 0x30, 0xf1, 0x7d, 0x2e, 0x89, 0x64, 0xdc,
-	0x17, 0xfa, 0xe9, 0x2d, 0xed, 0x51, 0x23, 0x82, 0x46, 0x30, 0x89, 0x4d, 0x40, 0x3c, 0xe6, 0xab,
-	0x62, 0x5d, 0xbb, 0x9e, 0xe2, 0x0e, 0x48, 0x48, 0x5a, 0xda, 0xc4, 0xee, 0xc0, 0xb5, 0x57, 0x03,
-	0xe9, 0x1b, 0xd2, 0x64, 0x2e, 0x91, 0x3c, 0x14, 0x95, 0x41, 0xa5, 0x90, 0x68, 0x0d, 0xe6, 0x85,
-	0x24, 0xb2, 0x2d, 0x0a, 0xc0, 0x02, 0xc5, 0xa5, 0x8a, 0x3e, 0xa1, 0xa7, 0x10, 0x0e, 0xed, 0x0b,
-	0x73, 0x16, 0x28, 0x2e, 0x97, 0x36, 0x9c, 0x88, 0xc5, 0x19, 0xb0, 0x38, 0xd1, 0x62, 0x34, 0x8b,
-	0xb3, 0x47, 0x3c, 0xaa, 0x3d, 0x2b, 0x29, 0xa5, 0xfd, 0x0d, 0xc0, 0xf5, 0x73, 0xad, 0x45, 0xc0,
-	0x7d, 0x41, 0xd1, 0x33, 0x08, 0x87, 0xc0, 0x05, 0x60, 0xcd, 0x17, 0x97, 0x4b, 0xd7, 0xe2, 0x1e,
-	0xf1, 0x8e, 0xe2, 0x06, 0x89, 0x7e, 0x77, 0xe1, 0xe4, 0xcf, 0xd5, 0x5c, 0x25, 0x25, 0x1d, 0x18,
-	0x9d, 0x83, 0xbd, 0x39, 0x11, 0x36, 0xa2, 0xc8, 0xd0, 0x96, 0xe1, 0xa5, 0x2c, 0x6c, 0xbc, 0xa6,
-	0x1b, 0x70, 0xe5, 0x30, 0xbe, 0xab, 0x12, 0xd7, 0x0d, 0xf5, 0xba, 0x2e, 0x24, 0xb7, 0x3b, 0xae,
-	0x1b, 0xda, 0xd5, 0xb3, 0x7b, 0x4e, 0x66, 0x7d, 0x02, 0x97, 0x92, 0x52, 0xa5, 0x9d, 0x61, 0xd4,
-	0xa1, 0xd2, 0xde, 0x86, 0x86, 0x6a, 0xf0, 0x9c, 0x09, 0xc9, 0x43, 0x56, 0x27, 0xcd, 0x17, 0xfe,
-	0x3e, 0x4f, 0xbd, 0xcc, 0x06, 0x65, 0x5e, 0x43, 0xaa, 0x0e, 0xf3, 0x15, 0x7d, 0xb2, 0xdf, 0xc2,
-	0xcb, 0x23, 0x55, 0x9a, 0xed, 0x01, 0x5c, 0x68, 0x30, 0x21, 0x35, 0xd6, 0xc6, 0x38, 0xac, 0x33,
-	0x6a, 0xa5, 0xb1, 0x57, 0x21, 0x52, 0xd6, 0x7b, 0x2a, 0x6e, 0x1a, 0xc4, 0x7e, 0x0d, 0x2f, 0x66,
-	0x6e, 0x75, 0xa3, 0x32, 0xcc, 0x47, 0xb1, 0xd4, 0xad, 0x2c, 0x67, 0xdc, 0x1f, 0xca, 0x89, 0x94,
-	0x7a, 0x01, 0x5a, 0x55, 0xfa, 0xbe, 0x08, 0x17, 0x95, 0x2f, 0xfa, 0x0a, 0x20, 0x1c, 0x26, 0x0a,
-	0x6d, 0x8e, 0x37, 0x1a, 0x9d, 0x7b, 0x63, 0x6b, 0x06, 0x45, 0x44, 0x6f, 0x17, 0x3f, 0xfe, 0xfa,
-	0xf7, 0x65, 0xce, 0x46, 0x16, 0x76, 0xbb, 0x2d, 0xea, 0x0b, 0xc6, 0xfd, 0x4e, 0xf7, 0x03, 0xd6,
-	0x3e, 0x38, 0x95, 0xc7, 0x1f, 0x00, 0x2e, 0x25, 0x06, 0x08, 0x4f, 0xdb, 0x2a, 0x66, 0xdb, 0x9c,
-	0x5e, 0xa0, 0xd1, 0x1e, 0x2b, 0xb4, 0x32, 0x7a, 0x34, 0x09, 0x2d, 0xfd, 0xf3, 0x28, 0x9b, 0xe8,
-	0x63, 0xf4, 0x13, 0xc0, 0x95, 0xec, 0x4b, 0x46, 0xdb, 0x13, 0x50, 0x46, 0xe6, 0xd0, 0xb8, 0x37,
-	0xa3, 0x4a, 0x4f, 0xb1, 0xa3, 0xa6, 0x78, 0x88, 0xee, 0x4f, 0x9c, 0xa2, 0x91, 0x18, 0x54, 0x99,
-	0xbf, 0xcf, 0xf1, 0x51, 0x14, 0xf4, 0x63, 0xf4, 0x09, 0xc0, 0x7c, 0x14, 0x1d, 0x74, 0x7b, 0x02,
-	0x44, 0x26, 0xb1, 0xc6, 0x9d, 0x29, 0xab, 0x35, 0xea, 0x86, 0x42, 0xb5, 0x90, 0x89, 0xc7, 0x7c,
-	0xe2, 0xa3, 0xc4, 0xee, 0xbe, 0x3c, 0xe9, 0x99, 0xe0, 0xb4, 0x67, 0x82, 0xbf, 0x3d, 0x13, 0x7c,
-	0xee, 0x9b, 0xb9, 0xd3, 0xbe, 0x99, 0xfb, 0xdd, 0x37, 0x73, 0xef, 0x4a, 0x1e, 0x93, 0x8d, 0x76,
-	0xcd, 0xa9, 0xf3, 0xd6, 0xe8, 0x71, 0x3b, 0xe9, 0x81, 0x15, 0x49, 0x2d, 0xaf, 0xbe, 0xe6, 0x77,
-	0xff, 0x07, 0x00, 0x00, 0xff, 0xff, 0x33, 0x98, 0x23, 0x25, 0xa0, 0x06, 0x00, 0x00,
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x94, 0x3d, 0x6f, 0xd3, 0x40,
+	0x18, 0xc7, 0x73, 0x7d, 0x89, 0xd4, 0xab, 0xe8, 0x70, 0x94, 0x36, 0x32, 0xc8, 0x18, 0x0b, 0x4a,
+	0x84, 0xc0, 0xd7, 0x86, 0x32, 0xf0, 0xa2, 0x48, 0xad, 0x78, 0x95, 0x18, 0x4a, 0x10, 0x48, 0xb0,
+	0x44, 0x97, 0xf8, 0xea, 0x9c, 0x48, 0x7c, 0xae, 0xef, 0x82, 0x12, 0xaa, 0x2e, 0xec, 0x48, 0x48,
+	0x8c, 0x7c, 0x04, 0x06, 0x16, 0x3e, 0x00, 0x63, 0xc7, 0x4a, 0x2c, 0x4c, 0x08, 0x25, 0x7c, 0x10,
+	0x94, 0xf3, 0xd9, 0xb1, 0xdb, 0x44, 0x49, 0x36, 0x5f, 0xee, 0xf9, 0xff, 0x9f, 0xdf, 0xf3, 0xf8,
+	0x1f, 0xc3, 0x35, 0x41, 0x0f, 0xda, 0xd4, 0xaf, 0xd3, 0x50, 0xe0, 0x83, 0x36, 0x0d, 0xbb, 0x4e,
+	0x10, 0x72, 0xc9, 0x51, 0x21, 0xe4, 0xcd, 0x26, 0x09, 0x02, 0x67, 0x78, 0xef, 0xc8, 0x6e, 0x40,
+	0x85, 0xb1, 0xea, 0x71, 0x8f, 0xab, 0x22, 0x3c, 0x78, 0x8a, 0xea, 0x8d, 0xab, 0x75, 0x2e, 0x5a,
+	0x5c, 0x60, 0x21, 0xc9, 0x3b, 0xe6, 0x7b, 0xf8, 0xfd, 0x56, 0x8d, 0x4a, 0xb2, 0x15, 0x9f, 0x75,
+	0xd5, 0x25, 0x8f, 0x73, 0xaf, 0x49, 0x31, 0x09, 0x18, 0x26, 0xbe, 0xcf, 0x25, 0x91, 0x8c, 0xfb,
+	0x42, 0xdf, 0xde, 0xd0, 0x1e, 0x35, 0x22, 0x68, 0x04, 0x93, 0xd8, 0x04, 0xc4, 0x63, 0xbe, 0x2a,
+	0xd6, 0xb5, 0xeb, 0x29, 0xee, 0x80, 0x84, 0xa4, 0xa5, 0x4d, 0xec, 0x0e, 0x5c, 0x7b, 0x31, 0x90,
+	0xbe, 0x4c, 0xee, 0x2b, 0x83, 0x27, 0x21, 0xd1, 0x1a, 0xcc, 0x0b, 0x49, 0x64, 0x5b, 0x14, 0x80,
+	0x05, 0x8a, 0x4b, 0x15, 0x7d, 0x42, 0x8f, 0x21, 0x1c, 0xda, 0x17, 0xe6, 0x2c, 0x50, 0x5c, 0x2e,
+	0x6d, 0x38, 0x11, 0x8b, 0x33, 0x60, 0x71, 0xa2, 0xc5, 0x68, 0x16, 0x67, 0x8f, 0x78, 0x54, 0x7b,
+	0x56, 0x52, 0x4a, 0xfb, 0x1b, 0x80, 0xeb, 0x67, 0x5a, 0x8b, 0x80, 0xfb, 0x82, 0xa2, 0x27, 0x10,
+	0x0e, 0x81, 0x0b, 0xc0, 0x9a, 0x2f, 0x2e, 0x97, 0xae, 0xc4, 0x3d, 0xe2, 0x1d, 0xc5, 0x0d, 0x5e,
+	0x93, 0x26, 0x73, 0x89, 0xe4, 0xe1, 0xee, 0xc2, 0xf1, 0x9f, 0xcb, 0xb9, 0x4a, 0x4a, 0x3a, 0x30,
+	0x3a, 0x03, 0x7b, 0x7d, 0x22, 0x6c, 0x44, 0x91, 0xa1, 0x2d, 0xc3, 0x0b, 0x59, 0xd8, 0x78, 0x4d,
+	0xd7, 0xe0, 0x4a, 0xd2, 0xaf, 0x4a, 0x5c, 0x37, 0xd4, 0xeb, 0x3a, 0x97, 0xfc, 0xba, 0xe3, 0xba,
+	0xa1, 0x5d, 0x3d, 0xbd, 0xe7, 0x64, 0xd6, 0x47, 0x70, 0x29, 0x29, 0x55, 0xda, 0x19, 0x46, 0x1d,
+	0x2a, 0xed, 0x6d, 0x68, 0xa8, 0x06, 0x4f, 0x99, 0x90, 0x3c, 0x64, 0x75, 0xd2, 0x7c, 0xe6, 0xef,
+	0xf3, 0xd4, 0xcb, 0x6c, 0x50, 0xe6, 0x35, 0xa4, 0xea, 0x30, 0x5f, 0xd1, 0x27, 0xfb, 0x0d, 0xbc,
+	0x38, 0x52, 0xa5, 0xd9, 0xee, 0xc1, 0x85, 0x06, 0x13, 0x52, 0x63, 0x6d, 0x8c, 0xc3, 0x3a, 0xa5,
+	0x56, 0x1a, 0x7b, 0x15, 0x22, 0x65, 0xbd, 0xa7, 0xe2, 0xa6, 0x41, 0xec, 0x57, 0xf0, 0x7c, 0xe6,
+	0x57, 0xdd, 0xa8, 0x0c, 0xf3, 0x51, 0x2c, 0x75, 0x2b, 0xcb, 0x19, 0xf7, 0x87, 0x72, 0x22, 0xa5,
+	0x5e, 0x80, 0x56, 0x95, 0xbe, 0x2f, 0xc2, 0x45, 0xe5, 0x8b, 0xbe, 0x02, 0x08, 0x87, 0x89, 0x42,
+	0x9b, 0xe3, 0x8d, 0x46, 0xe7, 0xde, 0xd8, 0x9a, 0x41, 0x11, 0xd1, 0xdb, 0xc5, 0x8f, 0xbf, 0xfe,
+	0x7d, 0x99, 0xb3, 0x91, 0x85, 0xdd, 0x6e, 0x8b, 0xfa, 0x82, 0x71, 0xbf, 0xd3, 0xfd, 0x80, 0xb5,
+	0x0f, 0x4e, 0xe5, 0xf1, 0x07, 0x80, 0x4b, 0x89, 0x01, 0xc2, 0xd3, 0xb6, 0x8a, 0xd9, 0x36, 0xa7,
+	0x17, 0x68, 0xb4, 0x87, 0x0a, 0xad, 0x8c, 0x1e, 0x4c, 0x42, 0x4b, 0x3f, 0x1e, 0x66, 0x13, 0x7d,
+	0x84, 0x7e, 0x02, 0xb8, 0x92, 0x7d, 0xc9, 0x68, 0x7b, 0x02, 0xca, 0xc8, 0x1c, 0x1a, 0x77, 0x66,
+	0x54, 0xe9, 0x29, 0x76, 0xd4, 0x14, 0xf7, 0xd1, 0xdd, 0x89, 0x53, 0x34, 0x12, 0x83, 0x2a, 0xf3,
+	0xf7, 0x39, 0x3e, 0x8c, 0x82, 0x7e, 0x84, 0x3e, 0x01, 0x98, 0x8f, 0xa2, 0x83, 0x6e, 0x4e, 0x80,
+	0xc8, 0x24, 0xd6, 0xb8, 0x35, 0x65, 0xb5, 0x46, 0xdd, 0x50, 0xa8, 0x16, 0x32, 0xf1, 0x98, 0x4f,
+	0x7c, 0x94, 0xd8, 0xdd, 0xe7, 0xc7, 0x3d, 0x13, 0x9c, 0xf4, 0x4c, 0xf0, 0xb7, 0x67, 0x82, 0xcf,
+	0x7d, 0x33, 0x77, 0xd2, 0x37, 0x73, 0xbf, 0xfb, 0x66, 0xee, 0x6d, 0xc9, 0x63, 0xb2, 0xd1, 0xae,
+	0x39, 0x75, 0xde, 0x1a, 0x3d, 0x6e, 0x27, 0x3d, 0xb0, 0x22, 0xa9, 0xe5, 0xd5, 0xd7, 0xfc, 0xf6,
+	0xff, 0x00, 0x00, 0x00, 0xff, 0xff, 0x07, 0xd7, 0xc8, 0xa4, 0xa0, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -479,10 +479,10 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Validators queries all sequencers that match the given status.
-	Validators(ctx context.Context, in *QueryValidatorsRequest, opts ...grpc.CallOption) (*QueryValidatorsResponse, error)
-	// Validator queries validator info for given validator address.
-	Validator(ctx context.Context, in *QueryValidatorRequest, opts ...grpc.CallOption) (*QueryValidatorResponse, error)
+	// Sequencers queries all sequencers that match the given status.
+	Sequencers(ctx context.Context, in *QuerySequencersRequest, opts ...grpc.CallOption) (*QuerySequencersResponse, error)
+	// Sequencer queries validator info for given validator address.
+	Sequencer(ctx context.Context, in *QuerySequencerRequest, opts ...grpc.CallOption) (*QuerySequencerResponse, error)
 	// HistoricalInfo queries the historical info for given height.
 	HistoricalInfo(ctx context.Context, in *QueryHistoricalInfoRequest, opts ...grpc.CallOption) (*QueryHistoricalInfoResponse, error)
 	// Parameters queries the staking parameters.
@@ -497,18 +497,18 @@ func NewQueryClient(cc grpc1.ClientConn) QueryClient {
 	return &queryClient{cc}
 }
 
-func (c *queryClient) Validators(ctx context.Context, in *QueryValidatorsRequest, opts ...grpc.CallOption) (*QueryValidatorsResponse, error) {
-	out := new(QueryValidatorsResponse)
-	err := c.cc.Invoke(ctx, "/rollapp.sequencers.types.Query/Validators", in, out, opts...)
+func (c *queryClient) Sequencers(ctx context.Context, in *QuerySequencersRequest, opts ...grpc.CallOption) (*QuerySequencersResponse, error) {
+	out := new(QuerySequencersResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.sequencers.types.Query/Sequencers", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *queryClient) Validator(ctx context.Context, in *QueryValidatorRequest, opts ...grpc.CallOption) (*QueryValidatorResponse, error) {
-	out := new(QueryValidatorResponse)
-	err := c.cc.Invoke(ctx, "/rollapp.sequencers.types.Query/Validator", in, out, opts...)
+func (c *queryClient) Sequencer(ctx context.Context, in *QuerySequencerRequest, opts ...grpc.CallOption) (*QuerySequencerResponse, error) {
+	out := new(QuerySequencerResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.sequencers.types.Query/Sequencer", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -535,10 +535,10 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Validators queries all sequencers that match the given status.
-	Validators(context.Context, *QueryValidatorsRequest) (*QueryValidatorsResponse, error)
-	// Validator queries validator info for given validator address.
-	Validator(context.Context, *QueryValidatorRequest) (*QueryValidatorResponse, error)
+	// Sequencers queries all sequencers that match the given status.
+	Sequencers(context.Context, *QuerySequencersRequest) (*QuerySequencersResponse, error)
+	// Sequencer queries validator info for given validator address.
+	Sequencer(context.Context, *QuerySequencerRequest) (*QuerySequencerResponse, error)
 	// HistoricalInfo queries the historical info for given height.
 	HistoricalInfo(context.Context, *QueryHistoricalInfoRequest) (*QueryHistoricalInfoResponse, error)
 	// Parameters queries the staking parameters.
@@ -549,11 +549,11 @@ type QueryServer interface {
 type UnimplementedQueryServer struct {
 }
 
-func (*UnimplementedQueryServer) Validators(ctx context.Context, req *QueryValidatorsRequest) (*QueryValidatorsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Validators not implemented")
+func (*UnimplementedQueryServer) Sequencers(ctx context.Context, req *QuerySequencersRequest) (*QuerySequencersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Sequencers not implemented")
 }
-func (*UnimplementedQueryServer) Validator(ctx context.Context, req *QueryValidatorRequest) (*QueryValidatorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Validator not implemented")
+func (*UnimplementedQueryServer) Sequencer(ctx context.Context, req *QuerySequencerRequest) (*QuerySequencerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Sequencer not implemented")
 }
 func (*UnimplementedQueryServer) HistoricalInfo(ctx context.Context, req *QueryHistoricalInfoRequest) (*QueryHistoricalInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HistoricalInfo not implemented")
@@ -566,38 +566,38 @@ func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
 	s.RegisterService(&_Query_serviceDesc, srv)
 }
 
-func _Query_Validators_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryValidatorsRequest)
+func _Query_Sequencers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySequencersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).Validators(ctx, in)
+		return srv.(QueryServer).Sequencers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rollapp.sequencers.types.Query/Validators",
+		FullMethod: "/rollapp.sequencers.types.Query/Sequencers",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).Validators(ctx, req.(*QueryValidatorsRequest))
+		return srv.(QueryServer).Sequencers(ctx, req.(*QuerySequencersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_Validator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryValidatorRequest)
+func _Query_Sequencer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QuerySequencerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).Validator(ctx, in)
+		return srv.(QueryServer).Sequencer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rollapp.sequencers.types.Query/Validator",
+		FullMethod: "/rollapp.sequencers.types.Query/Sequencer",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).Validator(ctx, req.(*QueryValidatorRequest))
+		return srv.(QueryServer).Sequencer(ctx, req.(*QuerySequencerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -643,12 +643,12 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Validators",
-			Handler:    _Query_Validators_Handler,
+			MethodName: "Sequencers",
+			Handler:    _Query_Sequencers_Handler,
 		},
 		{
-			MethodName: "Validator",
-			Handler:    _Query_Validator_Handler,
+			MethodName: "Sequencer",
+			Handler:    _Query_Sequencer_Handler,
 		},
 		{
 			MethodName: "HistoricalInfo",
@@ -663,7 +663,7 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 	Metadata: "sequencers/query.proto",
 }
 
-func (m *QueryValidatorsRequest) Marshal() (dAtA []byte, err error) {
+func (m *QuerySequencersRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -673,12 +673,12 @@ func (m *QueryValidatorsRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryValidatorsRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QuerySequencersRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryValidatorsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QuerySequencersRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -705,7 +705,7 @@ func (m *QueryValidatorsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryValidatorsResponse) Marshal() (dAtA []byte, err error) {
+func (m *QuerySequencersResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -715,12 +715,12 @@ func (m *QueryValidatorsResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryValidatorsResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QuerySequencersResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryValidatorsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QuerySequencersResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -754,7 +754,7 @@ func (m *QueryValidatorsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error)
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryValidatorRequest) Marshal() (dAtA []byte, err error) {
+func (m *QuerySequencerRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -764,27 +764,27 @@ func (m *QueryValidatorRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryValidatorRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QuerySequencerRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryValidatorRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QuerySequencerRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.ValidatorAddr) > 0 {
-		i -= len(m.ValidatorAddr)
-		copy(dAtA[i:], m.ValidatorAddr)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.ValidatorAddr)))
+	if len(m.SequencerAddr) > 0 {
+		i -= len(m.SequencerAddr)
+		copy(dAtA[i:], m.SequencerAddr)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.SequencerAddr)))
 		i--
 		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryValidatorResponse) Marshal() (dAtA []byte, err error) {
+func (m *QuerySequencerResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -794,18 +794,18 @@ func (m *QueryValidatorResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryValidatorResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QuerySequencerResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryValidatorResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QuerySequencerResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	{
-		size, err := m.Validator.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.Sequencer.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -947,7 +947,7 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *QueryValidatorsRequest) Size() (n int) {
+func (m *QuerySequencersRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -964,7 +964,7 @@ func (m *QueryValidatorsRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryValidatorsResponse) Size() (n int) {
+func (m *QuerySequencersResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -983,26 +983,26 @@ func (m *QueryValidatorsResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryValidatorRequest) Size() (n int) {
+func (m *QuerySequencerRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.ValidatorAddr)
+	l = len(m.SequencerAddr)
 	if l > 0 {
 		n += 1 + l + sovQuery(uint64(l))
 	}
 	return n
 }
 
-func (m *QueryValidatorResponse) Size() (n int) {
+func (m *QuerySequencerResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.Validator.Size()
+	l = m.Sequencer.Size()
 	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
@@ -1058,7 +1058,7 @@ func sovQuery(x uint64) (n int) {
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *QueryValidatorsRequest) Unmarshal(dAtA []byte) error {
+func (m *QuerySequencersRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1081,10 +1081,10 @@ func (m *QueryValidatorsRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryValidatorsRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QuerySequencersRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryValidatorsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QuerySequencersRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1176,7 +1176,7 @@ func (m *QueryValidatorsRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryValidatorsResponse) Unmarshal(dAtA []byte) error {
+func (m *QuerySequencersResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1199,10 +1199,10 @@ func (m *QueryValidatorsResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryValidatorsResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QuerySequencersResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryValidatorsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QuerySequencersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1296,7 +1296,7 @@ func (m *QueryValidatorsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryValidatorRequest) Unmarshal(dAtA []byte) error {
+func (m *QuerySequencerRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1319,15 +1319,15 @@ func (m *QueryValidatorRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryValidatorRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QuerySequencerRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryValidatorRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QuerySequencerRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ValidatorAddr", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field SequencerAddr", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1355,7 +1355,7 @@ func (m *QueryValidatorRequest) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ValidatorAddr = string(dAtA[iNdEx:postIndex])
+			m.SequencerAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1378,7 +1378,7 @@ func (m *QueryValidatorRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryValidatorResponse) Unmarshal(dAtA []byte) error {
+func (m *QuerySequencerResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1401,15 +1401,15 @@ func (m *QueryValidatorResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryValidatorResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QuerySequencerResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryValidatorResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QuerySequencerResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Validator", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Sequencer", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1436,7 +1436,7 @@ func (m *QueryValidatorResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Validator.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.Sequencer.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

@@ -6,6 +6,8 @@ import (
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 )
 
+//TODO: rename all to sequencer
+
 /* -------------------------------------------------------------------------- */
 /*                                    Alias func                              */
 /* -------------------------------------------------------------------------- */

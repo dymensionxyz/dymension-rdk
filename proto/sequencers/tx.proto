@@ -8,7 +8,7 @@ import "cosmos_proto/cosmos.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/staking/v1beta1/staking.proto";
 
-
+//TODO: import proto files from dymension hub
 
 // this line is used by starport scaffolding # proto/tx/import
 
@@ -34,7 +34,7 @@ message MsgCreateSequencer {
     cosmos.staking.v1beta1.CommissionRates commission          = 2 [(gogoproto.nullable) = false];
     string                   min_self_delegation = 3 [(gogoproto.moretags) = "yaml:\"min_self_delegation\""];
     string                   delegator_address = 4 [(gogoproto.moretags) = "yaml:\"delegator_address\""];
-    string                   validator_address = 5 [(gogoproto.moretags) = "yaml:\"validator_address\""];
+    string                   sequencer_address = 5 [(gogoproto.moretags) = "yaml:\"sequencer_address\""];
     google.protobuf.Any      pubkey            = 6 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
     cosmos.base.v1beta1.Coin value             = 7 [(gogoproto.nullable) = false];
   }

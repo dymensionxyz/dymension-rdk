@@ -22,9 +22,13 @@ func GetQueryCmd(queryRoute string) *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdQueryParams())
-	// cmd.AddCommand(CmdQueryHistoricalInfo())
 	cmd.AddCommand(CmdQuerySequencers())
 	cmd.AddCommand(CmdQuerySequencer())
+
+	//TODO:
+	// cmd.AddCommand(CmdQueryHistoricalInfo())
+	// Add queries for specific sequencer (num of blocks, rewards, etc..)
+
 	// this line is used by starport scaffolding # 1
 
 	return cmd

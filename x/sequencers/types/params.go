@@ -17,7 +17,7 @@ const (
 	DefaultUnbondingTime time.Duration = time.Hour * 24 * 7 * 3
 
 	// Default maximum number of bonded validators
-	DefaultMaxValidators uint32 = 1
+	DefaultMaxSequencers uint32 = 1
 
 	// DefaultHistorical entries is 10000. Apps that don't use IBC can ignore this
 	// value by not adding the staking module to the application module manager's
@@ -27,7 +27,7 @@ const (
 
 var (
 	KeyUnbondingTime     = []byte("UnbondingTime")
-	KeyMaxValidators     = []byte("MaxValidators")
+	KeyMaxSequencers     = []byte("MaxSequencers")
 	KeyHistoricalEntries = []byte("HistoricalEntries")
 )
 
@@ -42,7 +42,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyUnbondingTime, &p.UnbondingTime, validateUnbondingTime),
-		paramtypes.NewParamSetPair(KeyMaxValidators, &p.MaxValidators, validateMaxValidators),
+		paramtypes.NewParamSetPair(KeyMaxSequencers, &p.MaxSequencers, validateMaxSequencers),
 		paramtypes.NewParamSetPair(KeyHistoricalEntries, &p.HistoricalEntries, validateHistoricalEntries),
 	}
 }
@@ -51,7 +51,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 func DefaultParams() Params {
 	return Params{
 		UnbondingTime:     DefaultUnbondingTime,
-		MaxValidators:     DefaultMaxValidators,
+		MaxSequencers:     DefaultMaxSequencers,
 		HistoricalEntries: DefaultHistoricalEntries,
 	}
 }
@@ -88,7 +88,7 @@ func (p Params) Validate() error {
 		return err
 	}
 
-	if err := validateMaxValidators(p.MaxValidators); err != nil {
+	if err := validateMaxSequencers(p.MaxSequencers); err != nil {
 		return err
 	}
 
@@ -108,7 +108,7 @@ func validateUnbondingTime(i interface{}) error {
 	return nil
 }
 
-func validateMaxValidators(i interface{}) error {
+func validateMaxSequencers(i interface{}) error {
 	v, ok := i.(uint32)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
