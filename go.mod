@@ -7,7 +7,8 @@ require (
 	github.com/CosmWasm/wasmd v0.28.0
 	github.com/CosmWasm/wasmvm v1.1.1 // indirect
 	github.com/cosmos/cosmos-sdk v0.45.11
-	github.com/cosmos/ibc-go/v3 v3.0.1
+	github.com/cosmos/ibc-go/v3 v3.4.0
+	github.com/dymensionxyz/dymint v0.2.2-alpha
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/google/btree v1.1.2 // indirect
@@ -35,4 +36,4 @@ replace (
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
 
-replace github.com/cosmos/cosmos-sdk => github.com/dymensionxyz/rdk v0.1.2-alpha
+replace github.com/cosmos/ibc-go/v3 => github.com/dymensionxyz/ibc-go/v3 v3.0.0-rc2.0.20230105134315-1870174ab6da
