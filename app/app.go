@@ -83,6 +83,7 @@ import (
 	ibcporttypes "github.com/cosmos/ibc-go/v3/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	ibcdmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/01-dymint/types"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -358,8 +359,9 @@ func NewRollapp(
 	// ... other modules keepers
 
 	// Create IBC Keeper
-	app.IBCKeeper = ibckeeper.NewKeeper(
+	app.IBCKeeper = ibckeeper.NewKeeperWithSelfClient(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+		ibcdmtypes.NewSelfClient(), nil,
 	)
 
 	// register the proposal types

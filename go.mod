@@ -27,3 +27,5 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
+
+replace github.com/cosmos/ibc-go/v3 => github.com/dymensionxyz/ibc-go/v3 v3.0.0-rc2.0.20230105134315-1870174ab6da
