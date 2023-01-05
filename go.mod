@@ -7,7 +7,7 @@ require (
 	github.com/CosmWasm/wasmd v0.28.0
 	github.com/CosmWasm/wasmvm v1.1.1 // indirect
 	github.com/cosmos/cosmos-sdk v0.45.11
-	github.com/cosmos/ibc-go/v3 v3.0.1
+	github.com/cosmos/ibc-go/v3 v3.4.0
 	github.com/dymensionxyz/dymint v0.2.2-alpha
 	github.com/google/btree v1.1.2 // indirect
 	github.com/ignite/cli v0.23.0
