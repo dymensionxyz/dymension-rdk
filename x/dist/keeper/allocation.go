@@ -47,25 +47,26 @@ func (k Keeper) AllocateTokens(
 
 		remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
 
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				types.EventTypeProposerReward,
-				sdk.NewAttribute(sdk.AttributeKeyAmount, proposerReward.String()),
-				sdk.NewAttribute(types.AttributeKeyValidator, proposerValidator.GetOperator().String()),
-			),
-		)
+		//TODO: emit event for sequencer reward
 	}
 
 	/* ---------------------- reward the agents/validators ---------------------- */
-	//TODO: the remaining fees should be allocated to power voters.
-	// communityTax := k.GetCommunityTax(ctx)
-	// agentsReward := feesCollected.MulDecTruncate(communityTax).Sub(proposerReward)
-	// agentsMultiplier := sdk.OneDec().Sub(proposerMultiplier).Sub(communityTax)
-	// (compare with remainingFees)
-	//iterate agents
-	//calculate powerFraction
-	//allocate tokens
-	//update remainingFees
+	totalPreviousPower := k.stakingKeeper.GetLastTotalPower(ctx)
+
+	agentsMultipler := sdk.OneDec().Sub(k.GetBaseProposerReward(ctx)).Sub(k.GetCommunityTax(ctx))
+	agentsRewards := feesCollected.MulDecTruncate(agentsMultipler)
+
+	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingtypes.ValidatorI) (stop bool) {
+		//Staking module calculates power factored by sdk.DefaultPowerReduction. hardcoded.
+		valPower := validator.GetConsensusPower(sdk.DefaultPowerReduction)
+		powerFraction := sdk.NewDec(valPower).QuoTruncate(sdk.NewDecFromInt(totalPreviousPower))
+
+		reward := agentsRewards.MulDecTruncate(powerFraction)
+		k.AllocateTokensToValidator(ctx, validator, reward)
+		remainingFees = remainingFees.Sub(reward)
+
+		return false
+	})
 
 	/* ------------------------- fund the community pool ------------------------ */
 	feePool.CommunityPool = feePool.CommunityPool.Add(remainingFees...)
