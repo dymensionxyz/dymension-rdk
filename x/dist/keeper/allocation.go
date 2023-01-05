@@ -47,13 +47,7 @@ func (k Keeper) AllocateTokens(
 
 		remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
 
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				types.EventTypeProposerReward,
-				sdk.NewAttribute(sdk.AttributeKeyAmount, proposerReward.String()),
-				sdk.NewAttribute(types.AttributeKeyValidator, proposerValidator.GetOperator().String()),
-			),
-		)
+		//TODO: emit event for sequencer reward
 	}
 
 	/* ---------------------- reward the agents/validators ---------------------- */
@@ -63,6 +57,7 @@ func (k Keeper) AllocateTokens(
 	agentsRewards := feesCollected.MulDecTruncate(agentsMultipler)
 
 	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingtypes.ValidatorI) (stop bool) {
+		//Staking module calculates power factored by sdk.DefaultPowerReduction. hardcoded.
 		valPower := validator.GetConsensusPower(sdk.DefaultPowerReduction)
 		powerFraction := sdk.NewDec(valPower).QuoTruncate(sdk.NewDecFromInt(totalPreviousPower))
 
