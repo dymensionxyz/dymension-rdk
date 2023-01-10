@@ -37,7 +37,7 @@ This repository hosts `rollappd`, the first implementation of a dymension rollap
 
 **Note**: Requires [Go 1.18](https://go.dev/)
 
-**Note**: This code was intiially scaffolded with igniteCLI@v0.22.2
+**Note**: This code was intially scaffolded with igniteCLI@v0.22.2
 
 For critical security issues & disclosure, see [SECURITY.md](SECURITY.md).
 
