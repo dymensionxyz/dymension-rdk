@@ -61,31 +61,41 @@ This will build the ```rollappd``` binary
 ### Initial configuration
 set custom configuration params at `scripts/shared.sh`
 
-
->sh scripts/init_rollapp.sh
+```
+sh scripts/init_rollapp.sh
+```
 
 This will initilize the rollapp with single initial staked account
 
 ### Register rollapp on settlement
 
->sh scripts/register_rollapp.sh
+```
+sh scripts/register_rollapp.sh
+```
 
 validate using 
->dymd q rollapp list-rollapp
 
+```
+dymd q rollapp list-rollapp
+```
 
 ### Register sequencer for rollapp on settlement
 
->sh scripts/register_sequencer.sh
+```
+sh scripts/register_sequencer.sh
+```
 
-validate using 
->dymd q sequencer list-sequencer
+validate using
 
+```
+dymd q sequencer list-sequencer
+```
 
 ### Run rollapp
 
->sh scripts/run_rollapp.sh
-
+```
+sh scripts/run_rollapp.sh
+```
 
 ## Developers guide
 TODO
