@@ -46,10 +46,6 @@ For critical security issues & disclosure, see [SECURITY.md](SECURITY.md).
 Get started with [building RollApps](https://docs.dymension.xyz/developers/getting-started/intro) 
 
 ## Installing / Getting started
-```
-make install
-```
-or
 ```shell
 cd cmd/rollappd/
 go install
@@ -73,22 +69,10 @@ This will initilize the rollapp with single initial staked account
 sh scripts/register_rollapp.sh
 ```
 
-validate using 
-
-```
-dymd q rollapp list-rollapp
-```
-
 ### Register sequencer for rollapp on settlement
 
 ```
 sh scripts/register_sequencer.sh
-```
-
-validate using
-
-```
-dymd q sequencer list-sequencer
 ```
 
 ### Run rollapp

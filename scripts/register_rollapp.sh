@@ -7,9 +7,5 @@ source "$BASEDIR"/shared.sh
 $SETTLEMENT_EXECUTABLE tx rollapp create-rollapp "$ROLLAPP_ID" stamp1 "genesis-path/1" 3 100 '{"Addresses":[]}' \
   --from "$KEY_NAME_DYM" \
   --chain-id "$SETTLEMENT_CHAIN_ID" \
-  --keyring-backend test
-
-
-
-echo "check expected result with:"
-echo "$SETTLEMENT_EXECUTABLE q rollapp show-rollapp $ROLLAPP_ID"
+  --keyring-backend test \
+  --broadcast-mode block
