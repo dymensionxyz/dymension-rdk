@@ -413,6 +413,21 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 	return WaitForQuitSignals()
 }
 
+func getDymintCommands() *cobra.Command {
+	dymintCmd := &cobra.Command{
+		Use:   "dymint",
+		Short: "Dymint subcommands",
+	}
+	showSequencer := server.ShowValidatorCmd()
+	showSequencer.Use = "show-sequencer"
+	showSequencer.Short = "Show the current sequencer address"
+	dymintCmd.AddCommand(
+		showSequencer,
+	)
+	return dymintCmd
+
+}
+
 // add Rollapp commands
 func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport types.AppExporter, addStartFlags types.ModuleInitFlags) {
 	tendermintCmd := &cobra.Command{
@@ -435,6 +450,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 	rootCmd.AddCommand(
 		startCmd,
 		tendermintCmd,
+		getDymintCommands(),
 		server.ExportCmd(appExport, defaultNodeHome),
 		version.NewVersionCommand(),
 		server.NewRollbackCmd(appCreator, defaultNodeHome),
