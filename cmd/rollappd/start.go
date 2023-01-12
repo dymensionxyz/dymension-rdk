@@ -271,6 +271,9 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 		genesis,
 		ctx.Logger,
 	)
+	if err != nil {
+		return err
+	}
 
 	server := dymintrpc.NewServer(tmNode, cfg.RPC, ctx.Logger)
 	err = server.Start()
