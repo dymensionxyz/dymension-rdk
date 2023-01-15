@@ -65,19 +65,25 @@ This will initilize the rollapp with single initial staked account
 ### Register rollapp on settlement
 
 ```
-sh scripts/register_rollapp.sh
+sh scripts/register_rollapp_to_hub.sh
 ```
 
 ### Register sequencer for rollapp on settlement
 
 ```
-sh scripts/register_sequencer.sh
+sh scripts/register_sequencer_to_hub.sh
 ```
 
 ### Run rollapp
 
 ```
 sh scripts/run_rollapp.sh
+```
+
+### Create a sequencer on the rollapp chain
+
+```
+sh scripts/create_sequencer.sh
 ```
 
 ## Developers guide
