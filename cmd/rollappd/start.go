@@ -32,6 +32,7 @@ import (
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
 	dymintnode "github.com/dymensionxyz/dymint/node"
+
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
 )
 
@@ -421,11 +422,16 @@ func getDymintCommands() *cobra.Command {
 		Use:   "dymint",
 		Short: "Dymint subcommands",
 	}
+	// show sequencer
 	showSequencer := server.ShowValidatorCmd()
 	showSequencer.Use = "show-sequencer"
 	showSequencer.Short = "Show the current sequencer address"
+
 	dymintCmd.AddCommand(
 		showSequencer,
+		ShowNodeIDCmd(),
+		tmcmd.ResetAllCmd,
+		tmcmd.ResetStateCmd,
 	)
 	return dymintCmd
 
@@ -439,12 +445,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 	}
 
 	tendermintCmd.AddCommand(
-		server.ShowNodeIDCmd(),
-		server.ShowValidatorCmd(),
-		server.ShowAddressCmd(),
 		server.VersionCmd(),
-		tmcmd.ResetAllCmd,
-		tmcmd.ResetStateCmd,
 	)
 
 	startCmd := StartCmd(appCreator, defaultNodeHome)
