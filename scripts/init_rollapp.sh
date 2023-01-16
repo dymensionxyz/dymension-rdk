@@ -1,12 +1,15 @@
 BASEDIR=$(dirname "$0")
-echo "$BASEDIR"
 source "$BASEDIR"/shared.sh
 
 # ---------------------------- initial parameters ---------------------------- #
 TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000000000000urap}
 STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000000000000urap}
-GENESIS_FILE="$CHAIN_DIR"/config/genesis.json
 
+CONFIG_DIRECTORY="$CHAIN_DIR/config"
+GENESIS_FILE="$CONFIG_DIRECTORY/genesis.json"
+TENDERMINT_CONFIG_FILE="$CONFIG_DIRECTORY/config.toml"
+CLIENT_CONFIG_FILE="$CONFIG_DIRECTORY/client.toml"
+APP_CONFIG_FILE="$CONFIG_DIRECTORY/app.toml"
 
 # --------------------------------- run init --------------------------------- #
 # Verify that a genesis file doesn't exists for the dymension chain
@@ -27,12 +30,18 @@ $EXECUTABLE tendermint unsafe-reset-all
 $EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID"
 
 
-sed -i'' -e 's/^minimum-gas-prices *= .*/minimum-gas-prices = "0urap"/' "$CHAIN_DIR"/config/app.toml
-sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$CHAIN_DIR"/config/genesis.json
-sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$CHAIN_DIR"/config/genesis.json
+# ------------------------------- client config ------------------------------ #
+sed -i'' -e "s/^chain-id *= .*/chain-id = \"$CHAIN_ID\"/" "$CLIENT_CONFIG_FILE"
+sed -i'' -e "s/^node *= .*/node = \"tcp:\/\/$RPC_PORT\"/" "$CLIENT_CONFIG_FILE"
 
+# -------------------------------- app config -------------------------------- #
+sed -i'' -e 's/^minimum-gas-prices *= .*/minimum-gas-prices = "0urap"/' "$APP_CONFIG_FILE"
 
-#TODO: set rewards precentegas correctly
+# ------------------------------ genesis config ------------------------------ #
+sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$GENESIS_FILE"
+sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
+#TODO: set genesis params (rewards distribution, infaltion)
+
 
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test
 $EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test
