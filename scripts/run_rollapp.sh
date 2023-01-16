@@ -1,15 +1,14 @@
 BASEDIR=$(dirname "$0")
-echo "$BASEDIR"
 source "$BASEDIR"/shared.sh
 
 
-#TODO: print run configuration
+# echo "SETTLEMENT_CONFIG: $SETTLEMENT_CONFIG"
 
 SETTLEMENT_CONFIG="{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\"}"
 SETTLEMENT_CONFIG_MOCK="{\"root_dir\": \""$HOME"/.rollapp\", \"db_path\": \"data\"}" \
 
 
-#TODO: make settlement mock a parameter
+#TODO: make running a mock through a parameter
 $EXECUTABLE start --dymint.aggregator \
   --dymint.da_layer mock \
   --dymint.settlement_layer dymension \
@@ -17,8 +16,8 @@ $EXECUTABLE start --dymint.aggregator \
   --dymint.block_batch_size 500 \
   --dymint.namespace_id "$NAMESPACE_ID" \
   --dymint.block_time 0.5s \
-  --rpc.laddr "tcp://0.0.0.0:26667" \
-  --p2p.laddr "tcp://0.0.0.0:26666" \
-  --grpc.address "0.0.0.0:9080" \
-  --grpc-web.address "0.0.0.0:9081"
+  --rpc.laddr "tcp://$RPC_PORT" \
+  --p2p.laddr "tcp://$P2P_PORT" \
+  --grpc.address "$GRPC_PORT" \
+  --grpc-web.address "$GRPC_WEB_PORT"
 

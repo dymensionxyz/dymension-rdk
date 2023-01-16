@@ -1,5 +1,4 @@
 BASEDIR=$(dirname "$0")
-echo "$BASEDIR"
 source "$BASEDIR"/shared.sh
 
 #Register Sequencer
