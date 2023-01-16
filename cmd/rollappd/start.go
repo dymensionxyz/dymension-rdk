@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
+	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
@@ -32,7 +33,6 @@ import (
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
 	dymintnode "github.com/dymensionxyz/dymint/node"
-
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
 )
 
@@ -417,26 +417,6 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 	return WaitForQuitSignals()
 }
 
-func getDymintCommands() *cobra.Command {
-	dymintCmd := &cobra.Command{
-		Use:   "dymint",
-		Short: "Dymint subcommands",
-	}
-	// show sequencer
-	showSequencer := server.ShowValidatorCmd()
-	showSequencer.Use = "show-sequencer"
-	showSequencer.Short = "Show the current sequencer address"
-
-	dymintCmd.AddCommand(
-		showSequencer,
-		ShowNodeIDCmd(),
-		tmcmd.ResetAllCmd,
-		tmcmd.ResetStateCmd,
-	)
-	return dymintCmd
-
-}
-
 // add Rollapp commands
 func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport types.AppExporter, addStartFlags types.ModuleInitFlags) {
 	tendermintCmd := &cobra.Command{
@@ -448,13 +428,28 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		server.VersionCmd(),
 	)
 
+	dymintCmd := &cobra.Command{
+		Use:   "dymint",
+		Short: "Dymint subcommands",
+	}
+
+	dymintCmd.AddCommand(
+		ShowSequencer(),
+		ShowNodeIDCmd(),
+		ResetAll(),
+		InitFiles(),
+		tmcmd.ResetStateCmd,
+	)
+
+	dymintCmd.PersistentFlags().StringP(cli.HomeFlag, "", defaultNodeHome, "directory for config and data")
+
 	startCmd := StartCmd(appCreator, defaultNodeHome)
 	addStartFlags(startCmd)
 
 	rootCmd.AddCommand(
 		startCmd,
+		dymintCmd,
 		tendermintCmd,
-		getDymintCommands(),
 		server.ExportCmd(appExport, defaultNodeHome),
 		version.NewVersionCommand(),
 		server.NewRollbackCmd(appCreator, defaultNodeHome),

@@ -4,9 +4,11 @@ import (
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/server"
+	dymintcmd "github.com/dymensionxyz/dymint/cmd/dymint/commands"
 	"github.com/dymensionxyz/dymint/conv"
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
+	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
 	"github.com/tendermint/tendermint/p2p"
 )
 
@@ -35,6 +37,33 @@ func ShowNodeIDCmd() *cobra.Command {
 
 			fmt.Println(host.ID())
 			return nil
+		},
+	}
+}
+
+func ShowSequencer() *cobra.Command {
+	showSequencer := server.ShowValidatorCmd()
+	showSequencer.Use = "show-sequencer"
+	showSequencer.Short = "Show the current sequencer address"
+
+	return showSequencer
+}
+
+func ResetAll() *cobra.Command {
+	resetAll := tmcmd.ResetAllCmd
+	resetAll.Short = "(unsafe) Remove all the data and WAL, reset this node's sequencer to genesis state"
+
+	return resetAll
+}
+
+func InitFiles() *cobra.Command {
+	return &cobra.Command{
+		Use:   "init",
+		Short: "Initialize a rollapp node directory",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			cfg := serverCtx.Config
+			return dymintcmd.InitFilesWithConfig(cfg)
 		},
 	}
 }
