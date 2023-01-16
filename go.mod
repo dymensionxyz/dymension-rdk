@@ -8,14 +8,14 @@ require (
 	github.com/CosmWasm/wasmvm v1.1.1 // indirect
 	github.com/cosmos/cosmos-sdk v0.45.11
 	github.com/cosmos/ibc-go/v3 v3.4.0
-	github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230115170855-d2e6d133ec67
+	github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230116100916-3b8f186945a2
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/google/btree v1.1.2 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/ignite/cli v0.23.0
-	github.com/libp2p/go-libp2p v0.19.0 // indirect
+	github.com/libp2p/go-libp2p v0.19.0
 	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/spf13/cast v1.5.0
