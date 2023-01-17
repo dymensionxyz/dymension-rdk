@@ -39,8 +39,6 @@ This repository hosts `rollappd`, the first implementation of a dymension rollap
 
 **Note**: This code was intially scaffolded with igniteCLI@v0.22.2
 
-For critical security issues & disclosure, see [SECURITY.md](SECURITY.md).
-
 
 ## Quick guide
 Get started with [building RollApps](https://docs.dymension.xyz/developers/getting-started/intro) 
