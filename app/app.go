@@ -90,11 +90,11 @@ import (
 
 	rollappparams "github.com/dymensionxyz/rollapp/app/params"
 
-	// this line is used by starport scaffolding # stargate/app/moduleImport
+	"github.com/cosmos/cosmos-sdk/x/staking"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	agentskeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	agenttypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/dymensionxyz/rollapp/x/agents"
+	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"github.com/dymensionxyz/rollapp/x/sequencers"
 	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
@@ -118,7 +118,7 @@ var (
 	kvstorekeys = []string{
 		authtypes.StoreKey, authz.ModuleName,
 		banktypes.StoreKey,
-		agenttypes.StoreKey, seqtypes.StoreKey,
+		stakingtypes.StoreKey, seqtypes.StoreKey,
 		minttypes.StoreKey, distrtypes.StoreKey,
 		slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey,
@@ -165,7 +165,7 @@ var (
 		genutil.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		capability.AppModuleBasic{},
-		agents.AppModuleBasic{},
+		staking.AppModuleBasic{},
 		sequencers.AppModuleBasic{},
 		mint.AppModuleBasic{},
 		distr.AppModuleBasic{},
@@ -185,13 +185,13 @@ var (
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:   nil,
-		distrtypes.ModuleName:        nil,
-		minttypes.ModuleName:         {authtypes.Minter},
-		agenttypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
-		agenttypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-		govtypes.ModuleName:          {authtypes.Burner},
-		ibctransfertypes.ModuleName:  {authtypes.Minter, authtypes.Burner},
+		authtypes.FeeCollectorName:     nil,
+		distrtypes.ModuleName:          nil,
+		minttypes.ModuleName:           {authtypes.Minter},
+		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
+		govtypes.ModuleName:            {authtypes.Burner},
+		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 )
@@ -238,7 +238,7 @@ type App struct {
 	AuthzKeeper      authzkeeper.Keeper
 	BankKeeper       bankkeeper.Keeper
 	CapabilityKeeper *capabilitykeeper.Keeper
-	AgentsKeeper     agentskeeper.Keeper
+	StakingKeeper    stakingkeeper.Keeper
 	SequencersKeeper seqkeeper.Keeper
 	SlashingKeeper   slashingkeeper.Keeper
 	MintKeeper       mintkeeper.Keeper
@@ -338,19 +338,19 @@ func NewRollapp(
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
 	)
-	agentsKeeper := agentskeeper.NewKeeper(
-		appCodec, keys[agenttypes.StoreKey], app.AccountKeeper, app.BankKeeper, app.GetSubspace(agenttypes.ModuleName),
+	stakingKeeper := stakingkeeper.NewKeeper(
+		appCodec, keys[stakingtypes.StoreKey], app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName),
 	)
 	app.MintKeeper = mintkeeper.NewKeeper(
-		appCodec, keys[minttypes.StoreKey], app.GetSubspace(minttypes.ModuleName), &agentsKeeper,
+		appCodec, keys[minttypes.StoreKey], app.GetSubspace(minttypes.ModuleName), &stakingKeeper,
 		app.AccountKeeper, app.BankKeeper, authtypes.FeeCollectorName,
 	)
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec, keys[distrtypes.StoreKey], app.GetSubspace(distrtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
-		&agentsKeeper, &app.SequencersKeeper, authtypes.FeeCollectorName, app.ModuleAccountAddrs(),
+		&stakingKeeper, &app.SequencersKeeper, authtypes.FeeCollectorName, app.ModuleAccountAddrs(),
 	)
 	app.SlashingKeeper = slashingkeeper.NewKeeper(
-		appCodec, keys[slashingtypes.StoreKey], &agentsKeeper, app.GetSubspace(slashingtypes.ModuleName),
+		appCodec, keys[slashingtypes.StoreKey], &stakingKeeper, app.GetSubspace(slashingtypes.ModuleName),
 	)
 	app.CrisisKeeper = crisiskeeper.NewKeeper(
 		app.GetSubspace(crisistypes.ModuleName), invCheckPeriod, app.BankKeeper, authtypes.FeeCollectorName,
@@ -360,9 +360,9 @@ func NewRollapp(
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp)
 
 	// register the staking hooks
-	// NOTE: agentsKeeper above is passed by reference, so that it will contain these hooks
-	app.AgentsKeeper = *agentsKeeper.SetHooks(
-		agenttypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
+	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
+	app.StakingKeeper = *stakingKeeper.SetHooks(
+		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
 
 	app.SequencersKeeper = *seqkeeper.NewKeeper(
@@ -403,14 +403,14 @@ func NewRollapp(
 
 	// Create evidence Keeper for to register the IBC light client misbehaviour evidence route
 	evidenceKeeper := evidencekeeper.NewKeeper(
-		appCodec, keys[evidencetypes.StoreKey], &app.AgentsKeeper, app.SlashingKeeper,
+		appCodec, keys[evidencetypes.StoreKey], &app.StakingKeeper, app.SlashingKeeper,
 	)
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
 	app.GovKeeper = govkeeper.NewKeeper(
 		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
-		&agentsKeeper, govRouter,
+		&stakingKeeper, govRouter,
 	)
 
 	scopedMonitoringKeeper := app.CapabilityKeeper.ScopeToModule(monitoringptypes.ModuleName)
@@ -419,7 +419,7 @@ func NewRollapp(
 		keys[monitoringptypes.StoreKey],
 		keys[monitoringptypes.MemStoreKey],
 		app.GetSubspace(monitoringptypes.ModuleName),
-		app.AgentsKeeper,
+		app.StakingKeeper,
 		app.IBCKeeper.ClientKeeper,
 		app.IBCKeeper.ConnectionKeeper,
 		app.IBCKeeper.ChannelKeeper,
@@ -450,7 +450,7 @@ func NewRollapp(
 
 	modules := []module.AppModule{
 		genutil.NewAppModule(
-			app.AccountKeeper, app.AgentsKeeper, app.BaseApp.DeliverTx,
+			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
 			encodingConfig.TxConfig,
 		),
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
@@ -462,9 +462,9 @@ func NewRollapp(
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper),
-		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.AgentsKeeper),
-		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.AgentsKeeper),
-		agents.NewAppModule(appCodec, app.AgentsKeeper, app.AccountKeeper, app.BankKeeper),
+		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		sequencers.NewAppModule(appCodec, app.SequencersKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
@@ -478,7 +478,7 @@ func NewRollapp(
 	//Init wasm if enabled
 	if WasmEnabled() {
 		modules = append(modules,
-			wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AgentsKeeper, app.AccountKeeper, app.BankKeeper),
+			wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		)
 	}
 
@@ -495,7 +495,7 @@ func NewRollapp(
 		distrtypes.ModuleName,
 		slashingtypes.ModuleName,
 		evidencetypes.ModuleName,
-		agenttypes.ModuleName,
+		stakingtypes.ModuleName,
 		seqtypes.ModuleName,
 		vestingtypes.ModuleName,
 		ibchost.ModuleName,
@@ -515,7 +515,7 @@ func NewRollapp(
 	endBlockersList := []string{
 		crisistypes.ModuleName,
 		govtypes.ModuleName,
-		agenttypes.ModuleName,
+		stakingtypes.ModuleName,
 		seqtypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
@@ -547,7 +547,7 @@ func NewRollapp(
 		authz.ModuleName,
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
-		agenttypes.ModuleName,
+		stakingtypes.ModuleName,
 		seqtypes.ModuleName,
 		vestingtypes.ModuleName,
 		slashingtypes.ModuleName,
@@ -588,13 +588,13 @@ func NewRollapp(
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper),
-		agents.NewAppModule(appCodec, app.AgentsKeeper, app.AccountKeeper, app.BankKeeper),
-		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.AgentsKeeper),
-		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.AgentsKeeper),
+		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
+		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		evidence.NewAppModule(app.EvidenceKeeper),
 		//TODO: add wasm to simulation
-		// wasm.NewAppModule(appCodec, &app.WasmKeeper, app.AgentsKeeper, app.AccountKeeper, app.BankKeeper),
+		// wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		monitoringModule,
@@ -789,7 +789,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 	paramsKeeper.Subspace(authtypes.ModuleName)
 	paramsKeeper.Subspace(banktypes.ModuleName)
-	paramsKeeper.Subspace(agenttypes.ModuleName)
+	paramsKeeper.Subspace(stakingtypes.ModuleName)
 	paramsKeeper.Subspace(seqtypes.ModuleName)
 	paramsKeeper.Subspace(minttypes.ModuleName)
 	paramsKeeper.Subspace(distrtypes.ModuleName)

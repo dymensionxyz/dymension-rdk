@@ -31,7 +31,7 @@ func createRandomAccounts(accNum int) []sdk.AccAddress {
 // initial balance of accAmt in random order
 func AddTestAddrs(app *app.App, ctx sdk.Context, accNum int, accAmt sdk.Int) []sdk.AccAddress {
 	testAddrs := createRandomAccounts(accNum)
-	initCoins := sdk.NewCoins(sdk.NewCoin(app.AgentsKeeper.BondDenom(ctx), accAmt))
+	initCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), accAmt))
 
 	for _, addr := range testAddrs {
 		initAccountWithCoins(app, ctx, addr, initCoins)
