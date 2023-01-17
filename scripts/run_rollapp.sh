@@ -5,8 +5,6 @@ source "$BASEDIR"/shared.sh
 # echo "SETTLEMENT_CONFIG: $SETTLEMENT_CONFIG"
 
 SETTLEMENT_CONFIG="{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\"}"
-SETTLEMENT_CONFIG_MOCK="{\"root_dir\": \""$HOME"/.rollapp\", \"db_path\": \"data\"}" \
-
 
 #TODO: make running a mock through a parameter
 $EXECUTABLE start --dymint.aggregator \
@@ -19,5 +17,6 @@ $EXECUTABLE start --dymint.aggregator \
   --rpc.laddr "tcp://$RPC_PORT" \
   --p2p.laddr "tcp://$P2P_PORT" \
   --grpc.address "$GRPC_PORT" \
-  --grpc-web.address "$GRPC_WEB_PORT"
+  --grpc-web.address "$GRPC_WEB_PORT" \
+  --home $CHAIN_DIR
 
