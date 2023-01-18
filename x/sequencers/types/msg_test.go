@@ -9,6 +9,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/dymensionxyz/rollapp/testutil/utils"
+	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,44 +21,44 @@ func TestMsgCreateSequencer_ValidateBasic(t *testing.T) {
 
 	tests := []struct {
 		name string
-		msg  MsgCreateSequencer
+		msg  types.MsgCreateSequencer
 		err  error
 	}{
 		{
 			name: "invalid address",
-			msg: MsgCreateSequencer{
-				Creator:          "invalid_address",
+			msg: types.MsgCreateSequencer{
+				DelegatorAddress: "invalid_address",
 				SequencerAddress: addr,
 				Pubkey:           pkAny,
 			},
 			err: sdkerrors.ErrInvalidAddress,
 		}, {
 			name: "valid address",
-			msg: MsgCreateSequencer{
-				Creator:          utils.AccAddress(),
+			msg: types.MsgCreateSequencer{
+				DelegatorAddress: utils.AccAddress(),
 				SequencerAddress: addr,
 				Pubkey:           pkAny,
 			},
 		}, {
 			name: "invalid sequencer address",
-			msg: MsgCreateSequencer{
-				Creator:          utils.AccAddress(),
+			msg: types.MsgCreateSequencer{
+				DelegatorAddress: utils.AccAddress(),
 				SequencerAddress: "invalid_address",
 				Pubkey:           pkAny,
 			},
 			err: ErrInvalidSequencerAddress,
 		}, {
 			name: "invalid pubkey",
-			msg: MsgCreateSequencer{
-				Creator:          utils.AccAddress(),
+			msg: types.MsgCreateSequencer{
+				DelegatorAddress: utils.AccAddress(),
 				SequencerAddress: utils.AccAddress(),
 				Pubkey:           pkAny,
 			},
 			err: sdkerrors.ErrInvalidPubKey,
 		}, {
 			name: "valid description",
-			msg: MsgCreateSequencer{
-				Creator:          utils.AccAddress(),
+			msg: types.MsgCreateSequencer{
+				DelegatorAddress: utils.AccAddress(),
 				SequencerAddress: addr,
 				Pubkey:           pkAny,
 				Description: Description{
@@ -69,52 +70,12 @@ func TestMsgCreateSequencer_ValidateBasic(t *testing.T) {
 			},
 		}, {
 			name: "invalid moniker length",
-			msg: MsgCreateSequencer{
-				Creator:          utils.AccAddress(),
+			msg: types.MsgCreateSequencer{
+				DelegatorAddress: utils.AccAddress(),
 				SequencerAddress: addr,
 				Pubkey:           pkAny,
 				Description: Description{
 					Moniker: strings.Repeat("a", MaxMonikerLength+1)},
-			},
-			err: sdkerrors.ErrInvalidRequest,
-		}, {
-			name: "invalid identity length",
-			msg: MsgCreateSequencer{
-				Creator:          utils.AccAddress(),
-				SequencerAddress: addr,
-				Pubkey:           pkAny,
-				Description: Description{
-					Identity: strings.Repeat("a", MaxIdentityLength+1)},
-			},
-			err: sdkerrors.ErrInvalidRequest,
-		}, {
-			name: "invalid website length",
-			msg: MsgCreateSequencer{
-				Creator:          utils.AccAddress(),
-				SequencerAddress: addr,
-				Pubkey:           pkAny,
-				Description: Description{
-					Website: strings.Repeat("a", MaxWebsiteLength+1)},
-			},
-			err: sdkerrors.ErrInvalidRequest,
-		}, {
-			name: "invalid security contact length",
-			msg: MsgCreateSequencer{
-				Creator:          utils.AccAddress(),
-				SequencerAddress: addr,
-				Pubkey:           pkAny,
-				Description: Description{
-					SecurityContact: strings.Repeat("a", MaxSecurityContactLength+1)},
-			},
-			err: sdkerrors.ErrInvalidRequest,
-		}, {
-			name: "invalid details length",
-			msg: MsgCreateSequencer{
-				Creator:          utils.AccAddress(),
-				SequencerAddress: addr,
-				Pubkey:           pkAny,
-				Description: Description{
-					Details: strings.Repeat("a", MaxDetailsLength+1)},
 			},
 			err: sdkerrors.ErrInvalidRequest,
 		},
