@@ -21,10 +21,6 @@ fund_hub_account() {
 }
 
 fund_rollapp_account() {
-    from=$1
-    to=$2
-    amount=$3
-    echo "funding $2 with $3 from $1"
     FROM=${1:-$KEY_NAME_ROLLAPP}
     TO=${2:-$(rly keys show $CHAIN_ID)}
     AMOUNT=${3:-100000urap}
@@ -33,6 +29,7 @@ fund_rollapp_account() {
     $EXECUTABLE tx bank send "$FROM" "$TO" "$AMOUNT" \
         --chain-id "$CHAIN_ID" \
         --keyring-backend test \
+        --home $CHAIN_DIR \
         --broadcast-mode block
 }
 
@@ -50,6 +47,9 @@ if [ -f "$RLY_CONFIG_FILE" ]; then
     rm -rf "$RLY_PATH"
   fi
 fi
+
+echo '# -------------------------- initializing rly config ------------------------- #'
+SETTLEMENT_CONFIG="{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\"}"
 rly config init --settlement-config "$SETTLEMENT_CONFIG"
 
 echo '# ------------------------- adding chains to rly config ------------------------- #'
@@ -77,12 +77,12 @@ fund_hub_account
 fund_rollapp_account
 
 #TODO: validate in script the accounts are funded
-# dymd q bank balances "$(rly keys show $SETTLEMENT_CHAIN_ID)"
-# rollappd q bank balances "$(rly keys show $CHAIN_ID)"
+dymd q bank balances "$(rly keys show $SETTLEMENT_CHAIN_ID)"
+rollappd q bank balances "$(rly keys show $CHAIN_ID)" --home $CHAIN_DIR
 
 echo '# -------------------------------- creating IBC link ------------------------------- #'
 rly paths new "$CHAIN_ID" "$SETTLEMENT_CHAIN_ID" "$RELAYER_PATH" --src-port "$IBC_PORT" --dst-port "$IBC_PORT" --version "$IBC_VERSION"
 rly transact link "$RELAYER_PATH" --src-port "$IBC_PORT" --dst-port "$IBC_PORT" --version "$IBC_VERSION"
 
 echo '# ------------------------------ run the ibc relayer ----------------------------- #'
-rly start "$RELAYER_PATH"
+rly start "$RELAYER_PATH" --debug-addr ""
