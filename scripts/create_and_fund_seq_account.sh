@@ -14,7 +14,8 @@ fund_account() {
   echo "$SETTLEMENT_EXECUTABLE tx bank send $KEY_NAME_GENESIS $NEW_ADDRESS $AMOUNT"
   $SETTLEMENT_EXECUTABLE tx bank send "$KEY_NAME_GENESIS" "$NEW_ADDRESS" "$AMOUNT" \
     --chain-id "$SETTLEMENT_CHAIN_ID" \
-    --keyring-backend test
+    --keyring-backend test \
+    --broadcast-mode block
 }
 
 

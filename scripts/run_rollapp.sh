@@ -11,7 +11,7 @@ $EXECUTABLE start --dymint.aggregator \
   --dymint.da_layer mock \
   --dymint.settlement_layer dymension \
   --dymint.settlement_config "$SETTLEMENT_CONFIG" \
-  --dymint.block_batch_size 500 \
+  --dymint.block_batch_size 60 \
   --dymint.namespace_id "$NAMESPACE_ID" \
   --dymint.block_time 0.5s \
   --rpc.laddr "tcp://$RPC_PORT" \
