@@ -86,6 +86,33 @@ sh scripts/run_rollapp.sh
 sh scripts/create_sequencer.sh
 ```
 
+## Establish IBC channel between hub and rollapp
+The following script will create all the dependencies for IBC channel between the hub and the rollapp.
+It will create dedicated accounts for the relayer on both the hub and the rollapp, and transfer some funds to them from the genesis accounts. 
+
+```
+sh scripts/setup_ibc.sh
+```
+
+## Running multiple rollapp instances locally
+Run the first rollapp as described above.
+
+For the 2nd rollapp, run the following in a new tab:
+```
+export CHAIN_ID=rollapp2
+export CHAIN_DIR="$HOME/.rollapp2"
+export ROLLAPP_ID=rollapp2
+export RPC_PORT="0.0.0.0:27667"
+export P2P_PORT="0.0.0.0:27668"
+export GRPC_PORT="0.0.0.0:9180"
+export GRPC_WEB_PORT="0.0.0.0:9181"
+
+export KEY_NAME_DYM="local-sequencer2"
+```
+
+Than run the scripts as described in the readme
+
+
 ## Developers guide
 TODO
 
