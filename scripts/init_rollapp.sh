@@ -26,9 +26,8 @@ if [ -f "$GENESIS_FILE" ]; then
 fi
 
 
-$EXECUTABLE tendermint unsafe-reset-all
-$EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID"
-
+$EXECUTABLE tendermint unsafe-reset-all  --home "$CHAIN_DIR"
+$EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
 
 # ------------------------------- client config ------------------------------ #
 sed -i'' -e "s/^chain-id *= .*/chain-id = \"$CHAIN_ID\"/" "$CLIENT_CONFIG_FILE"
@@ -43,13 +42,13 @@ sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
 #TODO: set genesis params (rewards distribution, infaltion)
 
 
-$EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test
-$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test
+$EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
+$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
 
 printf "\n\n======================================================================================================\n"
 echo "Press any key to continue generating genesis validator..."
 printf "======================================================================================================\n\n"
 read -p ""
 
-$EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test
-$EXECUTABLE collect-gentxs
+$EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test --home "$CHAIN_DIR"
+$EXECUTABLE collect-gentxs --home "$CHAIN_DIR"

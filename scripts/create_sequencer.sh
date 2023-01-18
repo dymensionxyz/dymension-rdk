@@ -2,9 +2,10 @@ BASEDIR=$(dirname "$0")
 source "$BASEDIR"/shared.sh
 
 $EXECUTABLE tx sequencers create-sequencer \
-  --pubkey $($EXECUTABLE dymint show-sequencer) \
+  --pubkey $($EXECUTABLE dymint show-sequencer --home $CHAIN_DIR) \
   --broadcast-mode block \
   --moniker $MONIKER \
   --chain-id $CHAIN_ID \
-  --from $(rollappd keys show -a ${KEY_NAME_ROLLAPP} --keyring-backend test) \
-  --keyring-backend test
+  --from $($EXECUTABLE keys show -a $KEY_NAME_ROLLAPP --keyring-backend test --home $CHAIN_DIR) \
+  --keyring-backend test \
+  --home $CHAIN_DIR
