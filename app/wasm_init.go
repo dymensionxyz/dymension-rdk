@@ -104,7 +104,7 @@ func (app *App) initWasmKeeper(
 		app.GetSubspace(wasm.ModuleName),
 		app.AccountKeeper,
 		app.BankKeeper,
-		app.AgentsKeeper,
+		app.StakingKeeper,
 		app.DistrKeeper,
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
