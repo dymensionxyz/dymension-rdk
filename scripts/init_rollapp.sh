@@ -26,7 +26,7 @@ if [ -f "$GENESIS_FILE" ]; then
 fi
 
 
-$EXECUTABLE tendermint unsafe-reset-all  --home "$CHAIN_DIR"
+$EXECUTABLE dymint unsafe-reset-all  --home "$CHAIN_DIR"
 $EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
 
 # ------------------------------- client config ------------------------------ #
@@ -39,7 +39,7 @@ sed -i'' -e 's/^minimum-gas-prices *= .*/minimum-gas-prices = "0urap"/' "$APP_CO
 # ------------------------------ genesis config ------------------------------ #
 sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$GENESIS_FILE"
 sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
-#TODO: set genesis params (rewards distribution, infaltion)
+#TODO: set genesis params (rewards distribution, infaltion, staking denom)
 
 
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
