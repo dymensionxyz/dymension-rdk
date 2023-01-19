@@ -4,15 +4,6 @@
 
 ![banner](https://user-images.githubusercontent.com/109034310/204804891-bdc0f7bc-4b17-4b4a-99ff-25153d3887ee.jpg)
 
-
-<!-- <style>
-img[src*="#thumbnail"] {
-     display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-</style>  -->
-
 [![license](https://img.shields.io/github/license/cosmos/cosmos-sdk.svg#thumbnail)](https://github.com/dymensionxyz/rdk/blob/main/LICENSE)
 
 
@@ -94,6 +85,40 @@ It will create dedicated accounts for the relayer on both the hub and the rollap
 sh scripts/setup_ibc.sh
 ```
 
+after it finishes (it might take few mins), run the relayer:
+```
+sh scripts/run_relayer.sh
+```
+
+To run ibc-transfers between rollapp and the hub,
+first check and set the connection name:
+```
+//check the connectionID of the rollapp and the hub on the active path
+rly paths show hub-rollapp --json | jq '.chains.src'
+rly paths show hub-rollapp --json | jq '.chains.dst'
+
+//check the channel_ID based on the connectionID
+rollappd q ibc channel connections <connectionID from rly command> -o json | jq '.channels[0].channel_id'
+dymd q ibc channel connections <connectionID from rly command> -o json | jq '.channels[0].channel_id'
+
+//Use the above result
+export ROLLAPP_CHANNEL_NAME=<channel_id>
+export HUB_CHANNEL_NAME=<channel_id>
+```
+
+Now you can do ibc transfers
+```
+sh scripts/ibc_transfer.sh [arg]
+
+Avaialble:
+-q:         query balances of local-user on hub and rol-user on rollapp
+rol2hub:    ibc-transfer of 5555urap to local-user from rol-user
+hub_back:   transfer back the tokens from the hub to the rollapp
+hub2rol:    ibc-transfer of 5555dym to rol-user from local-user
+hub_back:   transfer back the tokens from the hub to the rollapp
+
+```
+
 ## Running multiple rollapp instances locally
 Run the first rollapp as described above.
 
@@ -115,65 +140,3 @@ Than run the scripts as described in the readme
 
 ## Developers guide
 TODO
-
-
-
-
-
-
-
-
-<!-- 
-# Future features (WIP)
-
-## Fully support ignite 
-### using ignite as developing framework
-Rollapp customization should allow the usage of `ignite` for scaffolding custom modules
-### using ignite to run rollapp
-```
-ignite chain serve
-```
-
-`serve` command installs dependencies, builds, initializes, and starts your blockchain in development.
-
-### Configure
-
-Your blockchain in development can be configured with `config.yml`. To learn more, see the [Ignite CLI docs](https://docs.ignite.com).
-
-### Web Frontend
-
-Ignite CLI has scaffolded a Vue.js-based web app in the `vue` directory. Run the following commands to install dependencies and start the app:
-
-```
-cd vue
-npm install
-npm run serve
-```
-
-The frontend app is built using the `@starport/vue` and `@starport/vuex` packages. For details, see the [monorepo for Ignite front-end development](https://github.com/ignite/web).
-
-## Release
-To release a new version of your blockchain, create and push a new tag with `v` prefix. A new draft release with the configured targets will be created.
-
-```
-git tag v0.1
-git push origin v0.1
-```
-
-After a draft release is created, make your final changes from the release page and publish it.
-
-### Install
-To install the latest version of your blockchain node's binary, execute the following command on your machine:
-
-```
-curl https://get.ignite.com/dymensionxyz/rollapp@latest! | sudo bash
-```
-`dymensionxyz/rollapp` should match the `username` and `repo_name` of the Github repository to which the source code was pushed. Learn more about [the install process](https://github.com/allinbits/starport-installer).
-
-## Learn more
-
-- [Ignite CLI](https://ignite.com/cli)
-- [Tutorials](https://docs.ignite.com/guide)
-- [Ignite CLI docs](https://docs.ignite.com)
-- [Cosmos SDK docs](https://docs.cosmos.network)
-- [Developer Chat](https://discord.gg/ignite) -->
