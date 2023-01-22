@@ -2,8 +2,10 @@ BASEDIR=$(dirname "$0")
 source "$BASEDIR"/shared.sh
 
 # ---------------------------- initial parameters ---------------------------- #
-TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000000000000urap}
-STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000000000000urap}
+# Assuming 1,000,000RAP tokens
+TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000urap}
+#half is staked
+STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urap}
 
 CONFIG_DIRECTORY="$CHAIN_DIR/config"
 GENESIS_FILE="$CONFIG_DIRECTORY/genesis.json"

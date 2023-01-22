@@ -7,9 +7,9 @@ IBC_VERSION=ics20-1
 
 HUB_GENESIS_ADDR=$(dymd keys show $KEY_NAME_GENESIS -a --keyring-backend test)
 ROLLAPP_GENESIS_ADDR=$(rollappd keys show $KEY_NAME_ROLLAPP -a --keyring-backend test --home $CHAIN_DIR)
-TOKENS_AMOUNT=5555
+TOKENS_AMOUNT=500000000
 URAP_AMOUNT="$TOKENS_AMOUNT"urap
-DYM_AMOUNT="$TOKENS_AMOUNT"dym
+DYM_AMOUNT="$TOKENS_AMOUNT"udym
 
 usage ()
 {

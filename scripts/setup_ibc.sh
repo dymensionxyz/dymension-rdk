@@ -11,7 +11,7 @@ IBC_VERSION=ics20-1
 fund_hub_account() {
     FROM=${1:-$KEY_NAME_GENESIS}
     TO=${2:-$(rly keys show $SETTLEMENT_CHAIN_ID)}
-    AMOUNT=${3:-1000dym}
+    AMOUNT=${3:-100000000udym}
     echo "funding $TO with $AMOUNT from $FROM"
     
     $SETTLEMENT_EXECUTABLE tx bank send "$FROM" "$TO" "$AMOUNT" \
@@ -23,7 +23,7 @@ fund_hub_account() {
 fund_rollapp_account() {
     FROM=${1:-$KEY_NAME_ROLLAPP}
     TO=${2:-$(rly keys show $CHAIN_ID)}
-    AMOUNT=${3:-100000urap}
+    AMOUNT=${3:-100000000urap}
     echo "funding $TO with $AMOUNT from $FROM"
     
     $EXECUTABLE tx bank send "$FROM" "$TO" "$AMOUNT" \

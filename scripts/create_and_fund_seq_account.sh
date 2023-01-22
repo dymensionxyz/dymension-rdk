@@ -1,4 +1,5 @@
-AMOUNT="100000000dym"
+#100DYM
+AMOUNT="100000000udym"
 
 # ---------------------- create sequencer account on hub --------------------- #
 create_new_account() {
