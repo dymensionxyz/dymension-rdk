@@ -7,11 +7,11 @@
 [![license](https://img.shields.io/github/license/cosmos/cosmos-sdk.svg#thumbnail)](https://github.com/dymensionxyz/rdk/blob/main/LICENSE)
 
 
-Dymension RDK, which stands for *RollApp Development Kit* is based on the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework, modified and enhanced for building autonomous RollApps (app-specfic-rollups) on top of the [Dymension Hub](https://github.com/dymensionxyz/dymension). 
+Dymension RDK, which stands for *RollApp Development Kit* is based on the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework, modified and enhanced for building autonomous RollApps (app-specific-rollups) on top of the [Dymension Hub](https://github.com/dymensionxyz/dymension). 
 
-The RDK provides the following capabilites ***on top*** of the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework: 
+The RDK provides the following capabilities ***on top*** of the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework: 
 * The RDK is coupled with the [Dymint](https://github.com/dymensionxyz/dymint) client to form RollApp's blazing speed consensus and networking layer, while ***the Dymension Hub is securing the rollapp***
-* Custom modules that converts a cosmos based PoS (proof-of-stake) chain to a rollapp
+* Custom modules that convert a cosmos based PoS (proof-of-stake) chain to a rollapp
 * wasm and EVM support (based on CosmWasm and Ethermint)
 
 ### Learn more
@@ -28,7 +28,7 @@ This repository hosts `rollappd`, the first implementation of a dymension rollap
 
 **Note**: Requires [Go 1.18](https://go.dev/)
 
-**Note**: This code was intially scaffolded with igniteCLI@v0.22.2
+**Note**: This code was initially scaffolded with igniteCLI@v0.22.2
 
 
 ## Quick guide
@@ -49,7 +49,7 @@ set custom configuration params at `scripts/shared.sh`
 sh scripts/init_rollapp.sh
 ```
 
-This will initilize the rollapp with single initial staked account
+This will initialize the rollapp with single initial staked account
 
 ### Register rollapp on settlement
 
@@ -108,7 +108,7 @@ Now you can do ibc transfers
 ```
 sh scripts/ibc_transfer.sh [arg]
 
-Avaialble:
+Available:
 -q:         query balances of local-user on hub and rol-user on rollapp
 rol2hub:    ibc-transfer of 5555urap to local-user from rol-user
 hub_back:   transfer back the tokens from the hub to the rollapp
@@ -133,7 +133,7 @@ export GRPC_WEB_PORT="0.0.0.0:9181"
 export KEY_NAME_DYM="local-sequencer2"
 ```
 
-Than run the scripts as described in the readme
+Then run the scripts as described in the readme
 
 
 ## Developers guide
