@@ -14,9 +14,5 @@ $EXECUTABLE start --dymint.aggregator \
   --dymint.block_batch_size 60 \
   --dymint.namespace_id "$NAMESPACE_ID" \
   --dymint.block_time 0.5s \
-  --rpc.laddr "tcp://$RPC_PORT" \
-  --p2p.laddr "tcp://$P2P_PORT" \
-  --grpc.address "$GRPC_PORT" \
-  --grpc-web.address "$GRPC_WEB_PORT" \
   --home $CHAIN_DIR
 
