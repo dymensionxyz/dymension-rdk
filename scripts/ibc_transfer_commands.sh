@@ -38,7 +38,7 @@ from_hub_2_rollapp() {
 }
 
 from_rollapp_back_2_hub() {
-    DYM_HASHED_DENOM=$(rollappd q ibc-transfer denom-hash $IBC_PORT/$ROLLAPP_CHANNEL_NAME/dym | cut -d ' ' -f 2)
+    DYM_HASHED_DENOM=$(rollappd q ibc-transfer denom-hash $IBC_PORT/$ROLLAPP_CHANNEL_NAME/udym | cut -d ' ' -f 2)
     AMOUNT="$TOKENS_AMOUNT"ibc/"$DYM_HASHED_DENOM"
     echo "sending $AMOUNT to $HUB_GENESIS_ADDR from $KEY_NAME_ROLLAPP"
 

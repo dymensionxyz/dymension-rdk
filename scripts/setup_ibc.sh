@@ -11,7 +11,7 @@ IBC_VERSION=ics20-1
 fund_hub_account() {
     FROM=${1:-$KEY_NAME_GENESIS}
     TO=${2:-$(rly keys show $SETTLEMENT_CHAIN_ID)}
-    AMOUNT=${3:-1000dym}
+    AMOUNT=${3:-100000000udym}
     echo "funding $TO with $AMOUNT from $FROM"
     
     $SETTLEMENT_EXECUTABLE tx bank send "$FROM" "$TO" "$AMOUNT" \
@@ -23,7 +23,7 @@ fund_hub_account() {
 fund_rollapp_account() {
     FROM=${1:-$KEY_NAME_ROLLAPP}
     TO=${2:-$(rly keys show $CHAIN_ID)}
-    AMOUNT=${3:-100000urap}
+    AMOUNT=${3:-100000000urap}
     echo "funding $TO with $AMOUNT from $FROM"
     
     $EXECUTABLE tx bank send "$FROM" "$TO" "$AMOUNT" \
@@ -49,7 +49,6 @@ if [ -f "$RLY_CONFIG_FILE" ]; then
 fi
 
 echo '# -------------------------- initializing rly config ------------------------- #'
-SETTLEMENT_CONFIG="{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\"}"
 rly config init --settlement-config "$SETTLEMENT_CONFIG"
 
 echo '# ------------------------- adding chains to rly config ------------------------- #'
@@ -57,7 +56,7 @@ tmp=$(mktemp)
 ROLLAPP_IBC_CONF_FILE="$BASEDIR/ibc/rollapp.json"
 jq --arg key "$RELAYER_KEY_FOR_ROLLAP" '.value.key = $key' $ROLLAPP_IBC_CONF_FILE > "$tmp" && mv "$tmp" $ROLLAPP_IBC_CONF_FILE
 jq --arg chain "$CHAIN_ID" '.value."chain-id" = $chain' $ROLLAPP_IBC_CONF_FILE > "$tmp" && mv "$tmp" $ROLLAPP_IBC_CONF_FILE
-jq --arg rpc "tcp://$RPC_PORT" '.value."rpc-addr" = $rpc' $ROLLAPP_IBC_CONF_FILE > "$tmp" && mv "$tmp" $ROLLAPP_IBC_CONF_FILE
+jq --arg rpc "tcp://$RPC_LADDRESS" '.value."rpc-addr" = $rpc' $ROLLAPP_IBC_CONF_FILE > "$tmp" && mv "$tmp" $ROLLAPP_IBC_CONF_FILE
 
 HUB_IBC_CONF_FILE="$BASEDIR/ibc/hub.json"
 jq --arg key "$RELAYER_KEY_FOR_HUB" '.value.key = $key' $HUB_IBC_CONF_FILE > "$tmp" && mv "$tmp" $HUB_IBC_CONF_FILE

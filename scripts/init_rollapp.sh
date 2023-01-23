@@ -2,8 +2,10 @@ BASEDIR=$(dirname "$0")
 source "$BASEDIR"/shared.sh
 
 # ---------------------------- initial parameters ---------------------------- #
-TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000000000000urap}
-STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000000000000urap}
+# Assuming 1,000,000RAP tokens
+TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000urap}
+#half is staked
+STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urap}
 
 CONFIG_DIRECTORY="$CHAIN_DIR/config"
 GENESIS_FILE="$CONFIG_DIRECTORY/genesis.json"
@@ -31,10 +33,16 @@ $EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
 
 # ------------------------------- client config ------------------------------ #
 sed -i'' -e "s/^chain-id *= .*/chain-id = \"$CHAIN_ID\"/" "$CLIENT_CONFIG_FILE"
-sed -i'' -e "s/^node *= .*/node = \"tcp:\/\/$RPC_PORT\"/" "$CLIENT_CONFIG_FILE"
+sed -i'' -e "s/^node *= .*/node = \"tcp:\/\/$RPC_LADDRESS\"/" "$CLIENT_CONFIG_FILE"
 
 # -------------------------------- app config -------------------------------- #
 sed -i'' -e 's/^minimum-gas-prices *= .*/minimum-gas-prices = "0urap"/' "$APP_CONFIG_FILE"
+sed -i'' -e '/\[api\]/,+3 s/enable *= .*/enable = true/' "$APP_CONFIG_FILE"
+sed -i'' -e "/\[api\]/,+9 s/address *= .*/address = \"tcp:\/\/$API_ADDRESS\"/" "$APP_CONFIG_FILE"
+sed -i'' -e "/\[grpc\]/,+6 s/address *= .*/address = \"$GRPC_LADDRESS\"/" "$APP_CONFIG_FILE"
+sed -i'' -e "/\[grpc-web\]/,+7 s/address *= .*/address = \"$GRPC_WEB_LADDRESS\"/" "$APP_CONFIG_FILE"
+sed -i'' -e "/\[rpc\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$RPC_LADDRESS\"/" "$TENDERMINT_CONFIG_FILE"
+sed -i'' -e "/\[p2p\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$P2P_LADDRESS\"/" "$TENDERMINT_CONFIG_FILE"
 
 # ------------------------------ genesis config ------------------------------ #
 sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$GENESIS_FILE"
