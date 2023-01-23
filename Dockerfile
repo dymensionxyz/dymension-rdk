@@ -37,17 +37,6 @@ COPY . .
 
 RUN go install ./cmd/rollappd
 
-# Init rollapp script env vars
-ENV KEY_NAME_ROLLAPP="rol-user"
-ENV CHAIN_ID=rollapp
-ENV CHAIN_DIR=$HOME/.rollapp    
-ENV ROLLAPP_ID=rollapp
-ENV MONIKER=rollapp-sequencer
-ENV TOKEN_AMOUNT=1000000000000000000000urap
-ENV STAKING_AMOUNT=500000000000000000000urap
-ENV RPC_PORT="0.0.0.0:26667"
-
 RUN chmod +x ./scripts/*.sh
-# RUN bash ./scripts/init_rollapp.sh
 
 EXPOSE 26656 26657 1317 9090
