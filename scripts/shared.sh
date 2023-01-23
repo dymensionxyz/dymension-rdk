@@ -14,11 +14,8 @@ DA_NAMESPACE_ID=${DA_NAMESPACE_ID:-"[0,0,0,0,0,0,255,255]"}
 #TODO: make most params based on chain ID
 #ROLLAPP CONFIG
 KEY_NAME_ROLLAPP=${KEY_NAME_ROLLAPP:-"rol-user"}
-SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"dymension"}
-SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\"}"}
-SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \""$HOME"/.rollapp\", \"db_path\": \"data\", \"proposer_pub_key\":\"$HOME/.rollapp/config/priv_validator_key.json\"}"}
-DA_LAYER=${DA_LAYER:-"celestia"}
-DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\", \"timeout\": 60000000000, \"fee\":6000, \"gas_limit\": 6000000, \"namespace_id\":$DA_NAMESPACE_ID}"}
+
+
 AGGREGATOR=${AGGREGATOR:-"true"}
 BATCH_SIZE=${BATCH_SIZE:-"500"}
 BLOCK_TIME=${BLOCK_TIME:-"0.2s"}
@@ -35,6 +32,13 @@ GRPC_WEB_LADDRESS=${GRPC_WEB_LADDRESS:-"0.0.0.0:9081"}
 API_ADDRESS=${API_ADDRESS:-"0.0.0.0:1417"}
 LOG_LEVEL=${LOG_LEVEL:-"debug"}
 P2P_SEEDS=${P2P_SEEDS:-""}
+
+SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"dymension"}
+SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\"}"}
+SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \""$HOME"/.rollapp\", \"db_path\": \"data\", \"proposer_pub_key\":\"$HOME/.rollapp/config/priv_validator_key.json\"}"}
+
+DA_LAYER=${DA_LAYER:-"celestia"}
+DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\", \"timeout\": 60000000000, \"fee\":6000, \"gas_limit\": 6000000, \"namespace_id\":$DA_NAMESPACE_ID}"}
 
 #IBC CONFIG
 RELAYER_KEY_FOR_ROLLAP=${RELAYER_KEY_FOR_ROLLAP:-"relayer-rollapp-key"}

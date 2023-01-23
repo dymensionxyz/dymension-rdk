@@ -49,7 +49,6 @@ if [ -f "$RLY_CONFIG_FILE" ]; then
 fi
 
 echo '# -------------------------- initializing rly config ------------------------- #'
-SETTLEMENT_CONFIG="{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\"}"
 rly config init --settlement-config "$SETTLEMENT_CONFIG"
 
 echo '# ------------------------- adding chains to rly config ------------------------- #'
