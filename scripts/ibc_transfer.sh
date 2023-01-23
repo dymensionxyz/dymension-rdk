@@ -20,7 +20,7 @@ usage ()
     echo "rol2hub: ibc-transfer of $URAP_AMOUNT to $KEY_NAME_GENESIS from $KEY_NAME_ROLLAPP"
     echo "hub_back: transfer back the tokens from the hub to the rollapp"
 	echo "hub2rol: ibc-transfer of $DYM_AMOUNT to $KEY_NAME_ROLLAPP from $KEY_NAME_GENESIS"
-    echo "hub_back: transfer back the tokens from the hub to the rollapp"
+    echo "rol_back: transfer back the tokens from the rollapp to the hub"
 	echo ""
 
 	exit 1
