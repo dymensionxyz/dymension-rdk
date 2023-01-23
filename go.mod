@@ -8,7 +8,7 @@ require (
 	github.com/CosmWasm/wasmvm v1.1.1 // indirect
 	github.com/cosmos/cosmos-sdk v0.45.11
 	github.com/cosmos/ibc-go/v3 v3.4.0
-	github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230116100916-3b8f186945a2
+	github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230122143435-e30054b0cfac
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/google/btree v1.1.2 // indirect
