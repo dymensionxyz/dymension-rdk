@@ -15,7 +15,7 @@ else
 fi
 
 $SETTLEMENT_EXECUTABLE tx sequencer create-sequencer "$SEQ_PUB_KEY" "$ROLLAPP_ID" "$DESCRIPTION" \
-  --from "$KEY_NAME_DYM" \
+  --from "$KEY_NAME_GENESIS" \
   --chain-id "$SETTLEMENT_CHAIN_ID" \
   --keyring-backend test \
   --broadcast-mode block

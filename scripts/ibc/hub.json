@@ -2,8 +2,8 @@
   "type": "cosmos",
   "value": {
     "key": "relayer-hub-key",
-    "chain-id": "local-testnet",
-    "rpc-addr": "tcp://127.0.0.1:36657",
+    "chain-id": "hub",
+    "rpc-addr": "tcp://18.202.218.150:26657",
     "account-prefix": "dym",
     "keyring-backend": "test",
     "gas-adjustment": 1.2,

@@ -72,13 +72,16 @@ rly keys add "$SETTLEMENT_CHAIN_ID" "$RELAYER_KEY_FOR_HUB"
 
 echo '# ------------------------------- fund rly account on hub ------------------------------ #'
 #TODO: check if accounts exist and funded before funding again
-fund_hub_account
+# fund_hub_account
 echo '# ------------------------------- fund rly on rollapp ------------------------------ #'
-fund_rollapp_account
+# fund_rollapp_account
+
+
+read -r -p "waiting to fund accounts..."
 
 #TODO: validate by code the accounts are actually funded
-dymd q bank balances "$(rly keys show $SETTLEMENT_CHAIN_ID)"
-rollappd q bank balances "$(rly keys show $CHAIN_ID)" --home $CHAIN_DIR
+# $SETTLEMENT_EXECUTABLE q bank balances "$(rly keys show "$SETTLEMENT_CHAIN_ID")"
+# $EXECUTABLE q bank balances "$(rly keys show "$CHAIN_ID")" --home "$CHAIN_DIR"
 
 echo '# -------------------------------- creating IBC link ------------------------------- #'
 rly paths new "$CHAIN_ID" "$SETTLEMENT_CHAIN_ID" "$RELAYER_PATH" --src-port "$IBC_PORT" --dst-port "$IBC_PORT" --version "$IBC_VERSION"
