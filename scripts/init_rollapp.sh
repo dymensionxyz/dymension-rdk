@@ -28,6 +28,8 @@ if [ -f "$GENESIS_FILE" ]; then
 fi
 
 
+#TODO: validate dymd exists
+
 $EXECUTABLE dymint unsafe-reset-all  --home "$CHAIN_DIR"
 $EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
 
@@ -49,6 +51,10 @@ sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$GENESIS_FILE"
 sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
 #TODO: set genesis params (rewards distribution, infaltion, staking denom)
 
+
+$EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --home "$CHAIN_DIR"
+SEQ_ADDR=$($SETTLEMENT_EXECUTABLE keys show -a "$KEY_NAME_DYM" --keyring-backend test --keyring-dir "$KEYRING_PATH")
+read -r -p "please fund the following sequencer account [$SEQ_ADDR]: "
 
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
 $EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
