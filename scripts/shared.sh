@@ -1,15 +1,12 @@
-SETTLEMENT_CHAIN_ID=hub
-KEY_NAME_ROLLAPP=local-user
+# ----------------------------- run the following to fit to the infrastructure params ---------------------------- #
+# export SETTLEMENT_CHAIN_ID=hub
+# export KEY_NAME_ROLLAPP=local-user
 
+# export CHAIN_ID=rollapp1
+# export ROLLAPP_ID=rollapp1
 
-CHAIN_ID=rollapp1
-ROLLAPP_ID=rollapp1
-
-RPC_LADDRESS="127.0.0.1:26660"
-SETTLEMENT_RPC="127.0.0.1:26657"
-
-EXECUTABLE="rollappd "
-SETTLEMENT_EXECUTABLE="dymd"
+# export RPC_LADDRESS="127.0.0.1:26660"
+# export SETTLEMENT_RPC="127.0.0.1:26657"
 
 
 #SETTLEMENT CONFIG

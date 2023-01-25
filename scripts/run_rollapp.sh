@@ -8,6 +8,11 @@ if [ ! "$SETTLEMENT_LAYER" = "dymension" ]; then
   SETTLEMENT_CONFIG="$SETTLEMENT_CONFIG_MOCK"
 fi
 
+if [ "$DA_LAYER" = "mock" ]; then
+  echo "using mock DA layer"
+  DA_LAYER_CONFIG="30s"
+fi
+
 # If aggregator is set to true pass the aggregator flag
 if [ "$AGGREGATOR" = "true" ]; then
   AGGREGATOR_FLAG="--dymint.aggregator"
@@ -17,8 +22,8 @@ fi
 
 #TODO: make running a mock through a parameter
 $EXECUTABLE start $AGGREGATOR_FLAG \
-  --dymint.da_layer "mock" \
-  --dymint.da_config "30s" \
+  --dymint.da_layer "$DA_LAYER" \
+  --dymint.da_config "$DA_LAYER_CONFIG" \
   --dymint.settlement_layer "$SETTLEMENT_LAYER" \
   --dymint.settlement_config "$SETTLEMENT_CONFIG" \
   --dymint.block_batch_size "$BATCH_SIZE" \
