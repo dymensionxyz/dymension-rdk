@@ -3,9 +3,8 @@ BASEDIR=$(dirname "$0")
 . "$BASEDIR"/shared.sh
 
 # If the settlement layer is set to dymension, use $SETTLEMENT_CONFIG otherwise use $SETTLEMENT_CONFIG_MOCK
-if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
-  SETTLEMENT_CONFIG="$SETTLEMENT_CONFIG"
-else
+if [ ! "$SETTLEMENT_LAYER" = "dymension" ]; then
+  echo "using mock settlement layer"
   SETTLEMENT_CONFIG="$SETTLEMENT_CONFIG_MOCK"
 fi
 
@@ -19,6 +18,7 @@ fi
 #TODO: make running a mock through a parameter
 $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.da_layer "mock" \
+  --dymint.da_config "30s" \
   --dymint.settlement_layer "$SETTLEMENT_LAYER" \
   --dymint.settlement_config "$SETTLEMENT_CONFIG" \
   --dymint.block_batch_size "$BATCH_SIZE" \

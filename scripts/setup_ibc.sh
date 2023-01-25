@@ -83,6 +83,10 @@ read -r -p "waiting to fund accounts..."
 # $SETTLEMENT_EXECUTABLE q bank balances "$(rly keys show "$SETTLEMENT_CHAIN_ID")"
 # $EXECUTABLE q bank balances "$(rly keys show "$CHAIN_ID")" --home "$CHAIN_DIR"
 
+#To fund docker compose
+# dymd tx bank send `dymd keys show -a local-user --keyring-backend test` dym1rxth76mygwxe56p7ya8fjljy62upancf8ddkjz 1000udym --keyring-backend test --node tcp://localhost:26657
+# rollappd tx bank send `rollappd keys show -a local-user --keyring-backend test` rol17gna3wwtpeku9xcyszastqa4yy7rqgzctav85t 10000urap --keyring-backend test --node tcp://localhost:26657
+
 echo '# -------------------------------- creating IBC link ------------------------------- #'
 rly paths new "$CHAIN_ID" "$SETTLEMENT_CHAIN_ID" "$RELAYER_PATH" --src-port "$IBC_PORT" --dst-port "$IBC_PORT" --version "$IBC_VERSION"
 rly transact link "$RELAYER_PATH" --src-port "$IBC_PORT" --dst-port "$IBC_PORT" --version "$IBC_VERSION"
