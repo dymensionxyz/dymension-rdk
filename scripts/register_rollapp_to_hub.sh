@@ -7,4 +7,5 @@ $SETTLEMENT_EXECUTABLE tx rollapp create-rollapp "$ROLLAPP_ID" stamp1 "genesis-p
   --from "$KEY_NAME_GENESIS" \
   --chain-id "$SETTLEMENT_CHAIN_ID" \
   --keyring-backend test \
-  --broadcast-mode block
+  --broadcast-mode block \
+  --node tcp://"$SETTLEMENT_RPC"

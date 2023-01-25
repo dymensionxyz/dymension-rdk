@@ -1,20 +1,16 @@
-# ----------------------------- run the following to fit to the infrastructure params ---------------------------- #
-# export SETTLEMENT_CHAIN_ID=hub
-# export KEY_NAME_ROLLAPP=local-user
+# export RPC_LADDRESS="c2-34-249-17-158.eu-west-1.compute.amazonaws.com:26667"
+SETTLEMENT_RPC="ec2-18-202-218-150.eu-west-1.compute.amazonaws.com:36657"
 
-# export CHAIN_ID=rollapp1
-# export ROLLAPP_ID=rollapp1
-
-# export RPC_LADDRESS="127.0.0.1:26660"
-# export SETTLEMENT_RPC="127.0.0.1:26657"
+# server1: ec2-user@ec2-18-202-218-150.eu-west-1.compute.amazonaws.com
+# server2: ec2-user@ec2-34-255-11-227.eu-west-1.compute.amazonaws.com
+# Rollapp: ec2-user@ec2-34-249-17-158.eu-west-1.compute.amazonaws.com
 
 
 #SETTLEMENT CONFIG
 KEY_NAME_GENESIS=${KEY_NAME_GENESIS:-"local-user"}
 KEY_NAME_DYM=${KEY_NAME_DYM:-"local-sequencer"}
 
-KEYRING_PATH=${KEYRING_PATH:-"$HOME/.dymension"}
-KEYRING_PATH="$HOME/.rollapp"
+KEYRING_PATH=${KEYRING_PATH:-"$HOME/.rollapp"}
 
 SETTLEMENT_EXECUTABLE=${SETTLEMENT_EXECUTABLE:-dymd}
 SETTLEMENT_CHAIN_ID=${SETTLEMENT_CHAIN_ID:-"local-testnet"}
@@ -33,9 +29,9 @@ AGGREGATOR=${AGGREGATOR:-"true"}
 BATCH_SIZE=${BATCH_SIZE:-"60"}
 BLOCK_TIME=${BLOCK_TIME:-"0.2s"}
 EXECUTABLE=${EXECUTABLE:-rollappd}
-CHAIN_ID=${CHAIN_ID:-rollapp1}
+CHAIN_ID=${CHAIN_ID:-rollapp}
 CHAIN_DIR=${CHAIN_DIR:-$HOME/.rollapp}
-ROLLAPP_ID=${ROLLAPP_ID:-rollapp1}
+ROLLAPP_ID=${ROLLAPP_ID:-rollapp}
 MONIKER=${MONIKER:-rollapp-sequencer}
 NAMESPACE_ID=${NAMESPACE_ID:-"000000000000ffff"}
 RPC_LADDRESS=${RPC_LADDRESS:-"0.0.0.0:26667"}
@@ -43,7 +39,7 @@ P2P_LADDRESS=${P2P_LADDRESS:-"0.0.0.0:26668"}
 GRPC_LADDRESS=${GRPC_LADDRESS:-"0.0.0.0:9080"}
 GRPC_WEB_LADDRESS=${GRPC_WEB_LADDRESS:-"0.0.0.0:9081"}
 API_ADDRESS=${API_ADDRESS:-"0.0.0.0:1417"}
-LOG_LEVEL=${LOG_LEVEL:-"debug"}
+LOG_LEVEL=${LOG_LEVEL:-"info"}
 P2P_SEEDS=${P2P_SEEDS:-""}
 
 SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"dymension"}
