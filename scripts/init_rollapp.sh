@@ -54,6 +54,9 @@ sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
 
 $EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --home "$CHAIN_DIR"
 SEQ_ADDR=$($SETTLEMENT_EXECUTABLE keys show -a "$KEY_NAME_DYM" --keyring-backend test --keyring-dir "$KEYRING_PATH")
+echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB]: "
+SEQ_ACCOUNT_ON_HUB="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyring-dir $KEYRING_PATH --keyring-backend test)"
+$SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node tcp://"$SETTLEMENT_RPC"
 read -r -p "please fund the following sequencer account [$SEQ_ADDR]: "
 
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"

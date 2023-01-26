@@ -20,7 +20,6 @@ else
   AGGREGATOR_FLAG=""
 fi
 
-#TODO: make running a mock through a parameter
 $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.da_layer "$DA_LAYER" \
   --dymint.da_config "$DA_LAYER_CONFIG" \
