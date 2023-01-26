@@ -41,11 +41,16 @@ echo '# -------------------------------- creating keys -------------------------
 rly keys add "$CHAIN_ID" "$RELAYER_KEY_FOR_ROLLAP"
 rly keys add "$SETTLEMENT_CHAIN_ID" "$RELAYER_KEY_FOR_HUB"
 
-echo "# ------------------------------- balance of rly account on hub [$(rly keys show "$SETTLEMENT_CHAIN_ID")]------------------------------ #"
-$SETTLEMENT_EXECUTABLE q bank balances "$(rly keys show "$SETTLEMENT_CHAIN_ID")" --node tcp://"$SETTLEMENT_RPC_FOR_RELAYER"
+RLY_HUB_ADDR=$(rly keys show "$SETTLEMENT_CHAIN_ID")
+RLY_ROLLAPP_ADDR=$(rly keys show "$CHAIN_ID")
 
-echo "# ------------------------------- balance of rly account on rollapp [$(rly keys show "$CHAIN_ID")] ------------------------------ #"
+echo "# ------------------------------- balance of rly account on hub [$RLY_HUB_ADDR]------------------------------ #"
+$SETTLEMENT_EXECUTABLE q bank balances "$(rly keys show "$SETTLEMENT_CHAIN_ID")" --node tcp://"$SETTLEMENT_RPC_FOR_RELAYER"
+echo "From within the hub node: \"$SETTLEMENT_EXECUTABLE tx bank send $KEY_NAME_GENESIS $RLY_HUB_ADDR 1000udym --keyring-backend test\""
+
+echo "# ------------------------------- balance of rly account on rollapp [$RLY_ROLLAPP_ADDR] ------------------------------ #"
 $EXECUTABLE q bank balances "$(rly keys show "$CHAIN_ID")" --node tcp://"$ROLLAPP_RPC_FOR_RELAYER"
+echo "From within the rollapp node: \"$EXECUTABLE tx bank send $KEY_NAME_ROLLAPP $RLY_ROLLAPP_ADDR 10000urap --keyring-backend test\""
 
 read -r -p "waiting to fund accounts. Press to continue..."
 
