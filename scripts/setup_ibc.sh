@@ -47,8 +47,7 @@ $SETTLEMENT_EXECUTABLE q bank balances "$(rly keys show "$SETTLEMENT_CHAIN_ID")"
 echo "# ------------------------------- balance of rly account on rollapp [$(rly keys show "$CHAIN_ID")] ------------------------------ #"
 $EXECUTABLE q bank balances "$(rly keys show "$CHAIN_ID")" --node tcp://"$ROLLAPP_RPC_FOR_RELAYER"
 
-read -r -p "waiting to fund accounts..."
-
+read -r -p "waiting to fund accounts. Press to continue..."
 
 echo '# -------------------------------- creating IBC link ------------------------------- #'
 rly paths new "$CHAIN_ID" "$SETTLEMENT_CHAIN_ID" "$RELAYER_PATH" --src-port "$IBC_PORT" --dst-port "$IBC_PORT" --version "$IBC_VERSION"
