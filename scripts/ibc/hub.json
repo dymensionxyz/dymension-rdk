@@ -3,7 +3,7 @@
   "value": {
     "key": "relayer-hub-key",
     "chain-id": "local-testnet",
-    "rpc-addr": "tcp://127.0.0.1:36657",
+    "rpc-addr": "",
     "account-prefix": "dym",
     "keyring-backend": "test",
     "gas-adjustment": 1.2,

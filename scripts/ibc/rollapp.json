@@ -3,7 +3,7 @@
   "value": {
     "key": "relayer-rollapp-key",
     "chain-id": "rollapp",
-    "rpc-addr": "tcp://0.0.0.0:26667",
+    "rpc-addr": "",
     "account-prefix": "rol",
     "keyring-backend": "test",
     "gas-adjustment": 1.2,

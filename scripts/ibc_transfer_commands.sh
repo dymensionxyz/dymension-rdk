@@ -51,29 +51,14 @@ from_rollapp_back_2_hub() {
 }
 
 
-#TODO: this multi party test should be moved to testing/infra repo
-# from_rollappX_2_rollappY_through_hub() {
-#     # TODO: take address from command
-#     MEMO='{"forward":{"receiver":"rol1g0f0cth5acca6agtlshv25kpxf33j3kdkkdzxs","port":"transfer","channel":"channel-0"}}'
-
-#     rollappd tx ibc-transfer transfer "$IBC_PORT" "$ROLLAPP_CHANNEL_NAME" "$HUB_GENESIS_ADDR" 95urap \
-#     --from $KEY_NAME_ROLLAPP \
-#     --chain-id "$CHAIN_ID" \
-#      --broadcast-mode block \
-#      --keyring-backend test \
-#       --home $CHAIN_DIR \
-#       --memo $MEMO
-# }
-
-
 query_test_accounts() {
     echo '# ------------------------------------ .. ------------------------------------ #'
     echo "Rollapp:"
-    rollappd q bank balances $ROLLAPP_GENESIS_ADDR --home $CHAIN_DIR
+    rollappd q bank balances $ROLLAPP_GENESIS_ADDR --node tcp://"$ROLLAPP_RPC_FOR_RELAYER"
 
     echo '# ------------------------------------ .. ------------------------------------ #'
     echo "Hub:"
-    dymd q bank balances $HUB_GENESIS_ADDR
+    dymd q bank balances $HUB_GENESIS_ADDR --node tcp://"$SETTLEMENT_RPC_FOR_RELAYER"
 
     # echo '# ------------------------------------ .. ------------------------------------ #'
     # echo "Rollapp1:"
