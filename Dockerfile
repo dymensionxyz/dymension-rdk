@@ -4,39 +4,41 @@
 
 FROM golang:1.18-bullseye as dymension-builder
 
-RUN apt-get update -y && apt-get install -y build-essential
-
-ENV PACKAGES curl make git bash gcc python3 wget
-
+ENV PACKAGES build-essential curl make git bash gcc wget
+RUN apt-get update -y
 RUN apt-get install -y $PACKAGES
 
 WORKDIR /app
 
-RUN git clone https://github.com/dymensionxyz/dymension && cd dymension && make install
+#Build dymd
+RUN git clone https://github.com/dymensionxyz/dymension && cd dymension && make build
+
+#Build rollappd
+WORKDIR /app/dymension-rdk
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+COPY . .
+RUN make build
+
 
 # ---------------------------------------------------------------------------- #
 #                                    Rollapp                                   #
 # ---------------------------------------------------------------------------- #
 
-FROM golang:1.18-bullseye
-COPY --from=dymension-builder /go/bin/dymd /go/bin
+FROM debian:bullseye
+COPY --from=dymension-builder /app/dymension/bin/dymd /usr/local/bin/
+COPY --from=dymension-builder /app/dymension-rdk/rollappd /usr/local/bin/
 
-RUN apt-get update -y && apt-get install -y build-essential
-
-ENV PACKAGES curl make git bash gcc python3 wget
-
+ENV PACKAGES curl make bash jq
+RUN apt-get update -y
 RUN apt-get install -y $PACKAGES
 
 WORKDIR /app
-
-COPY go.mod go.sum* ./
-
-RUN go mod download
-
-COPY . .
-
-RUN go install ./cmd/rollappd
-
+COPY scripts/* ./scripts/
 RUN chmod +x ./scripts/*.sh
 
-EXPOSE 26656 26657 1317 9090
+EXPOSE 26656 26667 1317 9090
+
+ENTRYPOINT ["/usr/local/bin/rollappd"]
