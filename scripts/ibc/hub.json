@@ -3,7 +3,7 @@
   "value": {
     "key": "relayer-hub-key",
     "chain-id": "local-testnet",
-    "rpc-addr": "tcp://ec2-18-202-218-150.eu-west-1.compute.amazonaws.com:36657",
+    "rpc-addr": "",
     "account-prefix": "dym",
     "keyring-backend": "test",
     "gas-adjustment": 1.2,
