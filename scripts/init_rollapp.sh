@@ -6,6 +6,7 @@ source "$BASEDIR"/shared.sh
 TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000urap}
 #half is staked
 STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urap}
+SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000udym}
 
 CONFIG_DIRECTORY="$CHAIN_DIR/config"
 GENESIS_FILE="$CONFIG_DIRECTORY/genesis.json"
@@ -53,11 +54,18 @@ sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
 
 
 $EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --home "$CHAIN_DIR"
-SEQ_ADDR=$($SETTLEMENT_EXECUTABLE keys show -a "$KEY_NAME_DYM" --keyring-backend test --keyring-dir "$KEYRING_PATH")
-echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB]: "
-SEQ_ACCOUNT_ON_HUB="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyring-dir $KEYRING_PATH --keyring-backend test)"
-$SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node tcp://"$SETTLEMENT_RPC"
-read -r -p "please fund the following sequencer account [$SEQ_ADDR]: "
+
+
+#If using settlement layer, make sure the sequencer account is funded
+if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
+    SEQ_ACCOUNT_ON_HUB="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyring-dir $KEYRING_PATH --keyring-backend test)"
+    echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB]: "
+    $SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node tcp://"$SETTLEMENT_RPC"
+
+    echo "Make sure the sequencer account [$SEQ_ACCOUNT_ON_HUB] is funded"
+    echo "From within the hub node: \"$SETTLEMENT_EXECUTABLE tx bank send $KEY_NAME_GENESIS $SEQ_ADDR $SEQUENCER_AMOUNT --keyring-backend test\""
+    read -r -p "Press to continue..."
+    fi
 
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
 $EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"

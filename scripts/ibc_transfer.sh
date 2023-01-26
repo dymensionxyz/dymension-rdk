@@ -5,6 +5,7 @@ source "$BASEDIR"/ibc_transfer_commands.sh
 IBC_PORT=transfer
 IBC_VERSION=ics20-1
 
+#TODO:fix this. The hub addr shouldn't depend on the local keyring
 HUB_GENESIS_ADDR=$(dymd keys show $KEY_NAME_GENESIS -a --keyring-backend test)
 ROLLAPP_GENESIS_ADDR=$(rollappd keys show $KEY_NAME_ROLLAPP -a --keyring-backend test --home $CHAIN_DIR)
 TOKENS_AMOUNT=500000000
