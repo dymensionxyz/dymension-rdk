@@ -30,38 +30,19 @@ func NewTestContext() sdk.Context {
 }
 
 func NewTestSequencerKeeperFromApp(t *testing.T, app *app.App) (*keeper.Keeper, sdk.Context) {
-	storeKey := sdk.NewKVStoreKey(types.StoreKey)
-	t_storeKey := sdk.NewTransientStoreKey("t_" + types.StoreKey)
-
-	db := tmdb.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db)
-	stateStore.MountStoreWithDB(storeKey, sdk.StoreTypeIAVL, db)
-	stateStore.MountStoreWithDB(t_storeKey, sdk.StoreTypeTransient, nil)
-	require.NoError(t, stateStore.LoadLatestVersion())
-
 	cdc := app.AppCodec()
-
-	paramsSubspace := typesparams.NewSubspace(cdc,
-		types.Amino,
-		storeKey,
-		t_storeKey,
-		"SequencerParams",
-	)
 	k := keeper.NewKeeper(
 		cdc,
-		storeKey,
-		paramsSubspace,
+		app.GetKey(types.StoreKey),
+		app.GetSubspace(types.ModuleName),
 	)
-
-	ctx := app.GetBaseApp().NewContext(false, tmproto.Header{}).WithMultiStore(stateStore)
-
-	// Initialize default params
+	ctx := app.GetBaseApp().NewContext(false, tmproto.Header{})
 	k.SetParams(ctx, types.DefaultParams())
 
 	return k, ctx
 }
 
-func NewTestSequencerKeeper(t *testing.T, ctx sdk.Context) (*keeper.Keeper, sdk.Context) {
+func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	t_storeKey := sdk.NewTransientStoreKey("t_" + types.StoreKey)
 
@@ -86,7 +67,7 @@ func NewTestSequencerKeeper(t *testing.T, ctx sdk.Context) (*keeper.Keeper, sdk.
 		paramsSubspace,
 	)
 
-	ctx = ctx.WithMultiStore(stateStore)
+	ctx := NewTestContext().WithMultiStore(stateStore)
 	// Initialize default params
 	k.SetParams(ctx, types.DefaultParams())
 
