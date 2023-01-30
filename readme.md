@@ -36,10 +36,10 @@ Get started with [building RollApps](https://docs.dymension.xyz/developers/getti
 
 ## Installing / Getting started
 ```shell
-go install ./cmd/rollappd/
+make install
 ```
 
-This will build the ```rollappd``` binary
+This will build and install the ```rollappd``` binary
 
 
 ### Initial configuration
