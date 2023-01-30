@@ -27,7 +27,7 @@ func TestGetParams(t *testing.T) {
 		},
 	}
 	for _, tC := range testCases {
-		k, ctx := testutils.NewTestSequencer(t)
+		k, ctx := testutils.NewTestSequencerKeeper(t, testutils.NewTestContext())
 		k.SetParams(ctx, tC.params)
 		t.Run(tC.desc, func(t *testing.T) {
 			require.EqualValues(t, tC.params, k.GetParams(ctx))
