@@ -15,12 +15,6 @@ var (
 	_ codectypes.UnpackInterfacesMessage = (*MsgCreateSequencer)(nil)
 )
 
-// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
-func (msg MsgCreateSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	var pubKey cryptotypes.PubKey
-	return unpacker.UnpackAny(msg.Pubkey, &pubKey)
-}
-
 func NewMsgCreateSequencer(
 	valAddr sdk.ValAddress,
 	pubKey cryptotypes.PubKey, //nolint:interfacer
@@ -39,6 +33,12 @@ func NewMsgCreateSequencer(
 		SequencerAddress: valAddr.String(),
 		Pubkey:           pkAny,
 	}, nil
+}
+
+// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
+func (msg MsgCreateSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	var pubKey cryptotypes.PubKey
+	return unpacker.UnpackAny(msg.Pubkey, &pubKey)
 }
 
 func (msg MsgCreateSequencer) Route() string {
@@ -66,16 +66,16 @@ func (msg MsgCreateSequencer) GetSignBytes() []byte {
 // ValidateBasic implements the sdk.Msg interface.
 func (msg MsgCreateSequencer) ValidateBasic() error {
 	// note that unmarshaling from bech32 ensures either empty or valid
+	if msg.DelegatorAddress == "" {
+		return ErrEmptyDelegatorAddr
+	}
+	if msg.SequencerAddress == "" {
+		return ErrEmptyValidatorAddr
+	}
+
 	delAddr, err := sdk.AccAddressFromBech32(msg.DelegatorAddress)
 	if err != nil {
 		return ErrSequencerNotFound
-	}
-	if delAddr.Empty() {
-		return ErrEmptyDelegatorAddr
-	}
-
-	if msg.SequencerAddress == "" {
-		return ErrEmptyValidatorAddr
 	}
 
 	valAddr, err := sdk.ValAddressFromBech32(msg.SequencerAddress)
@@ -92,6 +92,10 @@ func (msg MsgCreateSequencer) ValidateBasic() error {
 
 	if msg.Description == (stakingtypes.Description{}) {
 		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
+	}
+
+	if msg.Description.Moniker == "" {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "missing moniker")
 	}
 
 	return nil
