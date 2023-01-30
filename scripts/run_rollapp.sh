@@ -28,7 +28,7 @@ $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.block_batch_size "$BATCH_SIZE" \
   --dymint.namespace_id "$NAMESPACE_ID" \
   --dymint.block_time "$BLOCK_TIME" \
-  --p2p.seeds "$ROLLAPP_SEEDS" \
+  --p2p.seeds "$P2P_SEEDS" \
   --home "$CHAIN_DIR" \
   --log_level "$LOG_LEVEL"
 

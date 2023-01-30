@@ -26,7 +26,7 @@ GRPC_LADDRESS=${GRPC_LADDRESS:-"0.0.0.0:9080"}
 GRPC_WEB_LADDRESS=${GRPC_WEB_LADDRESS:-"0.0.0.0:9081"}
 API_ADDRESS=${API_ADDRESS:-"0.0.0.0:1417"}
 LOG_LEVEL=${LOG_LEVEL:-"info"}
-ROLLAPP_SEEDS=${ROLLAPP_SEEDS:-""}
+ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 
 
 # ------------------------------- dymint config ------------------------------ #
