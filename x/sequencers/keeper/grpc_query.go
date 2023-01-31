@@ -16,8 +16,6 @@ type Querier struct {
 
 var _ types.QueryServer = Querier{}
 
-// var _ types.QueryServer = Keeper{}
-
 func (k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
