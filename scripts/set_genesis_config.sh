@@ -29,8 +29,13 @@ set_gov_params() {
 }
 
 set_sequencers() {
+    echo "NOT SUPPORTED YET"
+    echo "please run sh scripts/create_sequencer.sh when the node is running"
+    return
+
+
     sequencerDefault='
-    {
+        {
           "commission": {
             "commission_rates": {
               "max_change_rate": "0.000000000000000000",
@@ -61,7 +66,12 @@ set_sequencers() {
         }
     '
 
-    echo "NOT SUPPORTED YET"
-    #Add this default, and change consensus_pubkey.key and operator_address
-    # jq  --arg seq '.app_state.sequencers.sequencers |= .+ $seq "urap"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+    seq_array=$(echo "$sequencerDefault" | jq -c '[.]')
+    jq  --argjson seq_array $seq_array '.app_state.sequencers.sequencers = $seq_array' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+
+    pubkey=$($EXECUTABLE dymint show-sequencer --home $CHAIN_DIR | jq .key)
+    operator_address=$($EXECUTABLE keys show -a $KEY_NAME_ROLLAPP --keyring-backend test --home $CHAIN_DIR)
+
+    jq  --arg pubkey $pubkey '.app_state.sequencers.sequencers[0].consensus_pubkey.key = ($pubkey  | fromjson)' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+    jq  --arg operator_address $operator_address '.app_state.sequencers.sequencers[0].operator_address = $operator_address' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
 }
