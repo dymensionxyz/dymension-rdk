@@ -49,6 +49,14 @@ sed -i'' -e "/\[p2p\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$P2P_LADDRESS\"/" "$TE
 sed -i'' -e "s/^persistent_peers *= .*/persistent_peers = \"$ROLLAPP_PEERS\"/" "$TENDERMINT_CONFIG_FILE"
 
 
+
+if [ -n "$UNSAFE_CORS" ]; then
+  echo "Setting CORS"
+  sed -ie 's/enabled-unsafe-cors.*$/enabled-unsafe-cors = true/' "$APP_CONFIG_FILE"
+  sed -ie 's/enable-unsafe-cors.*$/enabled-unsafe-cors = true/' "$APP_CONFIG_FILE"
+  sed -ie 's/cors_allowed_origins.*$/cors_allowed_origins = ["*"]/' "$TENDERMINT_CONFIG_FILE"
+fi
+
 # ------------------------------ genesis config ------------------------------ #
 sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$GENESIS_FILE"
 sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
