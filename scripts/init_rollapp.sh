@@ -57,6 +57,16 @@ sed -i'' -e "/\[grpc\]/,+6 s/address *= .*/address = \"$GRPC_LADDRESS\"/" "$APP_
 sed -i'' -e "/\[grpc-web\]/,+7 s/address *= .*/address = \"$GRPC_WEB_LADDRESS\"/" "$APP_CONFIG_FILE"
 sed -i'' -e "/\[rpc\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$RPC_LADDRESS\"/" "$TENDERMINT_CONFIG_FILE"
 sed -i'' -e "/\[p2p\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$P2P_LADDRESS\"/" "$TENDERMINT_CONFIG_FILE"
+sed -i'' -e "s/^persistent_peers *= .*/persistent_peers = \"$ROLLAPP_PEERS\"/" "$TENDERMINT_CONFIG_FILE"
+
+
+
+if [ -n "$UNSAFE_CORS" ]; then
+  echo "Setting CORS"
+  sed -ie 's/enabled-unsafe-cors.*$/enabled-unsafe-cors = true/' "$APP_CONFIG_FILE"
+  sed -ie 's/enable-unsafe-cors.*$/enabled-unsafe-cors = true/' "$APP_CONFIG_FILE"
+  sed -ie 's/cors_allowed_origins.*$/cors_allowed_origins = ["*"]/' "$TENDERMINT_CONFIG_FILE"
+fi
 
 # ------------------------------ genesis config ------------------------------ #
 sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$GENESIS_FILE"
@@ -68,7 +78,7 @@ set_minting_params
 
 
 $EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --home "$CHAIN_DIR"
-
+$EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
 
 #If using settlement layer, make sure the sequencer account is funded
 if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
@@ -81,9 +91,16 @@ if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
     read -r -p "Press to continue..."
     fi
 
-$EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
-$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
 
+if [ "$ROLLAPP_PEERS" != "" ]; then
+  printf "\n======================================================================================================"
+  ROLLAPP_PEERS
+  echo "ROLLAPP_PEERS defined, assuming full node for existing network"
+  echo "To join existing chain, copy the genesis file to $GENESIS_FILE"
+  exit 0
+fi
+
+$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
 
 echo "Do you want to include staker on genesis? (y/N) "
 read -r answer
@@ -98,3 +115,4 @@ read -r answer
 if [ ! "$answer" != "${answer#[Nn]}" ] ;then
   set_sequencers
 fi
+

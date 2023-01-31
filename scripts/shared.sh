@@ -7,16 +7,14 @@ SETTLEMENT_CHAIN_ID=${SETTLEMENT_CHAIN_ID:-"local-testnet"}
 SETTLEMENT_RPC=${SETTLEMENT_RPC:-"127.0.0.1:36657"}
 
 
-
 # ---------------------------------------------------------------------------- #
 #                                ROLLAPP CONFIG                                #
 # ---------------------------------------------------------------------------- #
 KEY_NAME_ROLLAPP=${KEY_NAME_ROLLAPP:-"rol-user"}
 
 EXECUTABLE=${EXECUTABLE:-rollappd}
-CHAIN_ID=${CHAIN_ID:-rollapp}
 CHAIN_DIR=${CHAIN_DIR:-$HOME/.rollapp}
-# ROLLAPP_ID should be the same as CHAIN_ID
+CHAIN_ID=${CHAIN_ID:-rollapp}
 ROLLAPP_ID=${ROLLAPP_ID:-$CHAIN_ID}
 MONIKER=${MONIKER:-$CHAIN_ID-sequencer}
 NAMESPACE_ID=${NAMESPACE_ID:-"000000000000ffff"}
@@ -28,6 +26,8 @@ GRPC_WEB_LADDRESS=${GRPC_WEB_LADDRESS:-"0.0.0.0:9081"}
 API_ADDRESS=${API_ADDRESS:-"0.0.0.0:1417"}
 LOG_LEVEL=${LOG_LEVEL:-"info"}
 P2P_SEEDS=${P2P_SEEDS:-""}
+UNSAFE_CORS=${UNSAFE_CORS:-""}
+ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 
 
 # ------------------------------- dymint config ------------------------------ #
