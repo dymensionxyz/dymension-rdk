@@ -91,7 +91,7 @@ endif
 # ---------------------------------------------------------------------------- #
 .PHONY: install
 install: go.sum ## Installs the binary
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/dymd
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/rollappd
 
 .PHONY: build
 build: ## Compiles the binary
