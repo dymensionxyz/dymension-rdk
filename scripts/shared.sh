@@ -7,7 +7,6 @@ SETTLEMENT_CHAIN_ID=${SETTLEMENT_CHAIN_ID:-"local-testnet"}
 SETTLEMENT_RPC=${SETTLEMENT_RPC:-"127.0.0.1:36657"}
 
 
-
 # ---------------------------------------------------------------------------- #
 #                                ROLLAPP CONFIG                                #
 # ---------------------------------------------------------------------------- #
@@ -28,6 +27,7 @@ GRPC_WEB_LADDRESS=${GRPC_WEB_LADDRESS:-"0.0.0.0:9081"}
 API_ADDRESS=${API_ADDRESS:-"0.0.0.0:1417"}
 LOG_LEVEL=${LOG_LEVEL:-"info"}
 P2P_SEEDS=${P2P_SEEDS:-""}
+UNSAFE_CORS=${UNSAFE_CORS:-""}
 
 
 # ------------------------------- dymint config ------------------------------ #
