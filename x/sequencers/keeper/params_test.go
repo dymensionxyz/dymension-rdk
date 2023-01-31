@@ -3,15 +3,34 @@ package keeper_test
 import (
 	"testing"
 
+	"github.com/dymensionxyz/rollapp/x/sequencers/testutils"
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 	"github.com/stretchr/testify/require"
 )
 
 func TestGetParams(t *testing.T) {
-	k, ctx := testkeeper.sequencersKeeper(t)
-	params := types.DefaultParams()
-
-	k.SetParams(ctx, params)
-
-	require.EqualValues(t, params, k.GetParams(ctx))
+	testCases := []struct {
+		desc   string
+		params types.Params
+	}{
+		{
+			desc:   "Default params",
+			params: types.DefaultParams(),
+		},
+		{
+			desc: "non-default params",
+			params: types.Params{
+				UnbondingTime:     100,
+				MaxSequencers:     5,
+				HistoricalEntries: 999,
+			},
+		},
+	}
+	for _, tC := range testCases {
+		k, ctx := testutils.NewTestSequencer(t)
+		k.SetParams(ctx, tC.params)
+		t.Run(tC.desc, func(t *testing.T) {
+			require.EqualValues(t, tC.params, k.GetParams(ctx))
+		})
+	}
 }
