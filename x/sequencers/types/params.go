@@ -17,7 +17,7 @@ const (
 	DefaultUnbondingTime time.Duration = time.Hour * 24 * 7 * 3
 
 	// Default maximum number sequencers
-	DefaultMaxSequencers uint32 = 10
+	DefaultMaxSequencers uint32 = 1
 
 	// DefaultHistorical entries is 10000. Apps that don't use IBC can ignore this
 	// value by not adding the staking module to the application module manager's
