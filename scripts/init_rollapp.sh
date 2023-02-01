@@ -76,7 +76,7 @@ set_distribution_params
 set_gov_params
 set_minting_params
 
-
+# --------------------- adding keys and genesis accounts --------------------- #
 $EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --home "$CHAIN_DIR"
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
 
@@ -102,9 +102,9 @@ fi
 
 $EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
 
-echo "Do you want to include staker on genesis? (y/N) "
+echo "Do you want to include staker on genesis? (Y/n) "
 read -r answer
-if [ "$answer" != "${answer#[Yy]}" ] ;then
+if [ ! "$answer" != "${answer#[Nn]}" ] ;then
   $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test --home "$CHAIN_DIR"
   $EXECUTABLE collect-gentxs --home "$CHAIN_DIR"
 fi
