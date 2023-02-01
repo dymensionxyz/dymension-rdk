@@ -1,5 +1,7 @@
 BASEDIR=$(dirname "$0")
 source "$BASEDIR"/shared.sh
+source "$BASEDIR"/set_genesis_config.sh
+
 
 # ---------------------------- initial parameters ---------------------------- #
 # Assuming 1,000,000RAP tokens
@@ -15,6 +17,16 @@ CLIENT_CONFIG_FILE="$CONFIG_DIRECTORY/client.toml"
 APP_CONFIG_FILE="$CONFIG_DIRECTORY/app.toml"
 
 # --------------------------------- run init --------------------------------- #
+if ! command -v "$EXECUTABLE" >/dev/null; then
+  echo "$EXECUTABLE does not exist"
+  exit 1
+fi
+
+if ! command -v "$SETTLEMENT_EXECUTABLE" >/dev/null; then
+  echo "$SETTLEMENT_EXECUTABLE does not exist"
+  exit 1
+fi
+
 # Verify that a genesis file doesn't exists for the dymension chain
 if [ -f "$GENESIS_FILE" ]; then
   printf "\n======================================================================================================\n"
@@ -29,7 +41,6 @@ if [ -f "$GENESIS_FILE" ]; then
 fi
 
 
-#TODO: validate dymd exists
 
 $EXECUTABLE dymint unsafe-reset-all  --home "$CHAIN_DIR"
 $EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
@@ -60,11 +71,14 @@ fi
 # ------------------------------ genesis config ------------------------------ #
 sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$GENESIS_FILE"
 sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
-#TODO: set genesis params (rewards distribution, infaltion, staking denom)
 
+set_distribution_params
+set_gov_params
+set_minting_params
 
+# --------------------- adding keys and genesis accounts --------------------- #
 $EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --home "$CHAIN_DIR"
-
+$EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
 
 #If using settlement layer, make sure the sequencer account is funded
 if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
@@ -77,12 +91,28 @@ if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
     read -r -p "Press to continue..."
     fi
 
-$EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
-$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
-$EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test --home "$CHAIN_DIR"
-$EXECUTABLE collect-gentxs --home "$CHAIN_DIR"
 
 if [ "$ROLLAPP_PEERS" != "" ]; then
   printf "\n======================================================================================================"
+  ROLLAPP_PEERS
+  echo "ROLLAPP_PEERS defined, assuming full node for existing network"
   echo "To join existing chain, copy the genesis file to $GENESIS_FILE"
+  exit 0
 fi
+
+$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
+
+echo "Do you want to include staker on genesis? (Y/n) "
+read -r answer
+if [ ! "$answer" != "${answer#[Nn]}" ] ;then
+  $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test --home "$CHAIN_DIR"
+  $EXECUTABLE collect-gentxs --home "$CHAIN_DIR"
+fi
+
+
+echo "Do you want to register sequencer on genesis? (Y/n) "
+read -r answer
+if [ ! "$answer" != "${answer#[Nn]}" ] ;then
+  set_sequencers
+fi
+
