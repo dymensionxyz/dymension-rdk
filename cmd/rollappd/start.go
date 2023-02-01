@@ -34,6 +34,7 @@ import (
 	dymintconv "github.com/dymensionxyz/dymint/conv"
 	dymintnode "github.com/dymensionxyz/dymint/node"
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
+	"github.com/dymensionxyz/rollapp/app"
 )
 
 const (
@@ -71,6 +72,8 @@ const (
 	flagGRPCWebEnable  = "grpc-web.enable"
 	flagGRPCWebAddress = "grpc-web.address"
 )
+
+var log app.Logger
 
 // StartCmd runs the service passed in, either stand-alone or in-process with Dymint.
 func StartCmd(appCreator types.AppCreator, defaultNodeHome string) *cobra.Command {
@@ -116,6 +119,16 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
+
+			home, err := cmd.Flags().GetString(flags.FlagHome)
+			if err != nil {
+				return err
+			}
+
+			//TODO: add flag to choose file logging or TTY
+			serverCtx.Logger = app.NewLogger(home)
+			//TODO: set log level
+
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
 				return err
