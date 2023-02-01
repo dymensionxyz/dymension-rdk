@@ -44,7 +44,7 @@ BLOCK_TIME=${BLOCK_TIME:-"0.2s"}
 DA_LAYER=${DA_LAYER:-"celestia"}
 DA_LC_ENDPOINT=${DA_LC_ENDPOINT:-"127.0.0.1:26659"}
 DA_NAMESPACE_ID=${DA_NAMESPACE_ID:-"[0,0,0,0,0,0,255,255]"}
-DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\", \"timeout\": 60000000000, \"fee\":9000, \"gas_limit\": 20000000, \"namespace_id\":$DA_NAMESPACE_ID}"}
+DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\", \"timeout\": 60000000000, \"fee\":15000, \"gas_limit\": 20000000, \"namespace_id\":$DA_NAMESPACE_ID}"}
 
 # Settlement config
 SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"dymension"}
