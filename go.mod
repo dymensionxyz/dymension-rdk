@@ -6,7 +6,7 @@ require (
 	github.com/CosmWasm/wasmd v0.28.0
 	github.com/cosmos/cosmos-sdk v0.45.11
 	github.com/cosmos/ibc-go/v3 v3.4.0
-	github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230202101559-ca3018b5f97f
+	github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230202141628-155d83e4a594
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
