@@ -1,5 +1,6 @@
+#!/bin/bash
 BASEDIR=$(dirname "$0")
-source "$BASEDIR"/shared.sh
+. "$BASEDIR"/shared.sh
 
 
 #TODO: make common function
@@ -7,7 +8,8 @@ SEQ_ACCOUNT_ON_HUB="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyrin
 echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB]: "
 $SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node tcp://"$SETTLEMENT_RPC"
 
-read -r -p "Transfer funds if needed and continue..."
+echo "Transfer funds if needed and continue..."
+read -r answer
 #Register rollapp 
 $SETTLEMENT_EXECUTABLE tx rollapp create-rollapp "$ROLLAPP_ID" stamp1 "genesis-path/1" 3 1 '{"Addresses":[]}' \
   --from "$KEY_NAME_DYM" \

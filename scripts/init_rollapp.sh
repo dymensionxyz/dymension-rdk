@@ -1,6 +1,7 @@
+#!/bin/bash
 BASEDIR=$(dirname "$0")
-source "$BASEDIR"/shared.sh
-source "$BASEDIR"/set_genesis_config.sh
+. "$BASEDIR"/shared.sh
+. "$BASEDIR"/set_genesis_config.sh
 
 
 # ---------------------------- initial parameters ---------------------------- #
@@ -8,7 +9,7 @@ source "$BASEDIR"/set_genesis_config.sh
 TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000urap}
 #half is staked
 STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urap}
-SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000udym}
+SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000000udym}
 
 CONFIG_DIRECTORY="$CHAIN_DIR/config"
 GENESIS_FILE="$CONFIG_DIRECTORY/genesis.json"
@@ -88,7 +89,8 @@ if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
 
     echo "Make sure the sequencer account [$SEQ_ACCOUNT_ON_HUB] is funded"
     echo "From within the hub node: \"$SETTLEMENT_EXECUTABLE tx bank send $KEY_NAME_GENESIS $SEQ_ACCOUNT_ON_HUB $SEQUENCER_AMOUNT --keyring-backend test\""
-    read -r -p "Press to continue..."
+    echo "Press to continue..." 
+    read -r answer
     fi
 
 

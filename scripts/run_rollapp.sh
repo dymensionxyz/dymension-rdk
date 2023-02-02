@@ -30,5 +30,6 @@ $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.block_time "$BLOCK_TIME" \
   --p2p.seeds "$P2P_SEEDS" \
   --home "$CHAIN_DIR" \
-  --log_level "$LOG_LEVEL"
+  --log_level "$LOG_LEVEL" \
+  --log-file "$LOG_FILE_PATH"
 

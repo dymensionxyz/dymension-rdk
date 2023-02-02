@@ -27,7 +27,8 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
+
+	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -201,7 +202,7 @@ type appCreator struct {
 }
 
 func (ac appCreator) newApp(
-	logger log.Logger,
+	logger tmlog.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
@@ -252,7 +253,7 @@ func (ac appCreator) newApp(
 }
 
 func (ac appCreator) appExport(
-	logger log.Logger,
+	logger tmlog.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	height int64,

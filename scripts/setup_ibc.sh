@@ -1,5 +1,7 @@
+#!/bin/bash
+
 BASEDIR=$(dirname "$0")
-source "$BASEDIR"/shared.sh
+. "$BASEDIR"/shared.sh
 
 IBC_PORT=transfer
 IBC_VERSION=ics20-1
@@ -52,8 +54,9 @@ echo "# ------------------------------- balance of rly account on rollapp [$RLY_
 $EXECUTABLE q bank balances "$(rly keys show "$CHAIN_ID")" --node tcp://"$ROLLAPP_RPC_FOR_RELAYER"
 echo "From within the rollapp node: \"$EXECUTABLE tx bank send $KEY_NAME_ROLLAPP $RLY_ROLLAPP_ADDR 10000urap --keyring-backend test\""
 
-read -r -p "waiting to fund accounts. Press to continue..."
+echo "waiting to fund accounts. Press to continue..."
+read -r answer
 
 echo '# -------------------------------- creating IBC link ------------------------------- #'
 rly paths new "$CHAIN_ID" "$SETTLEMENT_CHAIN_ID" "$RELAYER_PATH" --src-port "$IBC_PORT" --dst-port "$IBC_PORT" --version "$IBC_VERSION"
-rly transact link "$RELAYER_PATH" --src-port "$IBC_PORT" --dst-port "$IBC_PORT" --version "$IBC_VERSION"
+rly transact link -t300s "$RELAYER_PATH" --src-port "$IBC_PORT" --dst-port "$IBC_PORT" --version "$IBC_VERSION"
