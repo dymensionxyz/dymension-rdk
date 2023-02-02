@@ -1,6 +1,7 @@
+#!/bin/bash
 BASEDIR=$(dirname "$0")
-source "$BASEDIR"/shared.sh
-source "$BASEDIR"/set_genesis_config.sh
+. "$BASEDIR"/shared.sh
+. "$BASEDIR"/set_genesis_config.sh
 
 
 # ---------------------------- initial parameters ---------------------------- #
@@ -8,7 +9,7 @@ source "$BASEDIR"/set_genesis_config.sh
 TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000urap}
 #half is staked
 STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urap}
-SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000udym}
+SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000000udym}
 
 CONFIG_DIRECTORY="$CHAIN_DIR/config"
 GENESIS_FILE="$CONFIG_DIRECTORY/genesis.json"

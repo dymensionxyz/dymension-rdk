@@ -1,5 +1,6 @@
+#!/bin/bash
 BASEDIR=$(dirname "$0")
-source "$BASEDIR"/shared.sh
+. "$BASEDIR"/shared.sh
 
 
 #TODO: make common function

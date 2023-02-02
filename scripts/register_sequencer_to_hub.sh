@@ -1,5 +1,6 @@
+#!/bin/bash
 BASEDIR=$(dirname "$0")
-source "$BASEDIR"/shared.sh
+. "$BASEDIR"/shared.sh
 
 #Register Sequencer
 DESCRIPTION="{\"Moniker\":\"$MONIKER\",\"Identity\":\"\",\"Website\":\"\",\"SecurityContact\":\"\",\"Details\":\"\"}";
