@@ -89,7 +89,8 @@ if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
 
     echo "Make sure the sequencer account [$SEQ_ACCOUNT_ON_HUB] is funded"
     echo "From within the hub node: \"$SETTLEMENT_EXECUTABLE tx bank send $KEY_NAME_GENESIS $SEQ_ACCOUNT_ON_HUB $SEQUENCER_AMOUNT --keyring-backend test\""
-    read -r -p "Press to continue..."
+    echo "Press to continue..." 
+    read -r answer
     fi
 
 
