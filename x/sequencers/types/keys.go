@@ -41,16 +41,6 @@ func GetValidatorByConsAddrKey(addr sdk.ConsAddress) []byte {
 	return append(ValidatorsByConsAddrKey, address.MustLengthPrefix(addr)...)
 }
 
-// AddressFromValidatorsKey creates the validator operator address from ValidatorsKey
-func AddressFromValidatorsKey(key []byte) []byte {
-	return key[2:] // remove prefix bytes and address length
-}
-
-// AddressFromLastValidatorPowerKey creates the validator operator address from LastValidatorPowerKey
-func AddressFromLastValidatorPowerKey(key []byte) []byte {
-	return key[2:] // remove prefix bytes and address length
-}
-
 // GetHistoricalInfoKey returns a key prefix for indexing HistoricalInfo objects.
 func GetHistoricalInfoKey(height int64) []byte {
 	return append(HistoricalInfoKey, []byte(strconv.FormatInt(height, 10))...)

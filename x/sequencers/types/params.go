@@ -16,7 +16,7 @@ const (
 	// TODO: Justify our choice of default here.
 	DefaultUnbondingTime time.Duration = time.Hour * 24 * 7 * 3
 
-	// Default maximum number of bonded validators
+	// Default maximum number sequencers
 	DefaultMaxSequencers uint32 = 1
 
 	// DefaultHistorical entries is 10000. Apps that don't use IBC can ignore this

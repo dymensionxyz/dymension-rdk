@@ -1,4 +1,5 @@
-AMOUNT="100000000dym"
+#100DYM
+AMOUNT="100000000udym"
 
 # ---------------------- create sequencer account on hub --------------------- #
 create_new_account() {
@@ -21,5 +22,9 @@ fund_account() {
 
 create_and_fund_seq_account() {
   create_new_account
+
+  echo "waiting for keyring to be updated"
+  #TODO: validate keyring is updated
+  sleep 5
   fund_account
 }

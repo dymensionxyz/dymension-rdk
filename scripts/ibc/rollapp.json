@@ -1,0 +1,17 @@
+{
+  "type": "cosmos",
+  "value": {
+    "key": "relayer-rollapp-key",
+    "chain-id": "rollapp",
+    "rpc-addr": "",
+    "account-prefix": "rol",
+    "keyring-backend": "test",
+    "gas-adjustment": 1.2,
+    "gas-prices": "0.0000025urap",
+    "debug": true,
+    "timeout": "10s",
+    "output-format": "json",
+    "sign-mode": "direct",
+    "client-type": "01-dymint"
+  }
+}
