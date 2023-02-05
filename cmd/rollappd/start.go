@@ -18,7 +18,6 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
 	"google.golang.org/grpc"
-	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
@@ -35,6 +34,7 @@ import (
 	dymintconv "github.com/dymensionxyz/dymint/conv"
 	dymintnode "github.com/dymensionxyz/dymint/node"
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
+	"github.com/dymensionxyz/rollapp/app"
 )
 
 const (
@@ -125,20 +125,14 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 			fileInfo, err := os.Stat(log_path)
 			if err == nil && !fileInfo.IsDir() {
 				serverCtx.Logger.Info("Using rotating file for logging", "log_path", log_path)
-				logger := serverCtx.Logger.(server.ZeroLogWrapper).Output(&lumberjack.Logger{
-					Filename:   log_path,
-					MaxSize:    1000, // megabytes
-					MaxBackups: 3,
-					MaxAge:     28,   //days
-					Compress:   true, // disabled by default
-				})
-
+				app.RotatingLogger.Filename = log_path
+				if err := app.RotatingLogger.Rotate(); err != nil {
+					panic("failed to init log file")
+				}
 				serverCtx.Logger = server.ZeroLogWrapper{
-					Logger: logger,
+					Logger: serverCtx.Logger.(server.ZeroLogWrapper).Output(&app.RotatingLogger),
 				}
 			}
-			// We can use custom logger if needed
-			// serverCtx.Logger = app.NewLogger(home)
 
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
