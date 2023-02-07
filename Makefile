@@ -97,6 +97,16 @@ install: go.sum ## Installs the binary
 build: ## Compiles the binary
 	go build $(BUILD_FLAGS) ./cmd/rollappd
 
+.PHONY: build_wasm
+build_wasm: ## Compiles the binary
+  # build_tags += wasm
+	go build $(BUILD_FLAGS) -tags wasm ./cmd/wasm
+
+
+.PHONY: build_evm
+build_wasm: ## Compiles the binary
+	go build $(BUILD_FLAGS) -tags evm ./cmd/evm
+
 .PHONY: clean
 clean: ## Clean temporary files
 	go clean

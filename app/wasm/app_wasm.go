@@ -1,5 +1,5 @@
-//go:build !wasm || !evm
-// +build !wasm !evm
+//go:build wasm
+// +build wasm
 
 package app
 
@@ -97,6 +97,9 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	distr "github.com/dymensionxyz/rollapp/x/dist"
 	distrkeeper "github.com/dymensionxyz/rollapp/x/dist/keeper"
+
+	"github.com/CosmWasm/wasmd/x/wasm"
+	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 )
 
 const (
@@ -132,6 +135,11 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		ibcclientclient.UpgradeProposalHandler,
 		// this line is used by starport scaffolding # stargate/app/govProposalHandler
 	)
+
+	//Adding wasm proposalHandlers
+	if WasmEnabled() {
+		govProposalHandlers = append(govProposalHandlers, wasmclient.ProposalHandlers...)
+	}
 
 	return govProposalHandlers
 }
@@ -189,6 +197,12 @@ func init() {
 	}
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
+
+	if WasmEnabled() {
+		ModuleBasics[wasm.ModuleName] = wasm.AppModuleBasic{}
+		maccPerms[wasm.ModuleName] = []string{authtypes.Burner}
+		kvstorekeys = append(kvstorekeys, wasm.StoreKey)
+	}
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -224,10 +238,12 @@ type App struct {
 	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	TransferKeeper   ibctransferkeeper.Keeper
 	FeeGrantKeeper   feegrantkeeper.Keeper
+	WasmKeeper       wasm.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
+	ScopedWasmKeeper     capabilitykeeper.ScopedKeeper
 
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
@@ -251,6 +267,11 @@ func NewRollapp(
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
+
+	//Init and add wasm modules and store if enabled
+	if WasmEnabled() {
+		InitWasmConfig(homePath, appOpts)
+	}
 
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
@@ -346,6 +367,11 @@ func NewRollapp(
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
+		// The gov proposal types can be individually enabled
+	if WasmEnabled() && len(GetWasmEnabledProposals()) != 0 {
+		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.WasmKeeper, GetWasmEnabledProposals()))
+	}
+
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
@@ -366,6 +392,10 @@ func NewRollapp(
 	ibcRouter := ibcporttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
 
+	//wire up x/wasm to IBC
+	if WasmEnabled() {
+		ibcRouter.AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper))
+	}
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/****  Module Options ****/
@@ -399,6 +429,13 @@ func NewRollapp(
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
+	}
+
+	//Init wasm if enabled
+	if WasmEnabled() {
+		modules = append(modules,
+			wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		)
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -475,6 +512,12 @@ func NewRollapp(
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 
+	if WasmEnabled() {
+		beginBlockersList = append(beginBlockersList, wasm.ModuleName)
+		endBlockersList = append(endBlockersList, wasm.ModuleName)
+		initGenesisList = append(initGenesisList, wasm.ModuleName)
+	}
+
 	app.mm.SetOrderBeginBlockers(beginBlockersList...)
 	app.mm.SetOrderEndBlockers(endBlockersList...)
 	app.mm.SetOrderInitGenesis(initGenesisList...)
@@ -495,6 +538,8 @@ func NewRollapp(
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		params.NewAppModule(app.ParamsKeeper),
+		//TODO: add wasm to simulation
+		// wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
@@ -519,7 +564,9 @@ func NewRollapp(
 				FeegrantKeeper:  app.FeeGrantKeeper,
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
-			IBCKeeper: app.IBCKeeper,
+			IBCKeeper:         app.IBCKeeper,
+			WasmConfig:        &WasmConfig,
+			TXCounterStoreKey: keys[wasm.StoreKey],
 		},
 	)
 
@@ -538,6 +585,12 @@ func NewRollapp(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
+
+	//Init wasm keepers
+	if WasmEnabled() {
+		app.WasmKeeper = app.initWasmKeeper(WasmDir, WasmConfig, nil, GetWasmOpts(appOpts))
+		app.ScopedWasmKeeper = app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
+	}
 
 	return app
 }
@@ -687,6 +740,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
+	paramsKeeper.Subspace(wasm.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper

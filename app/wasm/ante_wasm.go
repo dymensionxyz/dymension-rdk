@@ -1,6 +1,10 @@
+//go:build wasm
+// +build wasm
+
 package app
 
 import (
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -58,6 +62,13 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	}
 
 	anteDecorators = append(anteDecorators, ibcante.NewAnteDecorator(options.IBCKeeper))
+
+	if WasmEnabled() {
+		//Wasm wants to be registered right after setup decorator
+		anteDecorators = append(anteDecorators[:3], anteDecorators[1:]...)
+		anteDecorators[1] = wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit)
+		anteDecorators[2] = wasmkeeper.NewCountTXDecorator(options.TXCounterStoreKey)
+	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil
 }
