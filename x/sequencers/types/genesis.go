@@ -3,6 +3,7 @@ package types
 import (
 	fmt "fmt"
 
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
@@ -36,4 +37,14 @@ func (gs GenesisState) ValidateGenesis() error {
 	}
 
 	return gs.Params.Validate()
+}
+
+// UnpackInterfaces implements UnpackInterfacesMessage.UnpackInterfaces
+func (g GenesisState) UnpackInterfaces(c codectypes.AnyUnpacker) error {
+	for i := range g.Sequencers {
+		if err := g.Sequencers[i].UnpackInterfaces(c); err != nil {
+			return err
+		}
+	}
+	return nil
 }
