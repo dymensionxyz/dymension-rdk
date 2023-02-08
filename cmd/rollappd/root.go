@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/server/types"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/snapshots"
 	"github.com/cosmos/cosmos-sdk/store"
@@ -26,8 +27,9 @@ import (
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
+	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
+	"github.com/tendermint/tendermint/libs/cli"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
-
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
@@ -36,6 +38,20 @@ import (
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
 )
+
+const rollappAscii = `
+███████████            ████  ████    █████████                          █████ █████
+░░███░░░░░███          ░░███ ░░███   ███░░░░░███                        ░░███ ░░███ 
+ ░███    ░███   ██████  ░███  ░███  ░███    ░███  ████████  ████████     ░░███ ███  
+ ░██████████   ███░░███ ░███  ░███  ░███████████ ░░███░░███░░███░░███     ░░█████   
+ ░███░░░░░███ ░███ ░███ ░███  ░███  ░███░░░░░███  ░███ ░███ ░███ ░███      ███░███  
+ ░███    ░███ ░███ ░███ ░███  ░███  ░███    ░███  ░███ ░███ ░███ ░███     ███ ░░███ 
+ █████   █████░░██████  █████ █████ █████   █████ ░███████  ░███████     █████ █████
+░░░░░   ░░░░░  ░░░░░░  ░░░░░ ░░░░░ ░░░░░   ░░░░░  ░███░░░   ░███░░░     ░░░░░ ░░░░░ 
+                                                  ░███      ░███                    
+                                                  █████     █████                   
+                                                 ░░░░░     ░░░░░                    
+`
 
 // Set config for prefixes
 func SetPrefixes(accountAddressPrefix string) {
@@ -74,7 +90,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	rootCmd := &cobra.Command{
 		Use:   version.AppName,
-		Short: "rollappd",
+		Short: rollappAscii,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -195,6 +211,36 @@ func txCommand() *cobra.Command {
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
+}
+
+// add Rollapp commands
+func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport types.AppExporter, addStartFlags types.ModuleInitFlags) {
+	dymintCmd := &cobra.Command{
+		Use:   "dymint",
+		Short: "Dymint subcommands",
+	}
+
+	dymintCmd.AddCommand(
+		ShowSequencer(),
+		ShowNodeIDCmd(),
+		ResetAll(),
+		InitFiles(),
+		tmcmd.ResetStateCmd,
+		server.VersionCmd(),
+	)
+
+	dymintCmd.PersistentFlags().StringP(cli.HomeFlag, "", defaultNodeHome, "directory for config and data")
+
+	startCmd := StartCmd(appCreator, defaultNodeHome)
+	addStartFlags(startCmd)
+
+	rootCmd.AddCommand(
+		startCmd,
+		dymintCmd,
+		server.ExportCmd(appExport, defaultNodeHome),
+		version.NewVersionCommand(),
+		server.NewRollbackCmd(appCreator, defaultNodeHome),
+	)
 }
 
 type appCreator struct {
