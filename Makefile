@@ -104,7 +104,7 @@ build_wasm: ## Compiles the binary
 
 
 .PHONY: build_evm
-build_wasm: ## Compiles the binary
+build_evm: ## Compiles the binary
 	go build $(BUILD_FLAGS) -tags evm ./cmd/evm
 
 .PHONY: clean

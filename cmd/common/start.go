@@ -469,11 +469,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 
 	dymintCmd.PersistentFlags().StringP(cli.HomeFlag, "", defaultNodeHome, "directory for config and data")
 
-	startCmd := StartCmd(appCreator, defaultNodeHome)
-	addStartFlags(startCmd)
-
 	rootCmd.AddCommand(
-		startCmd,
 		dymintCmd,
 		tendermintCmd,
 		server.ExportCmd(appExport, defaultNodeHome),

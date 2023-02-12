@@ -1,5 +1,5 @@
-//go:build !wasm || !evm
-// +build !wasm !evm
+//go:build !wasm && !evm
+// +build !wasm,!evm
 
 package app
 
