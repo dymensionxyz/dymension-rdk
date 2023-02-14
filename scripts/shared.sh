@@ -49,7 +49,7 @@ DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\",
 
 # Settlement config
 SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"dymension"}
-SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\"}"}
+SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"2000000udym\"}"}
 SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$HOME/.rollapp\", \"db_path\": \"data\", \"proposer_pub_key\":\"$HOME/.rollapp/config/priv_validator_key.json\"}"}
 
 
