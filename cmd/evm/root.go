@@ -39,6 +39,7 @@ import (
 	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/dymensionxyz/rollapp/cmd/common"
 
+	"github.com/evmos/ethermint/crypto/hd"
 	evmserver "github.com/evmos/ethermint/server"
 	evmconfig "github.com/evmos/ethermint/server/config"
 	ethermint "github.com/evmos/ethermint/types"
@@ -92,11 +93,12 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithAccountRetriever(authtypes.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
 		WithHomeDir(app.DefaultNodeHome).
+		WithKeyringOptions(hd.EthSecp256k1Option()).
 		WithViper("")
 
 	rootCmd := &cobra.Command{
 		Use:   version.AppName,
-		Short: "rollapp_e",
+		Short: "EVM supported rollapp",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -117,6 +119,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 
 			//TODO: review the parameters Evmos overwrites for performance
+			// customAppTemplate, customAppConfig := servercfg.AppConfig(ethermint.AttoPhoton)
 
 			return server.InterceptConfigsPreRunHandler(cmd, "", nil)
 		},
@@ -147,8 +150,9 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 
 	common.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 
-	startCmd := common.StartCmd(ac.newApp, app.DefaultNodeHome)
+	startCmd := StartCmd(ac.newApp, app.DefaultNodeHome)
 	initStartCommandFlags(startCmd)
+	rootCmd.AddCommand(startCmd)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(

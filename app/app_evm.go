@@ -81,7 +81,6 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
-	ante "github.com/dymensionxyz/rollapp/app/evm/ante"
 	"github.com/dymensionxyz/rollapp/app/evm/flags"
 	rollappparams "github.com/dymensionxyz/rollapp/app/params"
 
@@ -100,10 +99,7 @@ import (
 	distr "github.com/dymensionxyz/rollapp/x/dist"
 	distrkeeper "github.com/dymensionxyz/rollapp/x/dist/keeper"
 
-	"github.com/evmos/evmos/v9/x/erc20"
-	erc20client "github.com/evmos/evmos/v9/x/erc20/client"
-	erc20keeper "github.com/evmos/evmos/v9/x/erc20/keeper"
-	erc20types "github.com/evmos/evmos/v9/x/erc20/types"
+	ethante "github.com/evmos/ethermint/app/ante"
 
 	"github.com/evmos/ethermint/x/evm"
 	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
@@ -112,6 +108,11 @@ import (
 	"github.com/evmos/ethermint/x/feemarket"
 	feemarketkeeper "github.com/evmos/ethermint/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
+
+	"github.com/evmos/evmos/v9/x/erc20"
+	erc20client "github.com/evmos/evmos/v9/x/erc20/client"
+	erc20keeper "github.com/evmos/evmos/v9/x/erc20/keeper"
+	erc20types "github.com/evmos/evmos/v9/x/erc20/types"
 )
 
 const (
@@ -595,21 +596,8 @@ func NewRollapp(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 
-	// anteHandler, err := NewAnteHandler(
-	// 	HandlerOptions{
-	// 		HandlerOptions: ante.HandlerOptions{
-	// 			AccountKeeper:   app.AccountKeeper,
-	// 			BankKeeper:      app.BankKeeper,
-	// 			SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
-	// 			FeegrantKeeper:  app.FeeGrantKeeper,
-	// 			SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
-	// 		},
-	// 		IBCKeeper: app.IBCKeeper,
-	// 	},
-	// )
-
 	maxGasWanted := cast.ToUint64(appOpts.Get(flags.EVMMaxTxGasWanted))
-	options := ante.HandlerOptions{
+	anteHandler, err := ethante.NewAnteHandler(ethante.HandlerOptions{
 		AccountKeeper:   app.AccountKeeper,
 		BankKeeper:      app.BankKeeper,
 		EvmKeeper:       app.EvmKeeper,
@@ -617,16 +605,13 @@ func NewRollapp(
 		IBCKeeper:       app.IBCKeeper,
 		FeeMarketKeeper: app.FeeMarketKeeper,
 		SignModeHandler: encodingConfig.TxConfig.SignModeHandler(),
-		SigGasConsumer:  ante.SigVerificationGasConsumer,
-		Cdc:             appCodec,
+		SigGasConsumer:  ethante.DefaultSigVerificationGasConsumer,
 		MaxTxGasWanted:  maxGasWanted,
-	}
-
-	if err := options.Validate(); err != nil {
+	})
+	if err != nil {
 		panic(err)
 	}
-
-	app.SetAnteHandler(ante.NewAnteHandler(options))
+	app.SetAnteHandler(anteHandler)
 	app.SetEndBlocker(app.EndBlocker)
 
 	if loadLatest {
@@ -794,7 +779,12 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	// this line is used by starport scaffolding # stargate/app/paramSubspace
+
+	// ethermint subspaces
+	paramsKeeper.Subspace(evmtypes.ModuleName)
+	paramsKeeper.Subspace(feemarkettypes.ModuleName)
+	// evmos subspaces
+	paramsKeeper.Subspace(erc20types.ModuleName)
 
 	return paramsKeeper
 }
