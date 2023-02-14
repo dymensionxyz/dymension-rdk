@@ -6,7 +6,7 @@ require (
 	github.com/CosmWasm/wasmd v0.28.0
 	github.com/cosmos/cosmos-sdk v0.45.12
 	github.com/cosmos/ibc-go/v3 v3.4.0
-	github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230212074132-39e64d793507
+	github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230214124206-1aeeb406ac66
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
@@ -76,7 +76,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac // indirect
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
-	github.com/dymensionxyz/cosmosclient v0.2.0-alpha.0.20230123083919-e1f5afda257a // indirect
+	github.com/dymensionxyz/cosmosclient v0.2.0-alpha.0.20230214103608-6203ac1f22e8 // indirect
 	github.com/dymensionxyz/dymension v0.1.0-alpha.0.20230110174626-23b70dccd1e5 // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
 	github.com/emicklei/proto v1.9.0 // indirect

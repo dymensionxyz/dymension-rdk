@@ -464,12 +464,12 @@ github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac/go.mod h1:Htr
 github.com/dvsekhvalnov/jose2go v1.5.0 h1:3j8ya4Z4kMCwT5nXIKFSV84YS+HdqSSO0VsTQxaLAeM=
 github.com/dvsekhvalnov/jose2go v1.5.0/go.mod h1:QsHjhyTlD/lAVqn/NSbVZmSCGeDehTB/mPZadG+mhXU=
 github.com/dvyukov/go-fuzz v0.0.0-20200318091601-be3528f3a813/go.mod h1:11Gm+ccJnvAhCNLlf5+cS9KjtbaD5I5zaZpFMsTHWTw=
-github.com/dymensionxyz/cosmosclient v0.2.0-alpha.0.20230123083919-e1f5afda257a h1:R6IpzM0nQMx7SySsRxJz0C2wFEW5vWKmuWUCtQ09JAA=
-github.com/dymensionxyz/cosmosclient v0.2.0-alpha.0.20230123083919-e1f5afda257a/go.mod h1:H6r0zzseZ1dEoud1uswU5xgOCUkGR+5GrXtyu/4nQ2o=
+github.com/dymensionxyz/cosmosclient v0.2.0-alpha.0.20230214103608-6203ac1f22e8 h1:DGCBPYfNHfIoYBwfS9DciScJwGDPOKSSUDtsq6a800M=
+github.com/dymensionxyz/cosmosclient v0.2.0-alpha.0.20230214103608-6203ac1f22e8/go.mod h1:H6r0zzseZ1dEoud1uswU5xgOCUkGR+5GrXtyu/4nQ2o=
 github.com/dymensionxyz/dymension v0.1.0-alpha.0.20230110174626-23b70dccd1e5 h1:ZgnXa+BU/zSJt+NZ1yx7SSmFlovIGJHdDCxFcRNnLDY=
 github.com/dymensionxyz/dymension v0.1.0-alpha.0.20230110174626-23b70dccd1e5/go.mod h1:C5nQlAlDqVtNigjQVNLSL4SuC3gUVoRhqAsfYZZcDgs=
-github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230212074132-39e64d793507 h1:Zzt9ORDI8WUAELlgTUn/rtsaCkz7Q+lZ87zE3/Tbhb0=
-github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230212074132-39e64d793507/go.mod h1:Zd7tHuPgiopZ4kBOUuenIPlqgLUlvVt2zlek0NcsEF4=
+github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230214124206-1aeeb406ac66 h1:E3XtUpplpUkmRvEwjWmlnMM06gkDF/6h9kSOArdZM1U=
+github.com/dymensionxyz/dymint v0.1.0-alpha.0.20230214124206-1aeeb406ac66/go.mod h1:J4k8CIkXVxwzqEbE80pqFeRu46tCzKaqnC68qb/K+WI=
 github.com/dymensionxyz/ibc-go/v3 v3.0.0-rc2.0.20230105134315-1870174ab6da h1:driSbrBc4deT0iRjDKjA4royFDsUsDcE0IgFkFxhopo=
 github.com/dymensionxyz/ibc-go/v3 v3.0.0-rc2.0.20230105134315-1870174ab6da/go.mod h1:VwB/vWu4ysT5DN2aF78d17LYmx3omSAdq6gpKvM7XRA=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
