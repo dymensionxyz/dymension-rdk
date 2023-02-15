@@ -40,6 +40,7 @@ KEYRING_PATH=${KEYRING_PATH:-"$HOME/.rollapp"}
 AGGREGATOR=${AGGREGATOR:-"true"}
 BATCH_SIZE=${BATCH_SIZE:-"60"}
 BLOCK_TIME=${BLOCK_TIME:-"0.2s"}
+DYMINT_FEES=${DYMINT_FEES:-"2000000udym"}
 
 # DA CONFIG
 DA_LAYER=${DA_LAYER:-"celestia"}
@@ -49,13 +50,14 @@ DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\",
 
 # Settlement config
 SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"dymension"}
-SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"2000000udym\"}"}
+SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$DYMINT_FEES\"}"}
 SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$HOME/.rollapp\", \"db_path\": \"data\", \"proposer_pub_key\":\"$HOME/.rollapp/config/priv_validator_key.json\"}"}
 
 
 # ---------------------------------------------------------------------------- #
 #                                  IBC CONFIG                                  #
 # ---------------------------------------------------------------------------- #
+RELAYER_FEES=${RELAYER_FEES:-$DYMINT_FEES}
 RELAYER_KEY_FOR_ROLLAP=${RELAYER_KEY_FOR_ROLLAP:-"relayer-rollapp-key"}
 RELAYER_KEY_FOR_HUB=${RELAYER_KEY_FOR_HUB:-"relayer-hub-key"}
 RELAYER_PATH=${RELAYER_PATH:-"hub-rollapp"}
@@ -63,3 +65,6 @@ ROLLAPP_RPC_FOR_RELAYER=${ROLLAPP_RPC_FOR_RELAYER:-$RPC_LADDRESS}
 SETTLEMENT_RPC_FOR_RELAYER=${SETTLEMENT_RPC_FOR_RELAYER:-$SETTLEMENT_RPC}
 ROLLAPP_CHANNEL_NAME=${ROLLAPP_CHANNEL_NAME:-"channel-0"}
 HUB_CHANNEL_NAME=${HUB_CHANNEL_NAME:-"channel-0"}
+
+RELAYER_SETTLEMENT_CONFIG=${RELAYER_SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$RELAYER_FEES\"}"}
+
