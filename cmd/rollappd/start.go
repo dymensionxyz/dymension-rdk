@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"runtime/pprof"
+	"strconv"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -118,14 +119,18 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
-
 			log_path := serverCtx.Viper.GetString(flagLogFile)
 			fileInfo, err := os.Stat(log_path)
 			if err == nil && !fileInfo.IsDir() {
 				serverCtx.Logger.Info("Using rotating file for logging", "log_path", log_path)
+				loggerMaxSize, err := strconv.Atoi(os.Getenv("MAX_LOG_SIZE"))
+				if err != nil {
+					serverCtx.Logger.Info("Failed to get max log size. Using default size", err)
+					loggerMaxSize = 2000
+				}
 				logger := serverCtx.Logger.(server.ZeroLogWrapper).Output(&lumberjack.Logger{
 					Filename:   log_path,
-					MaxSize:    1000, // megabytes
+					MaxSize:    loggerMaxSize, // megabytes
 					MaxBackups: 3,
 					MaxAge:     28,   //days
 					Compress:   true, // disabled by default
