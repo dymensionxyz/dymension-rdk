@@ -9,12 +9,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/spf13/cast"
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -27,30 +29,24 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/spf13/cast"
-	"github.com/spf13/cobra"
-	tmcli "github.com/tendermint/tendermint/libs/cli"
 
+	tmcli "github.com/tendermint/tendermint/libs/cli"
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/dymensionxyz/rollapp/app"
-	evmflags "github.com/dymensionxyz/rollapp/app/evm/flags"
-	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/dymensionxyz/rollapp/cmd/common"
 
+	evmflags "github.com/dymensionxyz/rollapp/app/evm/flags"
+	ethermintclient "github.com/evmos/ethermint/client"
 	"github.com/evmos/ethermint/crypto/hd"
+	etherencoding "github.com/evmos/ethermint/encoding"
 	evmserver "github.com/evmos/ethermint/server"
 	evmconfig "github.com/evmos/ethermint/server/config"
 	ethermint "github.com/evmos/ethermint/types"
-)
 
-// SetBip44CoinType sets the global coin type to be used in hierarchical deterministic wallets.
-func SetBip44CoinType(config *sdk.Config) {
-	config.SetCoinType(ethermint.Bip44CoinType)
-	config.SetPurpose(sdk.Purpose)                      // Shared
-	config.SetFullFundraiserPath(ethermint.BIP44HDPath) // nolint: staticcheck
-}
+	"github.com/cosmos/cosmos-sdk/simapp/params"
+)
 
 func initStartCommandFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(evmflags.JSONRPCEnable, true, "Define if the JSON-RPC server should be enabled")
@@ -74,15 +70,29 @@ func initStartCommandFlags(cmd *cobra.Command) {
 	cmd.Flags().Uint64(evmflags.EVMMaxTxGasWanted, evmconfig.DefaultMaxTxGasWanted, "the gas wanted for each eth tx returned in ante handler in check tx mode")                                 //nolint:lll
 }
 
-// NewRootCmd creates a new root rollappd command. It is called once in the
-// main function.
-func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
-	encodingConfig := app.MakeEncodingConfig()
-
+func setConfig() {
+	//TODO: add register denoms
+	// registerDenoms()
 	sdk_config := sdk.GetConfig()
 	common.SetPrefixes(sdk_config, app.AccountAddressPrefix)
 	SetBip44CoinType(sdk_config)
 	sdk_config.Seal()
+}
+
+// SetBip44CoinType sets the global coin type to be used in hierarchical deterministic wallets.
+func SetBip44CoinType(config *sdk.Config) {
+	config.SetCoinType(ethermint.Bip44CoinType)
+	config.SetPurpose(sdk.Purpose)                      // Shared
+	config.SetFullFundraiserPath(ethermint.BIP44HDPath) // nolint: staticcheck
+}
+
+// NewRootCmd creates a new root rollappd command. It is called once in the
+// main function.
+func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
+	// encodingConfig := codec.MakeEncodingConfig(app.ModuleBasics)
+	encodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
+
+	setConfig()
 
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Marshaler).
@@ -141,7 +151,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		// MigrateGenesisCmd(),
 		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
-		common.AddGenesisAccountCmd(app.DefaultNodeHome),
+		AddGenesisAccountCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		// testnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 		debug.Cmd(),
@@ -159,11 +169,11 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		rpc.StatusCommand(),
 		queryCommand(),
 		txCommand(),
-		keys.Commands(app.DefaultNodeHome),
-		// ethermintclient.KeyCommands(app.DefaultNodeHome),
+		ethermintclient.KeyCommands(app.DefaultNodeHome),
 	)
 
 	rootCmd.AddCommand(evmserver.NewIndexTxCmd())
+	//FIXME: validate and uncomment or remove
 	// rootCmd, err := srvflags.AddTxFlags(rootCmd)
 	// if err != nil {
 	// 	panic(err)

@@ -120,9 +120,12 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 			// Bind flags to the Context's Viper so the app construction can set
 			// options accordingly.
-			serverCtx.Viper.BindPFlags(cmd.Flags())
+			err := serverCtx.Viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
-			_, err := server.GetPruningOptionsFromFlags(serverCtx.Viper)
+			_, err = server.GetPruningOptionsFromFlags(serverCtx.Viper)
 			return err
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -250,6 +253,11 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			ctx.Logger.With("error", err).Error("error closing db")
+		}
+	}()
 
 	traceWriter, err := common.OpenTraceWriter(traceWriterFile)
 	if err != nil {

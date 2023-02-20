@@ -23,7 +23,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
@@ -82,7 +81,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/dymensionxyz/rollapp/app/evm/flags"
-	rollappparams "github.com/dymensionxyz/rollapp/app/params"
 
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -101,7 +99,9 @@ import (
 
 	ethante "github.com/evmos/ethermint/app/ante"
 
+	ethermint "github.com/evmos/ethermint/types"
 	"github.com/evmos/ethermint/x/evm"
+	evmrest "github.com/evmos/ethermint/x/evm/client/rest"
 	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 
@@ -113,10 +113,15 @@ import (
 	erc20client "github.com/evmos/evmos/v9/x/erc20/client"
 	erc20keeper "github.com/evmos/evmos/v9/x/erc20/keeper"
 	erc20types "github.com/evmos/evmos/v9/x/erc20/types"
+
+	appparams "github.com/cosmos/cosmos-sdk/simapp/params"
+	// Force-load the tracer engines to trigger registration due to Go-Ethereum v1.10.15 changes
+	// _ "github.com/ethereum/go-ethereum/eth/tracers/js"
+	// _ "github.com/ethereum/go-ethereum/eth/tracers/native"
 )
 
 const (
-	AccountAddressPrefix = "erol"
+	AccountAddressPrefix = "ethm"
 	Name                 = "rollapp_evm"
 )
 
@@ -183,12 +188,12 @@ var (
 		gov.NewAppModuleBasic(getGovProposalHandlers()...),
 		params.AppModuleBasic{},
 		crisis.AppModuleBasic{},
-		feegrantmodule.AppModuleBasic{},
 		ibc.AppModuleBasic{},
+		feegrantmodule.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-
+		// Ethermint modules
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
 		erc20.AppModuleBasic{},
@@ -203,10 +208,13 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		// this line is used by starport scaffolding # stargate/app/maccPerms
+		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
+		erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
+	}
 
-		evmtypes.ModuleName:   {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
-		erc20types.ModuleName: {authtypes.Minter, authtypes.Burner},
+	// module accounts that are allowed to receive tokens
+	allowedReceivingModAcc = map[string]bool{
+		distrtypes.ModuleName: true,
 	}
 )
 
@@ -292,7 +300,7 @@ func NewRollapp(
 	skipUpgradeHeights map[int64]bool,
 	homePath string,
 	invCheckPeriod uint,
-	encodingConfig rollappparams.EncodingConfig,
+	encodingConfig appparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
@@ -336,8 +344,9 @@ func NewRollapp(
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 
 	// add keepers
+	// use custom Ethermint account for contracts
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
-		appCodec, keys[authtypes.StoreKey], app.GetSubspace(authtypes.ModuleName), authtypes.ProtoBaseAccount, maccPerms,
+		appCodec, keys[authtypes.StoreKey], app.GetSubspace(authtypes.ModuleName), ethermint.ProtoAccount, maccPerms,
 	)
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(
@@ -345,7 +354,7 @@ func NewRollapp(
 	)
 
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
-		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.ModuleAccountAddrs(),
+		appCodec, keys[banktypes.StoreKey], app.AccountKeeper, app.GetSubspace(banktypes.ModuleName), app.BlockedAddrs(),
 	)
 	stakingKeeper := stakingkeeper.NewKeeper(
 		appCodec, keys[stakingtypes.StoreKey], app.AccountKeeper, app.BankKeeper, app.GetSubspace(stakingtypes.ModuleName),
@@ -389,7 +398,6 @@ func NewRollapp(
 	)
 
 	tracer := cast.ToString(appOpts.Get(flags.EVMTracer))
-
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
 		app.AccountKeeper, app.BankKeeper, &stakingKeeper, app.FeeMarketKeeper,
@@ -675,7 +683,18 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 	return modAccAddrs
 }
 
-// LegacyAmino returns SimApp's amino codec.
+// BlockedAddrs returns all the app's module account addresses that are not
+// allowed to receive external tokens.
+func (app *App) BlockedAddrs() map[string]bool {
+	blockedAddrs := make(map[string]bool)
+	for acc := range maccPerms {
+		blockedAddrs[authtypes.NewModuleAddress(acc).String()] = !allowedReceivingModAcc[acc]
+	}
+
+	return blockedAddrs
+}
+
+// LegacyAmino returns EthermintApp's amino codec.
 //
 // NOTE: This is solely to be used for testing purposes as it may be desirable
 // for modules to register their own custom testing types.
@@ -730,8 +749,11 @@ func (app *App) GetSubspace(moduleName string) paramstypes.Subspace {
 func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiSvr.ClientCtx
 	rpc.RegisterRoutes(clientCtx, apiSvr.Router)
+	evmrest.RegisterTxRoutes(clientCtx, apiSvr.Router)
+
 	// Register legacy tx routes.
-	authrest.RegisterTxRoutes(clientCtx, apiSvr.Router)
+	// authrest.RegisterTxRoutes(clientCtx, apiSvr.Router)
+
 	// Register new tx routes from grpc-gateway.
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 	// Register new tendermint queries routes from grpc-gateway.
