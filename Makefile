@@ -93,6 +93,10 @@ endif
 install: go.sum ## Installs the binary
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/rollappd
 
+.PHONY: install_evm
+install_evm: ## Compiles the binary
+	go install $(BUILD_FLAGS) -tags evm ./cmd/evm
+
 .PHONY: build
 build: ## Compiles the binary
 	go build $(BUILD_FLAGS) ./cmd/rollappd

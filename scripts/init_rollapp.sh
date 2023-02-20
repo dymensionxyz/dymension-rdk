@@ -46,9 +46,11 @@ fi
 $EXECUTABLE dymint unsafe-reset-all  --home "$CHAIN_DIR"
 $EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
 
+# TODO: create log file
+
 # ------------------------------- client config ------------------------------ #
-sed -i'' -e "s/^chain-id *= .*/chain-id = \"$CHAIN_ID\"/" "$CLIENT_CONFIG_FILE"
-sed -i'' -e "s/^node *= .*/node = \"tcp:\/\/$RPC_LADDRESS\"/" "$CLIENT_CONFIG_FILE"
+$EXECUTABLE config keyring-backend test
+$EXECUTABLE config chain-id "$CHAIN_ID"
 
 # -------------------------------- app config -------------------------------- #
 sed -i'' -e 's/^minimum-gas-prices *= .*/minimum-gas-prices = "0urap"/' "$APP_CONFIG_FILE"
@@ -70,15 +72,19 @@ if [ -n "$UNSAFE_CORS" ]; then
 fi
 
 # ------------------------------ genesis config ------------------------------ #
-sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$GENESIS_FILE"
-sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
-
 set_distribution_params
 set_gov_params
 set_minting_params
 
+set_denom
+set_consensus_params
+
 # --------------------- adding keys and genesis accounts --------------------- #
-$EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --home "$CHAIN_DIR"
+$EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --keyring-dir $KEYRING_PATH --algo secp256k1
+
+
+# KEYALGO="eth_secp256k1"
+# $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR" --algo $KEYALGO
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
 
 #If using settlement layer, make sure the sequencer account is funded

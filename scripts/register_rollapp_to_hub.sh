@@ -11,7 +11,7 @@ $SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node tcp://"$SETT
 echo "Transfer funds if needed and continue..."
 read -r answer
 #Register rollapp 
-$SETTLEMENT_EXECUTABLE tx rollapp create-rollapp "$ROLLAPP_ID" stamp1 "genesis-path/1" 3 1 '{"Addresses":[]}' \
+$SETTLEMENT_EXECUTABLE tx rollapp create-rollapp "$ROLLAPP_ID" stamp1 "genesis-path/1" 3 5 '{"Addresses":[]}' \
   --from "$KEY_NAME_DYM" \
   --chain-id "$SETTLEMENT_CHAIN_ID" \
   --keyring-backend test \
