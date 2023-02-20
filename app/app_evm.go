@@ -8,6 +8,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/spf13/cast"
+
+	abci "github.com/tendermint/tendermint/abci/types"
+	tmjson "github.com/tendermint/tendermint/libs/json"
+	"github.com/tendermint/tendermint/libs/log"
+	tmos "github.com/tendermint/tendermint/libs/os"
+	dbm "github.com/tendermint/tm-db"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -58,6 +66,9 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
+	"github.com/cosmos/cosmos-sdk/x/staking"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
@@ -73,20 +84,9 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v3/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
 	ibcdmtypes "github.com/cosmos/ibc-go/v3/modules/light-clients/01-dymint/types"
-	"github.com/spf13/cast"
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmjson "github.com/tendermint/tendermint/libs/json"
-	"github.com/tendermint/tendermint/libs/log"
-	tmos "github.com/tendermint/tendermint/libs/os"
-	dbm "github.com/tendermint/tm-db"
 
+	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	"github.com/dymensionxyz/rollapp/app/evm/flags"
-
-	"github.com/cosmos/cosmos-sdk/x/staking"
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"github.com/dymensionxyz/rollapp/x/sequencers"
 	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
@@ -98,8 +98,8 @@ import (
 	distrkeeper "github.com/dymensionxyz/rollapp/x/dist/keeper"
 
 	ethante "github.com/evmos/ethermint/app/ante"
-
 	ethermint "github.com/evmos/ethermint/types"
+
 	"github.com/evmos/ethermint/x/evm"
 	evmrest "github.com/evmos/ethermint/x/evm/client/rest"
 	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
@@ -108,16 +108,15 @@ import (
 	"github.com/evmos/ethermint/x/feemarket"
 	feemarketkeeper "github.com/evmos/ethermint/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-
-	"github.com/evmos/evmos/v9/x/erc20"
-	erc20client "github.com/evmos/evmos/v9/x/erc20/client"
-	erc20keeper "github.com/evmos/evmos/v9/x/erc20/keeper"
-	erc20types "github.com/evmos/evmos/v9/x/erc20/types"
-
-	appparams "github.com/cosmos/cosmos-sdk/simapp/params"
+	// "github.com/evmos/evmos/v9/x/erc20"
+	// erc20client "github.com/evmos/evmos/v9/x/erc20/client"
+	// erc20keeper "github.com/evmos/evmos/v9/x/erc20/keeper"
+	// erc20types "github.com/evmos/evmos/v9/x/erc20/types"
 	// Force-load the tracer engines to trigger registration due to Go-Ethereum v1.10.15 changes
 	// _ "github.com/ethereum/go-ethereum/eth/tracers/js"
 	// _ "github.com/ethereum/go-ethereum/eth/tracers/native"
+	// // unnamed import of statik for swagger UI support
+	// _ "github.com/evmos/ethermint/client/docs/statik"
 )
 
 const (
@@ -139,7 +138,7 @@ var (
 		// ethermint keys
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
 		// evmos keys
-		erc20types.StoreKey,
+		// erc20types.StoreKey,
 	}
 )
 
@@ -159,11 +158,11 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		// this line is used by starport scaffolding # stargate/app/govProposalHandler
 	)
 
-	govProposalHandlers = append(govProposalHandlers,
-		erc20client.RegisterCoinProposalHandler,
-		erc20client.RegisterERC20ProposalHandler,
-		erc20client.ToggleTokenConversionProposalHandler,
-	)
+	// govProposalHandlers = append(govProposalHandlers,
+	// 	erc20client.RegisterCoinProposalHandler,
+	// 	erc20client.RegisterERC20ProposalHandler,
+	// 	erc20client.ToggleTokenConversionProposalHandler,
+	// )
 
 	return govProposalHandlers
 }
@@ -196,7 +195,7 @@ var (
 		// Ethermint modules
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
-		erc20.AppModuleBasic{},
+		// erc20.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -209,7 +208,7 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
-		erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
+		// erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -238,6 +237,7 @@ func init() {
 type App struct {
 	*baseapp.BaseApp
 
+	// encoding
 	cdc               *codec.LegacyAmino
 	appCodec          codec.Codec
 	interfaceRegistry types.InterfaceRegistry
@@ -277,7 +277,7 @@ type App struct {
 	// Evmos keepers
 	// InflationKeeper  inflationkeeper.Keeper
 	// ClaimsKeeper     *claimskeeper.Keeper
-	Erc20Keeper erc20keeper.Keeper
+	// Erc20Keeper erc20keeper.Keeper
 	// IncentivesKeeper incentiveskeeper.Keeper
 	// EpochsKeeper     epochskeeper.Keeper
 	// VestingKeeper    vestingkeeper.Keeper
@@ -300,7 +300,7 @@ func NewRollapp(
 	skipUpgradeHeights map[int64]bool,
 	homePath string,
 	invCheckPeriod uint,
-	encodingConfig appparams.EncodingConfig,
+	encodingConfig simappparams.EncodingConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
@@ -400,19 +400,19 @@ func NewRollapp(
 	tracer := cast.ToString(appOpts.Get(flags.EVMTracer))
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper, &stakingKeeper, app.FeeMarketKeeper,
+		app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.FeeMarketKeeper,
 		tracer,
 	)
-	app.EvmKeeper = app.EvmKeeper.SetHooks(
-		evmkeeper.NewMultiEvmHooks(
-			app.Erc20Keeper.Hooks(),
-		),
-	)
+	// app.EvmKeeper = app.EvmKeeper.SetHooks(
+	// 	evmkeeper.NewMultiEvmHooks(
+	// 		app.Erc20Keeper.Hooks(),
+	// 	),
+	// )
 
-	app.Erc20Keeper = erc20keeper.NewKeeper(
-		keys[erc20types.StoreKey], appCodec, app.GetSubspace(erc20types.ModuleName),
-		app.AccountKeeper, app.BankKeeper, app.EvmKeeper,
-	)
+	// app.Erc20Keeper = erc20keeper.NewKeeper(
+	// 	keys[erc20types.StoreKey], appCodec, app.GetSubspace(erc20types.ModuleName),
+	// 	app.AccountKeeper, app.BankKeeper, app.EvmKeeper,
+	// )
 
 	// register the proposal types
 	govRouter := govtypes.NewRouter()
@@ -420,8 +420,8 @@ func NewRollapp(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
-		AddRoute(erc20types.RouterKey, erc20.NewErc20ProposalHandler(&app.Erc20Keeper))
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
+		// AddRoute(erc20types.RouterKey, erc20.NewErc20ProposalHandler(&app.Erc20Keeper))
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
@@ -480,7 +480,7 @@ func NewRollapp(
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		// Evmos app modules
-		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
+		// erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -492,25 +492,24 @@ func NewRollapp(
 	beginBlockersList := []string{
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
-		minttypes.ModuleName,
 		feemarkettypes.ModuleName,
 		evmtypes.ModuleName,
+		minttypes.ModuleName,
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		seqtypes.ModuleName,
-		vestingtypes.ModuleName,
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
 		authtypes.ModuleName,
 		authz.ModuleName,
 		banktypes.ModuleName,
 		govtypes.ModuleName,
-		erc20types.ModuleName,
+		// erc20types.ModuleName,
 		crisistypes.ModuleName,
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/beginBlockers
+		vestingtypes.ModuleName,
 	}
 
 	endBlockersList := []string{
@@ -518,23 +517,21 @@ func NewRollapp(
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		evmtypes.ModuleName,
-		feemarkettypes.ModuleName,
 		seqtypes.ModuleName,
+		feemarkettypes.ModuleName,
+		ibchost.ModuleName,
+		ibctransfertypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		authz.ModuleName,
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
-		vestingtypes.ModuleName,
 		minttypes.ModuleName,
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
-		erc20types.ModuleName,
-		ibchost.ModuleName,
-		ibctransfertypes.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/endBlockers
+		vestingtypes.ModuleName,
 	}
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -552,19 +549,17 @@ func NewRollapp(
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		seqtypes.ModuleName,
-		vestingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
-		crisistypes.ModuleName,
 		ibchost.ModuleName,
 		genutiltypes.ModuleName,
-		paramstypes.ModuleName,
-		upgradetypes.ModuleName,
-		erc20types.ModuleName,
-
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/initGenesis
+		paramstypes.ModuleName,
+		upgradetypes.ModuleName,
+		vestingtypes.ModuleName,
+		// NOTE: crisis module must go at the end to check for invariants on each module
+		crisistypes.ModuleName,
 	}
 
 	app.mm.SetOrderBeginBlockers(beginBlockersList...)
@@ -630,14 +625,6 @@ func NewRollapp(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
-
-	// // Finally start the tpsCounter.
-	// app.tpsCounter = newTPSCounter(logger)
-	// go func() {
-	// 	// Unfortunately golangci-lint is so pedantic
-	// 	// so we have to ignore this error explicitly.
-	// 	_ = app.tpsCounter.start(context.Background())
-	// }()
 
 	return app
 }
@@ -806,7 +793,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(evmtypes.ModuleName)
 	paramsKeeper.Subspace(feemarkettypes.ModuleName)
 	// evmos subspaces
-	paramsKeeper.Subspace(erc20types.ModuleName)
+	// paramsKeeper.Subspace(erc20types.ModuleName)
 
 	return paramsKeeper
 }

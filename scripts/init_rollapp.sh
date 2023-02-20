@@ -6,7 +6,7 @@ BASEDIR=$(dirname "$0")
 
 # ---------------------------- initial parameters ---------------------------- #
 # Assuming 1,000,000RAP tokens
-TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000urap}
+TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000000000urap}
 #half is staked
 STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urap}
 SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000000udym}
@@ -47,6 +47,14 @@ $EXECUTABLE dymint unsafe-reset-all  --home "$CHAIN_DIR"
 $EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
 
 # TODO: create log file
+if [ -n "$LOG_FILE_PATH" ]; then
+  mkdir -p "$(dirname "$LOG_FILE_PATH")" # create parent directories if they don't exist
+  touch "$LOG_FILE_PATH" # create the file
+  echo "Log file created at $LOG_FILE_PATH"
+else
+  echo "LOG_FILE_PATH is not set. using stdout"
+fi
+
 
 # ------------------------------- client config ------------------------------ #
 $EXECUTABLE config keyring-backend test

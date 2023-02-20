@@ -28,8 +28,10 @@ $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.block_batch_size "$BATCH_SIZE" \
   --dymint.namespace_id "$NAMESPACE_ID" \
   --dymint.block_time "$BLOCK_TIME" \
-  --p2p.seeds "$P2P_SEEDS" \
   --home "$CHAIN_DIR" \
   --log_level "$LOG_LEVEL" \
-  --log-file "$LOG_FILE_PATH"
+  --log-file "$LOG_FILE_PATH" \
+  --json-rpc.enable \
+  --json-rpc.api eth,txpool,personal,net,debug,web3,miner
+
 
