@@ -1,37 +1,62 @@
 package app
 
 import (
-	"path/filepath"
-
 	log "github.com/sirupsen/logrus"
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+const (
+	defaultLogSizeBytes = 1000
+	defaultMaxBackups   = 3
+	defaultMaxAgeDays   = 28
+	moduleKey           = "module"
+)
+
 type Logger struct {
 	*log.Logger
-	Fields log.Fields
+	Fields              log.Fields
+	moduleOverrideLevel map[string]string
+	logFilePath         string
 }
 
 // NewLog creates a new Log struct with the given persistent fields
-func NewLogger(path string) Logger {
+func NewLogger(path string, level string, moduleOverrideLevel ...map[string]string) Logger {
 	var logger = Logger{
-		Logger: log.New(),
-		Fields: map[string]interface{}{},
+		Fields:              map[string]interface{}{},
+		moduleOverrideLevel: map[string]string{},
+		logFilePath:         path,
 	}
+	if len(moduleOverrideLevel) > 0 {
+		logger.moduleOverrideLevel = moduleOverrideLevel[0]
+	}
+	logger.Logger = logger.setupLogger(level)
 
-	if path != "" {
+	return logger
+}
+
+func (l Logger) setupLogger(level string) *log.Logger {
+	logger := log.New()
+	// Set level
+	if level != "" {
+		level, err := log.ParseLevel(level)
+		if err != nil {
+			l.Error("failed to parse log level", err)
+		} else {
+			logger.SetLevel(level)
+		}
+	}
+	// Set log file path
+	if l.logFilePath != "" {
 		logger.SetOutput(&lumberjack.Logger{
-			Filename:   filepath.Join(path, "log/rollapp.log"),
-			MaxSize:    1000, // megabytes
-			MaxBackups: 3,
-			MaxAge:     28,   //days
-			Compress:   true, // disabled by default
+			Filename:   l.logFilePath,
+			MaxSize:    defaultLogSizeBytes, // megabytes
+			MaxBackups: defaultMaxBackups,
+			MaxAge:     defaultMaxAgeDays, //days
+			Compress:   true,              // disabled by default
 		})
 	}
 	logger.SetFormatter(&log.TextFormatter{})
-	logger.SetLevel(log.DebugLevel)
-
 	return logger
 }
 
@@ -52,17 +77,25 @@ func (l Logger) With(keyvals ...interface{}) tmlog.Logger {
 	// 	l.Error("only single With assignment supported for logging. Cant assign new keyvals", keyvals...)
 	// }
 	fields := log.Fields{}
+	logger := l.Logger
+
 	for i := 0; i < len(keyvals); i += 2 {
 		key, ok := keyvals[i].(string)
 		if !ok {
 			return l
+		}
+		// Check if the key is a module and if it has an override level
+		if key == moduleKey {
+			if val, ok := l.moduleOverrideLevel[keyvals[i+1].(string)]; ok {
+				logger = l.setupLogger(val)
+			}
 		}
 		value := keyvals[i+1]
 		fields[key] = value
 	}
 
 	return Logger{
-		Logger: l.Logger,
+		Logger: logger,
 		Fields: fields,
 	}
 }
