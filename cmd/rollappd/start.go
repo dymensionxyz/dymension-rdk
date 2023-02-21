@@ -72,7 +72,8 @@ const (
 	flagGRPCWebAddress = "grpc-web.address"
 
 	// logging flags
-	flagLogFile = "log-file"
+	flagLogFile    = "log-file"
+	flagMaxLogSize = "max-log-size"
 )
 
 // StartCmd runs the service passed in, either stand-alone or in-process with Dymint.
@@ -123,14 +124,13 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 			fileInfo, err := os.Stat(log_path)
 			if err == nil && !fileInfo.IsDir() {
 				serverCtx.Logger.Info("Using rotating file for logging", "log_path", log_path)
-				loggerMaxSize, err := strconv.Atoi(os.Getenv("MAX_LOG_SIZE"))
+				maxLogSize, err := strconv.Atoi(serverCtx.Viper.GetString(flagMaxLogSize))
 				if err != nil {
-					serverCtx.Logger.Info("Failed to get max log size. Using default size", err)
-					loggerMaxSize = 2000
+					return err
 				}
 				logger := serverCtx.Logger.(server.ZeroLogWrapper).Output(&lumberjack.Logger{
 					Filename:   log_path,
-					MaxSize:    loggerMaxSize, // megabytes
+					MaxSize:    maxLogSize, // megabytes
 					MaxBackups: 3,
 					MaxAge:     28,   //days
 					Compress:   true, // disabled by default
@@ -200,6 +200,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 	cmd.Flags().Bool(FlagDisableIAVLFastNode, true, "Disable fast node for IAVL tree")
 
 	cmd.Flags().String(flagLogFile, "", "log file")
+	cmd.Flags().String(flagMaxLogSize, "1000", "Max log size in MB")
 
 	// add support for all Tendermint-specific command line options
 	tmcmd.AddNodeFlags(cmd)
