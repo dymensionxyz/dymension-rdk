@@ -22,7 +22,7 @@ if [ -f "$RLY_CONFIG_FILE" ]; then
 fi
 
 echo '# -------------------------- initializing rly config ------------------------- #'
-rly config init --settlement-config "$SETTLEMENT_CONFIG"
+rly config init --settlement-config "$RELAYER_SETTLEMENT_CONFIG"
 
 echo '# ------------------------- adding chains to rly config ------------------------- #'
 tmp=$(mktemp)

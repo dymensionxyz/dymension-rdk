@@ -4,13 +4,43 @@ import (
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/version"
+
 	dymintcmd "github.com/dymensionxyz/dymint/cmd/dymint/commands"
 	"github.com/dymensionxyz/dymint/conv"
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
 	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
+	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/p2p"
 )
+
+// add Rollapp commands
+func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport types.AppExporter, addStartFlags types.ModuleInitFlags) {
+	dymintCmd := &cobra.Command{
+		Use:   "dymint",
+		Short: "Dymint subcommands",
+	}
+
+	dymintCmd.AddCommand(
+		ShowSequencer(),
+		ShowNodeIDCmd(),
+		ResetAll(),
+		InitFiles(),
+		tmcmd.ResetStateCmd,
+		server.VersionCmd(),
+	)
+
+	dymintCmd.PersistentFlags().StringP(cli.HomeFlag, "", defaultNodeHome, "directory for config and data")
+
+	rootCmd.AddCommand(
+		dymintCmd,
+		server.ExportCmd(appExport, defaultNodeHome),
+		version.NewVersionCommand(),
+		server.NewRollbackCmd(appCreator, defaultNodeHome),
+	)
+}
 
 // ShowNodeIDCmd - ported from Tendermint, dump node ID to stdout
 func ShowNodeIDCmd() *cobra.Command {

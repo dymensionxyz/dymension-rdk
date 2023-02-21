@@ -27,7 +27,6 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
-
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
@@ -35,6 +34,20 @@ import (
 	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/dymensionxyz/rollapp/cmd/common"
 )
+
+const rollappAscii = `
+███████████            ████  ████    █████████                          █████ █████
+░░███░░░░░███          ░░███ ░░███   ███░░░░░███                        ░░███ ░░███ 
+ ░███    ░███   ██████  ░███  ░███  ░███    ░███  ████████  ████████     ░░███ ███  
+ ░██████████   ███░░███ ░███  ░███  ░███████████ ░░███░░███░░███░░███     ░░█████   
+ ░███░░░░░███ ░███ ░███ ░███  ░███  ░███░░░░░███  ░███ ░███ ░███ ░███      ███░███  
+ ░███    ░███ ░███ ░███ ░███  ░███  ░███    ░███  ░███ ░███ ░███ ░███     ███ ░░███ 
+ █████   █████░░██████  █████ █████ █████   █████ ░███████  ░███████     █████ █████
+░░░░░   ░░░░░  ░░░░░░  ░░░░░ ░░░░░ ░░░░░   ░░░░░  ░███░░░   ░███░░░     ░░░░░ ░░░░░ 
+                                                  ░███      ░███                    
+                                                  █████     █████                   
+                                                 ░░░░░     ░░░░░                    
+`
 
 // Set config for prefixes
 func SetPrefixes(accountAddressPrefix string) {
