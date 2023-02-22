@@ -126,6 +126,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 			// setup logging
 			log_path := serverCtx.Viper.GetString(flagLogFile)
 			moduleOverrides := utils.ConvertStringToStringMap(serverCtx.Viper.GetString(flagModuleLogLevelOverride), ",", ":")
+			//FIXME: pass size limit as well
 			serverCtx.Logger = app.NewLogger(log_path, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
 
 			clientCtx, err := client.GetClientQueryContext(cmd)
