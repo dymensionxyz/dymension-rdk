@@ -72,11 +72,12 @@ func (l Logger) Error(msg string, keyvals ...interface{}) {
 }
 
 func (l Logger) With(keyvals ...interface{}) tmlog.Logger {
-	//FIXME: allow support of multiple With assignment
-	// if len(l.Fields) > 0 {
-	// 	l.Error("only single With assignment supported for logging. Cant assign new keyvals", keyvals...)
-	// }
-	fields := log.Fields{}
+	//Make deep copy of the current fields
+	fields := map[string]interface{}{}
+	for k, v := range l.Fields {
+		fields[k] = v
+	}
+
 	logger := l.Logger
 
 	for i := 0; i < len(keyvals); i += 2 {
