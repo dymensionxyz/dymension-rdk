@@ -126,6 +126,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 			// setup logging
 			log_path := serverCtx.Viper.GetString(flagLogFile)
 			moduleOverrides := utils.ConvertStringToStringMap(serverCtx.Viper.GetString(flagModuleLogLevelOverride), ",", ":")
+			//FIXME: pass size limit as well
 			serverCtx.Logger = app.NewLogger(log_path, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
 
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -187,7 +188,10 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 	cmd.Flags().String(flagLogLevel, "debug", "Log leve. one of [\"debug\", \"info\", \"warn\", \"error\", \"dpanic\", \"panic\", \"fatal\"]")
 	cmd.Flags().String(flagLogFile, "", "log file full path. If not set, logs to stdout")
 	cmd.Flags().String(flagMaxLogSize, "1000", "Max log size in MB")
+
+	//dev option
 	cmd.Flags().String(flagModuleLogLevelOverride, "", "Override module log level for customizable logging. For example \"module1:info,module2:error\"")
+	cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
 
 	// add support for all Tendermint-specific command line options
 	tmcmd.AddNodeFlags(cmd)

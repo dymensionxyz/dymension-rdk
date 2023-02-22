@@ -18,6 +18,7 @@ type Logger struct {
 	Fields              log.Fields
 	moduleOverrideLevel map[string]string
 	logFilePath         string
+	customLogLevel      log.Level
 }
 
 // NewLog creates a new Log struct with the given persistent fields
@@ -31,21 +32,12 @@ func NewLogger(path string, level string, moduleOverrideLevel ...map[string]stri
 		logger.moduleOverrideLevel = moduleOverrideLevel[0]
 	}
 	logger.Logger = logger.setupLogger(level)
-
+	logger.customLogLevel = logger.GetLevel()
 	return logger
 }
 
 func (l Logger) setupLogger(level string) *log.Logger {
 	logger := log.New()
-	// Set level
-	if level != "" {
-		level, err := log.ParseLevel(level)
-		if err != nil {
-			l.Error("failed to parse log level", err)
-		} else {
-			logger.SetLevel(level)
-		}
-	}
 	// Set log file path
 	if l.logFilePath != "" {
 		logger.SetOutput(&lumberjack.Logger{
@@ -56,28 +48,45 @@ func (l Logger) setupLogger(level string) *log.Logger {
 			Compress:   true,              // disabled by default
 		})
 	}
+	logLevel, err := log.ParseLevel(level)
+	if err != nil {
+		logger.Error("failed to parse log level", "error", err, "level", level)
+	} else {
+		logger.SetLevel(logLevel)
+	}
 	logger.SetFormatter(&log.TextFormatter{})
 	return logger
 }
 
 func (l Logger) Debug(msg string, keyvals ...interface{}) {
+	if l.customLogLevel < log.DebugLevel {
+		return
+	}
 	l.Logger.WithFields(l.Fields).Debug(msg, keyvals)
 }
 
 func (l Logger) Info(msg string, keyvals ...interface{}) {
+	if l.customLogLevel < log.InfoLevel {
+		return
+	}
 	l.Logger.WithFields(l.Fields).Info(msg, keyvals)
 }
 func (l Logger) Error(msg string, keyvals ...interface{}) {
+	if l.customLogLevel < log.ErrorLevel {
+		return
+	}
 	l.Logger.WithFields(l.Fields).Error(msg, keyvals)
 }
 
 func (l Logger) With(keyvals ...interface{}) tmlog.Logger {
-	//FIXME: allow support of multiple With assignment
-	// if len(l.Fields) > 0 {
-	// 	l.Error("only single With assignment supported for logging. Cant assign new keyvals", keyvals...)
-	// }
-	fields := log.Fields{}
+	//Make deep copy of the current fields
+	fields := map[string]interface{}{}
+	for k, v := range l.Fields {
+		fields[k] = v
+	}
+
 	logger := l.Logger
+	customLogLevel := l.customLogLevel
 
 	for i := 0; i < len(keyvals); i += 2 {
 		key, ok := keyvals[i].(string)
@@ -87,7 +96,15 @@ func (l Logger) With(keyvals ...interface{}) tmlog.Logger {
 		// Check if the key is a module and if it has an override level
 		if key == moduleKey {
 			if val, ok := l.moduleOverrideLevel[keyvals[i+1].(string)]; ok {
-				logger = l.setupLogger(val)
+				newLogLevel, err := log.ParseLevel(val)
+				if err != nil {
+					logger.Error("failed to parse log level", "error", err, "level", val)
+				}
+				if newLogLevel > customLogLevel {
+					logger.Error("can't increase log level for a module")
+				} else {
+					customLogLevel = newLogLevel
+				}
 			}
 		}
 		value := keyvals[i+1]
@@ -95,7 +112,8 @@ func (l Logger) With(keyvals ...interface{}) tmlog.Logger {
 	}
 
 	return Logger{
-		Logger: logger,
-		Fields: fields,
+		Logger:         logger,
+		Fields:         fields,
+		customLogLevel: customLogLevel,
 	}
 }
