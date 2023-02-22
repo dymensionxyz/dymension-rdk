@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"runtime/pprof"
+	"strconv"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -124,10 +125,18 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 			serverCtx := server.GetServerContextFromCmd(cmd)
 
 			// setup logging
-			log_path := serverCtx.Viper.GetString(flagLogFile)
 			moduleOverrides := utils.ConvertStringToStringMap(serverCtx.Viper.GetString(flagModuleLogLevelOverride), ",", ":")
-			//FIXME: pass size limit as well
-			serverCtx.Logger = app.NewLogger(log_path, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
+
+			log_path := serverCtx.Viper.GetString(flagLogFile)
+			maxLogSize, err := strconv.Atoi(serverCtx.Viper.GetString(flagMaxLogSize))
+			if err != nil {
+				return err
+			}
+			if maxLogSize <= 0 {
+				return fmt.Errorf("max log size <=0 not supported")
+			}
+
+			serverCtx.Logger = app.NewLogger(log_path, maxLogSize, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
 
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {

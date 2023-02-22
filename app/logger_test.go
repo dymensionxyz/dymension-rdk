@@ -2,8 +2,13 @@ package app_test
 
 import (
 	"bytes"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -14,7 +19,7 @@ import (
 func TestLogLevel(t *testing.T) {
 	var buf bytes.Buffer
 
-	logger := app.NewLogger("", "error", nil)
+	logger := app.NewLogger("", 0, "error", nil)
 	logger.SetOutput(&buf)
 
 	logger.Debug("debug msg")
@@ -30,7 +35,7 @@ func TestLogLevel(t *testing.T) {
 func TestMultipleLoggerWithMethod(t *testing.T) {
 	var buf bytes.Buffer
 
-	logger := app.NewLogger("", "info", nil)
+	logger := app.NewLogger("", 0, "info", nil)
 	logger.SetOutput(&buf)
 
 	logger1 := logger.With("module", "logger1")
@@ -52,7 +57,7 @@ func TestMultipleWithCalls(t *testing.T) {
 	// t.Skip("nested With calls not supported")
 	var buf bytes.Buffer
 
-	logger := app.NewLogger("", "info", nil)
+	logger := app.NewLogger("", 0, "info", nil)
 	logger.SetOutput(&buf)
 
 	logger1 := logger.With("module", "module1")
@@ -74,7 +79,7 @@ func TestModuleOverrideLevel(t *testing.T) {
 	var buf bytes.Buffer
 
 	moduleOverrides := utils.ConvertStringToStringMap("module2:error", ",", ":")
-	logger := app.NewLogger("", "info", moduleOverrides)
+	logger := app.NewLogger("", 0, "info", moduleOverrides)
 	logger.SetOutput(&buf)
 
 	logger1 := logger.With("module", "module1")
@@ -100,4 +105,44 @@ func TestModuleOverrideLevel(t *testing.T) {
 	assert.Contains(t, msg, "level=error", "logger expected to log error")
 	assert.NotContains(t, msg, "level=info", "logger expected to NOT log info")
 	assert.NotContains(t, msg, "level=debug", "logger expected to NOT log debug")
+}
+
+func TestMaxFileSize(t *testing.T) {
+	seed := "test-" + time.Now().Format("20060102-150405")
+	logFileName := fmt.Sprintf("test-log-%s.log", seed)
+
+	logDir := filepath.Join("/tmp", seed)
+	err := os.Mkdir(logDir, 0700)
+	assert.NoError(t, err)
+
+	logPath := filepath.Join(logDir, logFileName)
+	_, err = os.Create(logPath)
+	assert.NoError(t, err)
+
+	defer func() {
+		os.RemoveAll(logDir)
+	}()
+
+	logger := app.NewLogger(logPath, 1, "info", nil)
+	fillUpLog(&logger)
+
+	files, err := ioutil.ReadDir(logDir)
+	assert.NoError(t, err)
+
+	assert.Greater(t, len(files), 1)
+
+	// for _, file := range files {
+	// 	fmt.Println(file.Name(), file.IsDir())
+	// }
+	// logFileName := logf.CurrentFileName()
+	// if _, err := os.Stat(logFileName); err == nil {
+	// 	t.Fatalf("Log file %s still exists", logFileName)
+	// }
+
+}
+
+func fillUpLog(logger *app.Logger) {
+	for i := 0; i < 100000; i++ {
+		logger.Infof("Log message %d", i)
+	}
 }
