@@ -17,32 +17,30 @@ type Logger struct {
 	*log.Logger
 	Fields              log.Fields
 	moduleOverrideLevel map[string]string
-	logFilePath         string
 	customLogLevel      log.Level
 }
 
 // NewLog creates a new Log struct with the given persistent fields
-func NewLogger(path string, level string, moduleOverrideLevel ...map[string]string) Logger {
+func NewLogger(path string, maxSize int, level string, moduleOverrideLevel ...map[string]string) Logger {
 	var logger = Logger{
 		Fields:              map[string]interface{}{},
 		moduleOverrideLevel: map[string]string{},
-		logFilePath:         path,
 	}
 	if len(moduleOverrideLevel) > 0 {
 		logger.moduleOverrideLevel = moduleOverrideLevel[0]
 	}
-	logger.Logger = logger.setupLogger(level)
+	logger.Logger = logger.setupLogger(path, maxSize, level)
 	logger.customLogLevel = logger.GetLevel()
 	return logger
 }
 
-func (l Logger) setupLogger(level string) *log.Logger {
+func (l Logger) setupLogger(path string, maxSize int, level string) *log.Logger {
 	logger := log.New()
 	// Set log file path
-	if l.logFilePath != "" {
+	if path != "" {
 		logger.SetOutput(&lumberjack.Logger{
-			Filename:   l.logFilePath,
-			MaxSize:    defaultLogSizeBytes, // megabytes
+			Filename:   path,
+			MaxSize:    maxSize, // megabytes
 			MaxBackups: defaultMaxBackups,
 			MaxAge:     defaultMaxAgeDays, //days
 			Compress:   true,              // disabled by default
