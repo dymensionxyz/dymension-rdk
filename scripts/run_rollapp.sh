@@ -30,6 +30,9 @@ $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.block_time "$BLOCK_TIME" \
   --p2p.seeds "$P2P_SEEDS" \
   --home "$CHAIN_DIR" \
-  --log_level "$LOG_LEVEL" \
-  --log-file "$LOG_FILE_PATH"
+  --log-level "$LOG_LEVEL" \
+  --log-file "$LOG_FILE_PATH" \
+  --max-log-size "$MAX_LOG_SIZE" \
+  --module-log-level-override "$MODULE_LOG_LEVEL_OVERRIDE" \
+  
 
