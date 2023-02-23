@@ -400,7 +400,7 @@ func NewRollapp(
 	tracer := cast.ToString(appOpts.Get(flags.EVMTracer))
 	app.EvmKeeper = evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.FeeMarketKeeper,
+		app.AccountKeeper, app.BankKeeper, app.SequencersKeeper, app.FeeMarketKeeper,
 		tracer,
 	)
 	// app.EvmKeeper = app.EvmKeeper.SetHooks(

@@ -35,7 +35,7 @@ ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 #TODO: rename to sequencer key name
 #TODO: make most params based on chain ID
 KEY_NAME_DYM=${KEY_NAME_DYM:-"local-sequencer"}
-KEYRING_PATH=${KEYRING_PATH:-"$HOME/.rollapp"}
+KEYRING_PATH=${KEYRING_PATH:-"$HOME/.dymd"}
 
 AGGREGATOR=${AGGREGATOR:-"true"}
 BATCH_SIZE=${BATCH_SIZE:-"60"}
