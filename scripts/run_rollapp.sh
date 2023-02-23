@@ -29,9 +29,9 @@ $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.namespace_id "$NAMESPACE_ID" \
   --dymint.block_time "$BLOCK_TIME" \
   --home "$CHAIN_DIR" \
-  --log_level "$LOG_LEVEL" \
+  --log-level "$LOG_LEVEL" \
   --log-file "$LOG_FILE_PATH" \
-  --json-rpc.enable \
-  --json-rpc.api eth,txpool,personal,net,debug,web3,miner
-
+  --max-log-size "$MAX_LOG_SIZE" \
+  --module-log-level-override "$MODULE_LOG_LEVEL_OVERRIDE" \
+  
 
