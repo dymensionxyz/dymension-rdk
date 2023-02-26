@@ -82,7 +82,7 @@ This will build and install the ```rollapp_evm``` binary
 
 2. set corresponding environment variables **before** initializing the rollapp
 ```
-source scripts/env/rollapp_evm.sh
+source scripts/env/rollapp_evm.env
 ```
 
 ## Establish IBC channel between hub and rollapp

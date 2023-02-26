@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"runtime/pprof"
+	"strconv"
 	"time"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -18,7 +19,6 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
 	"google.golang.org/grpc"
-	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server/api"
@@ -36,7 +36,9 @@ import (
 	dymintconv "github.com/dymensionxyz/dymint/conv"
 	dymintnode "github.com/dymensionxyz/dymint/node"
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
+	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/cmd/common"
+	"github.com/dymensionxyz/rollapp/utils"
 
 	"github.com/evmos/ethermint/indexer"
 	ethserver "github.com/evmos/ethermint/server"
@@ -80,7 +82,10 @@ const (
 	flagGRPCWebAddress = "grpc-web.address"
 
 	// logging flags
-	flagLogFile = "log-file"
+	flagLogFile                = "log-file"
+	flagLogLevel               = "log-level"
+	flagMaxLogSize             = "max-log-size"
+	flagModuleLogLevelOverride = "module-log-level-override"
 )
 
 // StartCmd runs the service passed in, either stand-alone or in-process with Dymint.
@@ -131,24 +136,19 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
 
-			log_path := serverCtx.Viper.GetString(flagLogFile)
-			fileInfo, err := os.Stat(log_path)
-			if err == nil && !fileInfo.IsDir() {
-				serverCtx.Logger.Info("Using rotating file for logging", "log_path", log_path)
-				logger := serverCtx.Logger.(server.ZeroLogWrapper).Output(&lumberjack.Logger{
-					Filename:   log_path,
-					MaxSize:    1000, // megabytes
-					MaxBackups: 3,
-					MaxAge:     28,   //days
-					Compress:   true, // disabled by default
-				})
+			// setup logging
+			moduleOverrides := utils.ConvertStringToStringMap(serverCtx.Viper.GetString(flagModuleLogLevelOverride), ",", ":")
 
-				serverCtx.Logger = server.ZeroLogWrapper{
-					Logger: logger,
-				}
+			log_path := serverCtx.Viper.GetString(flagLogFile)
+			maxLogSize, err := strconv.Atoi(serverCtx.Viper.GetString(flagMaxLogSize))
+			if err != nil {
+				return err
 			}
-			// We can use custom logger if needed
-			// serverCtx.Logger = app.NewLogger(home)
+			if maxLogSize <= 0 {
+				return fmt.Errorf("max log size <=0 not supported")
+			}
+
+			serverCtx.Logger = app.NewLogger(log_path, maxLogSize, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
 
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {
@@ -217,7 +217,13 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 	cmd.Flags().Bool(FlagDisableIAVLFastNode, true, "Disable fast node for IAVL tree")
 
-	cmd.Flags().String(flagLogFile, "", "log file")
+	cmd.Flags().String(flagLogLevel, "debug", "Log leve. one of [\"debug\", \"info\", \"warn\", \"error\", \"dpanic\", \"panic\", \"fatal\"]")
+	cmd.Flags().String(flagLogFile, "", "log file full path. If not set, logs to stdout")
+	cmd.Flags().String(flagMaxLogSize, "1000", "Max log size in MB")
+
+	//dev option
+	cmd.Flags().String(flagModuleLogLevelOverride, "", "Override module log level for customizable logging. For example \"module1:info,module2:error\"")
+	cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
 
 	// add support for all Tendermint-specific command line options
 	tmcmd.AddNodeFlags(cmd)

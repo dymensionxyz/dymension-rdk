@@ -28,6 +28,7 @@ if ! command -v "$EXECUTABLE" >/dev/null; then
   exit 1
 fi
 
+# TODO: run this check only if settlement is set to dymension
 if ! command -v "$SETTLEMENT_EXECUTABLE" >/dev/null; then
   echo "$SETTLEMENT_EXECUTABLE does not exist"
   exit 1
@@ -64,7 +65,7 @@ $EXECUTABLE config keyring-backend test
 $EXECUTABLE config chain-id "$CHAIN_ID"
 
 # -------------------------------- app config -------------------------------- #
-sed -i'' -e "s/^minimum-gas-prices *= .*/minimum-gas-prices = 0$DENOM/" "$APP_CONFIG_FILE"
+sed -i'' -e "s/^minimum-gas-prices *= .*/minimum-gas-prices = \"0$DENOM\"/" "$APP_CONFIG_FILE"
 sed -i'' -e '/\[api\]/,+3 s/enable *= .*/enable = true/' "$APP_CONFIG_FILE"
 sed -i'' -e "/\[api\]/,+9 s/address *= .*/address = \"tcp:\/\/$API_ADDRESS\"/" "$APP_CONFIG_FILE"
 sed -i'' -e "/\[grpc\]/,+6 s/address *= .*/address = \"$GRPC_LADDRESS\"/" "$APP_CONFIG_FILE"
@@ -85,12 +86,13 @@ set_distribution_params
 set_gov_params
 set_minting_params
 
-set_denom
-set_consensus_params
+set_denom "$DENOM"
+
+if [ "$EVM_ENABLED" ]; then
+  set_EVM_params
+fi
 
 # --------------------- adding keys and genesis accounts --------------------- #
-#account for sequencer on the hub
-$EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --keyring-dir $KEYRING_PATH --algo secp256k1
 
 #local genesis account
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
@@ -98,6 +100,8 @@ $EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-ba
 
 #If using settlement layer, make sure the sequencer account is funded
 if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
+    #add account for sequencer on the hub
+    $SETTLEMENT_EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --keyring-dir $KEYRING_PATH
     SEQ_ACCOUNT_ON_HUB="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyring-dir $KEYRING_PATH --keyring-backend test)"
     echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB]: "
     $SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node tcp://"$SETTLEMENT_RPC"
