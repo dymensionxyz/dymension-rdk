@@ -12,6 +12,11 @@ ifeq (,$(VERSION))
   endif
 endif
 
+ifndef $(GOROOT)
+    GOROOT=$(shell go env GOROOT)
+    export GOROOT
+endif
+
 PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
 LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
@@ -85,31 +90,18 @@ ifeq (,$(findstring nostrip,$(DYMENSION_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
 endif
 
-
 # ---------------------------------------------------------------------------- #
 #                                 Make targets                                 #
 # ---------------------------------------------------------------------------- #
 .PHONY: install
-install: go.sum ## Installs the binary
+install: go.sum ## Installs the rollappd binary
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/rollappd
 
-.PHONY: install_evm
-install_evm: ## Compiles the binary
-	go install $(BUILD_FLAGS) -tags evm ./cmd/evm
 
 .PHONY: build
-build: ## Compiles the binary
-	go build $(BUILD_FLAGS) ./cmd/rollappd
+build: ## Compiles the rollapd binary
+	go build  -o build/rollappd $(BUILD_FLAGS) ./cmd/rollappd
 
-.PHONY: build_wasm
-build_wasm: ## Compiles the binary
-  # build_tags += wasm
-	go build $(BUILD_FLAGS) -tags wasm ./cmd/wasm
-
-
-.PHONY: build_evm
-build_evm: ## Compiles the binary
-	go build $(BUILD_FLAGS) -tags evm ./cmd/evm
 
 .PHONY: clean
 clean: ## Clean temporary files
@@ -124,6 +116,25 @@ vet: ## Run go vet
 
 lint: ## Run linter
 	golangci-lint run
+
+
+# ----------------------------------- WASM ----------------------------------- #
+.PHONY: build_wasm
+build_wasm: ## Compiles the binary
+  # build_tags += wasm
+	go build $(BUILD_FLAGS) -tags wasm ./cmd/wasm
+
+
+# ------------------------------------ EVM ----------------------------------- #
+.PHONY: install_evm
+install_evm: go.sum ## Install the rollapp_evm binary	 
+	$(eval BUILD_FLAGS+=-tags evm -ldflags '-X github.com/cosmos/cosmos-sdk/version.AppName=rollapp_evm')
+	go build -o $(GOROOT)/bin/rollapp_evm $(BUILD_FLAGS) -tags evm ./cmd/evm
+
+.PHONY: build_evm
+build_evm: ## Compiles the rollapp_evm binary
+	$(eval BUILD_FLAGS+=-tags evm -ldflags '-X github.com/cosmos/cosmos-sdk/version.AppName=rollapp_evm')
+	go build -o build/rollapp_evm $(BUILD_FLAGS) ./cmd/evm
 
 # ---------------------------------------------------------------------------- #
 #                                    testing                                   #

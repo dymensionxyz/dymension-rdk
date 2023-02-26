@@ -11,7 +11,7 @@ fi
 
 # ---------------------------- initial parameters ---------------------------- #
 # Assuming 1,000,000RAP tokens
-TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000000000urap}
+TOKEN_AMOUNT=${TOKEN_AMOUNT:-100000000000000000000000000urap}
 #half is staked
 STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urap}
 SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000000udym}

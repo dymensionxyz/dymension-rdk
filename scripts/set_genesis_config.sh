@@ -42,9 +42,6 @@ set_gov_params() {
 }
 
 set_sequencers() {
-    # echo "NOT SUPPORTED YET"
-    # echo "please run sh scripts/create_sequencer.sh when the node is running"
-    # return
     sequencerDefault='
         {
           "commission": {

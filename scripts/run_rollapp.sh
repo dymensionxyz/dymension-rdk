@@ -20,6 +20,13 @@ else
   AGGREGATOR_FLAG=""
 fi
 
+if [ "$EVM_ENABLED" ]; then
+  EVM_FLAGS='--json-rpc.enable \
+  --json-rpc.api eth,txpool,personal,net,debug,web3,miner
+  '
+fi
+
+
 $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.da_layer "$DA_LAYER" \
   --dymint.da_config "$DA_LAYER_CONFIG" \
@@ -33,5 +40,5 @@ $EXECUTABLE start $AGGREGATOR_FLAG \
   --log-file "$LOG_FILE_PATH" \
   --max-log-size "$MAX_LOG_SIZE" \
   --module-log-level-override "$MODULE_LOG_LEVEL_OVERRIDE" \
-  
+  "$EVM_FLAGS"
 
