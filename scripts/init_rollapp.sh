@@ -1,5 +1,10 @@
 #!/bin/bash
 BASEDIR=$(dirname "$0")
+
+if [ "$EVM_ENABLED" ]; then
+  echo "EVM build enabled"
+fi
+
 . "$BASEDIR"/shared.sh
 . "$BASEDIR"/set_genesis_config.sh
 
@@ -42,11 +47,9 @@ if [ -f "$GENESIS_FILE" ]; then
 fi
 
 
-
 $EXECUTABLE dymint unsafe-reset-all  --home "$CHAIN_DIR"
 $EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
 
-# TODO: create log file
 if [ -n "$LOG_FILE_PATH" ]; then
   mkdir -p "$(dirname "$LOG_FILE_PATH")" # create parent directories if they don't exist
   touch "$LOG_FILE_PATH" # create the file
@@ -61,7 +64,7 @@ $EXECUTABLE config keyring-backend test
 $EXECUTABLE config chain-id "$CHAIN_ID"
 
 # -------------------------------- app config -------------------------------- #
-sed -i'' -e 's/^minimum-gas-prices *= .*/minimum-gas-prices = "0urap"/' "$APP_CONFIG_FILE"
+sed -i'' -e "s/^minimum-gas-prices *= .*/minimum-gas-prices = 0$DENOM/" "$APP_CONFIG_FILE"
 sed -i'' -e '/\[api\]/,+3 s/enable *= .*/enable = true/' "$APP_CONFIG_FILE"
 sed -i'' -e "/\[api\]/,+9 s/address *= .*/address = \"tcp:\/\/$API_ADDRESS\"/" "$APP_CONFIG_FILE"
 sed -i'' -e "/\[grpc\]/,+6 s/address *= .*/address = \"$GRPC_LADDRESS\"/" "$APP_CONFIG_FILE"
@@ -69,8 +72,6 @@ sed -i'' -e "/\[grpc-web\]/,+7 s/address *= .*/address = \"$GRPC_WEB_LADDRESS\"/
 sed -i'' -e "/\[rpc\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$RPC_LADDRESS\"/" "$TENDERMINT_CONFIG_FILE"
 sed -i'' -e "/\[p2p\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$P2P_LADDRESS\"/" "$TENDERMINT_CONFIG_FILE"
 sed -i'' -e "s/^persistent_peers *= .*/persistent_peers = \"$ROLLAPP_PEERS\"/" "$TENDERMINT_CONFIG_FILE"
-
-
 
 if [ -n "$UNSAFE_CORS" ]; then
   echo "Setting CORS"
@@ -88,12 +89,12 @@ set_denom
 set_consensus_params
 
 # --------------------- adding keys and genesis accounts --------------------- #
+#account for sequencer on the hub
 $EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --keyring-dir $KEYRING_PATH --algo secp256k1
 
-
-# KEYALGO="eth_secp256k1"
-# $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR" --algo $KEYALGO
+#local genesis account
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
+$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
 
 #If using settlement layer, make sure the sequencer account is funded
 if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
@@ -116,14 +117,14 @@ if [ "$ROLLAPP_PEERS" != "" ]; then
   exit 0
 fi
 
-$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
-
 echo "Do you want to include staker on genesis? (Y/n) "
 read -r answer
 if [ ! "$answer" != "${answer#[Nn]}" ] ;then
   $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test --home "$CHAIN_DIR"
   $EXECUTABLE collect-gentxs --home "$CHAIN_DIR"
 fi
+
+$EXECUTABLE validate-genesis
 
 
 echo "Do you want to register sequencer on genesis? (Y/n) "

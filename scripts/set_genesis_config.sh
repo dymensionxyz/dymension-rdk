@@ -9,11 +9,12 @@ set_consensus_params() {
 }
 
 set_denom() {
-    jq '.app_state["mint"]["params"]["mint_denom"] = "urap"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
-    jq '.app_state["staking"]["params"]["bond_denom"] = "urap"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"    
-    jq '.app_state["crisis"]["constant_fee"]["denom"] = "urap"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
-    jq '.app_state["evm"]["params"]["evm_denom"] = "urap"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
-    jq '.app_state.gov.deposit_params.min_deposit[0].denom = "urap"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+    DENOM=$1
+    jq '.app_state["mint"]["params"]["mint_denom"] = "$DENOM"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+    jq '.app_state["staking"]["params"]["bond_denom"] = "$DENOM"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"    
+    jq '.app_state["crisis"]["constant_fee"]["denom"] = "$DENOM"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+    jq '.app_state["evm"]["params"]["evm_denom"] = "$DENOM"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+    jq '.app_state.gov.deposit_params.min_deposit[0].denom = "$DENOM"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
 }
 
 set_minting_params() {

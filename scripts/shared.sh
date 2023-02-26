@@ -11,6 +11,7 @@ SETTLEMENT_RPC=${SETTLEMENT_RPC:-"127.0.0.1:36657"}
 #                                ROLLAPP CONFIG                                #
 # ---------------------------------------------------------------------------- #
 KEY_NAME_ROLLAPP=${KEY_NAME_ROLLAPP:-"rol-user"}
+DENOM=${DENOM:-"urap"}
 
 EXECUTABLE=${EXECUTABLE:-rollappd}
 CHAIN_DIR=${CHAIN_DIR:-$HOME/.rollapp}
