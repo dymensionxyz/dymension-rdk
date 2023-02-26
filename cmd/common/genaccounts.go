@@ -18,11 +18,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
-
-	ethtutil "github.com/ethereum/go-ethereum/common"
-	"github.com/evmos/ethermint/crypto/hd"
-	ethermint "github.com/evmos/ethermint/types"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
 )
 
 const (
@@ -59,13 +54,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 				}
 				if keyringBackend != "" && clientCtx.Keyring == nil {
 					var err error
-					kr, err = keyring.New(
-						sdk.KeyringServiceName(),
-						keyringBackend,
-						clientCtx.HomeDir,
-						inBuf,
-						hd.EthSecp256k1Option(),
-					)
+					kr, err = keyring.New(sdk.KeyringServiceName(), keyringBackend, clientCtx.HomeDir, inBuf)
 					if err != nil {
 						return err
 					}
@@ -128,10 +117,7 @@ contain valid denominations. Accounts may optionally be supplied with vesting pa
 					return errors.New("invalid vesting parameters; must supply start and end time or end time")
 				}
 			} else {
-				genAccount = &ethermint.EthAccount{
-					BaseAccount: baseAccount,
-					CodeHash:    ethtutil.BytesToHash(evmtypes.EmptyCodeHash).Hex(),
-				}
+				genAccount = baseAccount
 			}
 
 			if err := genAccount.Validate(); err != nil {

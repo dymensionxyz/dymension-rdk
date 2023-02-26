@@ -11,7 +11,7 @@ SETTLEMENT_RPC=${SETTLEMENT_RPC:-"127.0.0.1:36657"}
 #                                ROLLAPP CONFIG                                #
 # ---------------------------------------------------------------------------- #
 KEY_NAME_ROLLAPP=${KEY_NAME_ROLLAPP:-"rol-user"}
-DENOM=${DENOM:-"urap"}
+DENOM=${DENOM:-"urax"}
 
 EXECUTABLE=${EXECUTABLE:-rollappd}
 CHAIN_DIR=${CHAIN_DIR:-$HOME/.rollapp}
@@ -56,7 +56,7 @@ DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\",
 # Settlement config
 SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"dymension"}
 SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$DYMINT_FEES\"}"}
-SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$HOME/.rollapp\", \"db_path\": \"data\", \"proposer_pub_key\":\"$HOME/.rollapp/config/priv_validator_key.json\"}"}
+SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$CHAIN_DIR\", \"db_path\": \"data\", \"proposer_pub_key\":\"$CHAIN_DIR/config/priv_validator_key.json\"}"}
 
 
 # ---------------------------------------------------------------------------- #

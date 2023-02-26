@@ -86,6 +86,17 @@ func SetBip44CoinType(config *sdk.Config) {
 	config.SetFullFundraiserPath(ethermint.BIP44HDPath) // nolint: staticcheck
 }
 
+// RegisterDenoms registers the base and display denominations to the SDK.
+func RegisterDenoms() {
+	if err := sdk.RegisterDenom("REVM", sdk.OneDec()); err != nil {
+		panic(err)
+	}
+
+	if err := sdk.RegisterDenom("arevm", sdk.NewDecWithPrec(1, 18)); err != nil {
+		panic(err)
+	}
+}
+
 // NewRootCmd creates a new root rollappd command. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
