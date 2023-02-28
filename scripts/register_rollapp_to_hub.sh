@@ -8,7 +8,7 @@ MAX_SEQUENCERS=5
 #TODO: make common function
 SEQ_ACCOUNT_ON_HUB="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyring-dir $KEYRING_PATH --keyring-backend test)"
 echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB]: "
-$SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node tcp://"$SETTLEMENT_RPC"
+$SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node "$SETTLEMENT_RPC"
 
 echo "Transfer funds if needed and continue..."
 read -r answer

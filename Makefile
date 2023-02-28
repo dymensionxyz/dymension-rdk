@@ -127,14 +127,14 @@ build_wasm: ## Compiles the binary
 
 # ------------------------------------ EVM ----------------------------------- #
 .PHONY: install_evm
-install_evm: go.sum ## Install the rollapp_evm binary	 
-	$(eval BUILD_FLAGS+=-tags evm -ldflags '-X github.com/cosmos/cosmos-sdk/version.AppName=rollapp_evm')
-	go build -o $(GOROOT)/bin/rollapp_evm $(BUILD_FLAGS) -tags evm ./cmd/evm
+install_evm: build_evm go.sum ## Install the rollapp_evm binary	 
+	mv build/rollapp_evm $(GOROOT)/bin/rollapp_evm
 
 .PHONY: build_evm
 build_evm: ## Compiles the rollapp_evm binary
-	$(eval BUILD_FLAGS+=-tags evm -ldflags '-X github.com/cosmos/cosmos-sdk/version.AppName=rollapp_evm')
-	go build -o build/rollapp_evm $(BUILD_FLAGS) ./cmd/evm
+	$(eval BUILD_FLAGS+=-ldflags '-X github.com/cosmos/cosmos-sdk/version.AppName=rollapp_evm \
+  -X github.com/evmos/ethermint/types.regexEpochSeparator=_')
+	go build -o build/rollapp_evm $(BUILD_FLAGS) -tags evm ./cmd/evm
 
 # ---------------------------------------------------------------------------- #
 #                                    testing                                   #

@@ -12,4 +12,4 @@ $SETTLEMENT_EXECUTABLE tx sequencer create-sequencer "$SEQ_PUB_KEY" "$ROLLAPP_ID
   --keyring-backend test \
   --keyring-dir "$KEYRING_PATH" \
   --broadcast-mode block \
-  --node tcp://"$SETTLEMENT_RPC"
+  --node "$SETTLEMENT_RPC"

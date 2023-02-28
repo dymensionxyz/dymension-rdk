@@ -4,7 +4,7 @@
 KEY_NAME_GENESIS=${KEY_NAME_GENESIS:-"local-user"}
 SETTLEMENT_EXECUTABLE=${SETTLEMENT_EXECUTABLE:-dymd}
 SETTLEMENT_CHAIN_ID=${SETTLEMENT_CHAIN_ID:-"local-testnet"}
-SETTLEMENT_RPC=${SETTLEMENT_RPC:-"127.0.0.1:36657"}
+SETTLEMENT_RPC=${SETTLEMENT_RPC:-"tcp://127.0.0.1:36657"}
 
 
 # ---------------------------------------------------------------------------- #
@@ -40,7 +40,7 @@ ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 #TODO: rename to sequencer key name
 #TODO: make most params based on chain ID
 KEY_NAME_DYM=${KEY_NAME_DYM:-"local-sequencer"}
-KEYRING_PATH=${KEYRING_PATH:-"$HOME/.dymd"}
+KEYRING_PATH=${KEYRING_PATH:-"$HOME/.dymension"}
 
 AGGREGATOR=${AGGREGATOR:-"true"}
 BATCH_SIZE=${BATCH_SIZE:-"60"}
@@ -55,7 +55,7 @@ DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\",
 
 # Settlement config
 SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"dymension"}
-SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$DYMINT_FEES\"}"}
+SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$DYMINT_FEES\"}"}
 SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$CHAIN_DIR\", \"db_path\": \"data\", \"proposer_pub_key\":\"$CHAIN_DIR/config/priv_validator_key.json\"}"}
 
 
@@ -71,5 +71,5 @@ SETTLEMENT_RPC_FOR_RELAYER=${SETTLEMENT_RPC_FOR_RELAYER:-$SETTLEMENT_RPC}
 ROLLAPP_CHANNEL_NAME=${ROLLAPP_CHANNEL_NAME:-"channel-0"}
 HUB_CHANNEL_NAME=${HUB_CHANNEL_NAME:-"channel-0"}
 
-RELAYER_SETTLEMENT_CONFIG=${RELAYER_SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$RELAYER_FEES\"}"}
+RELAYER_SETTLEMENT_CONFIG=${RELAYER_SETTLEMENT_CONFIG:-"{\"node_address\": \"$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$RELAYER_FEES\"}"}
 

@@ -104,7 +104,7 @@ if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
     $SETTLEMENT_EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --keyring-dir $KEYRING_PATH
     SEQ_ACCOUNT_ON_HUB="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyring-dir $KEYRING_PATH --keyring-backend test)"
     echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB]: "
-    $SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node tcp://"$SETTLEMENT_RPC"
+    $SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node "$SETTLEMENT_RPC"
 
     echo "Make sure the sequencer account [$SEQ_ACCOUNT_ON_HUB] is funded"
     echo "From within the hub node: \"$SETTLEMENT_EXECUTABLE tx bank send $KEY_NAME_GENESIS $SEQ_ACCOUNT_ON_HUB $SEQUENCER_AMOUNT --keyring-backend test\""
