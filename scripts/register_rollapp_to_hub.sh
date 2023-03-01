@@ -19,4 +19,4 @@ $SETTLEMENT_EXECUTABLE tx rollapp create-rollapp "$ROLLAPP_ID" stamp1 "genesis-p
   --keyring-backend test \
   --keyring-dir "$KEYRING_PATH" \
   --broadcast-mode block \
-  --node tcp://"$SETTLEMENT_RPC"
+  --node "$SETTLEMENT_RPC"
