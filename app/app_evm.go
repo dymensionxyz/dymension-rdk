@@ -388,24 +388,22 @@ func NewRollapp(
 	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
 		appCodec, app.GetSubspace(feemarkettypes.ModuleName), keys[feemarkettypes.StoreKey], tkeys[feemarkettypes.TransientKey],
 	)
+	app.Erc20Keeper = erc20keeper.NewKeeper(
+		keys[erc20types.StoreKey], appCodec, app.GetSubspace(erc20types.ModuleName),
+		app.AccountKeeper, app.BankKeeper, app.EvmKeeper,
+	)
 
+	// Create evmos keeper
 	tracer := cast.ToString(appOpts.Get(flags.EVMTracer))
-	app.EvmKeeper = evmkeeper.NewKeeper(
+	evmKeeper := evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
 		app.AccountKeeper, app.BankKeeper, app.SequencersKeeper, app.FeeMarketKeeper,
 		tracer,
 	)
-
-	//FIXME: causes panics
-	// app.EvmKeeper = app.EvmKeeper.SetHooks(
-	// 	evmkeeper.NewMultiEvmHooks(
-	// 		app.Erc20Keeper.Hooks(),
-	// 	),
-	// )
-
-	app.Erc20Keeper = erc20keeper.NewKeeper(
-		keys[erc20types.StoreKey], appCodec, app.GetSubspace(erc20types.ModuleName),
-		app.AccountKeeper, app.BankKeeper, app.EvmKeeper,
+	app.EvmKeeper = evmKeeper.SetHooks(
+		evmkeeper.NewMultiEvmHooks(
+			app.Erc20Keeper.Hooks(),
+		),
 	)
 
 	// register the proposal types
