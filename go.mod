@@ -9,6 +9,7 @@ require (
 	github.com/dymensionxyz/dymint v0.3.1-beta.0.20230226100941-6151a3c9d4da
 	github.com/ethereum/go-ethereum v1.10.19
 	github.com/evmos/ethermint v0.19.3
+	github.com/evmos/evmos/v9 v9.1.0
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.8.0
