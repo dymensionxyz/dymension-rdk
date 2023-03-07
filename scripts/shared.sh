@@ -4,13 +4,14 @@
 KEY_NAME_GENESIS=${KEY_NAME_GENESIS:-"local-user"}
 SETTLEMENT_EXECUTABLE=${SETTLEMENT_EXECUTABLE:-dymd}
 SETTLEMENT_CHAIN_ID=${SETTLEMENT_CHAIN_ID:-"local-testnet"}
-SETTLEMENT_RPC=${SETTLEMENT_RPC:-"127.0.0.1:36657"}
+SETTLEMENT_RPC=${SETTLEMENT_RPC:-"tcp://127.0.0.1:36657"}
 
 
 # ---------------------------------------------------------------------------- #
 #                                ROLLAPP CONFIG                                #
 # ---------------------------------------------------------------------------- #
 KEY_NAME_ROLLAPP=${KEY_NAME_ROLLAPP:-"rol-user"}
+DENOM=${DENOM:-"urax"}
 
 EXECUTABLE=${EXECUTABLE:-rollappd}
 CHAIN_DIR=${CHAIN_DIR:-$HOME/.rollapp}
@@ -20,16 +21,18 @@ ROLLAPP_ID=${ROLLAPP_ID:-$CHAIN_ID}
 MONIKER=${MONIKER:-$CHAIN_ID-sequencer}
 NAMESPACE_ID=${NAMESPACE_ID:-"000000000000ffff"}
 
-RPC_LADDRESS=${RPC_LADDRESS:-"0.0.0.0:26667"}
-P2P_LADDRESS=${P2P_LADDRESS:-"0.0.0.0:26668"}
-GRPC_LADDRESS=${GRPC_LADDRESS:-"0.0.0.0:9080"}
-GRPC_WEB_LADDRESS=${GRPC_WEB_LADDRESS:-"0.0.0.0:9081"}
-API_ADDRESS=${API_ADDRESS:-"0.0.0.0:1417"}
-LOG_LEVEL=${LOG_LEVEL:-"debug"}
-MAX_LOG_SIZE=${MAX_LOG_SIZE:-"2000"}
-MODULE_LOG_LEVEL_OVERRIDE=${MODULE_LOG_LEVEL_OVERRIDE:-"events:info"}
-P2P_SEEDS=${P2P_SEEDS:-""}
+RPC_LADDRESS=${RPC_LADDRESS:-"0.0.0.0:26657"}
+P2P_LADDRESS=${P2P_LADDRESS:-"0.0.0.0:26656"}
+GRPC_LADDRESS=${GRPC_LADDRESS:-"0.0.0.0:8080"}
+GRPC_WEB_LADDRESS=${GRPC_WEB_LADDRESS:-"0.0.0.0:8081"}
+API_ADDRESS=${API_ADDRESS:-"0.0.0.0:1317"}
 UNSAFE_CORS=${UNSAFE_CORS:-""}
+
+LOG_LEVEL=${LOG_LEVEL:-"info"}
+MAX_LOG_SIZE=${MAX_LOG_SIZE:-"2000"}
+MODULE_LOG_LEVEL_OVERRIDE=${MODULE_LOG_LEVEL_OVERRIDE:-""}
+
+P2P_SEEDS=${P2P_SEEDS:-""}
 ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 
 
@@ -37,7 +40,7 @@ ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 #TODO: rename to sequencer key name
 #TODO: make most params based on chain ID
 KEY_NAME_DYM=${KEY_NAME_DYM:-"local-sequencer"}
-KEYRING_PATH=${KEYRING_PATH:-"$HOME/.rollapp"}
+KEYRING_PATH=${KEYRING_PATH:-"$HOME/.dymension"}
 
 AGGREGATOR=${AGGREGATOR:-"true"}
 BATCH_SIZE=${BATCH_SIZE:-"60"}
@@ -52,8 +55,8 @@ DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\",
 
 # Settlement config
 SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"dymension"}
-SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$DYMINT_FEES\"}"}
-SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$HOME/.rollapp\", \"db_path\": \"data\", \"proposer_pub_key\":\"$HOME/.rollapp/config/priv_validator_key.json\"}"}
+SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$DYMINT_FEES\"}"}
+SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$CHAIN_DIR\", \"db_path\": \"data\", \"proposer_pub_key\":\"$CHAIN_DIR/config/priv_validator_key.json\"}"}
 
 
 # ---------------------------------------------------------------------------- #
@@ -68,5 +71,5 @@ SETTLEMENT_RPC_FOR_RELAYER=${SETTLEMENT_RPC_FOR_RELAYER:-$SETTLEMENT_RPC}
 ROLLAPP_CHANNEL_NAME=${ROLLAPP_CHANNEL_NAME:-"channel-0"}
 HUB_CHANNEL_NAME=${HUB_CHANNEL_NAME:-"channel-0"}
 
-RELAYER_SETTLEMENT_CONFIG=${RELAYER_SETTLEMENT_CONFIG:-"{\"node_address\": \"http://$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$RELAYER_FEES\"}"}
+RELAYER_SETTLEMENT_CONFIG=${RELAYER_SETTLEMENT_CONFIG:-"{\"node_address\": \"$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$RELAYER_FEES\"}"}
 

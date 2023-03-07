@@ -1,3 +1,6 @@
+//go:build evm
+// +build evm
+
 package main
 
 import (
@@ -6,12 +9,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/spf13/cast"
+	"github.com/spf13/cobra"
+
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -24,54 +29,81 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/spf13/cast"
-	"github.com/spf13/cobra"
+
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/dymensionxyz/rollapp/cmd/common"
+
+	evmflags "github.com/dymensionxyz/rollapp/app/evm/flags"
+	ethermintclient "github.com/evmos/ethermint/client"
+	"github.com/evmos/ethermint/crypto/hd"
+	etherencoding "github.com/evmos/ethermint/encoding"
+	evmserver "github.com/evmos/ethermint/server"
+	evmconfig "github.com/evmos/ethermint/server/config"
+	ethermint "github.com/evmos/ethermint/types"
+
+	"github.com/cosmos/cosmos-sdk/simapp/params"
 )
 
-const rollappAscii = `
-███████████            ████  ████    █████████                          █████ █████
-░░███░░░░░███          ░░███ ░░███   ███░░░░░███                        ░░███ ░░███ 
- ░███    ░███   ██████  ░███  ░███  ░███    ░███  ████████  ████████     ░░███ ███  
- ░██████████   ███░░███ ░███  ░███  ░███████████ ░░███░░███░░███░░███     ░░█████   
- ░███░░░░░███ ░███ ░███ ░███  ░███  ░███░░░░░███  ░███ ░███ ░███ ░███      ███░███  
- ░███    ░███ ░███ ░███ ░███  ░███  ░███    ░███  ░███ ░███ ░███ ░███     ███ ░░███ 
- █████   █████░░██████  █████ █████ █████   █████ ░███████  ░███████     █████ █████
-░░░░░   ░░░░░  ░░░░░░  ░░░░░ ░░░░░ ░░░░░   ░░░░░  ░███░░░   ░███░░░     ░░░░░ ░░░░░ 
-                                                  ░███      ░███                    
-                                                  █████     █████                   
-                                                 ░░░░░     ░░░░░                    
-`
+func initStartCommandFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool(evmflags.JSONRPCEnable, true, "Define if the JSON-RPC server should be enabled")
+	cmd.Flags().StringSlice(evmflags.JSONRPCAPI, evmconfig.GetDefaultAPINamespaces(), "Defines a list of JSON-RPC namespaces that should be enabled")
+	cmd.Flags().String(evmflags.JSONRPCAddress, evmconfig.DefaultJSONRPCAddress, "the JSON-RPC server address to listen on")
+	cmd.Flags().String(evmflags.JSONWsAddress, evmconfig.DefaultJSONRPCWsAddress, "the JSON-RPC WS server address to listen on")
+	cmd.Flags().Uint64(evmflags.JSONRPCGasCap, evmconfig.DefaultGasCap, "Sets a cap on gas that can be used in eth_call/estimateGas unit is aphoton (0=infinite)")     //nolint:lll
+	cmd.Flags().Float64(evmflags.JSONRPCTxFeeCap, evmconfig.DefaultTxFeeCap, "Sets a cap on transaction fee that can be sent via the RPC APIs (1 = default 1 photon)") //nolint:lll
+	cmd.Flags().Int32(evmflags.JSONRPCFilterCap, evmconfig.DefaultFilterCap, "Sets the global cap for total number of filters that can be created")
+	cmd.Flags().Duration(evmflags.JSONRPCEVMTimeout, evmconfig.DefaultEVMTimeout, "Sets a timeout used for eth_call (0=infinite)")
+	cmd.Flags().Duration(evmflags.JSONRPCHTTPTimeout, evmconfig.DefaultHTTPTimeout, "Sets a read/write timeout for json-rpc http server (0=infinite)")
+	cmd.Flags().Duration(evmflags.JSONRPCHTTPIdleTimeout, evmconfig.DefaultHTTPIdleTimeout, "Sets a idle timeout for json-rpc http server (0=infinite)")
+	cmd.Flags().Bool(evmflags.JSONRPCAllowUnprotectedTxs, evmconfig.DefaultAllowUnprotectedTxs, "Allow for unprotected (non EIP155 signed) transactions to be submitted via the node's RPC when the global parameter is disabled") //nolint:lll
+	cmd.Flags().Int32(evmflags.JSONRPCLogsCap, evmconfig.DefaultLogsCap, "Sets the max number of results can be returned from single `eth_getLogs` query")
+	cmd.Flags().Int32(evmflags.JSONRPCBlockRangeCap, evmconfig.DefaultBlockRangeCap, "Sets the max block range allowed for `eth_getLogs` query")
+	cmd.Flags().Int(evmflags.JSONRPCMaxOpenConnections, evmconfig.DefaultMaxOpenConnections, "Sets the maximum number of simultaneous connections for the server listener") //nolint:lll
+	cmd.Flags().Bool(evmflags.JSONRPCEnableIndexer, false, "Enable the custom tx indexer for json-rpc")
+	cmd.Flags().Bool(evmflags.JSONRPCEnableMetrics, false, "Define if EVM rpc metrics server should be enabled")
 
-// Set config for prefixes
-func SetPrefixes(accountAddressPrefix string) {
-	// Set prefixes
-	accountPubKeyPrefix := accountAddressPrefix + "pub"
-	validatorAddressPrefix := accountAddressPrefix + "valoper"
-	validatorPubKeyPrefix := accountAddressPrefix + "valoperpub"
-	consNodeAddressPrefix := accountAddressPrefix + "valcons"
-	consNodePubKeyPrefix := accountAddressPrefix + "valconspub"
+	cmd.Flags().String(evmflags.EVMTracer, evmconfig.DefaultEVMTracer, "the EVM tracer type to collect execution traces from the EVM transaction execution (json|struct|access_list|markdown)") //nolint:lll
+	cmd.Flags().Uint64(evmflags.EVMMaxTxGasWanted, evmconfig.DefaultMaxTxGasWanted, "the gas wanted for each eth tx returned in ante handler in check tx mode")                                 //nolint:lll
+}
 
-	// Set and seal config
-	config := sdk.GetConfig()
-	config.SetBech32PrefixForAccount(accountAddressPrefix, accountPubKeyPrefix)
-	config.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
-	config.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)
-	config.Seal()
+func setConfig() {
+	//TODO: add register denoms
+	// registerDenoms()
+	sdk_config := sdk.GetConfig()
+	common.SetPrefixes(sdk_config, app.AccountAddressPrefix)
+	SetBip44CoinType(sdk_config)
+	sdk_config.Seal()
+}
+
+// SetBip44CoinType sets the global coin type to be used in hierarchical deterministic wallets.
+func SetBip44CoinType(config *sdk.Config) {
+	config.SetCoinType(ethermint.Bip44CoinType)
+	config.SetPurpose(sdk.Purpose)                      // Shared
+	config.SetFullFundraiserPath(ethermint.BIP44HDPath) // nolint: staticcheck
+}
+
+// RegisterDenoms registers the base and display denominations to the SDK.
+func RegisterDenoms() {
+	if err := sdk.RegisterDenom("REVM", sdk.OneDec()); err != nil {
+		panic(err)
+	}
+
+	if err := sdk.RegisterDenom("arevm", sdk.NewDecWithPrec(1, 18)); err != nil {
+		panic(err)
+	}
 }
 
 // NewRootCmd creates a new root rollappd command. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
-	encodingConfig := app.MakeEncodingConfig()
+	// encodingConfig := codec.MakeEncodingConfig(app.ModuleBasics)
+	encodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
 
-	SetPrefixes(app.AccountAddressPrefix)
+	setConfig()
 
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Marshaler).
@@ -82,11 +114,12 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 		WithAccountRetriever(authtypes.AccountRetriever{}).
 		WithBroadcastMode(flags.BroadcastBlock).
 		WithHomeDir(app.DefaultNodeHome).
+		WithKeyringOptions(hd.EthSecp256k1Option()).
 		WithViper("")
 
 	rootCmd := &cobra.Command{
 		Use:   version.AppName,
-		Short: rollappAscii,
+		Short: "EVM supported rollapp",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -106,6 +139,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
+			//TODO: review the parameters Evmos overwrites for performance
+			// customAppTemplate, customAppConfig := servercfg.AppConfig(ethermint.AttoPhoton)
+
 			return server.InterceptConfigsPreRunHandler(cmd, "", nil)
 		},
 	}
@@ -116,23 +152,27 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
+	ac := appCreator{
+		encCfg: encodingConfig,
+	}
+
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
+		// MigrateGenesisCmd(),
 		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
-		common.AddGenesisAccountCmd(app.DefaultNodeHome),
+		AddGenesisAccountCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
+		// testnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 		debug.Cmd(),
 		config.Cmd(),
 	)
 
-	ac := appCreator{
-		encCfg: encodingConfig,
-	}
 	common.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 
-	startCmd := common.StartCmd(ac.newApp, app.DefaultNodeHome)
+	startCmd := StartCmd(ac.newApp, app.DefaultNodeHome)
+	initStartCommandFlags(startCmd)
 	rootCmd.AddCommand(startCmd)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
@@ -140,8 +180,18 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		rpc.StatusCommand(),
 		queryCommand(),
 		txCommand(),
-		keys.Commands(app.DefaultNodeHome),
+		ethermintclient.KeyCommands(app.DefaultNodeHome),
 	)
+
+	rootCmd.AddCommand(evmserver.NewIndexTxCmd())
+	//FIXME: validate and uncomment or remove
+	// rootCmd, err := srvflags.AddTxFlags(rootCmd)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	// add rosetta
+	// rootCmd.AddCommand(sdkserver.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Codec))
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {

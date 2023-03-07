@@ -28,28 +28,24 @@ This repository hosts `rollappd`, the first implementation of a dymension rollap
 
 **Note**: Requires [Go 1.18](https://go.dev/)
 
-**Note**: This code was initially scaffolded with igniteCLI@v0.22.2
-
 
 ## Quick guide
-Get started with [building RollApps](https://docs.dymension.xyz/developers/getting-started/intro) 
+Get started with [building RollApps](https://docs.dymension.xyz/develop/get-started/setup) 
 
 ## Installing / Getting started
 ```shell
 make install
 ```
-
 This will build and install the ```rollappd``` binary
 
 
 ### Initial configuration
-set custom configuration params at `scripts/shared.sh`
-
+Set custom configuration params at `scripts/shared.sh`
 ```
 sh scripts/init_rollapp.sh
 ```
 
-This will initialize the rollapp with single initial staked account
+This will initialize the rollapp
 
 ### Register rollapp on settlement
 
@@ -79,6 +75,20 @@ TOKEN_AMOUNT = 0$DENOM
 
 ```
 sh scripts/create_sequencer.sh
+```
+
+## Running EVM-based rollapp
+:construction:  To run an EVM-based rollapp, one should:
+
+1. Build and EVM binary instead of default binary:
+```shell
+make install_evm
+```
+This will build and install the ```rollapp_evm``` binary
+
+2. set corresponding environment variables **before** initializing the rollapp
+```
+source scripts/env/rollapp_evm.env
 ```
 
 ## Establish IBC channel between hub and rollapp
