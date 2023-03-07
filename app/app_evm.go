@@ -108,10 +108,11 @@ import (
 	"github.com/evmos/ethermint/x/feemarket"
 	feemarketkeeper "github.com/evmos/ethermint/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
-	// "github.com/evmos/evmos/v9/x/erc20"
-	// erc20client "github.com/evmos/evmos/v9/x/erc20/client"
-	// erc20keeper "github.com/evmos/evmos/v9/x/erc20/keeper"
-	// erc20types "github.com/evmos/evmos/v9/x/erc20/types"
+
+	"github.com/evmos/evmos/v9/x/erc20"
+	erc20client "github.com/evmos/evmos/v9/x/erc20/client"
+	erc20keeper "github.com/evmos/evmos/v9/x/erc20/keeper"
+	erc20types "github.com/evmos/evmos/v9/x/erc20/types"
 	// Force-load the tracer engines to trigger registration due to Go-Ethereum v1.10.15 changes
 	// _ "github.com/ethereum/go-ethereum/eth/tracers/js"
 	// _ "github.com/ethereum/go-ethereum/eth/tracers/native"
@@ -138,15 +139,12 @@ var (
 		// ethermint keys
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
 		// evmos keys
-		// erc20types.StoreKey,
+		erc20types.StoreKey,
 	}
 )
 
-// this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
-
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	var govProposalHandlers []govclient.ProposalHandler
-	// this line is used by starport scaffolding # stargate/app/govProposalHandlers
 
 	govProposalHandlers = append(govProposalHandlers,
 		paramsclient.ProposalHandler,
@@ -155,14 +153,13 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		upgradeclient.CancelProposalHandler,
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
-		// this line is used by starport scaffolding # stargate/app/govProposalHandler
 	)
 
-	// govProposalHandlers = append(govProposalHandlers,
-	// 	erc20client.RegisterCoinProposalHandler,
-	// 	erc20client.RegisterERC20ProposalHandler,
-	// 	erc20client.ToggleTokenConversionProposalHandler,
-	// )
+	govProposalHandlers = append(govProposalHandlers,
+		erc20client.RegisterCoinProposalHandler,
+		erc20client.RegisterERC20ProposalHandler,
+		erc20client.ToggleTokenConversionProposalHandler,
+	)
 
 	return govProposalHandlers
 }
@@ -195,7 +192,9 @@ var (
 		// Ethermint modules
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
-		// erc20.AppModuleBasic{},
+
+		// Evmos moudles
+		erc20.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -208,7 +207,7 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
-		// erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
+		erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -275,14 +274,7 @@ type App struct {
 	FeeMarketKeeper feemarketkeeper.Keeper
 
 	// Evmos keepers
-	// InflationKeeper  inflationkeeper.Keeper
-	// ClaimsKeeper     *claimskeeper.Keeper
-	// Erc20Keeper erc20keeper.Keeper
-	// IncentivesKeeper incentiveskeeper.Keeper
-	// EpochsKeeper     epochskeeper.Keeper
-	// VestingKeeper    vestingkeeper.Keeper
-	// RecoveryKeeper   *recoverykeeper.Keeper
-	// RevenueKeeper    revenuekeeper.Keeper
+	Erc20Keeper erc20keeper.Keeper
 
 	// mm is the module manager
 	mm *module.Manager
@@ -396,23 +388,23 @@ func NewRollapp(
 	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
 		appCodec, app.GetSubspace(feemarkettypes.ModuleName), keys[feemarkettypes.StoreKey], tkeys[feemarkettypes.TransientKey],
 	)
+	app.Erc20Keeper = erc20keeper.NewKeeper(
+		keys[erc20types.StoreKey], appCodec, app.GetSubspace(erc20types.ModuleName),
+		app.AccountKeeper, app.BankKeeper, app.EvmKeeper,
+	)
 
+	// Create evmos keeper
 	tracer := cast.ToString(appOpts.Get(flags.EVMTracer))
-	app.EvmKeeper = evmkeeper.NewKeeper(
+	evmKeeper := evmkeeper.NewKeeper(
 		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
 		app.AccountKeeper, app.BankKeeper, app.SequencersKeeper, app.FeeMarketKeeper,
 		tracer,
 	)
-	// app.EvmKeeper = app.EvmKeeper.SetHooks(
-	// 	evmkeeper.NewMultiEvmHooks(
-	// 		app.Erc20Keeper.Hooks(),
-	// 	),
-	// )
-
-	// app.Erc20Keeper = erc20keeper.NewKeeper(
-	// 	keys[erc20types.StoreKey], appCodec, app.GetSubspace(erc20types.ModuleName),
-	// 	app.AccountKeeper, app.BankKeeper, app.EvmKeeper,
-	// )
+	app.EvmKeeper = evmKeeper.SetHooks(
+		evmkeeper.NewMultiEvmHooks(
+			app.Erc20Keeper.Hooks(),
+		),
+	)
 
 	// register the proposal types
 	govRouter := govtypes.NewRouter()
@@ -420,8 +412,8 @@ func NewRollapp(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
-		// AddRoute(erc20types.RouterKey, erc20.NewErc20ProposalHandler(&app.Erc20Keeper))
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
+		AddRoute(erc20types.RouterKey, erc20.NewErc20ProposalHandler(&app.Erc20Keeper))
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
@@ -480,7 +472,7 @@ func NewRollapp(
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		// Evmos app modules
-		// erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
+		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -504,7 +496,7 @@ func NewRollapp(
 		authz.ModuleName,
 		banktypes.ModuleName,
 		govtypes.ModuleName,
-		// erc20types.ModuleName,
+		erc20types.ModuleName,
 		crisistypes.ModuleName,
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
@@ -526,6 +518,7 @@ func NewRollapp(
 		authz.ModuleName,
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
+		erc20types.ModuleName,
 		minttypes.ModuleName,
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
@@ -555,6 +548,7 @@ func NewRollapp(
 		genutiltypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		feegrant.ModuleName,
+		erc20types.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
@@ -793,7 +787,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(evmtypes.ModuleName)
 	paramsKeeper.Subspace(feemarkettypes.ModuleName)
 	// evmos subspaces
-	// paramsKeeper.Subspace(erc20types.ModuleName)
+	paramsKeeper.Subspace(erc20types.ModuleName)
 
 	return paramsKeeper
 }
