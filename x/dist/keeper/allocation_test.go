@@ -60,7 +60,8 @@ func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
 	require.NotNil(t, feeCollector)
 
 	// fund fee collector
-	require.NoError(t, simapp.FundModuleAccount(app.BankKeeper, ctx, feeCollector.GetName(), fees))
+	utils.FundModuleAccount(app, ctx, feeCollector.GetName(), fees)
+	// require.NoError(t, simapp.FundModuleAccount(app.BankKeeper, ctx, feeCollector.GetName(), fees))
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
 }
 
@@ -335,7 +336,7 @@ func TestAllocateTokensTruncation(t *testing.T) {
 	feeCollector := app.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
 	require.NotNil(t, feeCollector)
 
-	require.NoError(t, simapp.FundModuleAccount(app.BankKeeper, ctx, feeCollector.GetName(), fees))
+	utils.FundModuleAccount(app, ctx, feeCollector.GetName(), fees)
 
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
 

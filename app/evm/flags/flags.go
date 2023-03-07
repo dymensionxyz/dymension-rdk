@@ -1,3 +1,6 @@
+//go:build evm
+// +build evm
+
 package flags
 
 // JSON-RPC flags
