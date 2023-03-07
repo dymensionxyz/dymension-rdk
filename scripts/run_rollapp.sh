@@ -20,7 +20,13 @@ else
   AGGREGATOR_FLAG=""
 fi
 
+if [ "$EVM_ENABLED" ]; then
+  EVM_FLAGS='--json-rpc.enable --json-rpc.api eth,txpool,personal,net,debug,web3,miner'
+fi
+
+
 $EXECUTABLE start $AGGREGATOR_FLAG \
+  $EVM_FLAGS \
   --dymint.da_layer "$DA_LAYER" \
   --dymint.da_config "$DA_LAYER_CONFIG" \
   --dymint.settlement_layer "$SETTLEMENT_LAYER" \
@@ -28,9 +34,8 @@ $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.block_batch_size "$BATCH_SIZE" \
   --dymint.namespace_id "$NAMESPACE_ID" \
   --dymint.block_time "$BLOCK_TIME" \
-  --p2p.seeds "$P2P_SEEDS" \
   --home "$CHAIN_DIR" \
-  --log-level "$LOG_LEVEL" \
+  --log_level "$LOG_LEVEL" \
   --log-file "$LOG_FILE_PATH" \
   --max-log-size "$MAX_LOG_SIZE" \
   --module-log-level-override "$MODULE_LOG_LEVEL_OVERRIDE" \

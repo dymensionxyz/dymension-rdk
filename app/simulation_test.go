@@ -45,6 +45,8 @@ func BenchmarkSimulation(b *testing.B) {
 	simapp.FlagCommitValue = true
 
 	config, db, dir, logger, _, err := simapp.SetupSimulation("goleveldb-app-sim", "Simulation")
+	config.ChainID = "evmos_100-1"
+
 	require.NoError(b, err, "simulation setup failed")
 
 	b.Cleanup(func() {

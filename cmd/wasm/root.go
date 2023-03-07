@@ -27,27 +27,13 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
+
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
-	"github.com/dymensionxyz/rollapp/cmd/common"
 )
-
-const rollappAscii = `
-███████████            ████  ████    █████████                          █████ █████
-░░███░░░░░███          ░░███ ░░███   ███░░░░░███                        ░░███ ░░███ 
- ░███    ░███   ██████  ░███  ░███  ░███    ░███  ████████  ████████     ░░███ ███  
- ░██████████   ███░░███ ░███  ░███  ░███████████ ░░███░░███░░███░░███     ░░█████   
- ░███░░░░░███ ░███ ░███ ░███  ░███  ░███░░░░░███  ░███ ░███ ░███ ░███      ███░███  
- ░███    ░███ ░███ ░███ ░███  ░███  ░███    ░███  ░███ ░███ ░███ ░███     ███ ░░███ 
- █████   █████░░██████  █████ █████ █████   █████ ░███████  ░███████     █████ █████
-░░░░░   ░░░░░  ░░░░░░  ░░░░░ ░░░░░ ░░░░░   ░░░░░  ░███░░░   ░███░░░     ░░░░░ ░░░░░ 
-                                                  ░███      ░███                    
-                                                  █████     █████                   
-                                                 ░░░░░     ░░░░░                    
-`
 
 // Set config for prefixes
 func SetPrefixes(accountAddressPrefix string) {
@@ -86,7 +72,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	rootCmd := &cobra.Command{
 		Use:   version.AppName,
-		Short: rollappAscii,
+		Short: "rollappd",
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -121,8 +107,9 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
-		common.AddGenesisAccountCmd(app.DefaultNodeHome),
+		AddGenesisAccountCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
+		// testnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 		debug.Cmd(),
 		config.Cmd(),
 	)
@@ -130,10 +117,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	ac := appCreator{
 		encCfg: encodingConfig,
 	}
-	common.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
-
-	startCmd := common.StartCmd(ac.newApp, app.DefaultNodeHome)
-	rootCmd.AddCommand(startCmd)
+	AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(

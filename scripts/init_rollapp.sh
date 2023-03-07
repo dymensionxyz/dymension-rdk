@@ -1,14 +1,19 @@
 #!/bin/bash
 BASEDIR=$(dirname "$0")
+
+if [ "$EVM_ENABLED" ]; then
+  echo "EVM build enabled"
+fi
+
 . "$BASEDIR"/shared.sh
 . "$BASEDIR"/set_genesis_config.sh
 
 
 # ---------------------------- initial parameters ---------------------------- #
 # Assuming 1,000,000RAP tokens
-TOKEN_AMOUNT=${TOKEN_AMOUNT:-1000000000000urap}
+TOKEN_AMOUNT=${TOKEN_AMOUNT:-100000000000000000000000000urax}
 #half is staked
-STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urap}
+STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urax}
 SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000000udym}
 
 CONFIG_DIRECTORY="$CHAIN_DIR/config"
@@ -23,6 +28,7 @@ if ! command -v "$EXECUTABLE" >/dev/null; then
   exit 1
 fi
 
+# TODO: run this check only if settlement is set to dymension
 if ! command -v "$SETTLEMENT_EXECUTABLE" >/dev/null; then
   echo "$SETTLEMENT_EXECUTABLE does not exist"
   exit 1
@@ -42,16 +48,24 @@ if [ -f "$GENESIS_FILE" ]; then
 fi
 
 
-
 $EXECUTABLE dymint unsafe-reset-all  --home "$CHAIN_DIR"
 $EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
 
+if [ -n "$LOG_FILE_PATH" ]; then
+  mkdir -p "$(dirname "$LOG_FILE_PATH")" # create parent directories if they don't exist
+  touch "$LOG_FILE_PATH" # create the file
+  echo "Log file created at $LOG_FILE_PATH"
+else
+  echo "LOG_FILE_PATH is not set. using stdout"
+fi
+
+
 # ------------------------------- client config ------------------------------ #
-sed -i'' -e "s/^chain-id *= .*/chain-id = \"$CHAIN_ID\"/" "$CLIENT_CONFIG_FILE"
-sed -i'' -e "s/^node *= .*/node = \"tcp:\/\/$RPC_LADDRESS\"/" "$CLIENT_CONFIG_FILE"
+$EXECUTABLE config keyring-backend test
+$EXECUTABLE config chain-id "$CHAIN_ID"
 
 # -------------------------------- app config -------------------------------- #
-sed -i'' -e 's/^minimum-gas-prices *= .*/minimum-gas-prices = "0urap"/' "$APP_CONFIG_FILE"
+sed -i'' -e "s/^minimum-gas-prices *= .*/minimum-gas-prices = \"0$DENOM\"/" "$APP_CONFIG_FILE"
 sed -i'' -e '/\[api\]/,+3 s/enable *= .*/enable = true/' "$APP_CONFIG_FILE"
 sed -i'' -e "/\[api\]/,+9 s/address *= .*/address = \"tcp:\/\/$API_ADDRESS\"/" "$APP_CONFIG_FILE"
 sed -i'' -e "/\[grpc\]/,+6 s/address *= .*/address = \"$GRPC_LADDRESS\"/" "$APP_CONFIG_FILE"
@@ -59,8 +73,6 @@ sed -i'' -e "/\[grpc-web\]/,+7 s/address *= .*/address = \"$GRPC_WEB_LADDRESS\"/
 sed -i'' -e "/\[rpc\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$RPC_LADDRESS\"/" "$TENDERMINT_CONFIG_FILE"
 sed -i'' -e "/\[p2p\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$P2P_LADDRESS\"/" "$TENDERMINT_CONFIG_FILE"
 sed -i'' -e "s/^persistent_peers *= .*/persistent_peers = \"$ROLLAPP_PEERS\"/" "$TENDERMINT_CONFIG_FILE"
-
-
 
 if [ -n "$UNSAFE_CORS" ]; then
   echo "Setting CORS"
@@ -70,22 +82,29 @@ if [ -n "$UNSAFE_CORS" ]; then
 fi
 
 # ------------------------------ genesis config ------------------------------ #
-sed -i'' -e 's/bond_denom": ".*"/bond_denom": "urap"/' "$GENESIS_FILE"
-sed -i'' -e 's/mint_denom": ".*"/mint_denom": "urap"/' "$GENESIS_FILE"
-
 set_distribution_params
 set_gov_params
 set_minting_params
 
+set_denom "$DENOM"
+
+if [ "$EVM_ENABLED" ]; then
+  set_EVM_params
+fi
+
 # --------------------- adding keys and genesis accounts --------------------- #
-$EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --home "$CHAIN_DIR"
+
+#local genesis account
 $EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
+$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
 
 #If using settlement layer, make sure the sequencer account is funded
 if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
+    #add account for sequencer on the hub
+    $SETTLEMENT_EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --keyring-dir $KEYRING_PATH
     SEQ_ACCOUNT_ON_HUB="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyring-dir $KEYRING_PATH --keyring-backend test)"
     echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB]: "
-    $SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node tcp://"$SETTLEMENT_RPC"
+    $SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node "$SETTLEMENT_RPC"
 
     echo "Make sure the sequencer account [$SEQ_ACCOUNT_ON_HUB] is funded"
     echo "From within the hub node: \"$SETTLEMENT_EXECUTABLE tx bank send $KEY_NAME_GENESIS $SEQ_ACCOUNT_ON_HUB $SEQUENCER_AMOUNT --keyring-backend test\""
@@ -102,14 +121,14 @@ if [ "$ROLLAPP_PEERS" != "" ]; then
   exit 0
 fi
 
-$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
-
 echo "Do you want to include staker on genesis? (Y/n) "
 read -r answer
 if [ ! "$answer" != "${answer#[Nn]}" ] ;then
   $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test --home "$CHAIN_DIR"
   $EXECUTABLE collect-gentxs --home "$CHAIN_DIR"
 fi
+
+$EXECUTABLE validate-genesis
 
 
 echo "Do you want to register sequencer on genesis? (Y/n) "

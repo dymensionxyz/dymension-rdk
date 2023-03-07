@@ -1,3 +1,6 @@
+//go:build wasm
+// +build wasm
+
 package app
 
 import (
@@ -12,7 +15,7 @@ import (
 
 var (
 	//TODO: set with compilation flag
-	WasmEnabledFlag = false
+	WasmEnabledFlag = true
 
 	// If EnableSpecificWasmProposals is "", and this is "true", then enable all x/wasm proposals.
 	// If EnableSpecificWasmProposals is "", and this is not "true", then disable all x/wasm proposals.

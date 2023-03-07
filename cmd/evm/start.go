@@ -14,11 +14,13 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/server"
 	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
+	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
 	"google.golang.org/grpc"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
@@ -27,6 +29,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 
+	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/spf13/cobra"
 
 	dymintconf "github.com/dymensionxyz/dymint/config"
@@ -34,7 +37,13 @@ import (
 	dymintnode "github.com/dymensionxyz/dymint/node"
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
 	"github.com/dymensionxyz/rollapp/app"
+	"github.com/dymensionxyz/rollapp/cmd/common"
 	"github.com/dymensionxyz/rollapp/utils"
+
+	"github.com/evmos/ethermint/indexer"
+	ethserver "github.com/evmos/ethermint/server"
+	ethconfig "github.com/evmos/ethermint/server/config"
+	ethermint "github.com/evmos/ethermint/types"
 )
 
 const (
@@ -116,9 +125,12 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 			// Bind flags to the Context's Viper so the app construction can set
 			// options accordingly.
-			serverCtx.Viper.BindPFlags(cmd.Flags())
+			err := serverCtx.Viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
-			_, err := server.GetPruningOptionsFromFlags(serverCtx.Viper)
+			_, err = server.GetPruningOptionsFromFlags(serverCtx.Viper)
 			return err
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -147,6 +159,17 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 			if !withTM {
 				serverCtx.Logger.Error("starting ABCI without Dymint not supported")
 				return fmt.Errorf("starting ABCI without Dymint not supported")
+			}
+
+			serverCtx.Logger.Info("Unlocking keyring")
+
+			// fire unlock precess for keyring
+			keyringBackend, _ := cmd.Flags().GetString(flags.FlagKeyringBackend)
+			if keyringBackend == keyring.BackendFile {
+				_, err = clientCtx.Keyring.List()
+				if err != nil {
+					return err
+				}
 			}
 
 			serverCtx.Logger.Info("starting ABCI with Dymint")
@@ -232,17 +255,22 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 	}
 
 	traceWriterFile := ctx.Viper.GetString(flagTraceStore)
-	db, err := openDB(home)
+	db, err := common.OpenDB(home)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err := db.Close(); err != nil {
+			ctx.Logger.With("error", err).Error("error closing db")
+		}
+	}()
+
+	traceWriter, err := common.OpenTraceWriter(traceWriterFile)
 	if err != nil {
 		return err
 	}
 
-	traceWriter, err := openTraceWriter(traceWriterFile)
-	if err != nil {
-		return err
-	}
-
-	config, err := config.GetConfig(ctx.Viper)
+	config, err := ethconfig.GetConfig(ctx.Viper)
 	if err != nil {
 		return err
 	}
@@ -320,7 +348,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 	// Add the tx service to the gRPC router. We only need to register this
 	// service if API or gRPC is enabled, and avoid doing so in the general
 	// case, because it spawns a new local tendermint RPC client.
-	if config.API.Enable || config.GRPC.Enable {
+	if config.API.Enable || config.GRPC.Enable || config.JSONRPC.Enable || config.JSONRPC.EnableIndexer {
 		clientCtx := clientCtx.WithClient(server.Client())
 
 		app.RegisterTxService(clientCtx)
@@ -328,6 +356,33 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 
 		if a, ok := app.(types.ApplicationQueryService); ok {
 			a.RegisterNodeService(clientCtx)
+		}
+	}
+
+	/* --------------------------- Adding EVM indexer --------------------------- */
+	var idxer ethermint.EVMTxIndexer
+	if config.JSONRPC.EnableIndexer {
+		idxDB, err := ethserver.OpenIndexerDB(home)
+		if err != nil {
+			ctx.Logger.Error("failed to open evm indexer DB", "error", err.Error())
+			return err
+		}
+		idxLogger := ctx.Logger.With("module", "evmindex")
+		idxer = indexer.NewKVIndexer(idxDB, idxLogger, clientCtx)
+		indexerService := ethserver.NewEVMIndexerService(idxer, clientCtx.Client)
+		indexerService.SetLogger(idxLogger)
+
+		errCh := make(chan error)
+		go func() {
+			if err := indexerService.Start(); err != nil {
+				errCh <- err
+			}
+		}()
+
+		select {
+		case err := <-errCh:
+			return err
+		case <-time.After(types.ServerStartTime): // assume server started successfully
 		}
 	}
 
@@ -345,7 +400,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 		errCh := make(chan error)
 
 		go func() {
-			if err := apiSrv.Start(config); err != nil {
+			if err := apiSrv.Start(config.Config); err != nil {
 				errCh <- err
 			}
 		}()
@@ -370,9 +425,9 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 		}
 
 		if config.GRPCWeb.Enable {
-			grpcWebSrv, err = servergrpc.StartGRPCWeb(grpcSrv, config)
+			grpcWebSrv, err = servergrpc.StartGRPCWeb(grpcSrv, config.Config)
 			if err != nil {
-				ctx.Logger.Error("failed to start grpc-web http server: ", err)
+				ctx.Logger.Error("failed to start grpc-web http server", "error", err)
 				return err
 			}
 		}
@@ -420,6 +475,27 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 		}
 	}
 
+	var (
+		httpSrv     *http.Server
+		httpSrvDone chan struct{}
+	)
+
+	if config.JSONRPC.Enable {
+		genDoc, err := genDocProvider()
+		if err != nil {
+			return err
+		}
+
+		clientCtx := clientCtx.WithChainID(genDoc.ChainID)
+
+		tmEndpoint := "/websocket"
+		tmRPCAddr := cfg.RPC.ListenAddress
+		httpSrv, httpSrvDone, err = ethserver.StartJSONRPC(ctx, clientCtx, tmRPCAddr, tmEndpoint, &config, idxer)
+		if err != nil {
+			return err
+		}
+	}
+
 	defer func() {
 		if tmNode.IsRunning() {
 			_ = tmNode.Stop()
@@ -440,9 +516,59 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 			}
 		}
 
+		if httpSrv != nil {
+			shutdownCtx, cancelFn := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancelFn()
+
+			if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+				ctx.Logger.Error("HTTP server shutdown produced a warning", "error", err.Error())
+			} else {
+				ctx.Logger.Info("HTTP server shut down, waiting 5 sec")
+				select {
+				case <-time.Tick(5 * time.Second):
+				case <-httpSrvDone:
+				}
+			}
+		}
+
 		ctx.Logger.Info("exiting...")
 	}()
 
 	// wait for signal capture and gracefully return
-	return WaitForQuitSignals()
+	return common.WaitForQuitSignals()
+}
+
+// add Rollapp commands
+func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport types.AppExporter, addStartFlags types.ModuleInitFlags) {
+	tendermintCmd := &cobra.Command{
+		Use:   "tendermint",
+		Short: "Tendermint subcommands",
+	}
+
+	tendermintCmd.AddCommand(
+		server.VersionCmd(),
+	)
+
+	dymintCmd := &cobra.Command{
+		Use:   "dymint",
+		Short: "Dymint subcommands",
+	}
+
+	dymintCmd.AddCommand(
+		common.ShowSequencer(),
+		common.ShowNodeIDCmd(),
+		common.ResetAll(),
+		common.InitFiles(),
+		tmcmd.ResetStateCmd,
+	)
+
+	dymintCmd.PersistentFlags().StringP(cli.HomeFlag, "", defaultNodeHome, "directory for config and data")
+
+	rootCmd.AddCommand(
+		dymintCmd,
+		tendermintCmd,
+		server.ExportCmd(appExport, defaultNodeHome),
+		version.NewVersionCommand(),
+		server.NewRollbackCmd(appCreator, defaultNodeHome),
+	)
 }
