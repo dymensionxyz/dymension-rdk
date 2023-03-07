@@ -34,6 +34,8 @@ from_hub_2_rollapp() {
     --from $KEY_NAME_GENESIS \
     --chain-id "$SETTLEMENT_CHAIN_ID" \
     --broadcast-mode block \
+    --packet-timeout-timestamp 100000000000000000 \
+    --packet-timeout-height 0-0 \
     --keyring-backend test
 }
 
@@ -54,11 +56,11 @@ from_rollapp_back_2_hub() {
 query_test_accounts() {
     echo '# ------------------------------------ .. ------------------------------------ #'
     echo "Rollapp:"
-    rollappd q bank balances $ROLLAPP_GENESIS_ADDR --node tcp://"$ROLLAPP_RPC_FOR_RELAYER"
+    $EXECUTABLE q bank balances $ROLLAPP_GENESIS_ADDR --node "$ROLLAPP_RPC_FOR_RELAYER"
 
     echo '# ------------------------------------ .. ------------------------------------ #'
     echo "Hub:"
-    dymd q bank balances $HUB_GENESIS_ADDR --node tcp://"$SETTLEMENT_RPC_FOR_RELAYER"
+    dymd q bank balances $HUB_GENESIS_ADDR --node "$SETTLEMENT_RPC_FOR_RELAYER"
 
     # echo '# ------------------------------------ .. ------------------------------------ #'
     # echo "Rollapp1:"
