@@ -4,7 +4,8 @@ on:
     tags:
       - v*
     branches:
-      - main
+      - 'main'
+      - 'mtstirin/**'
   pull_request:
 
 jobs:
