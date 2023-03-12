@@ -5,7 +5,6 @@ on:
       - v*
     branches:
       - 'main'
-      - 'mtstirin/**'
   pull_request:
 
 jobs:
@@ -16,18 +15,15 @@ jobs:
       GH_ACCESS_TOKEN: "${{ secrets.GH_ACCESS_TOKEN }}"
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.18
     - run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
-
+    - name: Setup Golang with cache
+      uses: magnetikonline/action-golang-cache@v4
+      with:
+        go-version-file: go.mod
     - name: Build
       run: go build ./cmd/rollappd
-
     - name: Build_evm
       run: go build -tags evm ./cmd/evm
-
     - name: Test
       run: go test ./...
   lint:
