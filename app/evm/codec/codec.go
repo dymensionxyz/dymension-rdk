@@ -1,3 +1,6 @@
+//go:build evm
+// +build evm
+
 package codec
 
 import (

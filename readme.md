@@ -65,6 +65,12 @@ sh scripts/register_sequencer_to_hub.sh
 sh scripts/run_rollapp.sh
 ```
 
+To run a rollapp based on foreign IBC token:
+```
+DENOM=IBC/<denom trace>
+TOKEN_AMOUNT = 0$DENOM
+```
+
 ### Create a sequencer on the rollapp chain
 
 ```
