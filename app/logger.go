@@ -9,10 +9,9 @@ import (
 )
 
 const (
-	defaultLogSizeBytes = 1000
-	defaultMaxBackups   = 3
-	defaultMaxAgeDays   = 28
-	moduleKey           = "module"
+	defaultMaxBackups = 3
+	defaultMaxAgeDays = 28
+	moduleKey         = "module"
 )
 
 type Logger struct {

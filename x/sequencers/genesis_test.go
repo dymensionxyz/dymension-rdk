@@ -16,14 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var validDescription = stakingtypes.Description{
-	Moniker:         "test-moniker",
-	Identity:        "test-identity",
-	Website:         "test-website",
-	SecurityContact: "test-security",
-	Details:         "test-details",
-}
-
 func TestFailedInitGenesis(t *testing.T) {
 	app := utils.Setup(false)
 	k, ctx := testutils.NewTestSequencerKeeperFromApp(t, app)

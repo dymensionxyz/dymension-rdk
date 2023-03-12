@@ -64,7 +64,7 @@ func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
 }
 
-func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddress) error {
+func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddress) {
 	// create sequencer
 	msgServ := seqkeeper.NewMsgServerImpl(app.SequencersKeeper)
 	description := stakingtypes.NewDescription(
@@ -79,7 +79,7 @@ func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddre
 		sdk.ValAddress(valAddr), valConsPk2, description,
 	)
 	_, err := msgServ.CreateSequencer(sdk.WrapSDKContext(ctx), msg)
-	return err
+	require.NoError(t, err)
 }
 
 func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
@@ -171,8 +171,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 	fundModules(t, ctx, app)
 
 	// create sequencer
-	err := createSeq(t, ctx, app, valAddrs[1])
-	require.NoError(t, err)
+	createSeq(t, ctx, app, valAddrs[1])
 
 	proposerReward := 0.4
 	communityTax := 0.02
@@ -227,8 +226,7 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// create sequencer
-	err := createSeq(t, ctx, app, valAddrs[1])
-	require.NoError(t, err)
+	createSeq(t, ctx, app, valAddrs[1])
 
 	proposerReward := 0.4
 	communityTax := 0.02
