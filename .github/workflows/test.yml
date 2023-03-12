@@ -38,6 +38,7 @@ jobs:
       GH_ACCESS_TOKEN: "${{ secrets.GH_ACCESS_TOKEN }}"
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3.2.0    
       - name: markdownlint-cli
