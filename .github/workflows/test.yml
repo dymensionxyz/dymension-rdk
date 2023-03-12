@@ -27,7 +27,6 @@ jobs:
     - name: Test
       run: go test ./...
   lint:
-    needs: [build]
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: "github.com/dymensionxyz/*"
