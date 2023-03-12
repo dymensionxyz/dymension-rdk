@@ -1,6 +1,8 @@
 package app
 
 import (
+	"os"
+
 	log "github.com/sirupsen/logrus"
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -45,6 +47,8 @@ func (l Logger) setupLogger(path string, maxSize int, level string) *log.Logger 
 			MaxAge:     defaultMaxAgeDays, //days
 			Compress:   true,              // disabled by default
 		})
+	} else {
+		logger.SetOutput(os.Stdout)
 	}
 	logLevel, err := log.ParseLevel(level)
 	if err != nil {
