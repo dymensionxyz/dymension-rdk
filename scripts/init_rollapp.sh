@@ -19,7 +19,6 @@ SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000000udym}
 CONFIG_DIRECTORY="$CHAIN_DIR/config"
 GENESIS_FILE="$CONFIG_DIRECTORY/genesis.json"
 TENDERMINT_CONFIG_FILE="$CONFIG_DIRECTORY/config.toml"
-CLIENT_CONFIG_FILE="$CONFIG_DIRECTORY/client.toml"
 APP_CONFIG_FILE="$CONFIG_DIRECTORY/app.toml"
 
 # --------------------------------- run init --------------------------------- #
