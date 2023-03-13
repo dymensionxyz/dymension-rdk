@@ -61,7 +61,9 @@ func (k msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	}
 
 	k.SetValidator(ctx, sequencer)
-	k.SetValidatorByConsAddr(ctx, sequencer)
+	if err := k.SetValidatorByConsAddr(ctx, sequencer); err != nil {
+		return &types.MsgCreateSequencerResponse{}, err
+	}
 
 	//TODO: add event emit
 

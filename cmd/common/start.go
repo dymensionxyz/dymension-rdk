@@ -116,9 +116,12 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 			// Bind flags to the Context's Viper so the app construction can set
 			// options accordingly.
-			serverCtx.Viper.BindPFlags(cmd.Flags())
+			err := serverCtx.Viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				return err
+			}
 
-			_, err := server.GetPruningOptionsFromFlags(serverCtx.Viper)
+			_, err = server.GetPruningOptionsFromFlags(serverCtx.Viper)
 			return err
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -200,7 +203,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 	//dev option
 	cmd.Flags().String(flagModuleLogLevelOverride, "", "Override module log level for customizable logging. For example \"module1:info,module2:error\"")
-	cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
+	_ = cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
 
 	// add support for all Tendermint-specific command line options
 	tmcmd.AddNodeFlags(cmd)

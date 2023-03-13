@@ -30,7 +30,6 @@ var (
 	valConsPk2 = PKS[1]
 	valConsPk3 = PKS[2]
 
-	valConsAddr1 = sdk.ConsAddress(valConsPk1.Address())
 	valConsAddr2 = sdk.ConsAddress(valConsPk2.Address())
 
 	totalFees     = sdk.NewInt(100)
@@ -79,7 +78,8 @@ func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddre
 	msg, _ := seqtypes.NewMsgCreateSequencer(
 		sdk.ValAddress(valAddr), valConsPk2, description,
 	)
-	msgServ.CreateSequencer(sdk.WrapSDKContext(ctx), msg)
+	_, err := msgServ.CreateSequencer(sdk.WrapSDKContext(ctx), msg)
+	require.NoError(t, err)
 }
 
 func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
