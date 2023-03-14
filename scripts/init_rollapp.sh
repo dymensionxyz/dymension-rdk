@@ -27,8 +27,7 @@ if ! command -v "$EXECUTABLE" >/dev/null; then
   exit 1
 fi
 
-# TODO: run this check only if settlement is set to dymension
-if ! command -v "$SETTLEMENT_EXECUTABLE" >/dev/null; then
+if [ "$SETTLEMENT_LAYER" = "dymension" ] && [ ! "$(command -v $SETTLEMENT_EXECUTABLE)" ] ; then
   echo "$SETTLEMENT_EXECUTABLE does not exist"
   exit 1
 fi
