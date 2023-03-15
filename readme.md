@@ -31,21 +31,32 @@ Get started with [building RollApps](https://docs.dymension.xyz/develop/get-star
 
 ## Installing / Getting started
 
+Build and install the ```rollappd``` binary:
+
 ```shell
 make install
 ```
 
-This will build and install the ```rollappd``` binary
-
 ### Initial configuration
 
 Set custom configuration params at `scripts/shared.sh`
+This will initialize the rollapp:
 
 ```shell
 sh scripts/init_rollapp.sh
 ```
 
-This will initialize the rollapp
+### Run rollapp
+
+```shell
+sh scripts/run_rollapp.sh
+```
+
+## Connect the rollapp to a settlement and DA
+
+### Configure the rollapp
+
+Set the configuration params in `scripts/shared.sh`
 
 ### Register rollapp on settlement
 
@@ -57,25 +68,6 @@ sh scripts/register_rollapp_to_hub.sh
 
 ```shell
 sh scripts/register_sequencer_to_hub.sh
-```
-
-### Run rollapp
-
-```shell
-sh scripts/run_rollapp.sh
-```
-
-To run a rollapp based on foreign IBC token:
-
-```shell
-DENOM=IBC/<denom trace>
-TOKEN_AMOUNT = 0$DENOM
-```
-
-### Create a sequencer on the rollapp chain
-
-```shell
-sh scripts/create_sequencer.sh
 ```
 
 ## Running EVM-based rollapp
@@ -90,10 +82,12 @@ sh scripts/create_sequencer.sh
 
     This will build and install the ```rollapp_evm``` binary
 
-2. set corresponding environment variables **before** initializing the rollapp
+2. EVM-based configuration:
+
+    Uncomment the **EVM section** in `scripts/shared.sh`, **then** initializing the rollapp
 
     ```shell
-    source scripts/env/rollapp_evm.env
+    sh scripts/init_rollapp.sh
     ```
 
 ## Establish IBC channel between hub and rollapp
@@ -139,6 +133,15 @@ rol2hub:    ibc-transfer of 5555urap to local-user from rol-user
 hub_back:   transfer back the tokens from the hub to the rollapp
 hub2rol:    ibc-transfer of 5555dym to rol-user from local-user
 hub_back:   transfer back the tokens from the hub to the rollapp
+```
+
+### Run rollapp with IBC native token
+
+To run a rollapp based on foreign IBC token, set the following when initializing the rollapp:
+
+```shell
+DENOM=IBC/<denom trace>
+TOKEN_AMOUNT = 0$DENOM
 ```
 
 ## Running multiple rollapp instances locally

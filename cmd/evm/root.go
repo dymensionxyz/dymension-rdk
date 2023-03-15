@@ -48,6 +48,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp/params"
 )
 
+const rollappAscii = `
+███████ ██    ██ ███    ███     ██████   ██████  ██      ██       █████  ██████  ██████  
+██      ██    ██ ████  ████     ██   ██ ██    ██ ██      ██      ██   ██ ██   ██ ██   ██ 
+█████   ██    ██ ██ ████ ██     ██████  ██    ██ ██      ██      ███████ ██████  ██████  
+██       ██  ██  ██  ██  ██     ██   ██ ██    ██ ██      ██      ██   ██ ██      ██      
+███████   ████   ██      ██     ██   ██  ██████  ███████ ███████ ██   ██ ██      ██                                                                                                                                                            
+`
+
 func initStartCommandFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(evmflags.JSONRPCEnable, true, "Define if the JSON-RPC server should be enabled")
 	cmd.Flags().StringSlice(evmflags.JSONRPCAPI, evmconfig.GetDefaultAPINamespaces(), "Defines a list of JSON-RPC namespaces that should be enabled")
@@ -119,7 +127,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	rootCmd := &cobra.Command{
 		Use:   version.AppName,
-		Short: "EVM supported rollapp",
+		Short: rollappAscii,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())

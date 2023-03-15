@@ -19,7 +19,6 @@ SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000000udym}
 CONFIG_DIRECTORY="$CHAIN_DIR/config"
 GENESIS_FILE="$CONFIG_DIRECTORY/genesis.json"
 TENDERMINT_CONFIG_FILE="$CONFIG_DIRECTORY/config.toml"
-CLIENT_CONFIG_FILE="$CONFIG_DIRECTORY/client.toml"
 APP_CONFIG_FILE="$CONFIG_DIRECTORY/app.toml"
 
 # --------------------------------- run init --------------------------------- #
@@ -28,8 +27,7 @@ if ! command -v "$EXECUTABLE" >/dev/null; then
   exit 1
 fi
 
-# TODO: run this check only if settlement is set to dymension
-if ! command -v "$SETTLEMENT_EXECUTABLE" >/dev/null; then
+if [ "$SETTLEMENT_LAYER" = "dymension" ] && [ ! "$(command -v $SETTLEMENT_EXECUTABLE)" ] ; then
   echo "$SETTLEMENT_EXECUTABLE does not exist"
   exit 1
 fi
