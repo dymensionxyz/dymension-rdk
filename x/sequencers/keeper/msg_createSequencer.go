@@ -16,13 +16,29 @@ func (k msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Pubkey can be nil only in simulation mode
-
 	if msg.Pubkey == nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidPubKey, "sequencer pubkey can not be empty")
 	}
 
-	// check to see if the sequencer has been registered before
-	valAddr, err := sdk.ValAddressFromBech32(msg.SequencerAddress)
+	pk, ok := msg.Pubkey.GetCachedValue().(cryptotypes.PubKey)
+	if !ok {
+		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "Expecting cryptotypes.PubKey, got %T", pk)
+	}
+	_, err := k.Keeper.CreateSequencer(ctx, msg.SequencerAddress, pk)
+
+	//TODO: add event emit
+	return &types.MsgCreateSequencerResponse{}, err
+}
+
+func (k Keeper) CreateSequencer(ctx sdk.Context, seqAddr string, pk cryptotypes.PubKey) (*stakingtypes.Validator, error) {
+	// check to see if pubkey already registered
+	consAddr := sdk.GetConsAddress(pk)
+	if _, found := k.GetValidatorByConsAddr(ctx, consAddr); found {
+		return nil, types.ErrValidatorPubKeyExists
+	}
+
+	// check to see if the sequencer address has been registered before
+	valAddr, err := sdk.ValAddressFromBech32(seqAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -31,36 +47,18 @@ func (k msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 		return nil, types.ErrValidatorOwnerExists
 	}
 
-	// check to see if pubkey already registered
-	pk, ok := msg.Pubkey.GetCachedValue().(cryptotypes.PubKey)
-	if !ok {
-		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "Expecting cryptotypes.PubKey, got %T", pk)
-	}
-	consAddr := sdk.GetConsAddress(pk)
-	if _, found := k.GetValidatorByConsAddr(ctx, consAddr); found {
-		return nil, types.ErrValidatorPubKeyExists
-	}
+	//Get the power of the sequencer if it been registered on dymint
+	power, _ := k.GetDymintSequencerByAddr(ctx, consAddr)
 
-	//Validate the pubkey registered on dymint
-	if _, found := k.GetDymintSequencerByAddr(ctx, consAddr); !found {
-		return nil, types.ErrSequencerNotRegistered
-	}
-
-	if _, err := msg.Description.EnsureLength(); err != nil {
-		return nil, err
-	}
-
-	sequencer, err := stakingtypes.NewValidator(valAddr, pk, msg.Description)
+	sequencer, err := types.NewSequencer(valAddr, pk, power)
 	if err != nil {
 		return nil, err
 	}
 
 	k.SetValidator(ctx, sequencer)
 	if err := k.SetValidatorByConsAddr(ctx, sequencer); err != nil {
-		return &types.MsgCreateSequencerResponse{}, err
+		return nil, err
 	}
 
-	//TODO: add event emit
-
-	return &types.MsgCreateSequencerResponse{}, nil
+	return &sequencer, nil
 }

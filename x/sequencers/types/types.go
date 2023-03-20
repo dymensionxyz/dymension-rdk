@@ -12,7 +12,9 @@ func NewSequencer(operator sdk.ValAddress, pubKey cryptotypes.PubKey, power uint
 	if err != nil {
 		return stakingtypes.Validator{}, err
 	}
-	val.Status = stakingtypes.Bonded
-	val.Tokens = sdk.TokensFromConsensusPower(int64(power), sdk.DefaultPowerReduction)
+	if power > 0 {
+		val.Status = stakingtypes.Bonded
+		val.Tokens = sdk.TokensFromConsensusPower(int64(power), sdk.DefaultPowerReduction)
+	}
 	return val, nil
 }

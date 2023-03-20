@@ -66,7 +66,7 @@ func (k Keeper) GetDymintSequencerByAddr(ctx sdk.Context, consAddr sdk.ConsAddre
 	store := ctx.KVStore(k.storeKey)
 	powerByte := store.Get(types.GetDymintSeqKey(consAddr))
 	if powerByte == nil {
-		return power, false
+		return 0, false
 	}
 
 	return binary.LittleEndian.Uint64(powerByte), true
