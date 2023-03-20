@@ -21,7 +21,9 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 			}
 		} else {
 			pk, _ := elem.ConsPubKey()
-			k.CreateSequencer(ctx, elem.OperatorAddress, pk)
+			if _, err := k.CreateSequencer(ctx, elem.OperatorAddress, pk); err != nil {
+				panic(err)
+			}
 		}
 	}
 
