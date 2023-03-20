@@ -12,6 +12,7 @@ import (
 )
 
 // Implements ValidatorSet interface
+// stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 // var _ stakingtypes.ValidatorSet = Keeper{}
 
 // Implements DelegationSet interface

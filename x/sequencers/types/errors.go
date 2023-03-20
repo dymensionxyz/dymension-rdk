@@ -19,4 +19,5 @@ var (
 	ErrValidatorPubKeyTypeNotSupported = sdkerrors.Register(ModuleName, 104, "validator pubkey type is not supported")
 	ErrEmptyDelegatorAddr              = sdkerrors.Register(ModuleName, 105, "empty delegator address")
 	ErrEmptyValidatorPubKey            = sdkerrors.Register(ModuleName, 106, "empty validator public key")
+	ErrSequencerNotRegistered          = sdkerrors.Register(ModuleName, 107, "sequencer not registered on the hub")
 )

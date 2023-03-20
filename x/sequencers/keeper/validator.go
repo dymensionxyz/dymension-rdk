@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"encoding/binary"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
@@ -34,7 +36,7 @@ func (k Keeper) ValidatorByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) staki
 /* -------------------------------------------------------------------------- */
 /*                               implementation                              */
 /* -------------------------------------------------------------------------- */
-
+/* --------------------------------- GETTERS -------------------------------- */
 // get a single validator
 func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator stakingtypes.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
@@ -59,6 +61,18 @@ func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress
 	return k.GetValidator(ctx, opAddr)
 }
 
+// get a single sequencer registered on dymint by consensus address
+func (k Keeper) GetDymintSequencerByAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (power uint64, found bool) {
+	store := ctx.KVStore(k.storeKey)
+	powerByte := store.Get(types.GetDymintSeqKey(consAddr))
+	if powerByte == nil {
+		return power, false
+	}
+
+	return binary.LittleEndian.Uint64(powerByte), true
+}
+
+/* --------------------------------- SETTERS -------------------------------- */
 // set the main record holding validator details
 func (k Keeper) SetValidator(ctx sdk.Context, validator stakingtypes.Validator) {
 	store := ctx.KVStore(k.storeKey)
@@ -75,6 +89,22 @@ func (k Keeper) SetValidatorByConsAddr(ctx sdk.Context, validator stakingtypes.V
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetValidatorByConsAddrKey(consAddr), validator.GetOperator())
 
+	return nil
+}
+
+// get a single sequencer registered on dymint by consensus address
+func (k Keeper) SetDymintSequencerByAddr(ctx sdk.Context, validator stakingtypes.Validator) error {
+	consAddr, err := validator.GetConsAddr()
+	if err != nil {
+		return err
+	}
+
+	power := validator.ConsensusPower(sdk.DefaultPowerReduction)
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, uint64(power))
+
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetDymintSeqKey(consAddr), b)
 	return nil
 }
 

@@ -7,7 +7,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	tmstrings "github.com/tendermint/tendermint/libs/strings"
 
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 )
@@ -37,22 +36,18 @@ func (k msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	if !ok {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "Expecting cryptotypes.PubKey, got %T", pk)
 	}
-	if _, found := k.GetValidatorByConsAddr(ctx, sdk.GetConsAddress(pk)); found {
+	consAddr := sdk.GetConsAddress(pk)
+	if _, found := k.GetValidatorByConsAddr(ctx, consAddr); found {
 		return nil, types.ErrValidatorPubKeyExists
+	}
+
+	//Validate the pubkey registered on dymint
+	if _, found := k.GetDymintSequencerByAddr(ctx, consAddr); !found {
+		return nil, types.ErrSequencerNotRegistered
 	}
 
 	if _, err := msg.Description.EnsureLength(); err != nil {
 		return nil, err
-	}
-
-	cp := ctx.ConsensusParams()
-	if cp != nil && cp.Validator != nil {
-		if !tmstrings.StringInSlice(pk.Type(), cp.Validator.PubKeyTypes) {
-			return nil, sdkerrors.Wrapf(
-				types.ErrValidatorPubKeyTypeNotSupported,
-				"got: %s, expected: %s", pk.Type(), cp.Validator.PubKeyTypes,
-			)
-		}
 	}
 
 	sequencer, err := stakingtypes.NewValidator(valAddr, pk, msg.Description)

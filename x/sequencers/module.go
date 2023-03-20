@@ -147,10 +147,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.Ra
 	// Initialize global index to index in genesis state
 	var genState types.GenesisState
 	cdc.MustUnmarshalJSON(gs, &genState)
-	InitGenesis(ctx, am.keeper, genState)
-
-	//TODO: check if dymint needs it on genesis
-	return []abci.ValidatorUpdate{}
+	return InitGenesis(ctx, am.keeper, genState)
 }
 
 // ExportGenesis returns the capability module's exported genesis state as raw JSON bytes.

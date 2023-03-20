@@ -26,6 +26,8 @@ var (
 	ValidatorsKey           = []byte{0x21} // prefix for each key to a validator
 	ValidatorsByConsAddrKey = []byte{0x22} // prefix for each key to a validator index, by pubkey
 
+	DymintSeqKey = []byte{0x23} // prefix for each key sequencer registerd on dymint, by pubkey
+
 	HistoricalInfoKey = []byte{0x50} // prefix for the historical info
 )
 
@@ -39,6 +41,12 @@ func GetValidatorKey(operatorAddr sdk.ValAddress) []byte {
 // VALUE: validator operator address ([]byte)
 func GetValidatorByConsAddrKey(addr sdk.ConsAddress) []byte {
 	return append(ValidatorsByConsAddrKey, address.MustLengthPrefix(addr)...)
+}
+
+// DymintSeqKey creates the key for the validator with address
+// VALUE: staking/Validator
+func GetDymintSeqKey(addr sdk.ConsAddress) []byte {
+	return append(DymintSeqKey, address.MustLengthPrefix(addr)...)
 }
 
 // GetHistoricalInfoKey returns a key prefix for indexing HistoricalInfo objects.
