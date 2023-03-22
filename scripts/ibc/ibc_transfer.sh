@@ -1,6 +1,6 @@
 BASEDIR=$(dirname "$0")
-. "$BASEDIR"/shared.sh
-. "$BASEDIR"/src/ibc_transfer_commands.sh
+. "$BASEDIR"/../shared.sh
+. "$BASEDIR"/ibc_transfer_commands.sh
 
 IBC_PORT=transfer
 IBC_VERSION=ics20-1

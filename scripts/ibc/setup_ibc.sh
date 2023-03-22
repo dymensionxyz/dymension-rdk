@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BASEDIR=$(dirname "$0")
-. "$BASEDIR"/shared.sh
+. "$BASEDIR"/../shared.sh
 
 IBC_PORT=transfer
 IBC_VERSION=ics20-1
