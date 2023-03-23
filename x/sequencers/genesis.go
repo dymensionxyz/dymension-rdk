@@ -2,7 +2,7 @@ package sequencers
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/dymensionxyz/rollapp/x/sequencers/keeper"
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
@@ -10,16 +10,24 @@ import (
 
 // InitGenesis initializes the capability module's state from a provided genesis
 // state.
-func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
+func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) []abci.ValidatorUpdate {
 	k.SetParams(ctx, genState.Params)
 
 	// Set all the sequencer
 	for _, elem := range genState.Sequencers {
-		k.SetValidator(ctx, elem)
-		if err := k.SetValidatorByConsAddr(ctx, elem); err != nil {
-			panic(sdkerrors.Wrapf(err, "failed to InitGenesis for sequencers"))
+		if elem.OperatorAddress == "" {
+			if err := k.SetDymintSequencerByAddr(ctx, elem); err != nil {
+				panic(err)
+			}
+		} else {
+			pk, _ := elem.ConsPubKey()
+			if _, err := k.CreateSequencer(ctx, elem.OperatorAddress, pk); err != nil {
+				panic(err)
+			}
 		}
 	}
+
+	return []abci.ValidatorUpdate{}
 }
 
 // ExportGenesis returns the capability module's exported genesis.

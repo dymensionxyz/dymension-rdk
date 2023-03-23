@@ -6,6 +6,8 @@ import (
 
 	dbm "github.com/tendermint/tm-db"
 
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -61,10 +63,20 @@ func Setup(isCheckTx bool) *app.App {
 			panic(err)
 		}
 
+		pks := CreateTestPubKeys(1)
+
+		pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
+		if err != nil {
+			panic(err)
+		}
+
 		// Initialize the chain
 		(*testApp).InitChain(
 			abci.RequestInitChain{
-				Validators:      []abci.ValidatorUpdate{},
+				Validators: []abci.ValidatorUpdate{abci.ValidatorUpdate{
+					PubKey: pk,
+					Power:  1,
+				}},
 				ConsensusParams: DefaultConsensusParams,
 				AppStateBytes:   stateBytes,
 			},

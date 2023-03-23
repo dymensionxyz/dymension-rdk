@@ -12,9 +12,9 @@ ifeq (,$(VERSION))
   endif
 endif
 
-ifndef $(GOROOT)
-    GOROOT=$(shell go env GOROOT)
-    export GOROOT
+ifndef $(GOPATH)
+    GOPATH=$(shell go env GOPATH)
+    export GOPATH
 endif
 
 PACKAGES_SIMTEST=$(shell go list ./... | grep '/simulation')
@@ -128,7 +128,7 @@ build_wasm: ## Compiles the binary
 # ------------------------------------ EVM ----------------------------------- #
 .PHONY: install_evm
 install_evm: build_evm go.sum ## Install the rollapp_evm binary	 
-	mv build/rollapp_evm $(GOROOT)/bin/rollapp_evm
+	mv build/rollapp_evm $(GOPATH)/bin/rollapp_evm
 
 .PHONY: build_evm
 build_evm: ## Compiles the rollapp_evm binary
