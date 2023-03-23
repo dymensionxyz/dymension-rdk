@@ -3,11 +3,11 @@
   "value": {
     "key": "relayer-rollapp-key",
     "chain-id": "rollapp",
-    "rpc-addr": "",
+    "rpc-addr": "tcp://127.0.0.1:26657",
     "account-prefix": "rol",
     "keyring-backend": "test",
     "gas-adjustment": 1.2,
-    "gas-prices": "0.0000025urap",
+    "gas-prices": "0.0urax",
     "debug": true,
     "timeout": "10s",
     "output-format": "json",

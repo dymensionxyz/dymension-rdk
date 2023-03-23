@@ -1,6 +1,6 @@
 #!/bin/bash
 BASEDIR=$(dirname "$0")
-. "$BASEDIR"/shared.sh
+. "$BASEDIR"/../shared.sh
 
 
 MAX_SEQUENCERS=5
