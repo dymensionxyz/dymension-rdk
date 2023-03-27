@@ -75,8 +75,8 @@ import (
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
+
+	ibctransfer "github.com/cosmos/ibc-go/v3/modules/apps/transfer"
 	ibctransfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v3/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v3/modules/core/02-client"
@@ -116,11 +116,18 @@ import (
 	erc20client "github.com/evmos/evmos/v9/x/erc20/client"
 	erc20keeper "github.com/evmos/evmos/v9/x/erc20/keeper"
 	erc20types "github.com/evmos/evmos/v9/x/erc20/types"
+
 	// Force-load the tracer engines to trigger registration due to Go-Ethereum v1.10.15 changes
 	// _ "github.com/ethereum/go-ethereum/eth/tracers/js"
 	// _ "github.com/ethereum/go-ethereum/eth/tracers/native"
 	// // unnamed import of statik for swagger UI support
 	// _ "github.com/evmos/ethermint/client/docs/statik"
+
+	// NOTE: override ICS20 keeper to support IBC transfers of ERC20 tokens
+	// "github.com/evmos/evmos/v10/x/ibc/transfer"
+	// transferkeeper "github.com/evmos/evmos/v10/x/ibc/transfer/keeper"
+	transfer "github.com/dymensionxyz/rollapp/x/erc20middleware"
+	transferkeeper "github.com/dymensionxyz/rollapp/x/erc20middleware/keeper"
 )
 
 const (
@@ -189,13 +196,14 @@ var (
 		ibc.AppModuleBasic{},
 		feegrantmodule.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
-		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		// Ethermint modules
 		evm.AppModuleBasic{},
 		feemarket.AppModuleBasic{},
 
 		// Evmos moudles
+		// transfer.IBCMiddleware{AppModuleBasic: ibctransfer.AppModuleBasic{}},
+		ibctransfer.AppModuleBasic{},
 		erc20.AppModuleBasic{},
 	)
 
@@ -229,6 +237,9 @@ func init() {
 	}
 
 	DefaultNodeHome = filepath.Join(userHomeDir, "."+Name)
+
+	// manually update the power reduction by replacing micro (u) -> atto (a) evmos
+	sdk.DefaultPowerReduction = ethermint.PowerReduction
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -262,7 +273,7 @@ type App struct {
 	UpgradeKeeper    upgradekeeper.Keeper
 	ParamsKeeper     paramskeeper.Keeper
 	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	TransferKeeper   ibctransferkeeper.Keeper
+	TransferKeeper   transferkeeper.Keeper
 	FeeGrantKeeper   feegrantkeeper.Keeper
 
 	// make scoped keepers public for test purposes
@@ -413,14 +424,13 @@ func NewRollapp(
 		AddRoute(erc20types.RouterKey, erc20.NewErc20ProposalHandler(&app.Erc20Keeper))
 
 	// Create Transfer Keepers
-	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+	app.TransferKeeper = transferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
-	)
-	var (
-		transferModule    = transfer.NewAppModule(app.TransferKeeper)
-		transferIBCModule = transfer.NewIBCModule(app.TransferKeeper)
+		app.Erc20Keeper, // Add ERC20 Keeper for ERC20 transfer
+		app.StakingKeeper,
 	)
 
 	app.GovKeeper = govkeeper.NewKeeper(
@@ -428,9 +438,14 @@ func NewRollapp(
 		&stakingKeeper, govRouter,
 	)
 
+	var (
+		transferModule = transfer.NewAppModule(app.TransferKeeper)
+		// transferIBCModule = transfer.NewIBCModule(app.TransferKeeper)
+	)
+
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
-	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
+	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferModule)
 
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -462,12 +477,12 @@ func NewRollapp(
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
-		transferModule,
 
 		// Ethermint app modules
 		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper),
 		feemarket.NewAppModule(app.FeeMarketKeeper),
 		// Evmos app modules
+		transferModule,
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
 	}
 
