@@ -34,7 +34,7 @@ func (im AppModule) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) exported.Acknowledgement {
-	ack := im.OnRecvPacket(ctx, packet, relayer)
+	ack := im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 
 	// return if the acknowledgement is an error ACK
 	if !ack.Success() {
@@ -63,7 +63,7 @@ func (im AppModule) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	if err := im.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer); err != nil {
+	if err := im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer); err != nil {
 		return err
 	}
 
@@ -83,7 +83,7 @@ func (im AppModule) OnTimeoutPacket(
 		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	if err := im.OnTimeoutPacket(ctx, packet, relayer); err != nil {
+	if err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer); err != nil {
 		return err
 	}
 

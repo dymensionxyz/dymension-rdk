@@ -7,8 +7,11 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	ibctesting "github.com/cosmos/ibc-go/v3/testing"
+	etherencoding "github.com/evmos/ethermint/encoding"
 
 	"github.com/dymensionxyz/rollapp/app"
+	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/tendermint/tendermint/libs/log"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -41,9 +44,19 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 	return nil
 }
 
-func setup(withGenesis bool, invCheckPeriod uint) (*app.App, app.GenesisState) {
+func setup(withGenesis bool, invCheckPeriod uint, isEVM bool) (*app.App, app.GenesisState) {
 	db := dbm.NewMemDB()
+
 	encCdc := app.MakeEncodingConfig()
+	if isEVM {
+		ethEncodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
+		encCdc = params.EncodingConfig{
+			InterfaceRegistry: ethEncodingConfig.InterfaceRegistry,
+			Marshaler:         ethEncodingConfig.Marshaler,
+			TxConfig:          ethEncodingConfig.TxConfig,
+			Amino:             ethEncodingConfig.Amino,
+		}
+	}
 	testApp := app.NewRollapp(
 		log.NewNopLogger(), db, nil, true, map[int64]bool{}, app.DefaultNodeHome, invCheckPeriod, encCdc, EmptyAppOptions{},
 	)
@@ -55,7 +68,7 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, app.GenesisState) {
 
 // Setup initializes a new SimApp. A Nop logger is set in SimApp.
 func Setup(isCheckTx bool) *app.App {
-	testApp, genesisState := setup(!isCheckTx, 5)
+	testApp, genesisState := setup(!isCheckTx, 5, true)
 	if !isCheckTx {
 		// init chain must be called to stop deliverState from being nil
 		stateBytes, err := json.MarshalIndent(genesisState, "", " ")
@@ -73,15 +86,21 @@ func Setup(isCheckTx bool) *app.App {
 		// Initialize the chain
 		(*testApp).InitChain(
 			abci.RequestInitChain{
-				Validators: []abci.ValidatorUpdate{abci.ValidatorUpdate{
-					PubKey: pk,
-					Power:  1,
-				}},
+				Time:            time.Time{},
+				ChainId:         "rollappevm_100-1",
 				ConsensusParams: DefaultConsensusParams,
+				Validators:      []abci.ValidatorUpdate{{PubKey: pk, Power: 1}},
 				AppStateBytes:   stateBytes,
+				InitialHeight:   0,
 			},
 		)
 	}
 
 	return testApp
+}
+
+// SetupTestingApp initializes the IBC-go testing application
+func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
+	testApp, genesisState := setup(true, 5, true)
+	return testApp, genesisState
 }
