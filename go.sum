@@ -491,6 +491,8 @@ github.com/dymensionxyz/dymension v0.1.0-alpha.0.20230110174626-23b70dccd1e5 h1:
 github.com/dymensionxyz/dymension v0.1.0-alpha.0.20230110174626-23b70dccd1e5/go.mod h1:C5nQlAlDqVtNigjQVNLSL4SuC3gUVoRhqAsfYZZcDgs=
 github.com/dymensionxyz/dymint v0.3.1-beta.0.20230321100225-6eac41114a25 h1:wcIogTI7marl4k2X9YDgaYkL0RT1q8waf45dmsrw0NE=
 github.com/dymensionxyz/dymint v0.3.1-beta.0.20230321100225-6eac41114a25/go.mod h1:BQ8rxvJ6EP2jQA/hlbeJHteZz9/P37FlGm4SSFI2Vx0=
+github.com/dymensionxyz/dymint v0.3.2-beta h1:gUEwo4cU7bt0ba7PpeTH+j4/Lokz+/JAem5ctzxOrpo=
+github.com/dymensionxyz/dymint v0.3.2-beta/go.mod h1:BQ8rxvJ6EP2jQA/hlbeJHteZz9/P37FlGm4SSFI2Vx0=
 github.com/dymensionxyz/ibc-go/v3 v3.0.0-rc2.0.20230105134315-1870174ab6da h1:driSbrBc4deT0iRjDKjA4royFDsUsDcE0IgFkFxhopo=
 github.com/dymensionxyz/ibc-go/v3 v3.0.0-rc2.0.20230105134315-1870174ab6da/go.mod h1:VwB/vWu4ysT5DN2aF78d17LYmx3omSAdq6gpKvM7XRA=
 github.com/dymensionxyz/rpc v1.3.1 h1:7EXWIobaBes5zldRvTIg7TmNsEKjicrWA/OjCc0NaGs=
