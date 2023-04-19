@@ -52,22 +52,39 @@ sh scripts/init_rollapp.sh
 sh scripts/run_rollapp.sh
 ```
 
-## Connect the rollapp to a settlement and DA
+## Run a rollapp with local settlement node
+
+### Run local dymension hub node
+
+Follow the instructions on [Dymension Hub docs](https://docs.dymension.xyz/develop/get-started/run-base-layers) to run local dymension hub node
 
 ### Configure the rollapp
 
-Set the configuration params in `scripts/shared.sh`
+Set the settlement configuration params in `scripts/shared.sh` or by export
+
+```shell
+export SETTLEMENT_LAYER="dymension"
+export SETTLEMENT_RPC="tcp://127.0.0.1:36657"
+
+sh scripts/init_rollapp.sh
+```
 
 ### Register rollapp on settlement
 
 ```shell
-sh scripts/register_rollapp_to_hub.sh
+sh scripts/settlement/register_rollapp_to_hub.sh
 ```
 
 ### Register sequencer for rollapp on settlement
 
 ```shell
-sh scripts/register_sequencer_to_hub.sh
+sh scripts/settlement/register_sequencer_to_hub.sh
+```
+
+### Run rollapp
+
+```shell
+sh scripts/run_rollapp.sh
 ```
 
 ## Running EVM-based rollapp
@@ -96,7 +113,7 @@ The following script will create all the dependencies for IBC channel between th
 It will create dedicated accounts for the relayer on both the hub and the rollapp, and transfer some funds to them from the genesis accounts.
 
 ```shell
-sh scripts/setup_ibc.sh
+sh scripts/ibc/setup_ibc.sh
 ```
 
 after it finishes (it might take few mins), run the relayer:
@@ -125,7 +142,7 @@ export HUB_CHANNEL_NAME=<channel_id>
 Now you can do ibc transfers
 
 ```shell
-sh scripts/ibc_transfer.sh [arg]
+sh scripts/ibc/ibc_transfer.sh [arg]
 
 Available:
 -q:         query balances of local-user on hub and rol-user on rollapp
@@ -158,8 +175,6 @@ export RPC_PORT="0.0.0.0:27667"
 export P2P_PORT="0.0.0.0:27668"
 export GRPC_PORT="0.0.0.0:9180"
 export GRPC_WEB_PORT="0.0.0.0:9181"
-
-export KEY_NAME_DYM="local-sequencer2"
 ```
 
 Then run the scripts as described in the readme
