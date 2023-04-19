@@ -336,7 +336,7 @@ func NewRollapp(
 	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeperWithSelfClient(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.SequencersKeeper, app.UpgradeKeeper, scopedIBCKeeper,
-		ibcdmtypes.NewSelfClient(), nil,
+		ibcdmtypes.NewSelfClient(),
 	)
 
 	// register the proposal types
@@ -726,4 +726,21 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 // SimulationManager implements the SimulationApp interface
 func (app *App) SimulationManager() *module.SimulationManager {
 	return app.sm
+}
+
+// ibc-go additions
+func (app *App) GetStakingKeeper() stakingkeeper.Keeper {
+	return app.StakingKeeper
+}
+func (app *App) GetIBCKeeper() *ibckeeper.Keeper {
+	return app.IBCKeeper
+
+}
+func (app *App) GetScopedIBCKeeper() capabilitykeeper.ScopedKeeper {
+	return app.ScopedIBCKeeper
+
+}
+func (app *App) GetTxConfig() client.TxConfig {
+	cfg := rollappparams.MakeEncodingConfig()
+	return cfg.TxConfig
 }

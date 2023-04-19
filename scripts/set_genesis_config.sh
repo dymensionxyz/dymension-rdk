@@ -37,8 +37,7 @@ set_gov_params() {
   # jq '.app_state.gov.tally_params.quorum = ""' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
   # jq '.app_state.gov.tally_params.threshold = ""' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
   # jq '.app_state.gov.tally_params.veto_threshold = ""' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
-  # jq '.app_state.gov.voting_params.voting_period = "300s"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
-
+  jq '.app_state.gov.voting_params.voting_period = "300s"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
 }
 
 set_sequencers() {

@@ -55,9 +55,7 @@ func BenchmarkSimulation(b *testing.B) {
 		require.NoError(b, err)
 	})
 
-	encoding := params.EncodingConfig{
-		EncodingConfig: cosmoscmd.MakeEncodingConfig(app.ModuleBasics),
-	}
+	encoding := params.MakeEncodingConfig()
 
 	simApp := app.NewRollapp(
 		logger,
