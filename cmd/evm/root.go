@@ -45,7 +45,8 @@ import (
 	evmconfig "github.com/evmos/ethermint/server/config"
 	ethermint "github.com/evmos/ethermint/types"
 
-	"github.com/cosmos/cosmos-sdk/simapp/params"
+	// "github.com/cosmos/cosmos-sdk/simapp/params"
+	"github.com/dymensionxyz/rollapp/app/params"
 )
 
 const rollappAscii = `
@@ -108,8 +109,13 @@ func RegisterDenoms() {
 // NewRootCmd creates a new root rollappd command. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
-	// encodingConfig := codec.MakeEncodingConfig(app.ModuleBasics)
-	encodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
+	ethEncodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
+	encodingConfig := params.EncodingConfig{
+		InterfaceRegistry: ethEncodingConfig.InterfaceRegistry,
+		Marshaler:         ethEncodingConfig.Marshaler,
+		TxConfig:          ethEncodingConfig.TxConfig,
+		Amino:             ethEncodingConfig.Amino,
+	}
 
 	setConfig()
 
