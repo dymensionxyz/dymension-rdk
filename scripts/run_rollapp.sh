@@ -34,7 +34,7 @@ $EXECUTABLE start $AGGREGATOR_FLAG \
   --dymint.block_batch_size "$BATCH_SIZE" \
   --dymint.namespace_id "$NAMESPACE_ID" \
   --dymint.block_time "$BLOCK_TIME" \
-  --home "$CHAIN_DIR" \
+  --home "$ROLLAPP_CHAIN_DIR" \
   --log_level "$LOG_LEVEL" \
   --log-file "$LOG_FILE_PATH" \
   --max-log-size "$MAX_LOG_SIZE" \

@@ -6,10 +6,10 @@ from_rollapp_2_hub() {
 
     $EXECUTABLE tx ibc-transfer transfer "$IBC_PORT" "$ROLLAPP_CHANNEL_NAME" "$HUB_GENESIS_ADDR" "$AMOUNT" \
     --from $KEY_NAME_ROLLAPP \
-    --chain-id "$CHAIN_ID" \
+    --chain-id "$ROLLAPP_CHAIN_ID" \
     --broadcast-mode block \
     --keyring-backend test \
-    --home $CHAIN_DIR
+    --home $ROLLAPP_CHAIN_DIR
 }
 
 
@@ -46,10 +46,10 @@ from_rollapp_back_2_hub() {
 
     $EXECUTABLE tx ibc-transfer transfer "$IBC_PORT" "$ROLLAPP_CHANNEL_NAME" "$HUB_GENESIS_ADDR" "$AMOUNT" \
         --from $KEY_NAME_ROLLAPP \
-        --chain-id "$CHAIN_ID" \
+        --chain-id "$ROLLAPP_CHAIN_ID" \
         --broadcast-mode block \
         --keyring-backend test \
-        --home $CHAIN_DIR
+        --home $ROLLAPP_CHAIN_DIR
 }
 
 
