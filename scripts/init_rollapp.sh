@@ -16,7 +16,7 @@ TOKEN_AMOUNT=${TOKEN_AMOUNT:-100000000000000000000000000urax}
 STAKING_AMOUNT=${STAKING_AMOUNT:-500000000000urax}
 SEQUENCER_AMOUNT=${SEQUENCER_AMOUNT:-10000000000udym}
 
-CONFIG_DIRECTORY="$CHAIN_DIR/config"
+CONFIG_DIRECTORY="$ROLLAPP_CHAIN_DIR/config"
 GENESIS_FILE="$CONFIG_DIRECTORY/genesis.json"
 TENDERMINT_CONFIG_FILE="$CONFIG_DIRECTORY/config.toml"
 APP_CONFIG_FILE="$CONFIG_DIRECTORY/app.toml"
@@ -39,15 +39,15 @@ if [ -f "$GENESIS_FILE" ]; then
   printf "\n======================================================================================================\n"
   read -r answer
   if [ "$answer" != "${answer#[Yy]}" ]; then
-    rm -rf "$CHAIN_DIR"
+    rm -rf "$ROLLAPP_CHAIN_DIR"
   else
     exit 1
   fi
 fi
 
 
-$EXECUTABLE dymint unsafe-reset-all  --home "$CHAIN_DIR"
-$EXECUTABLE init "$MONIKER" --chain-id "$CHAIN_ID" --home "$CHAIN_DIR"
+$EXECUTABLE dymint unsafe-reset-all  --home "$ROLLAPP_CHAIN_DIR"
+$EXECUTABLE init "$MONIKER" --chain-id "$ROLLAPP_CHAIN_ID" --home "$ROLLAPP_CHAIN_DIR"
 
 if [ -n "$LOG_FILE_PATH" ]; then
   mkdir -p "$(dirname "$LOG_FILE_PATH")" # create parent directories if they don't exist
@@ -60,7 +60,7 @@ fi
 
 # ------------------------------- client config ------------------------------ #
 $EXECUTABLE config keyring-backend test
-$EXECUTABLE config chain-id "$CHAIN_ID"
+$EXECUTABLE config chain-id "$ROLLAPP_CHAIN_ID"
 
 # -------------------------------- app config -------------------------------- #
 sed -i'' -e "s/^minimum-gas-prices *= .*/minimum-gas-prices = \"0$DENOM\"/" "$APP_CONFIG_FILE"
@@ -94,8 +94,8 @@ fi
 # --------------------- adding keys and genesis accounts --------------------- #
 
 #local genesis account
-$EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$CHAIN_DIR"
-$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$CHAIN_DIR"
+$EXECUTABLE keys add "$KEY_NAME_ROLLAPP" --keyring-backend test --home "$ROLLAPP_CHAIN_DIR"
+$EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-backend test --home "$ROLLAPP_CHAIN_DIR"
 
 #If using settlement layer, make sure the sequencer account is funded
 if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
@@ -123,11 +123,11 @@ fi
 echo "Do you want to include staker on genesis? (Y/n) "
 read -r answer
 if [ ! "$answer" != "${answer#[Nn]}" ] ;then
-  $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$CHAIN_ID" --keyring-backend test --home "$CHAIN_DIR"
-  $EXECUTABLE collect-gentxs --home "$CHAIN_DIR"
+  $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$ROLLAPP_CHAIN_ID" --keyring-backend test --home "$ROLLAPP_CHAIN_DIR"
+  $EXECUTABLE collect-gentxs --home "$ROLLAPP_CHAIN_DIR"
 fi
 
-$EXECUTABLE validate-genesis
+$EXECUTABLE validate-genesis --home "$CHAIN_DIR"
 
 
 echo "Do you want to register sequencer on genesis? (Y/n) "

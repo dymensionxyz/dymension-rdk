@@ -80,8 +80,8 @@ set_sequencers() {
   seq_array=$(echo "$sequencerDefault" | jq -c '[.]')
   jq  --argjson seq_array $seq_array '.app_state.sequencers.sequencers = $seq_array' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
 
-  pubkey=$($EXECUTABLE dymint show-sequencer --home $CHAIN_DIR | jq .key)
-  operator_address=$($EXECUTABLE keys show -a $KEY_NAME_ROLLAPP --bech val --keyring-backend test --home $CHAIN_DIR)
+  pubkey=$($EXECUTABLE dymint show-sequencer --home $ROLLAPP_CHAIN_DIR | jq .key)
+  operator_address=$($EXECUTABLE keys show -a $KEY_NAME_ROLLAPP --bech val --keyring-backend test --home $ROLLAPP_CHAIN_DIR)
 
   jq  --arg pubkey $pubkey '.app_state.sequencers.sequencers[0].consensus_pubkey.key = ($pubkey  | fromjson)' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
   jq  --arg operator_address $operator_address '.app_state.sequencers.sequencers[0].operator_address = $operator_address' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"

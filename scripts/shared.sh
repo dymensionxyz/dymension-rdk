@@ -21,18 +21,18 @@ SETTLEMENT_RPC=${SETTLEMENT_RPC:-"tcp://127.0.0.1:36657"}
 # STAKING_AMOUNT="$staking_result""$DENOM"
 
 # EXECUTABLE="rollapp_evm"
-# CHAIN_DIR="$HOME/.rollapp_evm"
-# CHAIN_ID="rollappevm_100_1"
+# ROLLAPP_CHAIN_DIR="$HOME/.rollapp_evm"
+# ROLLAPP_CHAIN_ID="rollappevm_100_1"
 
 # ---------------------------------- GLOBAL ---------------------------------- #
 KEY_NAME_ROLLAPP=${KEY_NAME_ROLLAPP:-"rol-user"}
 DENOM=${DENOM:-"urax"}
 
 EXECUTABLE=${EXECUTABLE:-rollappd}
-CHAIN_DIR=${CHAIN_DIR:-$HOME/.rollapp}
-CHAIN_ID=${CHAIN_ID:-rollapp}
-ROLLAPP_ID=${ROLLAPP_ID:-$CHAIN_ID}
-MONIKER=${MONIKER:-$CHAIN_ID-sequencer}
+ROLLAPP_CHAIN_DIR=${ROLLAPP_CHAIN_DIR:-$HOME/.rollapp}
+ROLLAPP_CHAIN_ID=${ROLLAPP_CHAIN_ID:-rollapp}
+ROLLAPP_ID=${ROLLAPP_ID:-$ROLLAPP_CHAIN_ID}
+MONIKER=${MONIKER:-$ROLLAPP_CHAIN_ID-sequencer}
 
 RPC_LADDRESS=${RPC_LADDRESS:-"0.0.0.0:26657"}
 P2P_LADDRESS=${P2P_LADDRESS:-"0.0.0.0:26656"}
@@ -42,7 +42,7 @@ API_ADDRESS=${API_ADDRESS:-"0.0.0.0:1417"}
 UNSAFE_CORS=${UNSAFE_CORS:-"true"}
 
 LOG_LEVEL=${LOG_LEVEL:-"info"}
-# LOG_FILE_PATH=${LOG_FILE_PATH:-"$CHAIN_DIR/log/rollapp.log"}
+# LOG_FILE_PATH=${LOG_FILE_PATH:-"$ROLLAPP_CHAIN_DIR/log/rollapp.log"}
 MAX_LOG_SIZE=${MAX_LOG_SIZE:-"2000"}
 MODULE_LOG_LEVEL_OVERRIDE=${MODULE_LOG_LEVEL_OVERRIDE:-""}
 
@@ -69,7 +69,7 @@ DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\",
 # Settlement config
 SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"mock"}
 SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$DYMINT_FEES\"}"}
-SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$CHAIN_DIR\", \"db_path\": \"data\", \"proposer_pub_key\":\"$CHAIN_DIR/config/priv_validator_key.json\"}"}
+SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$ROLLAPP_CHAIN_DIR\", \"db_path\": \"data\", \"proposer_pub_key\":\"$ROLLAPP_CHAIN_DIR/config/priv_validator_key.json\"}"}
 
 
 # ---------------------------------------------------------------------------- #
