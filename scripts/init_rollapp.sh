@@ -83,6 +83,7 @@ fi
 set_distribution_params
 set_gov_params
 set_minting_params
+set_staking_params
 
 set_denom "$DENOM"
 

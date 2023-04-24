@@ -40,6 +40,11 @@ set_gov_params() {
   jq '.app_state.gov.voting_params.voting_period = "300s"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
 }
 
+set_staking_params() {
+  echo "setting staking params"
+  jq '.app_state.staking.unbonding_time = "3628800s"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+}
+
 set_sequencers() {
   sequencerDefault='
       {
