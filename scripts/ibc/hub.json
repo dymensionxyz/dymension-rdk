@@ -2,8 +2,8 @@
   "type": "cosmos",
   "value": {
     "key": "relayer-hub-key",
-    "chain-id": "internal-devnet",
-    "rpc-addr": "http://ec2-52-90-58-155.compute-1.amazonaws.com:26657",
+    "chain-id": "local-testnet",
+    "rpc-addr": "tcp://127.0.0.1:36657",
     "account-prefix": "dym",
     "keyring-backend": "test",
     "gas-adjustment": 1.2,
