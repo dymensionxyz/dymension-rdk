@@ -24,19 +24,24 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
-	"github.com/tendermint/tendermint/libs/log"
+	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-
-	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
+	"github.com/dymensionxyz/rollapp/cmd/common"
 )
+
+const rollappAscii = `
+██████   ██████  ██      ██       █████  ██████  ██████  
+██   ██ ██    ██ ██      ██      ██   ██ ██   ██ ██   ██ 
+██████  ██    ██ ██      ██      ███████ ██████  ██████  
+██   ██ ██    ██ ██      ██      ██   ██ ██      ██      
+██   ██  ██████  ███████ ███████ ██   ██ ██      ██                     
+`
 
 // Set config for prefixes
 func SetPrefixes(accountAddressPrefix string) {
@@ -55,7 +60,7 @@ func SetPrefixes(accountAddressPrefix string) {
 	config.Seal()
 }
 
-// NewRootCmd creates a new root command for wasmd. It is called once in the
+// NewRootCmd creates a new root rollappd command. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := app.MakeEncodingConfig()
@@ -75,7 +80,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 	rootCmd := &cobra.Command{
 		Use:   version.AppName,
-		Short: "rollapp",
+		Short: rollappAscii,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			// set the default command outputs
 			cmd.SetOut(cmd.OutOrStdout())
@@ -110,10 +115,8 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
-		AddGenesisAccountCmd(app.DefaultNodeHome),
-		AddGenesisWasmMsgCmd(app.DefaultNodeHome),
+		common.AddGenesisAccountCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
-		// testnetCmd(app.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 		debug.Cmd(),
 		config.Cmd(),
 	)
@@ -121,7 +124,10 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	ac := appCreator{
 		encCfg: encodingConfig,
 	}
-	server.AddCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	common.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+
+	startCmd := common.StartCmd(ac.newApp, app.DefaultNodeHome)
+	rootCmd.AddCommand(startCmd)
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
@@ -129,14 +135,11 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		queryCommand(),
 		txCommand(),
 		keys.Commands(app.DefaultNodeHome),
-		ResetWasmCmd,
-		ResetAppCmd,
 	)
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
-	wasm.AddModuleInitFlags(startCmd)
 }
 
 func queryCommand() *cobra.Command {
@@ -195,7 +198,7 @@ type appCreator struct {
 }
 
 func (ac appCreator) newApp(
-	logger log.Logger,
+	logger tmlog.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
@@ -225,10 +228,6 @@ func (ac appCreator) newApp(
 	if err != nil {
 		panic(err)
 	}
-	var wasmOpts []wasm.Option
-	if cast.ToBool(appOpts.Get("telemetry.enabled")) {
-		wasmOpts = append(wasmOpts, wasmkeeper.WithVMCacheMetrics(prometheus.DefaultRegisterer))
-	}
 
 	return app.NewRollapp(logger, db, traceStore, true, skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
@@ -250,7 +249,7 @@ func (ac appCreator) newApp(
 }
 
 func (ac appCreator) appExport(
-	logger log.Logger,
+	logger tmlog.Logger,
 	db dbm.DB,
 	traceStore io.Writer,
 	height int64,
@@ -258,14 +257,14 @@ func (ac appCreator) appExport(
 	jailAllowedAddrs []string,
 	appOpts servertypes.AppOptions,
 ) (servertypes.ExportedApp, error) {
-	var wasmApp *app.App
+	var rollapp *app.App
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
 		return servertypes.ExportedApp{}, errors.New("application home is not set")
 	}
 
 	loadLatest := height == -1
-	wasmApp = app.NewRollapp(
+	rollapp = app.NewRollapp(
 		logger,
 		db,
 		traceStore,
@@ -278,10 +277,10 @@ func (ac appCreator) appExport(
 	)
 
 	if height != -1 {
-		if err := wasmApp.LoadHeight(height); err != nil {
+		if err := rollapp.LoadHeight(height); err != nil {
 			return servertypes.ExportedApp{}, err
 		}
 	}
 
-	return wasmApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return rollapp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
 }

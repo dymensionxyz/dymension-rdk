@@ -3,38 +3,36 @@ package app_test
 import (
 	"os"
 	"testing"
-	"time"
 
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
 	simulationtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
+	"github.com/dymensionxyz/rollapp/app"
+	"github.com/dymensionxyz/rollapp/app/params"
+	"github.com/ignite/cli/ignite/pkg/cosmoscmd"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmtypes "github.com/tendermint/tendermint/types"
-
-	"rollapp/app"
 )
 
 func init() {
 	simapp.GetSimulatorFlags()
 }
 
-var defaultConsensusParams = &abci.ConsensusParams{
-	Block: &abci.BlockParams{
-		MaxBytes: 200000,
-		MaxGas:   2000000,
-	},
-	Evidence: &tmproto.EvidenceParams{
-		MaxAgeNumBlocks: 302400,
-		MaxAgeDuration:  504 * time.Hour, // 3 weeks is the max duration
-		MaxBytes:        10000,
-	},
-	Validator: &tmproto.ValidatorParams{
-		PubKeyTypes: []string{
-			tmtypes.ABCIPubKeyTypeEd25519,
-		},
-	},
+type SimApp interface {
+	cosmoscmd.App
+	GetBaseApp() *baseapp.BaseApp
+	AppCodec() codec.Codec
+	SimulationManager() *module.SimulationManager
+	ModuleAccountAddrs() map[string]bool
+	Name() string
+	LegacyAmino() *codec.LegacyAmino
+	BeginBlocker(ctx sdk.Context, req abci.RequestBeginBlock) abci.ResponseBeginBlock
+	EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.ResponseEndBlock
+	InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain
 }
 
 // BenchmarkSimulation run the chain simulation
@@ -47,6 +45,8 @@ func BenchmarkSimulation(b *testing.B) {
 	simapp.FlagCommitValue = true
 
 	config, db, dir, logger, _, err := simapp.SetupSimulation("goleveldb-app-sim", "Simulation")
+	config.ChainID = "evmos_100-1"
+
 	require.NoError(b, err, "simulation setup failed")
 
 	b.Cleanup(func() {
@@ -55,9 +55,9 @@ func BenchmarkSimulation(b *testing.B) {
 		require.NoError(b, err)
 	})
 
-	encoding := app.MakeEncodingConfig()
+	encoding := params.MakeEncodingConfig()
 
-	app := app.New(
+	simApp := app.NewRollapp(
 		logger,
 		db,
 		nil,
@@ -69,21 +69,23 @@ func BenchmarkSimulation(b *testing.B) {
 		simapp.EmptyAppOptions{},
 	)
 
+	var _ SimApp = simApp
+
 	// Run randomized simulations
 	_, simParams, simErr := simulation.SimulateFromSeed(
 		b,
 		os.Stdout,
-		app.BaseApp,
-		simapp.AppStateFn(app.AppCodec(), app.SimulationManager()),
+		simApp.GetBaseApp(),
+		simapp.AppStateFn(simApp.AppCodec(), simApp.SimulationManager()),
 		simulationtypes.RandomAccounts,
-		simapp.SimulationOperations(app, app.AppCodec(), config),
-		app.ModuleAccountAddrs(),
+		simapp.SimulationOperations(simApp, simApp.AppCodec(), config),
+		simApp.ModuleAccountAddrs(),
 		config,
-		app.AppCodec(),
+		simApp.AppCodec(),
 	)
 
 	// export state and simParams before the simulation error is checked
-	err = simapp.CheckExportSimulation(app, config, simParams)
+	err = simapp.CheckExportSimulation(simApp, config, simParams)
 	require.NoError(b, err)
 	require.NoError(b, simErr)
 

@@ -1,0 +1,49 @@
+name: Build and Test
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - 'main'
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: "github.com/dymensionxyz/*"
+      GH_ACCESS_TOKEN: "${{ secrets.GH_ACCESS_TOKEN }}"
+    steps:
+    - uses: actions/checkout@v3
+    - run: git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
+    - name: Setup Golang with cache
+      uses: magnetikonline/action-golang-cache@v4
+      with:
+        go-version-file: go.mod
+    - name: Build
+      run: go build ./cmd/rollappd
+    - name: Build_evm
+      run: go build -tags evm ./cmd/evm
+    - name: Test
+      run: go test ./...
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: "github.com/dymensionxyz/*"
+      GH_ACCESS_TOKEN: "${{ secrets.GH_ACCESS_TOKEN }}"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3.2.0
+        with:
+          args: --timeout=5m0s
+          version: v1.47
+
+      - name: markdownlint-cli
+        uses: nosborn/github-action-markdown-cli@v3.2.0
+        with:
+          files: .
+          config-file: .markdownlint.yaml
