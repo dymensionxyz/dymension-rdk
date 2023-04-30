@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	"github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,7 +41,7 @@ func (k Keeper) OnRecvPacket(
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		// NOTE: shouldn't happen as the packet has already
 		// been decoded on ICS20 transfer logic
-		err = errorsmod.Wrapf(errortypes.ErrInvalidType, "cannot unmarshal ICS-20 transfer packet data")
+		err = errortypes.Wrapf(errortypes.ErrInvalidType, "cannot unmarshal ICS-20 transfer packet data")
 		return channeltypes.NewErrorAcknowledgement(err.Error())
 	}
 

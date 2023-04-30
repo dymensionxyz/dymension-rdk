@@ -4,7 +4,8 @@ import (
 	"math/rand"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
+	"github.com/dymensionxyz/rollapp/app/params"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
@@ -16,7 +17,7 @@ import (
 // avoid unused import issue
 var (
 	_ = sequencerssimulation.FindAccount
-	_ = simappparams.StakePerAccount
+	_ = params.StakePerAccount
 	_ = simulation.MsgEntryKind
 	_ = baseapp.Paramspace
 )
