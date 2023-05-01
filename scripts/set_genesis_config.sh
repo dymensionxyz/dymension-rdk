@@ -42,7 +42,7 @@ set_gov_params() {
 
 set_staking_params() {
   echo "setting staking params"
-  jq '.app_state.staking.unbonding_time = "3628800s"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+  jq '.app_state.staking.params.unbonding_time = "3628800s"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
 }
 
 set_sequencers() {
