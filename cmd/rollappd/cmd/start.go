@@ -222,6 +222,14 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 	cmd.Flags().Bool(FlagDisableIAVLFastNode, false, "Disable fast node for IAVL tree")
 
+	cmd.Flags().String(flagLogLevel, "debug", "Log leve. one of [\"debug\", \"info\", \"warn\", \"error\", \"dpanic\", \"panic\", \"fatal\"]")
+	cmd.Flags().String(flagLogFile, "", "log file full path. If not set, logs to stdout")
+	cmd.Flags().String(flagMaxLogSize, "1000", "Max log size in MB")
+
+	//dev option
+	cmd.Flags().String(flagModuleLogLevelOverride, "", "Override module log level for customizable logging. For example \"module1:info,module2:error\"")
+	cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
+
 	// add support for all Tendermint-specific command line options
 	tmcmd.AddNodeFlags(cmd)
 	dymintconf.AddFlags(cmd)
