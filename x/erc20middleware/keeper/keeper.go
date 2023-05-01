@@ -7,8 +7,8 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/dymensionxyz/rollapp/x/erc20middleware/types"
 
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
-	transfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	"github.com/cosmos/ibc-go/v5/modules/apps/transfer/keeper"
+	transfertypes "github.com/cosmos/ibc-go/v5/modules/apps/transfer/types"
 )
 
 // Keeper defines the modified IBC transfer keeper that embeds the original one.

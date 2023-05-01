@@ -3,7 +3,7 @@ package cmd
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"rollapp/app"
+	"github.com/dymensionxyz/rollapp/app"
 )
 
 func initSDKConfig() {

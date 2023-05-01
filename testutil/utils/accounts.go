@@ -5,7 +5,7 @@ import (
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
-	ibctransfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v5/modules/apps/transfer/types"
 )
 
 /* -------------------------------------------------------------------------- */

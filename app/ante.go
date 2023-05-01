@@ -5,8 +5,8 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
-	ibcante "github.com/cosmos/ibc-go/v3/modules/core/ante"
-	ibckeeper "github.com/cosmos/ibc-go/v3/modules/core/keeper"
+	ibcante "github.com/cosmos/ibc-go/v5/modules/core/ante"
+	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
 )
 
 // HandlerOptions are the options required for constructing a default SDK AnteHandler.
@@ -24,13 +24,15 @@ func GetAnteDecorators(options HandlerOptions) []sdk.AnteDecorator {
 
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
-		ante.NewRejectExtensionOptionsDecorator(),
-		ante.NewMempoolFeeDecorator(),
+
+		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
+
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
+
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper),
+		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		ante.NewSetPubKeyDecorator(options.AccountKeeper), // SetPubKeyDecorator must be called before all signature verification decorators
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
@@ -38,7 +40,7 @@ func GetAnteDecorators(options HandlerOptions) []sdk.AnteDecorator {
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
 	}
 
-	anteDecorators = append(anteDecorators, ibcante.NewAnteDecorator(options.IBCKeeper))
+	anteDecorators = append(anteDecorators, ibcante.NewRedundantRelayDecorator(options.IBCKeeper))
 
 	return anteDecorators
 }

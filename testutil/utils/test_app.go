@@ -7,7 +7,7 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	ibctesting "github.com/cosmos/ibc-go/v3/testing"
+	ibctesting "github.com/cosmos/ibc-go/v5/testing"
 	etherencoding "github.com/evmos/ethermint/encoding"
 
 	"github.com/dymensionxyz/rollapp/app"

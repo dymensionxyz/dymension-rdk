@@ -12,7 +12,6 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
 	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
-	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/p2p"
 )
 
@@ -31,8 +30,6 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		tmcmd.ResetStateCmd,
 		server.VersionCmd(),
 	)
-
-	dymintCmd.PersistentFlags().StringP(cli.HomeFlag, "", defaultNodeHome, "directory for config and data")
 
 	rootCmd.AddCommand(
 		dymintCmd,
