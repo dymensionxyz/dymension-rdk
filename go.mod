@@ -7,7 +7,7 @@ require (
 	github.com/armon/go-metrics v0.4.1
 	github.com/cosmos/cosmos-sdk v0.46.10
 	github.com/cosmos/ibc-go/v5 v5.1.0
-	github.com/dymensionxyz/dymint v0.4.0-beta.0.20230501123453-41c219a3a04e
+	github.com/dymensionxyz/dymint v0.4.0-beta.0.20230502081320-4042e9e64cce
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/evmos/ethermint v0.21.0
 	github.com/evmos/evmos/v11 v11.0.0-rc2
@@ -107,7 +107,7 @@ require (
 	github.com/dop251/goja v0.0.0-20220405120441-9037c2b61cbf // indirect
 	github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac // indirect
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
-	github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230501122627-7667369bd281 // indirect
+	github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230502080929-75d04c71c180 // indirect
 	github.com/dymensionxyz/dymension v0.2.0-beta.0.20230430121658-59b75faad4cb // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
@@ -352,11 +352,12 @@ require (
 
 replace (
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
+	github.com/cosmos/ibc-go/v5 => github.com/dymensionxyz/ibc-go/v5 v5.1.1-0.20230504070654-2a4f3301fc7e
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
 	github.com/tendermint/tendermint => github.com/informalsystems/tendermint v0.34.26
 )
 
-// replace github.com/cosmos/ibc-go/v3 => github.com/dymensionxyz/ibc-go/v3 v3.0.0-rc2.0.20230312090613-e315bbffc55f
+// replace github.com/cosmos/ibc-go/v5 => /Users/mtsitrin/Applications/dymension/ibc-go
 // replace github.com/dymensionxyz/cosmosclient => /Users/mtsitrin/Applications/dymension/cosmosclient
 // replace github.com/dymensionxyz/dymint => /Users/mtsitrin/Applications/dymension/dymint

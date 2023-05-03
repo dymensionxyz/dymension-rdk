@@ -447,8 +447,6 @@ github.com/cosmos/gorocksdb v1.2.0 h1:d0l3jJG8M4hBouIZq0mDUHZ+zjOx044J3nGRskwTb4
 github.com/cosmos/gorocksdb v1.2.0/go.mod h1:aaKvKItm514hKfNJpUJXnnOWeBnk2GL4+Qw9NHizILw=
 github.com/cosmos/iavl v0.19.5 h1:rGA3hOrgNxgRM5wYcSCxgQBap7fW82WZgY78V9po/iY=
 github.com/cosmos/iavl v0.19.5/go.mod h1:X9PKD3J0iFxdmgNLa7b2LYWdsGd90ToV5cAONApkEPw=
-github.com/cosmos/ibc-go/v5 v5.1.0 h1:m1NHXFkwwvNeJegZqtyox1WLinh+PMy4ivU/Cs9KjeA=
-github.com/cosmos/ibc-go/v5 v5.1.0/go.mod h1:H6sV0/CkNRDtvSrhbsIgiog1WnSwhguGfg8x34MOVEk=
 github.com/cosmos/ibc-go/v6 v6.1.0 h1:o7oXws2vKkKfOFzJI+oNylRn44PCNt5wzHd/zKQKbvQ=
 github.com/cosmos/ibc-go/v6 v6.1.0/go.mod h1:CY3zh2HLfetRiW8LY6kVHMATe90Wj/UOoY8T6cuB0is=
 github.com/cosmos/ledger-cosmos-go v0.12.2 h1:/XYaBlE2BJxtvpkHiBm97gFGSGmYGKunKyF3nNqAXZA=
@@ -547,12 +545,14 @@ github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac h1:opbrjaN/L8
 github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/dvsekhvalnov/jose2go v1.5.0 h1:3j8ya4Z4kMCwT5nXIKFSV84YS+HdqSSO0VsTQxaLAeM=
 github.com/dvsekhvalnov/jose2go v1.5.0/go.mod h1:QsHjhyTlD/lAVqn/NSbVZmSCGeDehTB/mPZadG+mhXU=
-github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230501122627-7667369bd281 h1:nRiFG/BxcLzM2epyalf7f2/sYUQMbgmZHM98Z+3bBZ4=
-github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230501122627-7667369bd281/go.mod h1:VXSpKjcsu9DYW6otUwZdYFJcBT2mvZCt9VXsfX8POuA=
+github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230502080929-75d04c71c180 h1:7Fgv+sbbC52oOmU4+cJidpQ2STWvHFgkaDPU27wMyrc=
+github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230502080929-75d04c71c180/go.mod h1:VXSpKjcsu9DYW6otUwZdYFJcBT2mvZCt9VXsfX8POuA=
 github.com/dymensionxyz/dymension v0.2.0-beta.0.20230430121658-59b75faad4cb h1:QIVPbHofWr+RQt4FCk3QN/D8tkNxV4tycUPeCw6I+gg=
 github.com/dymensionxyz/dymension v0.2.0-beta.0.20230430121658-59b75faad4cb/go.mod h1:Y6vWJ7h5PfSS6KTN7Fw28KYqhQpjR5b93iaHB5rf5a0=
-github.com/dymensionxyz/dymint v0.4.0-beta.0.20230501123453-41c219a3a04e h1:DYWnpDCed48BQRXrW17a5vqKZJSZnJA4/ogiy2wYhPA=
-github.com/dymensionxyz/dymint v0.4.0-beta.0.20230501123453-41c219a3a04e/go.mod h1:dxnU43rBn/A35zq69nunzPD90VV82IPoTxkiXqfwxpk=
+github.com/dymensionxyz/dymint v0.4.0-beta.0.20230502081320-4042e9e64cce h1:hEqbZZg/w4wbw+FunNgEpFVjwkK2IZKKEorl+pEo62U=
+github.com/dymensionxyz/dymint v0.4.0-beta.0.20230502081320-4042e9e64cce/go.mod h1:69jPMndSCA4OvCqXcYBnn7eI5cbAsTm+on0gBsmMbzU=
+github.com/dymensionxyz/ibc-go/v5 v5.1.1-0.20230504070654-2a4f3301fc7e h1:6OtUymmvoA4fcvXW8eHQZ9bCFgbX3dCFYu7OTGmioWI=
+github.com/dymensionxyz/ibc-go/v5 v5.1.1-0.20230504070654-2a4f3301fc7e/go.mod h1:DDJSklT2NLm5HHEUTTDgoUTRrMyOUtd+66uh7hC9qgo=
 github.com/dymensionxyz/rpc v1.3.1 h1:7EXWIobaBes5zldRvTIg7TmNsEKjicrWA/OjCc0NaGs=
 github.com/dymensionxyz/rpc v1.3.1/go.mod h1:f+WpX8ysy8wt95iGc6auYlHcnHj2bUkhiRVkkKNys8c=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
