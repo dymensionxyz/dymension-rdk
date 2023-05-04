@@ -100,17 +100,19 @@ $EXECUTABLE add-genesis-account "$KEY_NAME_ROLLAPP" "$TOKEN_AMOUNT" --keyring-ba
 #If using settlement layer, make sure the sequencer account is funded
 if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
     #add account for sequencer on the hub
-    $EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --keyring-dir $KEYRING_PATH --output json | jq .mnemonic -r > $KEYRING_PATH/$KEY_NAME_DYM.mnemonic
+    #We create the key both in the dymd and rollappd keyring, because in SDK v0.46 the keyring is different
+    $EXECUTABLE keys add "$KEY_NAME_DYM" --keyring-backend test --home "$ROLLAPP_CHAIN_DIR" --output json | jq .mnemonic -r > $KEYRING_PATH/$KEY_NAME_DYM.mnemonic
+    
+    #load the key in the dymd keyring
+    $SETTLEMENT_EXECUTABLE keys delete "$KEY_NAME_DYM" --keyring-backend test -y
     cat $KEYRING_PATH/$KEY_NAME_DYM.mnemonic | $SETTLEMENT_EXECUTABLE keys add --recover "$KEY_NAME_DYM" --keyring-backend test
 
-
     #Over complicated solution, to avoid dymd and rollappd use the same keyring
-    SEQ_ACCOUNT_ON_HUB=$(getSeqAddrOnHub)
-    SEQ_ACCOUNT_ON_HUB2="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyring-backend test)"
+    SEQ_ACCOUNT_ON_HUB="$($SETTLEMENT_EXECUTABLE keys show -a $KEY_NAME_DYM --keyring-backend test)"
 
 
 
-    echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB; $SEQ_ACCOUNT_ON_HUB2]: "
+    echo "Current balance of sequencer account on hub[$SEQ_ACCOUNT_ON_HUB]: "
     $SETTLEMENT_EXECUTABLE q bank balances "$SEQ_ACCOUNT_ON_HUB" --node "$SETTLEMENT_RPC"
 
     echo "Make sure the sequencer account [$SEQ_ACCOUNT_ON_HUB] is funded"

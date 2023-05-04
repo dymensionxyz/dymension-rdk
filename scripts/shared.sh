@@ -52,7 +52,7 @@ ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 
 # ------------------------------- dymint config ------------------------------ #
 KEY_NAME_DYM=${KEY_NAME_DYM:-"$MONIKER"}
-KEYRING_PATH=${KEYRING_PATH:-"$HOME/.dymension"}
+KEYRING_PATH=${KEYRING_PATH:-$ROLLAPP_CHAIN_DIR}
 
 AGGREGATOR=${AGGREGATOR:-"true"}
 BATCH_SIZE=${BATCH_SIZE:-"60"}
@@ -85,14 +85,3 @@ ROLLAPP_CHANNEL_NAME=${ROLLAPP_CHANNEL_NAME:-"channel-0"}
 HUB_CHANNEL_NAME=${HUB_CHANNEL_NAME:-"channel-0"}
 
 RELAYER_SETTLEMENT_CONFIG=${RELAYER_SETTLEMENT_CONFIG:-"{\"node_address\": \"$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$RELAYER_FEES\"}"}
-
-
-
-# ---------------------------------------------------------------------------- #
-#                                     Utils                                    #
-# ---------------------------------------------------------------------------- #
-getSeqAddrOnHub() {
-  local pubkey=$($EXECUTABLE  keys show $KEY_NAME_DYM --keyring-backend test --output json | jq -r '.pubkey')
-  local raw_address=$($SETTLEMENT_EXECUTABLE debug pubkey "$pubkey" | grep 'Address:' | awk '{print $2}')
-  echo "$($SETTLEMENT_EXECUTABLE debug addr "$raw_address" | grep 'Bech32 Acc:' | awk '{print $3}')"
-}
