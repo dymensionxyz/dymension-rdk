@@ -101,7 +101,6 @@ import (
 	ibcporttypes "github.com/cosmos/ibc-go/v5/modules/core/05-port/types"
 	ibchost "github.com/cosmos/ibc-go/v5/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
-	// ibcdmtypes "github.com/cosmos/ibc-go/v5/modules/light-clients/01-dymint/types"
 
 	rollappparams "github.com/dymensionxyz/rollapp/app/params"
 
@@ -406,11 +405,6 @@ func NewRollapp(
 		groupConfig,
 	)
 
-	// Create IBC Keeper
-	// app.IBCKeeper = ibckeeper.NewKeeperWithSelfClient(
-	// 	appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.SequencersKeeper, app.UpgradeKeeper, scopedIBCKeeper,
-	// 	ibcdmtypes.NewSelfClient(),
-	// )
 	app.IBCKeeper = ibckeeper.NewKeeperWithDymint(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
