@@ -32,7 +32,6 @@ import (
 
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
-	appparams "github.com/dymensionxyz/rollapp/app/params"
 	"github.com/dymensionxyz/rollapp/cmd/common"
 )
 
@@ -109,7 +108,7 @@ func initTendermintConfig() *tmcfg.Config {
 
 func initRootCmd(
 	rootCmd *cobra.Command,
-	encodingConfig appparams.EncodingConfig,
+	encodingConfig params.EncodingConfig,
 ) {
 	// Set config
 	initSDKConfig()

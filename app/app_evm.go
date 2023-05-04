@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -39,7 +40,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
-	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
@@ -88,7 +88,6 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	ibctransfer "github.com/cosmos/ibc-go/v5/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v5/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v5/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v5/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v5/modules/core/02-client"
@@ -98,11 +97,10 @@ import (
 	ibchost "github.com/cosmos/ibc-go/v5/modules/core/24-host"
 	ibckeeper "github.com/cosmos/ibc-go/v5/modules/core/keeper"
 
+	"github.com/evmos/ethermint/ethereum/eip712"
+
 	"github.com/dymensionxyz/rollapp/app/evm/flags"
 	rollappparams "github.com/dymensionxyz/rollapp/app/params"
-
-	// unnamed import of statik for swagger UI support
-	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
 
 	"github.com/dymensionxyz/rollapp/x/sequencers"
 	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
@@ -111,25 +109,36 @@ import (
 	distr "github.com/dymensionxyz/rollapp/x/dist"
 	distrkeeper "github.com/dymensionxyz/rollapp/x/dist/keeper"
 
-	ethante "github.com/evmos/ethermint/app/ante"
+	ethapp "github.com/evmos/evmos/v10/app"
+	ethante "github.com/evmos/evmos/v10/app/ante"
+
 	ethermint "github.com/evmos/ethermint/types"
 
 	"github.com/evmos/ethermint/x/evm"
 	evmkeeper "github.com/evmos/ethermint/x/evm/keeper"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
-
+	"github.com/evmos/ethermint/x/evm/vm/geth"
 	"github.com/evmos/ethermint/x/feemarket"
 	feemarketkeeper "github.com/evmos/ethermint/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/ethermint/x/feemarket/types"
 
-	"github.com/evmos/evmos/v11/x/erc20"
-	erc20client "github.com/evmos/evmos/v11/x/erc20/client"
-	erc20keeper "github.com/evmos/evmos/v11/x/erc20/keeper"
-	erc20types "github.com/evmos/evmos/v11/x/erc20/types"
+	// unnamed import of statik for swagger UI support
+	_ "github.com/evmos/evmos/v10/client/docs/statik"
+
+	"github.com/evmos/evmos/v10/x/claims"
+	claimskeeper "github.com/evmos/evmos/v10/x/claims/keeper"
+	claimstypes "github.com/evmos/evmos/v10/x/claims/types"
+	"github.com/evmos/evmos/v10/x/erc20"
+	erc20client "github.com/evmos/evmos/v10/x/erc20/client"
+	erc20keeper "github.com/evmos/evmos/v10/x/erc20/keeper"
+	erc20types "github.com/evmos/evmos/v10/x/erc20/types"
 
 	// NOTE: override ICS20 keeper to support IBC transfers of ERC20 tokens
-	transfer "github.com/dymensionxyz/rollapp/x/erc20middleware"
-	transferkeeper "github.com/dymensionxyz/rollapp/x/erc20middleware/keeper"
+	// transfer "github.com/dymensionxyz/rollapp/x/erc20middleware"
+	// transferkeeper "github.com/dymensionxyz/rollapp/x/erc20middleware/keeper"
+
+	"github.com/evmos/evmos/v10/x/ibc/transfer"
+	transferkeeper "github.com/evmos/evmos/v10/x/ibc/transfer/keeper"
 )
 
 const (
@@ -151,6 +160,7 @@ var (
 		evmtypes.StoreKey, feemarkettypes.StoreKey,
 		// evmos keys
 		erc20types.StoreKey,
+		claimstypes.StoreKey,
 	}
 )
 
@@ -198,7 +208,6 @@ var (
 		authzmodule.AppModuleBasic{},
 		groupmodule.AppModuleBasic{},
 		ibc.AppModuleBasic{},
-		// ibctransfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		// Ethermint modules
 		evm.AppModuleBasic{},
@@ -206,7 +215,11 @@ var (
 
 		// Evmos moudles
 		erc20.AppModuleBasic{},
-		transfer.AppModuleBasic{&ibctransfer.AppModuleBasic{}},
+
+		//FIXME: need to upgrade the original ibctransfer to v6, or reduce the evmos transfer to accept v5
+		// transfer.AppModuleBasic{&ibctransfer.AppModuleBasic{}},
+		ibctransfer.AppModuleBasic{},
+		claims.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -219,6 +232,7 @@ var (
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
 		erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
+		claimstypes.ModuleName:         nil,
 	}
 
 	// module accounts that are allowed to receive tokens
@@ -242,6 +256,16 @@ func init() {
 
 	// manually update the power reduction by replacing micro (u) -> atto (a) evmos
 	sdk.DefaultPowerReduction = ethermint.PowerReduction
+
+	//FIXME: disable claims on genesis
+	// claimstypes.DefaultEnableClaims = false
+
+	//TODO: review if needed
+	// // modify fee market parameter defaults through global
+	// feemarkettypes.DefaultMinGasPrice = MainnetMinGasPrices
+	// feemarkettypes.DefaultMinGasMultiplier = MainnetMinGasMultiplier
+	// // modify default min commission to 5%
+	// stakingtypes.DefaultMinCommissionRate = sdk.NewDecWithPrec(5, 2)
 }
 
 // App extends an ABCI application, but with most of its parameters exported.
@@ -262,22 +286,21 @@ type App struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper     authkeeper.AccountKeeper
-	AuthzKeeper       authzkeeper.Keeper
-	BankKeeper        bankkeeper.Keeper
-	CapabilityKeeper  *capabilitykeeper.Keeper
-	StakingKeeper     stakingkeeper.Keeper
-	SequencersKeeper  seqkeeper.Keeper
-	DistrKeeper       distrkeeper.Keeper
-	GovKeeper         govkeeper.Keeper
-	CrisisKeeper      crisiskeeper.Keeper
-	UpgradeKeeper     upgradekeeper.Keeper
-	ParamsKeeper      paramskeeper.Keeper
-	IBCKeeper         *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	TransferKeeper    transferkeeper.Keeper
-	IBCTransferKeeper ibctransferkeeper.Keeper
-	FeeGrantKeeper    feegrantkeeper.Keeper
-	GroupKeeper       groupkeeper.Keeper
+	AccountKeeper    authkeeper.AccountKeeper
+	AuthzKeeper      authzkeeper.Keeper
+	BankKeeper       bankkeeper.Keeper
+	CapabilityKeeper *capabilitykeeper.Keeper
+	StakingKeeper    stakingkeeper.Keeper
+	SequencersKeeper seqkeeper.Keeper
+	DistrKeeper      distrkeeper.Keeper
+	GovKeeper        govkeeper.Keeper
+	CrisisKeeper     crisiskeeper.Keeper
+	UpgradeKeeper    upgradekeeper.Keeper
+	ParamsKeeper     paramskeeper.Keeper
+	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	TransferKeeper   transferkeeper.Keeper
+	FeeGrantKeeper   feegrantkeeper.Keeper
+	GroupKeeper      groupkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -288,7 +311,8 @@ type App struct {
 	FeeMarketKeeper feemarketkeeper.Keeper
 
 	// Evmos keepers
-	Erc20Keeper erc20keeper.Keeper
+	Erc20Keeper  erc20keeper.Keeper
+	ClaimsKeeper *claimskeeper.Keeper
 
 	// mm is the module manager
 	mm *module.Manager
@@ -318,6 +342,9 @@ func NewRollapp(
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
 
+	eip712.SetEncodingConfig(rollappparams.EncodingAsSimapp(encodingConfig))
+
+	// NOTE we use custom transaction decoder that supports the sdk.Tx interface instead of sdk.StdTx
 	bApp := baseapp.NewBaseApp(
 		Name,
 		logger,
@@ -332,7 +359,9 @@ func NewRollapp(
 	keys := sdk.NewKVStoreKeys(
 		kvstorekeys...,
 	)
-	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
+
+	// Add the EVM transient store key
+	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey, evmtypes.TransientKey, feemarkettypes.TransientKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 
 	// load state streaming if enabled
@@ -379,7 +408,7 @@ func NewRollapp(
 		appCodec,
 		keys[authtypes.StoreKey],
 		app.GetSubspace(authtypes.ModuleName),
-		ethermint.ProtoBaseAccount,
+		ethermint.ProtoAccount,
 		maccPerms,
 		sdk.Bech32PrefixAccAddr,
 	)
@@ -396,7 +425,7 @@ func NewRollapp(
 		keys[banktypes.StoreKey],
 		app.AccountKeeper,
 		app.GetSubspace(banktypes.ModuleName),
-		app.BlockedModuleAccountAddrs(),
+		app.BlockedAddrs(),
 	)
 
 	stakingKeeper := stakingkeeper.NewKeeper(
@@ -444,37 +473,25 @@ func NewRollapp(
 		groupConfig,
 	)
 
+	// ... other modules keepers
+	tracer := cast.ToString(appOpts.Get(flags.EVMTracer))
+
+	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
+		appCodec, app.GetSubspace(feemarkettypes.ModuleName), keys[feemarkettypes.StoreKey], tkeys[feemarkettypes.TransientKey],
+	)
+
+	app.EvmKeeper = evmkeeper.NewKeeper(
+		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.FeeMarketKeeper,
+		nil, geth.NewEVM, tracer,
+	)
+
+	// Create IBC Keeper
 	app.IBCKeeper = ibckeeper.NewKeeperWithDymint(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
 
-	// ... other modules keepers
-	// Create Ethermint keepers
-	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
-		appCodec, app.GetSubspace(feemarkettypes.ModuleName), keys[feemarkettypes.StoreKey], tkeys[feemarkettypes.TransientKey],
-	)
-	tracer := cast.ToString(appOpts.Get(flags.EVMTracer))
-	evmKeeper := evmkeeper.NewKeeper(
-		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], app.GetSubspace(evmtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper, app.SequencersKeeper, app.FeeMarketKeeper,
-		tracer,
-	)
-
-	// Create evmos keeper
-	app.Erc20Keeper = erc20keeper.NewKeeper(
-		keys[erc20types.StoreKey], appCodec, app.GetSubspace(erc20types.ModuleName),
-		app.AccountKeeper, app.BankKeeper, evmKeeper,
-	)
-	app.EvmKeeper = evmKeeper.SetHooks(
-		evmkeeper.NewMultiEvmHooks(
-			app.Erc20Keeper.Hooks(),
-		),
-	)
-
 	// Register the proposal types
-	// Deprecated: Avoid adding new handlers, instead use the new proposal flow
-	// by granting the governance module the right to execute the message.
-	// See: https://github.com/cosmos/cosmos-sdk/blob/release/v0.46.x/x/gov/spec/01_concepts.md#proposal-messages
 	govRouter := govv1beta1.NewRouter()
 	govRouter.
 		AddRoute(govtypes.RouterKey, govv1beta1.ProposalHandler).
@@ -494,37 +511,50 @@ func NewRollapp(
 		&stakingKeeper, govRouter, app.MsgServiceRouter(), govConfig,
 	)
 
+	// Create evmos keeper
+	app.ClaimsKeeper = claimskeeper.NewKeeper(
+		appCodec, keys[claimstypes.StoreKey], app.GetSubspace(claimstypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper, &stakingKeeper, app.DistrKeeper,
+	)
+	app.Erc20Keeper = erc20keeper.NewKeeper(
+		keys[erc20types.StoreKey], appCodec, app.GetSubspace(erc20types.ModuleName),
+		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper, app.ClaimsKeeper,
+	)
+
 	app.GovKeeper = *govKeeper.SetHooks(
 		govtypes.NewMultiGovHooks(
 		// register the governance hooks
 		),
 	)
 
-	// Create Transfer Keepers
-	app.IBCTransferKeeper = ibctransferkeeper.NewKeeper(
-		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
-		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
+	app.EvmKeeper = app.EvmKeeper.SetHooks(
+		evmkeeper.NewMultiEvmHooks(
+			app.Erc20Keeper.Hooks(),
+		),
 	)
 
 	app.TransferKeeper = transferkeeper.NewKeeper(
 		appCodec, keys[ibctransfertypes.StoreKey], app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
+		app.ClaimsKeeper, // ICS4 Wrapper: claims IBC middleware
 		app.IBCKeeper.ChannelKeeper, &app.IBCKeeper.PortKeeper,
 		app.AccountKeeper, app.BankKeeper, scopedTransferKeeper,
-		app.Erc20Keeper, // Add ERC20 Keeper for ERC20 transfer
-		app.StakingKeeper,
+		app.Erc20Keeper, // Add ERC20 Keeper for ERC20 transfers
 	)
 
-	var (
-		transferModule = transfer.NewAppModule(app.TransferKeeper, app.IBCTransferKeeper)
-	)
-	transferIBCModule := transfer.NewIBCModule(app.TransferKeeper)
+	// NOTE: app.Erc20Keeper is already initialized elsewhere
+
+	// Override the ICS20 app module
+	transferModule := transfer.NewAppModule(app.TransferKeeper)
+
+	// create IBC module from top to bottom of stack
+	var transferStack ibcporttypes.IBCModule
+
+	transferStack = transfer.NewIBCModule(app.TransferKeeper)
+	transferStack = erc20.NewIBCMiddleware(app.Erc20Keeper, transferStack)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
-	// ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferModule)
-	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
+	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferStack)
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/****  Module Options ****/
@@ -563,6 +593,7 @@ func NewRollapp(
 		// Evmos app modules
 		transferModule,
 		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper),
+		claims.NewAppModule(appCodec, *app.ClaimsKeeper),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -588,6 +619,8 @@ func NewRollapp(
 		banktypes.ModuleName,
 		govtypes.ModuleName,
 		erc20types.ModuleName,
+		claimstypes.ModuleName,
+
 		crisistypes.ModuleName,
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
@@ -610,6 +643,8 @@ func NewRollapp(
 		distrtypes.ModuleName,
 		vestingtypes.ModuleName,
 		erc20types.ModuleName,
+		claimstypes.ModuleName,
+
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
 		group.ModuleName,
@@ -642,6 +677,8 @@ func NewRollapp(
 		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		erc20types.ModuleName,
+		claimstypes.ModuleName,
+
 		paramstypes.ModuleName,
 		group.ModuleName,
 		upgradetypes.ModuleName,
@@ -662,17 +699,6 @@ func NewRollapp(
 	// add test gRPC service for testing gRPC queries in isolation
 	// testdata.RegisterQueryServer(app.GRPCQueryRouter(), testdata.QueryImpl{})
 
-	// create the simulation manager and define the order of the modules for deterministic simulations
-	//
-	// NOTE: this is not required apps that don't use the simulator for fuzz testing
-	// transactions
-	overrideModules := map[string]module.AppModuleSimulation{
-		authtypes.ModuleName: auth.NewAppModule(app.appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts),
-	}
-	app.sm = module.NewSimulationManagerFromAppModules(app.mm.Modules, overrideModules)
-
-	app.sm.RegisterStoreDecoders()
-
 	// initialize stores
 	app.MountKVStores(keys)
 	app.MountTransientStores(tkeys)
@@ -682,7 +708,7 @@ func NewRollapp(
 	app.SetInitChainer(app.InitChainer)
 	app.SetBeginBlocker(app.BeginBlocker)
 	app.SetEndBlocker(app.EndBlocker)
-	app.setAnteHandler(encodingConfig.TxConfig)
+	app.setAnteHandler(appOpts, app.appCodec, encodingConfig.TxConfig)
 	// In v0.46, the SDK introduces _postHandlers_. PostHandlers are like
 	// antehandlers, but are run _after_ the `runMsgs` execution. They are also
 	// defined as a chain, and have the same signature as antehandlers.
@@ -710,20 +736,25 @@ func NewRollapp(
 	return app
 }
 
-func (app *App) setAnteHandler(txConfig client.TxConfig) {
+func (app *App) setAnteHandler(appOpts servertypes.AppOptions, appCodec codec.Codec, txConfig client.TxConfig) {
 	maxGasWanted := cast.ToUint64(appOpts.Get(flags.EVMMaxTxGasWanted))
-	anteHandler, err := ethante.NewAnteHandler(ethante.HandlerOptions{
-		AccountKeeper:   app.AccountKeeper,
-		BankKeeper:      app.BankKeeper,
-		EvmKeeper:       app.EvmKeeper,
-		IBCKeeper:       app.IBCKeeper,
-		FeeMarketKeeper: app.FeeMarketKeeper,
-		SignModeHandler: txConfig.SignModeHandler(),
-		FeegrantKeeper:  app.FeeGrantKeeper,
-		SigGasConsumer:  ethante.DefaultSigVerificationGasConsumer,
-		MaxTxGasWanted:  maxGasWanted,
-	})
-	if err != nil {
+	options := ethante.HandlerOptions{
+		AccountKeeper:          app.AccountKeeper,
+		BankKeeper:             app.BankKeeper,
+		ExtensionOptionChecker: nil,
+		EvmKeeper:              app.EvmKeeper,
+		StakingKeeper:          app.StakingKeeper,
+		FeegrantKeeper:         app.FeeGrantKeeper,
+		IBCKeeper:              app.IBCKeeper,
+		FeeMarketKeeper:        app.FeeMarketKeeper,
+		SignModeHandler:        txConfig.SignModeHandler(),
+		SigGasConsumer:         ethapp.SigVerificationGasConsumer,
+		Cdc:                    appCodec,
+		MaxTxGasWanted:         maxGasWanted,
+	}
+	anteHandler := ethante.NewAnteHandler(options)
+
+	if err := options.Validate(); err != nil {
 		panic(err)
 	}
 
@@ -809,6 +840,15 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
 	}
 
+	accs := make([]string, 0, len(maccPerms))
+	for k := range maccPerms {
+		accs = append(accs, k)
+	}
+	sort.Strings(accs)
+	for _, acc := range accs {
+		modAccAddrs[authtypes.NewModuleAddress(acc).String()] = true
+	}
+
 	return modAccAddrs
 }
 
@@ -825,7 +865,14 @@ func (app *App) BlockedModuleAccountAddrs() map[string]bool {
 // allowed to receive external tokens.
 func (app *App) BlockedAddrs() map[string]bool {
 	blockedAddrs := make(map[string]bool)
-	for acc := range maccPerms {
+
+	accs := make([]string, 0, len(maccPerms))
+	for k := range maccPerms {
+		accs = append(accs, k)
+	}
+	sort.Strings(accs)
+
+	for _, acc := range accs {
 		blockedAddrs[authtypes.NewModuleAddress(acc).String()] = !allowedReceivingModAcc[acc]
 	}
 
@@ -967,6 +1014,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(feemarkettypes.ModuleName)
 	// evmos subspaces
 	paramsKeeper.Subspace(erc20types.ModuleName)
+	paramsKeeper.Subspace(claimstypes.ModuleName)
 
 	return paramsKeeper
 }
