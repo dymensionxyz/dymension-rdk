@@ -423,12 +423,12 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 		if config.GRPCWeb.Enable {
 			grpcWebSrv, err = servergrpc.StartGRPCWeb(grpcSrv, config)
 			if err != nil {
-				ctx.Logger.Error("failed to start grpc-web http server: ", err)
+				ctx.Logger.Error("failed to start grpc-web http server: ", "error", err)
 				return err
 			}
 			defer func() {
 				if err := grpcWebSrv.Close(); err != nil {
-					ctx.Logger.Error("failed to close grpc-web http server: ", err)
+					ctx.Logger.Error("failed to close grpc-web http server: ", "error", err)
 				}
 			}()
 		}
@@ -453,7 +453,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 
 		minGasPrices, err := sdk.ParseDecCoins(config.MinGasPrices)
 		if err != nil {
-			ctx.Logger.Error("failed to parse minimum-gas-prices: ", err)
+			ctx.Logger.Error("failed to parse minimum-gas-prices: ", "error", err)
 			return err
 		}
 
