@@ -5,6 +5,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 
@@ -118,12 +119,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			//TODO: review the parameters Evmos overwrites for performance
-			// customAppTemplate, customAppConfig := servercfg.AppConfig(ethermint.AttoPhoton)
-
 			customTMConfig := initTendermintConfig()
+			customAppTemplate, customAppConfig := initAppConfig()
 			return server.InterceptConfigsPreRunHandler(
-				cmd, "", nil, customTMConfig,
+				cmd, customAppTemplate, customAppConfig, customTMConfig,
 			)
 		},
 	}
@@ -143,6 +142,23 @@ func initTendermintConfig() *tmcfg.Config {
 	// cfg.P2P.MaxNumOutboundPeers = 40
 
 	return cfg
+}
+
+// initAppConfig helps to override default appConfig template and configs.
+// return "", nil if no custom configuration is required for the application.
+func initAppConfig() (string, interface{}) {
+	customAppTemplate, customAppConfig := evmconfig.AppConfig("")
+
+	srvCfg, ok := customAppConfig.(evmconfig.Config)
+	if !ok {
+		panic(fmt.Errorf("unknown app config type %T", customAppConfig))
+	}
+
+	// srvCfg.StateSync.SnapshotInterval = 5000
+	// srvCfg.StateSync.SnapshotKeepRecent = 2
+	// srvCfg.IAVLDisableFastNode = false
+
+	return customAppTemplate, srvCfg
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {

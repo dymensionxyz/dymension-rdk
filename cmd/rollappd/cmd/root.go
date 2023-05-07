@@ -80,11 +80,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			// customAppTemplate, customAppConfig := initAppConfig()
-
 			customTMConfig := initTendermintConfig()
+			customAppTemplate, customAppConfig := initAppConfig()
 			return server.InterceptConfigsPreRunHandler(
-				cmd, "", nil, customTMConfig,
+				cmd, customAppTemplate, customAppConfig, customTMConfig,
 			)
 		},
 	}
@@ -104,6 +103,14 @@ func initTendermintConfig() *tmcfg.Config {
 	// cfg.P2P.MaxNumOutboundPeers = 40
 
 	return cfg
+}
+
+// initAppConfig helps to override default appConfig template and configs.
+// return "", nil if no custom configuration is required for the application.
+func initAppConfig() (string, interface{}) {
+	// srvCfg := serverconfig.DefaultConfig()
+	// customAppTemplate := serverconfig.DefaultConfigTemplate
+	return "", nil
 }
 
 func initRootCmd(
