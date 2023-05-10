@@ -228,7 +228,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 	//dev option
 	cmd.Flags().String(flagModuleLogLevelOverride, "", "Override module log level for customizable logging. For example \"module1:info,module2:error\"")
-	cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
+	_ = cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
 
 	// add support for all Tendermint-specific command line options
 	tmcmd.AddNodeFlags(cmd)

@@ -91,8 +91,8 @@ func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddr
 	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
 	tstaking.CreateValidator(valAddrs[0], valConsPk1, sdk.TokensFromConsensusPower(6, sdk.DefaultPowerReduction), true)
 
-	// create second validator with 4 power
-	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDec(0), sdk.NewDec(0), sdk.NewDec(0))
+	// create second validator with 4 power and 10% commision
+	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
 	tstaking.CreateValidator(valAddrs[1], valConsPk2, sdk.TokensFromConsensusPower(4, sdk.DefaultPowerReduction), true)
 	return valAddrs
 }
@@ -101,7 +101,7 @@ func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddr
 /*                          stakers only, no proposer                         */
 /* -------------------------------------------------------------------------- */
 func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	valAddrs := createValidators(t, ctx, app)
@@ -162,7 +162,7 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 /*                          proposer only, no stakers                         */
 /* -------------------------------------------------------------------------- */
 func TestAllocateTokensToProposerNoValidators(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 2, sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction))
@@ -214,7 +214,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 /*                          both proposer and agents                          */
 /* -------------------------------------------------------------------------- */
 func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	valAddrs := createValidators(t, ctx, app)
@@ -288,7 +288,7 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 /*                               original tests                               */
 /* -------------------------------------------------------------------------- */
 func TestAllocateTokensTruncation(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
@@ -362,7 +362,7 @@ func TestAllocateTokensTruncation(t *testing.T) {
 }
 
 func TestAllocateTokensToValidatorWithCommission(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))

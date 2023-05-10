@@ -17,7 +17,7 @@ import (
 )
 
 func TestFailedInitGenesis(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	k, ctx := testutils.NewTestSequencerKeeperFromApp(t, app)
 
 	pks := utils.CreateTestPubKeys(1)
@@ -45,7 +45,7 @@ func TestFailedInitGenesis(t *testing.T) {
 }
 
 func TestGenesis(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	k, ctx := testutils.NewTestSequencerKeeperFromApp(t, app)
 
 	pks := utils.CreateTestPubKeys(2)
