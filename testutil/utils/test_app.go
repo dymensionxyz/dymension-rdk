@@ -22,7 +22,7 @@ import (
 var DefaultConsensusParams = &abci.ConsensusParams{
 	Block: &abci.BlockParams{
 		MaxBytes: 200000,
-		MaxGas:   2000000,
+		MaxGas:   -1,
 	},
 	Evidence: &tmproto.EvidenceParams{
 		MaxAgeNumBlocks: 302400,
@@ -52,7 +52,7 @@ func setup(withGenesis bool, invCheckPeriod uint, isEVM bool) (*app.App, app.Gen
 		ethEncodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
 		encCdc = params.EncodingConfig{
 			InterfaceRegistry: ethEncodingConfig.InterfaceRegistry,
-			Marshaler:         ethEncodingConfig.Marshaler,
+			Codec:             ethEncodingConfig.Codec,
 			TxConfig:          ethEncodingConfig.TxConfig,
 			Amino:             ethEncodingConfig.Amino,
 		}
@@ -61,7 +61,7 @@ func setup(withGenesis bool, invCheckPeriod uint, isEVM bool) (*app.App, app.Gen
 		log.NewNopLogger(), db, nil, true, map[int64]bool{}, app.DefaultNodeHome, invCheckPeriod, encCdc, EmptyAppOptions{},
 	)
 	if withGenesis {
-		return testApp, app.NewDefaultGenesisState(encCdc.Marshaler)
+		return testApp, app.NewDefaultGenesisState(encCdc.Codec)
 	}
 	return testApp, app.GenesisState{}
 }

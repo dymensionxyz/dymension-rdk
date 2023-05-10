@@ -22,14 +22,13 @@ func TestFailedInitGenesis(t *testing.T) {
 
 	pks := utils.CreateTestPubKeys(1)
 	addr := sdk.ValAddress(pks[0].Address())
+	val := testutils.NewValidator(t, addr, pks[0])
 
 	genesisState := types.GenesisState{
 		Params:     types.DefaultParams(),
-		Sequencers: []stakingtypes.Validator{},
+		Sequencers: []stakingtypes.Validator{val},
 		Exported:   false,
 	}
-
-	val := testutils.NewValidator(t, addr, pks[0])
 
 	//mess with the pubkey value
 	pkAny, err := codectypes.NewAnyWithValue(&types.Params{})
