@@ -20,10 +20,9 @@ func DefaultGenesis() *GenesisState {
 }
 
 func (gs GenesisState) ValidateGenesis() error {
-	//TODO: Add validation when gentx for sequencers works
-	// if len(data.Validators) == 0 {
-	// 	return types.ErrNoSequencerOnGenesis
-	// }
+	if len(gs.Sequencers) == 0 {
+		return ErrNoSequencerOnGenesis
+	}
 
 	// Check for duplicated index in sequencer
 	sequencerIndexMap := make(map[string]bool)

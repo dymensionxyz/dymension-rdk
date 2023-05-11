@@ -79,7 +79,7 @@ import (
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
-	"github.com/cosmos/cosmos-sdk/x/staking"
+
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
@@ -106,6 +106,8 @@ import (
 	"github.com/dymensionxyz/rollapp/x/sequencers"
 	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
 	seqtypes "github.com/dymensionxyz/rollapp/x/sequencers/types"
+
+	staking "github.com/dymensionxyz/rollapp/x/staking"
 
 	distr "github.com/dymensionxyz/rollapp/x/dist"
 	distrkeeper "github.com/dymensionxyz/rollapp/x/dist/keeper"

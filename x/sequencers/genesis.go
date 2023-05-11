@@ -13,6 +13,8 @@ import (
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) []abci.ValidatorUpdate {
 	k.SetParams(ctx, genState.Params)
 
+	var updates []abci.ValidatorUpdate
+
 	// Set all the sequencer
 	for _, elem := range genState.Sequencers {
 		if elem.OperatorAddress == "" {
@@ -25,9 +27,10 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 				panic(err)
 			}
 		}
-	}
 
-	return []abci.ValidatorUpdate{}
+		updates = append(updates, elem.ABCIValidatorUpdate(sdk.DefaultPowerReduction))
+	}
+	return updates
 }
 
 // ExportGenesis returns the capability module's exported genesis.

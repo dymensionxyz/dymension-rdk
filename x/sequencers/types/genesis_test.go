@@ -15,9 +15,9 @@ func TestGenesisState_Validate(t *testing.T) {
 		valid    bool
 	}{
 		{
-			desc:     "default is valid",
+			desc:     "default is not valid. missing sequencers",
 			genState: *types.DefaultGenesis(),
-			valid:    true,
+			valid:    false,
 		},
 		{
 			desc: "valid genesis state",
