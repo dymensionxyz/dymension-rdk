@@ -133,3 +133,4 @@ if [ ! "$answer" != "${answer#[Nn]}" ] ;then
 fi
 
 $EXECUTABLE validate-genesis --home "$ROLLAPP_CHAIN_DIR"
+$EXECUTABLE validate-genesis --home "$ROLLAPP_CHAIN_DIR"
