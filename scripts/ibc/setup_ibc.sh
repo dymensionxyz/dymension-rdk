@@ -45,7 +45,12 @@ rly chains add --file "$ROLLAPP_IBC_CONF_FILE" "$ROLLAPP_CHAIN_ID"
 rly chains add --file "$HUB_IBC_CONF_FILE" "$SETTLEMENT_CHAIN_ID"
 
 echo '# -------------------------------- creating keys ------------------------------- #'
-rly keys add "$ROLLAPP_CHAIN_ID" "$RELAYER_KEY_FOR_ROLLAP"
+if [ "$EVM_ENABLED" ]; then
+  rly keys add "$ROLLAPP_CHAIN_ID" "$RELAYER_KEY_FOR_ROLLAP" --coin-type 60
+else
+  rly keys add "$ROLLAPP_CHAIN_ID" "$RELAYER_KEY_FOR_ROLLAP"
+fi
+
 rly keys add "$SETTLEMENT_CHAIN_ID" "$RELAYER_KEY_FOR_HUB"
 
 RLY_HUB_ADDR=$(rly keys show "$SETTLEMENT_CHAIN_ID")
