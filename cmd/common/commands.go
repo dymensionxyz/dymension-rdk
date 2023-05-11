@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
 	"github.com/tendermint/tendermint/p2p"
+
+	sequencercli "github.com/dymensionxyz/rollapp/x/sequencers/client/cli"
 )
 
 // add Rollapp commands
@@ -33,6 +35,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 
 	rootCmd.AddCommand(
 		dymintCmd,
+		sequencercli.GenTxCmd(),
 		server.ExportCmd(appExport, defaultNodeHome),
 		version.NewVersionCommand(),
 		server.NewRollbackCmd(appCreator, defaultNodeHome),
