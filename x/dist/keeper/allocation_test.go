@@ -19,6 +19,7 @@ import (
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/teststaking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -89,11 +90,19 @@ func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddr
 
 	// create validator with 6 power and 50% commission
 	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
-	tstaking.CreateValidator(valAddrs[0], valConsPk1, sdk.TokensFromConsensusPower(6, sdk.DefaultPowerReduction), true)
+	coin := sdk.NewCoin(sdk.DefaultBondDenom, sdk.TokensFromConsensusPower(6, sdk.DefaultPowerReduction))
+	msg, err := stakingtypes.NewMsgCreateValidator(valAddrs[0], valConsPk1, coin, stakingtypes.Description{}, tstaking.Commission, sdk.OneInt())
+	require.NoError(t, err)
+	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper).CreateValidator(ctx, msg)
+	require.NoError(t, err)
 
-	// create second validator with 4 power
-	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDec(0), sdk.NewDec(0), sdk.NewDec(0))
-	tstaking.CreateValidator(valAddrs[1], valConsPk2, sdk.TokensFromConsensusPower(4, sdk.DefaultPowerReduction), true)
+	// create second validator with 4 power and 10% commision
+	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
+	coin = sdk.NewCoin(sdk.DefaultBondDenom, sdk.TokensFromConsensusPower(4, sdk.DefaultPowerReduction))
+	msg, err = stakingtypes.NewMsgCreateValidator(valAddrs[1], valConsPk2, coin, stakingtypes.Description{}, tstaking.Commission, sdk.OneInt())
+	require.NoError(t, err)
+	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper).CreateValidator(ctx, msg)
+	require.NoError(t, err)
 	return valAddrs
 }
 
@@ -101,16 +110,8 @@ func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddr
 /*                          stakers only, no proposer                         */
 /* -------------------------------------------------------------------------- */
 func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-
-	valAddrs := createValidators(t, ctx, app)
-	assertInitial(t, ctx, app, valAddrs)
-	fundModules(t, ctx, app)
-
-	// end block to bond validator and start new block
-	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	//TODO: test with different params
 	proposerReward := 0.4
@@ -121,27 +122,38 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 		BonusProposerReward: sdk.MustNewDecFromStr("0"),
 		WithdrawAddrEnabled: false,
 	})
+
+	valAddrs := createValidators(t, ctx, app)
+	assertInitial(t, ctx, app, valAddrs)
+	fundModules(t, ctx, app)
+
+	// end block to bond validator and start new block
+	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
+
 	// allocate tokens as if both had voted and second was proposer
 	app.DistrKeeper.AllocateTokens(ctx, valConsAddr2)
 
 	/* ------------------------------ Test stakers ------------------------------ */
 	// outstanding rewards: 60% to val1 and 40% to val2
-	//val1 has 50% commission as well
 	stakersFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", (1 - proposerReward - communityTax))))
 	val1Coins := stakersFees.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.6)))
 	val2Coins := stakersFees.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.4)))
-	val1Commission := val1Coins.Mul(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.5)))
 
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val1Coins}}, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards)
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Coins}}, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards)
 
 	// Check commissions and delegator rewards val1
+	//val1 has 50% commission
+	val1Commission := val1Coins.Mul(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.5)))
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val1Commission}}, app.DistrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[0]).Commission)
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val1Coins.Sub(val1Commission)}}, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[0]).Rewards)
 
 	// Check commissions and delegator rewards val2
-	require.True(t, app.DistrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[1]).Commission.IsZero())
-	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Coins}}, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)
+	//val2 has 10% commission
+	val2Commission := val2Coins.Mul(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.1)))
+	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Commission}}, app.DistrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[1]).Commission)
+	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Coins.Sub(val2Commission)}}, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)
 
 	/* ------------------------ Test community pool coins ----------------------- */
 	minCommunityFund := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", communityTax)))
@@ -162,7 +174,7 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 /*                          proposer only, no stakers                         */
 /* -------------------------------------------------------------------------- */
 func TestAllocateTokensToProposerNoValidators(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 2, sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction))
@@ -214,7 +226,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 /*                          both proposer and agents                          */
 /* -------------------------------------------------------------------------- */
 func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	valAddrs := createValidators(t, ctx, app)
@@ -256,18 +268,19 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 	stakersFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", (1 - proposerReward - communityTax))))
 	val1Coins := stakersFees.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.6)))
 	val2Coins := stakersFees.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.4)))
-	val1Commission := val1Coins.Mul(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.5)))
 
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val1Coins}}, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards)
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Coins}}, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards)
 
 	// Check commissions and delegator rewards val1
+	val1Commission := val1Coins.Mul(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.5)))
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val1Commission}}, app.DistrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[0]).Commission)
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val1Coins.Sub(val1Commission)}}, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[0]).Rewards)
 
 	// Check commissions and delegator rewards val2
-	require.True(t, app.DistrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[1]).Commission.IsZero())
-	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Coins}}, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)
+	val2Commission := val2Coins.Mul(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.1)))
+	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Commission}}, app.DistrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[1]).Commission)
+	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Coins.Sub(val2Commission)}}, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)
 
 	/* ------------------------ Test community pool coins ----------------------- */
 	minCommunityFund := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", communityTax)))
@@ -288,7 +301,7 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 /*                               original tests                               */
 /* -------------------------------------------------------------------------- */
 func TestAllocateTokensTruncation(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
@@ -362,7 +375,7 @@ func TestAllocateTokensTruncation(t *testing.T) {
 }
 
 func TestAllocateTokensToValidatorWithCommission(t *testing.T) {
-	app := utils.Setup(false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))

@@ -2,13 +2,12 @@ package utils
 
 import (
 	"encoding/json"
+	"testing"
 	"time"
 
-	dbm "github.com/tendermint/tm-db"
-
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	ibctesting "github.com/cosmos/ibc-go/v3/testing"
 	etherencoding "github.com/evmos/ethermint/encoding"
+	"github.com/stretchr/testify/require"
+	dbm "github.com/tendermint/tm-db"
 
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
@@ -17,12 +16,14 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
+
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 )
 
 var DefaultConsensusParams = &abci.ConsensusParams{
 	Block: &abci.BlockParams{
 		MaxBytes: 200000,
-		MaxGas:   2000000,
+		MaxGas:   -1,
 	},
 	Evidence: &tmproto.EvidenceParams{
 		MaxAgeNumBlocks: 302400,
@@ -52,7 +53,7 @@ func setup(withGenesis bool, invCheckPeriod uint, isEVM bool) (*app.App, app.Gen
 		ethEncodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
 		encCdc = params.EncodingConfig{
 			InterfaceRegistry: ethEncodingConfig.InterfaceRegistry,
-			Marshaler:         ethEncodingConfig.Marshaler,
+			Codec:             ethEncodingConfig.Codec,
 			TxConfig:          ethEncodingConfig.TxConfig,
 			Amino:             ethEncodingConfig.Amino,
 		}
@@ -61,46 +62,38 @@ func setup(withGenesis bool, invCheckPeriod uint, isEVM bool) (*app.App, app.Gen
 		log.NewNopLogger(), db, nil, true, map[int64]bool{}, app.DefaultNodeHome, invCheckPeriod, encCdc, EmptyAppOptions{},
 	)
 	if withGenesis {
-		return testApp, app.NewDefaultGenesisState(encCdc.Marshaler)
+		return testApp, app.NewDefaultGenesisState(encCdc.Codec)
 	}
 	return testApp, app.GenesisState{}
 }
 
 // Setup initializes a new SimApp. A Nop logger is set in SimApp.
-func Setup(isCheckTx bool) *app.App {
-	testApp, genesisState := setup(!isCheckTx, 5, true)
-	if !isCheckTx {
-		// init chain must be called to stop deliverState from being nil
-		stateBytes, err := json.MarshalIndent(genesisState, "", " ")
-		if err != nil {
-			panic(err)
-		}
+func Setup(t *testing.T, isCheckTx bool) *app.App {
+	t.Helper()
 
-		pks := CreateTestPubKeys(1)
+	app, genesisState := setup(true, 5, true)
 
-		pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
-		if err != nil {
-			panic(err)
-		}
+	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+	require.NoError(t, err)
 
-		// Initialize the chain
-		(*testApp).InitChain(
-			abci.RequestInitChain{
-				Time:            time.Time{},
-				ChainId:         "rollappevm_100-1",
-				ConsensusParams: DefaultConsensusParams,
-				Validators:      []abci.ValidatorUpdate{{PubKey: pk, Power: 1}},
-				AppStateBytes:   stateBytes,
-				InitialHeight:   0,
-			},
-		)
+	pks := CreateTestPubKeys(1)
+
+	pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
+	if err != nil {
+		panic(err)
 	}
 
-	return testApp
-}
+	// init chain will set the validator set and initialize the genesis accounts
+	app.InitChain(
+		abci.RequestInitChain{
+			Time:            time.Time{},
+			ChainId:         "test_100-1",
+			ConsensusParams: DefaultConsensusParams,
+			Validators:      []abci.ValidatorUpdate{{PubKey: pk, Power: 1}},
+			AppStateBytes:   stateBytes,
+			InitialHeight:   0,
+		},
+	)
 
-// SetupTestingApp initializes the IBC-go testing application
-func SetupTestingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
-	testApp, genesisState := setup(true, 5, true)
-	return testApp, genesisState
+	return app
 }

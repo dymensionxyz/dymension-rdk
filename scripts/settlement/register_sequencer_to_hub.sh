@@ -10,6 +10,5 @@ $SETTLEMENT_EXECUTABLE tx sequencer create-sequencer "$SEQ_PUB_KEY" "$ROLLAPP_ID
   --from "$KEY_NAME_DYM" \
   --chain-id "$SETTLEMENT_CHAIN_ID" \
   --keyring-backend test \
-  --keyring-dir "$KEYRING_PATH" \
   --broadcast-mode block \
   --node "$SETTLEMENT_RPC"

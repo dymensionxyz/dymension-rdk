@@ -29,7 +29,7 @@ func SetPrefixes(config *sdk.Config, accountAddressPrefix string) {
 
 func OpenDB(rootDir string) (dbm.DB, error) {
 	dataDir := filepath.Join(rootDir, "data")
-	return sdk.NewLevelDB("application", dataDir)
+	return dbm.NewDB("application", dbm.GoLevelDBBackend, dataDir)
 }
 
 func OpenTraceWriter(traceWriterFile string) (w io.Writer, err error) {

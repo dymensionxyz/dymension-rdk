@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
-	ibctransfertypes "github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v5/modules/apps/transfer/types"
 )
 
 /* -------------------------------------------------------------------------- */
@@ -30,7 +31,7 @@ func createRandomAccounts(accNum int) []sdk.AccAddress {
 
 // AddTestAddrs constructs and returns accNum amount of accounts with an
 // initial balance of accAmt in random order
-func AddTestAddrs(app *app.App, ctx sdk.Context, accNum int, accAmt sdk.Int) []sdk.AccAddress {
+func AddTestAddrs(app *app.App, ctx sdk.Context, accNum int, accAmt math.Int) []sdk.AccAddress {
 	testAddrs := createRandomAccounts(accNum)
 	initCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), accAmt))
 

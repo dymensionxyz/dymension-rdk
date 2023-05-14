@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"log"
 
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis
@@ -17,7 +16,6 @@ import (
 func (app *App) ExportAppStateAndValidators(
 	forZeroHeight bool, jailAllowedAddrs []string,
 ) (servertypes.ExportedApp, error) {
-
 	// as if they could withdraw from the start of the next block
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
 
@@ -49,7 +47,7 @@ func (app *App) ExportAppStateAndValidators(
 
 // prepare for fresh start at zero height
 // NOTE zero height genesis is a temporary feature which will be deprecated
-//      in favour of export at a block height
+// in favour of export at a block height
 func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
 	applyAllowedAddrs := false
 
@@ -109,14 +107,23 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
 		app.DistrKeeper.SetFeePool(ctx, feePool)
 
-		app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
+		err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
+		if err != nil {
+			panic(err)
+		}
 		return false
 	})
 
 	// reinitialize all delegations
 	for _, del := range dels {
-		app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
-		app.DistrKeeper.Hooks().AfterDelegationModified(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
+		err := app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
+		if err != nil {
+			panic(err)
+		}
+		err = app.DistrKeeper.Hooks().AfterDelegationModified(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	// reset context height
@@ -149,7 +156,7 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 	counter := int16(0)
 
 	for ; iter.Valid(); iter.Next() {
-		addr := sdk.ValAddress(iter.Key()[1:])
+		addr := sdk.ValAddress(stakingtypes.AddressFromValidatorsKey(iter.Key()))
 		validator, found := app.StakingKeeper.GetValidator(ctx, addr)
 		if !found {
 			panic("expected validator, not found")
@@ -164,12 +171,13 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		counter++
 	}
 
-	err := iter.Close()
-	if err != nil {
-		panic(err)
+	if err := iter.Close(); err != nil {
+		app.Logger().Error("error while closing the key-value store reverse prefix iterator: ", err)
+		return
 	}
 
-	if _, err := app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx); err != nil {
+	_, err := app.StakingKeeper.ApplyAndReturnValidatorSetUpdates(ctx)
+	if err != nil {
 		panic(err)
 	}
 }

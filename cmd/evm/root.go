@@ -5,36 +5,36 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/cosmos/cosmos-sdk/snapshots"
-	"github.com/cosmos/cosmos-sdk/store"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
+
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
+	tmcfg "github.com/tendermint/tendermint/config"
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/dymensionxyz/rollapp/app"
+	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/dymensionxyz/rollapp/cmd/common"
 
 	evmflags "github.com/dymensionxyz/rollapp/app/evm/flags"
@@ -43,10 +43,6 @@ import (
 	etherencoding "github.com/evmos/ethermint/encoding"
 	evmserver "github.com/evmos/ethermint/server"
 	evmconfig "github.com/evmos/ethermint/server/config"
-	ethermint "github.com/evmos/ethermint/types"
-
-	// "github.com/cosmos/cosmos-sdk/simapp/params"
-	"github.com/dymensionxyz/rollapp/app/params"
 )
 
 const rollappAscii = `
@@ -79,54 +75,24 @@ func initStartCommandFlags(cmd *cobra.Command) {
 	cmd.Flags().Uint64(evmflags.EVMMaxTxGasWanted, evmconfig.DefaultMaxTxGasWanted, "the gas wanted for each eth tx returned in ante handler in check tx mode")                                 //nolint:lll
 }
 
-func setConfig() {
-	//TODO: add register denoms
-	// registerDenoms()
-	sdk_config := sdk.GetConfig()
-	common.SetPrefixes(sdk_config, app.AccountAddressPrefix)
-	SetBip44CoinType(sdk_config)
-	sdk_config.Seal()
-}
-
-// SetBip44CoinType sets the global coin type to be used in hierarchical deterministic wallets.
-func SetBip44CoinType(config *sdk.Config) {
-	config.SetCoinType(ethermint.Bip44CoinType)
-	config.SetPurpose(sdk.Purpose)                      // Shared
-	config.SetFullFundraiserPath(ethermint.BIP44HDPath) // nolint: staticcheck
-}
-
-// RegisterDenoms registers the base and display denominations to the SDK.
-func RegisterDenoms() {
-	if err := sdk.RegisterDenom("REVM", sdk.OneDec()); err != nil {
-		panic(err)
-	}
-
-	if err := sdk.RegisterDenom("arevm", sdk.NewDecWithPrec(1, 18)); err != nil {
-		panic(err)
-	}
-}
-
 // NewRootCmd creates a new root rollappd command. It is called once in the
 // main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	ethEncodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: ethEncodingConfig.InterfaceRegistry,
-		Marshaler:         ethEncodingConfig.Marshaler,
+		Codec:             ethEncodingConfig.Codec,
 		TxConfig:          ethEncodingConfig.TxConfig,
 		Amino:             ethEncodingConfig.Amino,
 	}
 
-	setConfig()
-
 	initClientCtx := client.Context{}.
-		WithCodec(encodingConfig.Marshaler).
+		WithCodec(encodingConfig.Codec).
 		WithInterfaceRegistry(encodingConfig.InterfaceRegistry).
 		WithTxConfig(encodingConfig.TxConfig).
 		WithLegacyAmino(encodingConfig.Amino).
 		WithInput(os.Stdin).
-		WithAccountRetriever(authtypes.AccountRetriever{}).
-		WithBroadcastMode(flags.BroadcastBlock).
+		WithAccountRetriever(types.AccountRetriever{}).
 		WithHomeDir(app.DefaultNodeHome).
 		WithKeyringOptions(hd.EthSecp256k1Option()).
 		WithViper("")
@@ -153,10 +119,11 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			//TODO: review the parameters Evmos overwrites for performance
-			// customAppTemplate, customAppConfig := servercfg.AppConfig(ethermint.AttoPhoton)
-
-			return server.InterceptConfigsPreRunHandler(cmd, "", nil)
+			customTMConfig := initTendermintConfig()
+			customAppTemplate, customAppConfig := initAppConfig()
+			return server.InterceptConfigsPreRunHandler(
+				cmd, customAppTemplate, customAppConfig, customTMConfig,
+			)
 		},
 	}
 
@@ -165,7 +132,38 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	return rootCmd, encodingConfig
 }
 
+// initTendermintConfig helps to override default Tendermint Config values.
+// return tmcfg.DefaultConfig if no custom configuration is required for the application.
+func initTendermintConfig() *tmcfg.Config {
+	cfg := tmcfg.DefaultConfig()
+
+	// these values put a higher strain on node memory
+	// cfg.P2P.MaxNumInboundPeers = 100
+	// cfg.P2P.MaxNumOutboundPeers = 40
+
+	return cfg
+}
+
+// initAppConfig helps to override default appConfig template and configs.
+// return "", nil if no custom configuration is required for the application.
+func initAppConfig() (string, interface{}) {
+	customAppTemplate, customAppConfig := evmconfig.AppConfig("")
+
+	srvCfg, ok := customAppConfig.(evmconfig.Config)
+	if !ok {
+		panic(fmt.Errorf("unknown app config type %T", customAppConfig))
+	}
+
+	// srvCfg.StateSync.SnapshotInterval = 5000
+	// srvCfg.StateSync.SnapshotKeepRecent = 2
+	// srvCfg.IAVLDisableFastNode = false
+
+	return customAppTemplate, srvCfg
+}
+
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
+	initSDKConfig()
+
 	ac := appCreator{
 		encCfg: encodingConfig,
 	}
@@ -173,8 +171,13 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	rootCmd.AddCommand(
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
-		// MigrateGenesisCmd(),
-		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
+		genutilcli.MigrateGenesisCmd(),
+		genutilcli.GenTxCmd(
+			app.ModuleBasics,
+			encodingConfig.TxConfig,
+			banktypes.GenesisBalancesIterator{},
+			app.DefaultNodeHome,
+		),
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
@@ -184,10 +187,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 	)
 
 	common.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
-
-	startCmd := StartCmd(ac.newApp, app.DefaultNodeHome)
-	initStartCommandFlags(startCmd)
-	rootCmd.AddCommand(startCmd)
+	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands
 	rootCmd.AddCommand(
@@ -212,12 +212,13 @@ func addModuleInitFlags(startCmd *cobra.Command) {
 	crisis.AddModuleInitFlags(startCmd)
 }
 
+// queryCommand returns the sub-command to send queries to the app
 func queryCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        "query",
 		Aliases:                    []string{"q"},
 		Short:                      "Querying subcommands",
-		DisableFlagParsing:         true,
+		DisableFlagParsing:         false,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
@@ -236,11 +237,12 @@ func queryCommand() *cobra.Command {
 	return cmd
 }
 
+// txCommand returns the sub-command to send transactions to the app
 func txCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        "tx",
 		Short:                      "Transactions subcommands",
-		DisableFlagParsing:         true,
+		DisableFlagParsing:         false,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
@@ -251,10 +253,10 @@ func txCommand() *cobra.Command {
 		authcmd.GetMultiSignCommand(),
 		authcmd.GetMultiSignBatchCmd(),
 		authcmd.GetValidateSignaturesCommand(),
-		flags.LineBreak,
 		authcmd.GetBroadcastCommand(),
 		authcmd.GetEncodeCommand(),
 		authcmd.GetDecodeCommand(),
+		authcmd.GetAuxToFeeCommand(),
 	)
 
 	app.ModuleBasics.AddTxCommands(cmd)
@@ -273,49 +275,24 @@ func (ac appCreator) newApp(
 	traceStore io.Writer,
 	appOpts servertypes.AppOptions,
 ) servertypes.Application {
-	var cache sdk.MultiStorePersistentCache
-
-	if cast.ToBool(appOpts.Get(server.FlagInterBlockCache)) {
-		cache = store.NewCommitKVStoreCacheManager()
-	}
+	baseappOptions := server.DefaultBaseappOptions(appOpts)
 
 	skipUpgradeHeights := make(map[int64]bool)
 	for _, h := range cast.ToIntSlice(appOpts.Get(server.FlagUnsafeSkipUpgrades)) {
 		skipUpgradeHeights[int64(h)] = true
 	}
 
-	pruningOpts, err := server.GetPruningOptionsFromFlags(appOpts)
-	if err != nil {
-		panic(err)
-	}
-
-	snapshotDir := filepath.Join(cast.ToString(appOpts.Get(flags.FlagHome)), "data", "snapshots")
-	snapshotDB, err := sdk.NewLevelDB("metadata", snapshotDir)
-	if err != nil {
-		panic(err)
-	}
-	snapshotStore, err := snapshots.NewStore(snapshotDB, snapshotDir)
-	if err != nil {
-		panic(err)
-	}
-
-	return app.NewRollapp(logger, db, traceStore, true, skipUpgradeHeights,
+	return app.NewRollapp(
+		logger,
+		db,
+		traceStore,
+		true,
+		skipUpgradeHeights,
 		cast.ToString(appOpts.Get(flags.FlagHome)),
 		cast.ToUint(appOpts.Get(server.FlagInvCheckPeriod)),
 		ac.encCfg,
 		appOpts,
-		baseapp.SetPruning(pruningOpts),
-		baseapp.SetMinGasPrices(cast.ToString(appOpts.Get(server.FlagMinGasPrices))),
-		baseapp.SetHaltHeight(cast.ToUint64(appOpts.Get(server.FlagHaltHeight))),
-		baseapp.SetHaltTime(cast.ToUint64(appOpts.Get(server.FlagHaltTime))),
-		baseapp.SetMinRetainBlocks(cast.ToUint64(appOpts.Get(server.FlagMinRetainBlocks))),
-		baseapp.SetInterBlockCache(cache),
-		baseapp.SetTrace(cast.ToBool(appOpts.Get(server.FlagTrace))),
-		baseapp.SetIndexEvents(cast.ToStringSlice(appOpts.Get(server.FlagIndexEvents))),
-		baseapp.SetSnapshotStore(snapshotStore),
-		baseapp.SetSnapshotInterval(cast.ToUint64(appOpts.Get(server.FlagStateSyncSnapshotInterval))),
-		baseapp.SetSnapshotKeepRecent(cast.ToUint32(appOpts.Get(server.FlagStateSyncSnapshotKeepRecent))),
-	)
+		baseappOptions...)
 }
 
 func (ac appCreator) appExport(
@@ -330,7 +307,7 @@ func (ac appCreator) appExport(
 	var rollapp *app.App
 	homePath, ok := appOpts.Get(flags.FlagHome).(string)
 	if !ok || homePath == "" {
-		return servertypes.ExportedApp{}, errors.New("application home is not set")
+		return servertypes.ExportedApp{}, errors.New("application home not set")
 	}
 
 	loadLatest := height == -1

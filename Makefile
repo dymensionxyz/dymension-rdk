@@ -143,6 +143,9 @@ build_evm: ## Compiles the rollapp_evm binary
 test: ## Run go test
 	go test ./... 
 
+.PHONY: test_evm
+test_evm: ## Run go test
+	go test ./... --tags=evm
 
 # ---------------------------------------------------------------------------- #
 #                                   Protobuf                                   #
