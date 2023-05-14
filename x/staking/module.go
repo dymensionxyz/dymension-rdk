@@ -1,8 +1,6 @@
 package staking
 
 import (
-	"encoding/json"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -41,16 +39,4 @@ func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper,
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	_ = staking.EndBlocker(ctx, am.keeper)
 	return []abci.ValidatorUpdate{}
-}
-
-// InitGenesis performs genesis initialization for the staking module. It returns
-// no validator updates.
-func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState types.GenesisState
-
-	cdc.MustUnmarshalJSON(data, &genesisState)
-	_ = am.AppModule.InitGenesis(ctx, cdc, data)
-
-	return []abci.ValidatorUpdate{}
-
 }

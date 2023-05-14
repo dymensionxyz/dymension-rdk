@@ -218,10 +218,7 @@ var (
 
 		// Evmos moudles
 		erc20.AppModuleBasic{},
-
-		//FIXME: need to upgrade the original ibctransfer to v6, or reduce the evmos transfer to accept v5
-		// transfer.AppModuleBasic{&ibctransfer.AppModuleBasic{}},
-		ibctransfer.AppModuleBasic{},
+		transfer.AppModuleBasic{AppModuleBasic: &ibctransfer.AppModuleBasic{}},
 		claims.AppModuleBasic{},
 	)
 
@@ -545,6 +542,8 @@ func NewRollapp(
 	)
 
 	// NOTE: app.Erc20Keeper is already initialized elsewhere
+	// Set the ICS4 wrappers for custom module middlewares
+	app.ClaimsKeeper.SetICS4Wrapper(app.IBCKeeper.ChannelKeeper)
 
 	// Override the ICS20 app module
 	transferModule := transfer.NewAppModule(app.TransferKeeper)
@@ -553,6 +552,7 @@ func NewRollapp(
 	var transferStack ibcporttypes.IBCModule
 
 	transferStack = transfer.NewIBCModule(app.TransferKeeper)
+	transferStack = claims.NewIBCMiddleware(*app.ClaimsKeeper, transferStack)
 	transferStack = erc20.NewIBCMiddleware(app.Erc20Keeper, transferStack)
 
 	// Create static IBC router, add transfer route, then set and seal it
