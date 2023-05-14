@@ -138,4 +138,11 @@ if [ ! "$answer" != "${answer#[Nn]}" ] ;then
   $EXECUTABLE collect-gentxs --home "$ROLLAPP_CHAIN_DIR"
 fi
 
+
+echo "Do you want to register sequencer on genesis? (Y/n) "
+read -r answer
+if [ ! "$answer" != "${answer#[Nn]}" ] ;then
+  set_sequencers
+fi
+
 $EXECUTABLE validate-genesis --home "$ROLLAPP_CHAIN_DIR"
