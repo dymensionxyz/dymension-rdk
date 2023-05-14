@@ -306,7 +306,7 @@ require (
 
 replace (
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
-	github.com/cosmos/ibc-go/v5 => github.com/dymensionxyz/ibc-go/v5 v5.1.1-0.20230504070654-2a4f3301fc7e
+	github.com/cosmos/ibc-go/v5 => github.com/dymensionxyz/ibc-go/v5 v5.1.1-0.20230514080809-5b60849eab24
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
 	github.com/tendermint/tendermint => github.com/informalsystems/tendermint v0.34.26
