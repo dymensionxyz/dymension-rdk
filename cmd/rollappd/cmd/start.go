@@ -141,6 +141,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
+			dymintCtx := common.GetDymintContextFromCmd(cmd)
 
 			// setup logging
 			moduleOverrides := utils.ConvertStringToStringMap(serverCtx.Viper.GetString(flagModuleLogLevelOverride), ",", ":")
