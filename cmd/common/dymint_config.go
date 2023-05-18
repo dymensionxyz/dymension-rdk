@@ -1,11 +1,14 @@
 package common
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"html/template"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -69,19 +72,19 @@ func SetCmdDymintContext(cmd *cobra.Command, dymintCtx *DymintContext) error {
 
 func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 	dymintCtx := NewDefaultContext()
-	// Bind command-line flags to Viper
-	if err := dymintCtx.Viper.BindPFlags(cmd.Flags()); err != nil {
-		return err
-	}
-	if err := dymintCtx.Viper.BindPFlags(cmd.PersistentFlags()); err != nil {
-		return err
-	}
-	//FIXME: bind Dymint flags as well
 
-	// Set up Viper
+	// Bind command-line flags to Viper
+	if err := dymintCtx.Viper.BindPFlag(flags.FlagHome, cmd.Flags().Lookup(flags.FlagHome)); err != nil {
+		return err
+	}
 	rootDir := dymintCtx.Viper.GetString(flags.FlagHome)
 	configPath := filepath.Join(rootDir, "config")
 	dymintCfgFile := filepath.Join(configPath, "dymint.toml")
+	// if err := dymintCtx.Viper.BindPFlags(cmd.PersistentFlags()); err != nil {
+	// 	return err
+	// }
+
+	//FIXME: bind Dymint flags as well
 
 	dymintCtx.Viper.SetConfigType("toml")
 	dymintCtx.Viper.SetConfigName("dymint")
@@ -103,18 +106,14 @@ func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 	}
 
 	// Unmarshal configuration into struct
-	conf := dymintCtx.Config
-	err = dymintCtx.Viper.Unmarshal(&conf)
+	err = dymintCtx.Viper.Unmarshal(dymintCtx.Config)
 	if err != nil {
 		fmt.Printf("Error unmarshaling config: %s\n", err)
 	}
 
-	err = conf.GetViperConfig(dymintCtx.Viper)
-	if err != nil {
-		return err
-	}
-	dymintconv.GetNodeConfig(conf, server.GetServerContextFromCmd(cmd).Config)
-	err = dymintconv.TranslateAddresses(conf)
+	//FIXME: allow overriding values through flags
+
+	err = dymintconv.GetNodeConfig(dymintCtx.Config, server.GetServerContextFromCmd(cmd).Config)
 	if err != nil {
 		return err
 	}
@@ -125,6 +124,14 @@ func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 /* -------------------------------------------------------------------------- */
 /*                                    utils                                   */
 /* -------------------------------------------------------------------------- */
+
+// helper function to make config creation independent of root dir
+func rootify(path, root string) string {
+	if filepath.IsAbs(path) {
+		return path
+	}
+	return filepath.Join(root, path)
+}
 
 // CheckAndCreateFile checks if the file exists, if not it tries to create it.
 func CheckAndCreateConfigFile(configFilePath string) error {
@@ -157,39 +164,98 @@ func CheckAndCreateConfigFile(configFilePath string) error {
 // XXX: this func should probably be called by cmd/tendermint/commands/init.go
 // alongside the writing of the genesis.json and priv_validator.json
 func writeDefaultConfigFile(configFilePath string) {
-	//FIXME: change to template and populate with default config
-	// var buffer bytes.Buffer
+	var buffer bytes.Buffer
+	var config = dymintconf.DefaultNodeConfig
 
-	// if err := configTemplate.Execute(&buffer, config); err != nil {
-	// 	panic(err)
-	// }
+	parseTemplate()
 
-	tmos.MustWriteFile(configFilePath, []byte(defaultConfigTemplate), 0o644)
+	if err := configTemplate.Execute(&buffer, config); err != nil {
+		panic(err)
+	}
+
+	tmos.MustWriteFile(configFilePath, buffer.Bytes(), 0o644)
 }
 
-//FIXME: change to template and populate with default config
+var configTemplate *template.Template
+
+func parseTemplate() {
+	var err error
+	tmpl := template.New("configFileTemplate").Funcs(template.FuncMap{
+		"StringsJoin": strings.Join,
+	})
+	if configTemplate, err = tmpl.Parse(defaultConfigTemplate); err != nil {
+		panic(err)
+	}
+}
+
+// func (c dymintconf.NodeConfig)
+
 // Note: any changes to the comments/variables/mapstructure
 // must be reflected in the appropriate struct in config/config.go
 const defaultConfigTemplate = `
 #######################################################
 ###       Dymint Configuration Options     ###
 #######################################################
-[dymint]
-aggregator = true
+aggregator = "{{ .Aggregator }}"
 
-block_time = "10s"
-da_block_time = "5s"
-batch_sync_interval = "1m"
-da_start_height = 1
-namespace_id = "aabbccddeeff0011"
-block_batch_size = 100
-block_batch_size_bytes = 102400
+block_time = "{{ .BlockManagerConfig.BlockTime }}"
+da_block_time = "{{ .BlockManagerConfig.DABlockTime }}"
+batch_sync_interval = "{{ .BlockManagerConfig.BatchSyncInterval }}"
+da_start_height = {{ .BlockManagerConfig.DAStartHeight }}
+namespace_id = "{{ .BlockManagerConfig.NamespaceID }}"
+block_batch_size = {{ .BlockManagerConfig.BlockBatchSize }}
+block_batch_size_bytes = "{{ .BlockManagerConfig.BlockBatchSize }}"
 
-da_layer = "example_da_layer"
-da_config = "example_da_config"
-settlement_layer = "example_settlement_layer"
-settlement_config = "example_settlement_config"
+# mock/celestia
+da_layer = "{{ .DALayer }}"
+da_config = "{{ .DAConfig }}"
+
+# example config:
+# da_config = "{\"base_url\": \"http://127.0.0.1:26659\", \"timeout\": 60000000000, \"fee\":20000, \"gas_limit\": 20000000, \"namespace_id\":\"000000000000ffff\"}"
+# da_config = "30s"
+
+
+# mock/dymension
+settlement_layer = "{{ .SettlementLayer }}"
+settlement_config = "{{ .SettlementConfig }}"
+
+# example config:
+#settlement_config = "{\"node_address\": \"127.0.0.1:36657\", \"rollapp_id\": \"rollappevm_100_1\", \"dym_account_name\": \"rollappevm_100_1-sequenceer\", \"keyring_home_dir\": \"./sequencer\", \"keyring_backend\":\"test\", \"gas_prices\": \"0.0udym\"}"
+#settlement_config = "{\"root_dir\": \"./\", \"db_path\": \"data\", \"proposer_pub_key\":\"./config/priv_validator_key.json\"}"
 `
 
-// # Instrumentation namespace
-// namespace = "{{ .Instrumentation.Namespace }}"
+//FIXME: split config to config.objs
+// # split settlement config to settlement.objs
+
+// func bindFlags(basename string, cmd *cobra.Command, v *viper.Viper) (err error) {
+// 	defer func() {
+// 		if r := recover(); r != nil {
+// 			err = fmt.Errorf("bindFlags failed: %v", r)
+// 		}
+// 	}()
+
+// 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+// 		// Environment variables can't have dashes in them, so bind them to their equivalent
+// 		// keys with underscores, e.g. --favorite-color to STING_FAVORITE_COLOR
+// 		err = v.BindEnv(f.Name, fmt.Sprintf("%s_%s", basename, strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))))
+// 		if err != nil {
+// 			panic(err)
+// 		}
+
+// 		err = v.BindPFlag(f.Name, f)
+// 		if err != nil {
+// 			panic(err)
+// 		}
+
+// 		// Apply the viper config value to the flag when the flag is not set and viper has a value
+// 		if !f.Changed && v.IsSet(f.Name) {
+// 			val := v.Get(f.Name)
+// 			err = cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+// 			if err != nil {
+// 				panic(err)
+// 			}
+// 		}
+// 	})
+
+// 	return nil
+// }
