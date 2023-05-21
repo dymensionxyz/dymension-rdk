@@ -293,8 +293,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 	if err != nil {
 		return err
 	}
-	dymintconv.GetNodeConfig(&nodeConfig, cfg)
-	err = dymintconv.TranslateAddresses(&nodeConfig)
+	err = dymintconv.GetNodeConfig(&nodeConfig, cfg)
 	if err != nil {
 		return err
 	}

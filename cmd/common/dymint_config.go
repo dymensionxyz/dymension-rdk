@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -59,32 +60,39 @@ func SetCmdDymintContext(cmd *cobra.Command, dymintCtx *DymintContext) error {
 
 	v := context.WithValue(cmd.Context(), DymintContextKey, dymintCtx)
 	cmd.SetContext(v)
-	// // v := cmd.Context().WithValue(ctx, server.ServerContextKey, srvCtx)
-	// if v == nil {
-	// 	return errors.New("dymint context not set")
-	// }
-
-	// dymintCtxPtr := v.(*DymintContext)
-	// *dymintCtxPtr = *dymintCtx
 
 	return nil
 }
 
 func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 	dymintCtx := NewDefaultContext()
-
-	// Bind command-line flags to Viper
-	if err := dymintCtx.Viper.BindPFlag(flags.FlagHome, cmd.Flags().Lookup(flags.FlagHome)); err != nil {
+	clientCtx, err := client.GetClientQueryContext(cmd)
+	if err != nil {
 		return err
 	}
+
+	// Bind command-line flags to Viper
+	if err := dymintCtx.Viper.BindPFlags(cmd.Flags()); err != nil {
+		return err
+	}
+	if err := dymintCtx.Viper.BindPFlags(cmd.PersistentFlags()); err != nil {
+		return err
+	}
+
 	rootDir := dymintCtx.Viper.GetString(flags.FlagHome)
 	configPath := filepath.Join(rootDir, "config")
 	dymintCfgFile := filepath.Join(configPath, "dymint.toml")
-	// if err := dymintCtx.Viper.BindPFlags(cmd.PersistentFlags()); err != nil {
-	// 	return err
-	// }
 
-	//FIXME: bind Dymint flags as well
+	//FIXME: bind Dymint flags as well to allow overriding config file values
+
+	//prepare default settlement config
+	//TODO: wrap in method
+	dymintCtx.Config.SettlementConfig.RollappID = clientCtx.ChainID
+	if dymintCtx.Config.SettlementLayer == "mock" {
+		dymintCtx.Config.SettlementConfig.KeyRingHomeDir = rootDir
+	} else {
+		dymintCtx.Config.SettlementConfig.KeyRingHomeDir = rootify("/sequencer", rootDir)
+	}
 
 	dymintCtx.Viper.SetConfigType("toml")
 	dymintCtx.Viper.SetConfigName("dymint")
@@ -92,10 +100,13 @@ func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 	dymintCtx.Viper.SetEnvPrefix("DYMINT")
 	dymintCtx.Viper.AutomaticEnv()
 
-	_, err := os.Stat(dymintCfgFile)
+	_, err = os.Stat(dymintCfgFile)
 	if err != nil {
 		if os.IsNotExist(err) {
-			CheckAndCreateConfigFile(dymintCfgFile)
+			err := CheckAndCreateConfigFile(dymintCfgFile, *dymintCtx.Config)
+			if err != nil {
+				return err
+			}
 		} else {
 			return err
 		}
@@ -110,8 +121,6 @@ func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 	if err != nil {
 		fmt.Printf("Error unmarshaling config: %s\n", err)
 	}
-
-	//FIXME: allow overriding values through flags
 
 	err = dymintconv.GetNodeConfig(dymintCtx.Config, server.GetServerContextFromCmd(cmd).Config)
 	if err != nil {
@@ -134,7 +143,7 @@ func rootify(path, root string) string {
 }
 
 // CheckAndCreateFile checks if the file exists, if not it tries to create it.
-func CheckAndCreateConfigFile(configFilePath string) error {
+func CheckAndCreateConfigFile(configFilePath string, config dymintconf.NodeConfig) error {
 	// Check if file exists
 	_, err := os.Stat(configFilePath)
 	if os.IsNotExist(err) {
@@ -151,7 +160,7 @@ func CheckAndCreateConfigFile(configFilePath string) error {
 			return err
 		}
 		defer file.Close()
-		writeDefaultConfigFile(configFilePath)
+		writeDefaultConfigFile(configFilePath, config)
 
 	} else if err != nil {
 		// If there was an error other than IsNotExist
@@ -163,9 +172,8 @@ func CheckAndCreateConfigFile(configFilePath string) error {
 
 // XXX: this func should probably be called by cmd/tendermint/commands/init.go
 // alongside the writing of the genesis.json and priv_validator.json
-func writeDefaultConfigFile(configFilePath string) {
+func writeDefaultConfigFile(configFilePath string, config dymintconf.NodeConfig) {
 	var buffer bytes.Buffer
-	var config = dymintconf.DefaultNodeConfig
 
 	parseTemplate()
 
@@ -204,20 +212,24 @@ batch_sync_interval = "{{ .BlockManagerConfig.BatchSyncInterval }}"
 da_start_height = {{ .BlockManagerConfig.DAStartHeight }}
 namespace_id = "{{ .BlockManagerConfig.NamespaceID }}"
 block_batch_size = {{ .BlockManagerConfig.BlockBatchSize }}
-block_batch_size_bytes = "{{ .BlockManagerConfig.BlockBatchSize }}"
+block_batch_size_bytes = {{ .BlockManagerConfig.BlockBatchSizeBytes }}
 
-# mock/celestia
 da_layer = "{{ .DALayer }}"
 da_config = "{{ .DAConfig }}"
-
 # example config:
 # da_config = "{\"base_url\": \"http://127.0.0.1:26659\", \"timeout\": 60000000000, \"fee\":20000, \"gas_limit\": 20000000, \"namespace_id\":\"000000000000ffff\"}"
 # da_config = "30s"
 
 
-# mock/dymension
+
 settlement_layer = "{{ .SettlementLayer }}"
-settlement_config = "{{ .SettlementConfig }}"
+node_address = "{{ .SettlementConfig.NodeAddress }}"
+keyring_home_dir = "{{ .SettlementConfig.KeyRingHomeDir }}"
+dym_account_name = "{{ .SettlementConfig.DymAccountName }}"
+gas_limit = {{ .SettlementConfig.GasLimit }}
+gas_prices = "{{ .SettlementConfig.GasPrices }}"
+gas_fees = "{{ .SettlementConfig.GasFees }}"
+
 
 # example config:
 #settlement_config = "{\"node_address\": \"127.0.0.1:36657\", \"rollapp_id\": \"rollappevm_100_1\", \"dym_account_name\": \"rollappevm_100_1-sequenceer\", \"keyring_home_dir\": \"./sequencer\", \"keyring_backend\":\"test\", \"gas_prices\": \"0.0udym\"}"
