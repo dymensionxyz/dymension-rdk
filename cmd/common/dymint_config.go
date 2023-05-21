@@ -27,8 +27,7 @@ import (
 // DymintContextKey defines the context key used to retrieve a server.Context from
 // a command's Context.
 const (
-	DymintContextKey      = sdk.ContextKey("dymint.context")
-	defaultConfigFilePath = "dymint.toml"
+	DymintContextKey = sdk.ContextKey("dymint.context")
 )
 
 type DymintContext struct {
