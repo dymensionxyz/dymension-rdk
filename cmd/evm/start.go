@@ -324,7 +324,6 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx com
 		return err
 	}
 
-	//FIXME
 	nodeConfig := dymintCtx.Config
 
 	ctx.Logger.Info("starting node with ABCI dymint in-process")
