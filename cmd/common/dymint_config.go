@@ -88,9 +88,9 @@ func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 	//TODO: wrap in method
 	dymintCtx.Config.SettlementConfig.RollappID = clientCtx.ChainID
 	if dymintCtx.Config.SettlementLayer == "mock" {
-		dymintCtx.Config.SettlementConfig.KeyRingHomeDir = rootDir
+		dymintCtx.Config.SettlementConfig.KeyringHomeDir = rootDir
 	} else {
-		dymintCtx.Config.SettlementConfig.KeyRingHomeDir = rootify("/sequencer", rootDir)
+		dymintCtx.Config.SettlementConfig.KeyringHomeDir = rootify("/sequencer", rootDir)
 	}
 
 	dymintCtx.Viper.SetConfigType("toml")
@@ -213,7 +213,7 @@ namespace_id = "{{ .BlockManagerConfig.NamespaceID }}"
 block_batch_size = {{ .BlockManagerConfig.BlockBatchSize }}
 block_batch_size_bytes = {{ .BlockManagerConfig.BlockBatchSizeBytes }}
 
-da_layer = "{{ .DALayer }}"
+da_layer = "{{ .DALayer }}" # mock, celestia
 da_config = "{{ .DAConfig }}"
 # example config:
 # da_config = "{\"base_url\": \"http://127.0.0.1:26659\", \"timeout\": 60000000000, \"fee\":20000, \"gas_limit\": 20000000, \"namespace_id\":\"000000000000ffff\"}"
@@ -221,18 +221,20 @@ da_config = "{{ .DAConfig }}"
 
 
 
-settlement_layer = "{{ .SettlementLayer }}"
+settlement_layer = "{{ .SettlementLayer }}" # mock, dymension
 node_address = "{{ .SettlementConfig.NodeAddress }}"
-keyring_home_dir = "{{ .SettlementConfig.KeyRingHomeDir }}"
-dym_account_name = "{{ .SettlementConfig.DymAccountName }}"
 gas_limit = {{ .SettlementConfig.GasLimit }}
 gas_prices = "{{ .SettlementConfig.GasPrices }}"
 gas_fees = "{{ .SettlementConfig.GasFees }}"
 
+#keyring and key name to be used for sequencer 
+keyring_backend = "{{ .SettlementConfig.KeyringBackend }}"
+keyring_home_dir = "{{ .SettlementConfig.KeyringHomeDir }}"
+dym_account_name = "{{ .SettlementConfig.DymAccountName }}"
+
 
 # example config:
 #settlement_config = "{\"node_address\": \"127.0.0.1:36657\", \"rollapp_id\": \"rollappevm_100_1\", \"dym_account_name\": \"rollappevm_100_1-sequenceer\", \"keyring_home_dir\": \"./sequencer\", \"keyring_backend\":\"test\", \"gas_prices\": \"0.0udym\"}"
-#settlement_config = "{\"root_dir\": \"./\", \"db_path\": \"data\", \"proposer_pub_key\":\"./config/priv_validator_key.json\"}"
 `
 
 //FIXME: split config to config.objs
