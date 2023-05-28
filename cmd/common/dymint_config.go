@@ -99,16 +99,9 @@ func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 	dymintCtx.Viper.SetEnvPrefix("DYMINT")
 	dymintCtx.Viper.AutomaticEnv()
 
-	_, err = os.Stat(dymintCfgFile)
+	err = CheckAndCreateConfigFile(dymintCfgFile, *dymintCtx.Config)
 	if err != nil {
-		if os.IsNotExist(err) {
-			err := CheckAndCreateConfigFile(dymintCfgFile, *dymintCtx.Config)
-			if err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
+		return err
 	}
 
 	if err := dymintCtx.Viper.ReadInConfig(); err != nil {
