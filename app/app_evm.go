@@ -4,6 +4,7 @@
 package app
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -698,6 +699,7 @@ func NewRollapp(
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
 	// Make sure it's called after `app.mm` and `app.configurator` are set.
 	app.RegisterUpgradeHandlers()
+	app.SetStoreLoader(FixStoreLoader())
 
 	// add test gRPC service for testing gRPC queries in isolation
 	// testdata.RegisterQueryServer(app.GRPCQueryRouter(), testdata.QueryImpl{})
@@ -1050,4 +1052,26 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(claimstypes.ModuleName)
 
 	return paramsKeeper
+}
+
+func FixStoreLoader() baseapp.StoreLoader {
+	return func(ms sdk.CommitMultiStore) error {
+		err := baseapp.DefaultStoreLoader(ms)
+		if err != nil {
+			return err
+		}
+
+		//FIX claims group store loader
+
+		claimsKey := sdk.NewKVStoreKey(claimstypes.StoreKey)
+		claimsStore := ms.GetCommitKVStore(claimsKey)
+		claimsCommitedVer := claimsStore.LastCommitID().Version
+
+		fmt.Println("claimsCommitedVer: ", claimsCommitedVer, "last version: ", ms.LastCommitID().Version)
+
+		for i := claimsStore.LastCommitID().Version; i < ms.LastCommitID().Version; i++ {
+			ms.GetCommitStore(claimsKey).Commit()
+		}
+		return nil
+	}
 }
