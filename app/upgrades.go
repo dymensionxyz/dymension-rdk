@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	claimstypes "github.com/evmos/evmos/v10/x/claims/types"
 )
 
 // UpgradeName defines the on-chain upgrade name for the sample simap upgrade from v045 to v046.
@@ -17,7 +18,6 @@ const UpgradeName = "v045-to-v046"
 func (app App) RegisterUpgradeHandlers() {
 	app.UpgradeKeeper.SetUpgradeHandler(UpgradeName,
 		func(ctx sdk.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
-
 			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
 		})
 
@@ -29,7 +29,8 @@ func (app App) RegisterUpgradeHandlers() {
 	if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{
-				group.ModuleName,
+				group.StoreKey,
+				claimstypes.StoreKey,
 			},
 		}
 
