@@ -72,6 +72,11 @@ sed -i'' -e "/\[rpc\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$RPC_LADDRESS\"/" "$TE
 sed -i'' -e "/\[p2p\]/,+3 s/laddr *= .*/laddr = \"tcp:\/\/$P2P_LADDRESS\"/" "$TENDERMINT_CONFIG_FILE"
 sed -i'' -e "s/^persistent_peers *= .*/persistent_peers = \"$ROLLAPP_PEERS\"/" "$TENDERMINT_CONFIG_FILE"
 
+sed -i'' -e "s/^pruning *= .*/pruning = \"custom\"/" "$APP_CONFIG_FILE"
+sed -i'' -e "s/^pruning-keep-recent *= .*/pruning-keep-recent = \"6048000\"/" "$APP_CONFIG_FILE"
+sed -i'' -e "s/^pruning-interval *= .*/pruning-interval = \"18000\"/" "$APP_CONFIG_FILE"
+
+
 if [ -n "$UNSAFE_CORS" ]; then
   echo "Setting CORS"
   sed -ie 's/enabled-unsafe-cors.*$/enabled-unsafe-cors = true/' "$APP_CONFIG_FILE"
