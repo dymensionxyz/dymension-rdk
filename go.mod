@@ -7,7 +7,7 @@ require (
 	cosmossdk.io/math v1.0.0-beta.4
 	github.com/cosmos/cosmos-sdk v0.46.10
 	github.com/cosmos/ibc-go/v5 v5.2.0
-	github.com/dymensionxyz/dymint v0.4.0-beta.0.20230507080445-1511fed66c4d
+	github.com/dymensionxyz/dymint v0.4.0-beta.0.20230517090112-7c2de5f984c0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/evmos/ethermint v0.20.0
 	github.com/evmos/evmos/v10 v10.0.0
@@ -54,7 +54,7 @@ require (
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.1-0.20220910012023-760eaf8b6816 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
-	github.com/btcsuite/btcd v0.22.2 // indirect
+	github.com/btcsuite/btcd v0.22.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/btcsuite/btcd/chaincfg/chainhash v1.0.1 // indirect
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce // indirect
@@ -93,7 +93,7 @@ require (
 	github.com/dop251/goja v0.0.0-20220405120441-9037c2b61cbf // indirect
 	github.com/dustin/go-humanize v1.0.1-0.20200219035652-afde56e7acac // indirect
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
-	github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230507073257-04faeec161d5 // indirect
+	github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230514120937-449e9becd080 // indirect
 	github.com/dymensionxyz/dymension v0.2.0-beta.0.20230503120250-228ff624f61c // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
