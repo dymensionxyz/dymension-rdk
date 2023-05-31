@@ -184,10 +184,11 @@ which accepts a path for the resulting pprof file.
 			}
 
 			serverCtx.Logger.Info("starting ABCI with Dymint")
+			dymintCtx := common.GetDymintContextFromCmd(cmd)
 
 			// amino is needed here for backwards compatibility of REST routes
 			err = wrapCPUProfile(serverCtx, func() error {
-				return startInProcess(serverCtx, clientCtx, appCreator)
+				return startInProcess(serverCtx, clientCtx, *dymintCtx, appCreator)
 			})
 
 			errCode, ok := err.(server.ErrorCode)
@@ -270,7 +271,7 @@ which accepts a path for the resulting pprof file.
 	return cmd
 }
 
-func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator types.AppCreator) error {
+func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx common.DymintContext, appCreator types.AppCreator) error {
 	cfg := ctx.Config
 	home := cfg.RootDir
 
@@ -322,21 +323,13 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, appCreator ty
 	if err != nil {
 		return err
 	}
-	nodeConfig := dymintconf.NodeConfig{}
-	err = nodeConfig.GetViperConfig(ctx.Viper)
-	if err != nil {
-		return err
-	}
-	dymintconv.GetNodeConfig(&nodeConfig, cfg)
-	err = dymintconv.TranslateAddresses(&nodeConfig)
-	if err != nil {
-		return err
-	}
+
+	nodeConfig := dymintCtx.Config
 
 	ctx.Logger.Info("starting node with ABCI dymint in-process")
 	tmNode, err := dymintnode.NewNode(
 		context.Background(),
-		nodeConfig,
+		*nodeConfig,
 		p2pKey,
 		signingKey,
 		proxy.NewLocalClientCreator(app),

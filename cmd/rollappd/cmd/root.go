@@ -82,9 +82,20 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 
 			customTMConfig := initTendermintConfig()
 			customAppTemplate, customAppConfig := initAppConfig()
-			return server.InterceptConfigsPreRunHandler(
+			err = server.InterceptConfigsPreRunHandler(
 				cmd, customAppTemplate, customAppConfig, customTMConfig,
 			)
+			if err != nil {
+				return err
+			}
+
+			//We initilaze dyming config after tendermint initialize, so we could read from it's configuration
+			err = common.DymintConfigPreRunHandler(cmd)
+			if err != nil {
+				return err
+			}
+
+			return nil
 		},
 	}
 

@@ -54,7 +54,7 @@ ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 KEY_NAME_DYM=${KEY_NAME_DYM:-"$MONIKER"}
 
 #Its the keyring that will be used by dymint sequencer
-KEYRING_PATH=${KEYRING_PATH:-$HOME/.sequencer}
+KEYRING_PATH=${KEYRING_PATH:-$ROLLAPP_CHAIN_DIR/sequencer}
 
 AGGREGATOR=${AGGREGATOR:-"true"}
 BATCH_SIZE=${BATCH_SIZE:-"60"}
