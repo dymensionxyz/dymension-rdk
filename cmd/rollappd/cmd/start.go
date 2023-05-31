@@ -541,5 +541,5 @@ func wrapCPUProfile(ctx *server.Context, callback func() error) error {
 	case <-time.After(types.ServerStartTime):
 	}
 
-	return common.WaitForQuitSignals()
+	return <-errCh
 }

@@ -581,6 +581,18 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx com
 		}
 	}
 
+	defer func() {
+		if tmNode != nil && tmNode.IsRunning() {
+			_ = tmNode.Stop()
+		}
+
+		if apiSrv != nil {
+			_ = apiSrv.Close()
+		}
+
+		ctx.Logger.Info("exiting...")
+	}()
+
 	// wait for signal capture and gracefully return
 	return common.WaitForQuitSignals()
 }
@@ -626,5 +638,5 @@ func wrapCPUProfile(ctx *server.Context, callback func() error) error {
 	case <-time.After(types.ServerStartTime):
 	}
 
-	return common.WaitForQuitSignals()
+	return <-errCh
 }
