@@ -95,6 +95,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
+			// Set config
+			initSDKConfig("test")
+
 			return nil
 		},
 	}
@@ -128,9 +131,6 @@ func initRootCmd(
 	rootCmd *cobra.Command,
 	encodingConfig params.EncodingConfig,
 ) {
-	// Set config
-	initSDKConfig()
-
 	ac := appCreator{
 		encCfg: encodingConfig,
 	}
