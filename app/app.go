@@ -75,9 +75,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/group"
 	groupkeeper "github.com/cosmos/cosmos-sdk/x/group/keeper"
 	groupmodule "github.com/cosmos/cosmos-sdk/x/group/module"
-	"github.com/cosmos/cosmos-sdk/x/mint"
-	mintkeeper "github.com/cosmos/cosmos-sdk/x/mint/keeper"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+
 	"github.com/cosmos/cosmos-sdk/x/params"
 	paramsclient "github.com/cosmos/cosmos-sdk/x/params/client"
 	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
@@ -90,6 +88,14 @@ import (
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
+	"github.com/Stride-Labs/stride/v8/x/mint"
+	mintkeeper "github.com/Stride-Labs/stride/v8/x/mint/keeper"
+	minttypes "github.com/Stride-Labs/stride/v8/x/mint/types"
+
+	"github.com/Stride-Labs/stride/v8/x/epochs"
+	epochskeeper "github.com/Stride-Labs/stride/v8/x/epochs/keeper"
+	epochstypes "github.com/Stride-Labs/stride/v8/x/epochs/types"
 
 	ibctransfer "github.com/cosmos/ibc-go/v5/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v5/modules/apps/transfer/keeper"
@@ -130,6 +136,7 @@ var (
 		minttypes.StoreKey, distrtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey,
 		ibchost.StoreKey, upgradetypes.StoreKey,
+		epochstypes.StoreKey,
 		feegrant.StoreKey,
 		ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 		authzkeeper.StoreKey, group.StoreKey,
@@ -170,6 +177,7 @@ var (
 		staking.AppModuleBasic{},
 		sequencers.AppModuleBasic{},
 		mint.AppModuleBasic{},
+		epochs.AppModuleBasic{},
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(getGovProposalHandlers()),
 		params.AppModuleBasic{},
@@ -234,6 +242,7 @@ type App struct {
 	StakingKeeper    stakingkeeper.Keeper
 	SequencersKeeper seqkeeper.Keeper
 	MintKeeper       mintkeeper.Keeper
+	EpochsKeeper     epochskeeper.Keeper
 	DistrKeeper      distrkeeper.Keeper
 	GovKeeper        govkeeper.Keeper
 	CrisisKeeper     crisiskeeper.Keeper
@@ -329,6 +338,8 @@ func NewRollapp(
 	app.CapabilityKeeper.Seal()
 
 	// add keepers
+	app.EpochsKeeper = *epochskeeper.NewKeeper(appCodec, keys[epochstypes.StoreKey])
+
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
 		appCodec,
 		keys[authtypes.StoreKey],
@@ -365,9 +376,10 @@ func NewRollapp(
 		appCodec,
 		keys[minttypes.StoreKey],
 		app.GetSubspace(minttypes.ModuleName),
-		&stakingKeeper,
 		app.AccountKeeper,
 		app.BankKeeper,
+		app.DistrKeeper,
+		app.EpochsKeeper,
 		authtypes.FeeCollectorName,
 	)
 
@@ -389,6 +401,13 @@ func NewRollapp(
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks()),
+	)
+
+	app.EpochsKeeper.SetHooks(
+		epochstypes.NewMultiEpochHooks(
+			// insert epoch hooks receivers here
+			app.MintKeeper.Hooks(),
+		),
 	)
 
 	app.SequencersKeeper = *seqkeeper.NewKeeper(
