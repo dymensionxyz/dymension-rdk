@@ -1,13 +1,3 @@
----
-title: "Mint"
-excerpt: ""
-category: 6392913957c533007128548e
----
-
-<!--
-order: 0
--->
-
 # The Mint Module
 
 The `x/mint` module mints tokens at the end of epochs.
@@ -66,7 +56,7 @@ func (m Minter) EpochProvision(params Params) sdk.Coin {
 }
 ```
 
-**Notes**
+Notes
 
 1. `mint_denom` defines denom for minting token - uosmo
 2. `genesis_epoch_provisions` provides minting tokens per epoch at genesis.

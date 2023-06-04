@@ -1,15 +1,3 @@
----
-title: "Epochs"
-excerpt: ""
-category: 6392913957c533007128548e
----
-<!--
-order: 0
-title: "Epochs Overview"
-parent:
-  title: "epochs"
--->
-
 # Epochs
 
 ## Abstract</br>
