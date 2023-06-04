@@ -89,13 +89,13 @@ import (
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"github.com/Stride-Labs/stride/v8/x/mint"
-	mintkeeper "github.com/Stride-Labs/stride/v8/x/mint/keeper"
-	minttypes "github.com/Stride-Labs/stride/v8/x/mint/types"
+	"github.com/dymensionxyz/rollapp/x/mint"
+	mintkeeper "github.com/dymensionxyz/rollapp/x/mint/keeper"
+	minttypes "github.com/dymensionxyz/rollapp/x/mint/types"
 
-	"github.com/Stride-Labs/stride/v8/x/epochs"
-	epochskeeper "github.com/Stride-Labs/stride/v8/x/epochs/keeper"
-	epochstypes "github.com/Stride-Labs/stride/v8/x/epochs/types"
+	"github.com/dymensionxyz/rollapp/x/epochs"
+	epochskeeper "github.com/dymensionxyz/rollapp/x/epochs/keeper"
+	epochstypes "github.com/dymensionxyz/rollapp/x/epochs/types"
 
 	ibctransfer "github.com/cosmos/ibc-go/v5/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v5/modules/apps/transfer/keeper"
@@ -499,11 +499,12 @@ func NewRollapp(
 		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil),
+		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, app.BankKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		sequencers.NewAppModule(appCodec, app.SequencersKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
+		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		groupmodule.NewAppModule(appCodec, app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
@@ -534,6 +535,7 @@ func NewRollapp(
 		govtypes.ModuleName,
 		crisistypes.ModuleName,
 		genutiltypes.ModuleName,
+		epochstypes.ModuleName,
 		feegrant.ModuleName,
 		group.ModuleName,
 		paramstypes.ModuleName,
@@ -556,6 +558,7 @@ func NewRollapp(
 		genutiltypes.ModuleName,
 		feegrant.ModuleName,
 		group.ModuleName,
+		epochstypes.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		ibchost.ModuleName,
@@ -585,6 +588,7 @@ func NewRollapp(
 		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		paramstypes.ModuleName,
+		epochstypes.ModuleName,
 		group.ModuleName,
 		upgradetypes.ModuleName,
 		ibctransfertypes.ModuleName,
@@ -919,6 +923,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(stakingtypes.ModuleName)
 	paramsKeeper.Subspace(seqtypes.ModuleName)
 	paramsKeeper.Subspace(minttypes.ModuleName)
+	paramsKeeper.Subspace(epochstypes.ModuleName)
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govv1.ParamKeyTable())
 	paramsKeeper.Subspace(crisistypes.ModuleName)
