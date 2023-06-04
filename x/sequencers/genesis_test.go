@@ -7,10 +7,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	testkeepers "github.com/dymensionxyz/rollapp/testutil/keepers"
 	"github.com/dymensionxyz/rollapp/testutil/nullify"
-	"github.com/dymensionxyz/rollapp/testutil/utils"
+	utils "github.com/dymensionxyz/rollapp/testutil/utils"
+
 	"github.com/dymensionxyz/rollapp/x/sequencers"
-	"github.com/dymensionxyz/rollapp/x/sequencers/testutils"
+
 	"github.com/dymensionxyz/rollapp/x/sequencers/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,11 +20,11 @@ import (
 
 func TestFailedInitGenesis(t *testing.T) {
 	app := utils.Setup(t, false)
-	k, ctx := testutils.NewTestSequencerKeeperFromApp(t, app)
+	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(t, app)
 
 	pks := utils.CreateTestPubKeys(1)
 	addr := sdk.ValAddress(pks[0].Address())
-	val := testutils.NewValidator(t, addr, pks[0])
+	val := utils.NewValidator(t, addr, pks[0])
 
 	genesisState := types.GenesisState{
 		Params:     types.DefaultParams(),
@@ -46,7 +48,7 @@ func TestFailedInitGenesis(t *testing.T) {
 
 func TestGenesis(t *testing.T) {
 	app := utils.Setup(t, false)
-	k, ctx := testutils.NewTestSequencerKeeperFromApp(t, app)
+	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(t, app)
 
 	pks := utils.CreateTestPubKeys(2)
 	addr1 := sdk.ValAddress(pks[0].Address())
@@ -58,8 +60,8 @@ func TestGenesis(t *testing.T) {
 		Exported:   false,
 	}
 
-	genesisState.Sequencers = append(genesisState.Sequencers, testutils.NewValidator(t, addr1, pks[0]))
-	genesisState.Sequencers = append(genesisState.Sequencers, testutils.NewValidator(t, addr2, pks[1]))
+	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, addr1, pks[0]))
+	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, addr2, pks[1]))
 
 	sequencers.InitGenesis(ctx, *k, genesisState)
 	got := sequencers.ExportGenesis(ctx, *k)
