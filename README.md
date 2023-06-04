@@ -58,12 +58,18 @@ sh scripts/run_rollapp.sh
 
 Follow the instructions on [Dymension Hub docs](https://docs.dymension.xyz/develop/get-started/run-base-layers) to run local dymension hub node
 
-### Configure the rollapp
+### Create sequencer keys
 
-Modify `dymint.toml` in the chain directory (`~/.rollapp/config`)
-set:
+create sequencer key using `dymd`
+
 ```shell
-settlement_layer = "dymension"
+dymd keys add sequencer --keyring-dir ~/.rollapp/sequencer --keyring-backened test
+```
+
+fund the sequencer account
+
+```shell
+dymd tx bank send local-user $SEQUENCER_ADDR 10000000000udym --keyring-backend test
 ```
 
 ### Register rollapp on settlement
@@ -76,6 +82,16 @@ sh scripts/settlement/register_rollapp_to_hub.sh
 
 ```shell
 sh scripts/settlement/register_sequencer_to_hub.sh
+```
+
+### Configure the rollapp
+
+Modify `dymint.toml` in the chain directory (`~/.rollapp/config`)
+set:
+
+```shell
+settlement_layer = "dymension"
+
 ```
 
 ### Run rollapp

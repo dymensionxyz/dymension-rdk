@@ -92,7 +92,7 @@ func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 		NodeAddress:    "http://127.0.0.1:36657",
 		RollappID:      clientCtx.ChainID,
 		KeyringHomeDir: rootDir,
-		DymAccountName: fmt.Sprintf("%s-sequencer", clientCtx.ChainID),
+		DymAccountName: "sequencer",
 		GasPrices:      "0.025udym",
 	}
 	dymintCtx.Config.SettlementConfig = defaultSLconfig
@@ -129,14 +129,6 @@ func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 /* -------------------------------------------------------------------------- */
 /*                                    utils                                   */
 /* -------------------------------------------------------------------------- */
-
-// helper function to make config creation independent of root dir
-func rootify(path, root string) string {
-	if filepath.IsAbs(path) {
-		return path
-	}
-	return filepath.Join(root, path)
-}
 
 // CheckAndCreateFile checks if the file exists, if not it tries to create it.
 func CheckAndCreateConfigFile(configFilePath string, config dymintconf.NodeConfig) error {
