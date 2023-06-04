@@ -19,9 +19,8 @@ set_denom() {
 
 set_minting_params() {
   echo "setting minting params"
-  # blocks_per_year= (1/block_time) * 31,536,000
-  jq '.app_state.mint.params.blocks_per_year = "157680000"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
-  # jq '.app_state.mint.params.goal_bonded = "0.670000000000000000"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+  jq '.app_state.mint.params.genesis_epoch_provisions = "1000000"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
+  # jq '(.app_state.epochs.epochs[] | select(.identifier=="mint") .duration)="60s"' "$GENESIS_FILE" > "$tmp" && mv "$tmp" "$GENESIS_FILE"
 }
 
 
