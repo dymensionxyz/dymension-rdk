@@ -9,8 +9,6 @@ var LastReductionEpochKey = []byte{0x01}
 const (
 	// module name.
 	ModuleName = "mint"
-	// module acct name for developer vesting.
-	DeveloperVestingModuleAcctName = "developer_vesting_unvested"
 
 	// StoreKey is the default store key for mint.
 	StoreKey = ModuleName
@@ -21,12 +19,4 @@ const (
 	// Query endpoints supported by the minting querier.
 	QueryParameters      = "parameters"
 	QueryEpochProvisions = "epoch_provisions"
-
-	// submodule account types
-	CommunityGrowthSubmoduleName         = "growth"
-	CommunitySecurityBudgetSubmoduleName = "security-budget"
-	CommunityUsageSubmoduleName          = "usage"
-
-	// key for creating a new module namespace of type "community"
-	SubmoduleCommunityNamespaceKey = "commmunity"
 )

@@ -20,8 +20,6 @@ var (
 	KeyEpochIdentifier                      = []byte("EpochIdentifier")
 	KeyReductionPeriodInEpochs              = []byte("ReductionPeriodInEpochs")
 	KeyReductionFactor                      = []byte("ReductionFactor")
-	KeyPoolAllocationRatio                  = []byte("PoolAllocationRatio")
-	KeyDeveloperRewardsReceiver             = []byte("DeveloperRewardsReceiver")
 	KeyMintingRewardsDistributionStartEpoch = []byte("MintingRewardsDistributionStartEpoch")
 )
 

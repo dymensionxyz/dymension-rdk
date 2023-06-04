@@ -8,6 +8,7 @@ import (
 
 	"github.com/dymensionxyz/rollapp/app"
 	epochkeeper "github.com/dymensionxyz/rollapp/x/epochs/keeper"
+	mintkeeper "github.com/dymensionxyz/rollapp/x/mint/keeper"
 	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -22,6 +23,12 @@ func NewTestEpochKeeperFromApp(t *testing.T, app *app.App) (*epochkeeper.Keeper,
 
 func NewTestSequencerKeeperFromApp(t *testing.T, app *app.App) (*seqkeeper.Keeper, sdk.Context) {
 	k := &app.SequencersKeeper
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
+	return k, ctx
+}
+
+func NewTestMintKeeperFromApp(t *testing.T, app *app.App) (*mintkeeper.Keeper, sdk.Context) {
+	k := &app.MintKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
 	return k, ctx
 }
