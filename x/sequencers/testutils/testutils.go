@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"testing"
+	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -26,15 +27,8 @@ func NewTestContext() sdk.Context {
 }
 
 func NewTestSequencerKeeperFromApp(t *testing.T, app *app.App) (*keeper.Keeper, sdk.Context) {
-	cdc := app.AppCodec()
-	k := keeper.NewKeeper(
-		cdc,
-		app.GetKey(types.StoreKey),
-		app.GetSubspace(types.ModuleName),
-	)
-	ctx := app.GetBaseApp().NewContext(false, tmproto.Header{})
-	k.SetParams(ctx, types.DefaultParams())
-
+	k := &app.SequencersKeeper
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
 	return k, ctx
 }
 

@@ -9,7 +9,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/dymensionxyz/rollapp/utils"
 	"github.com/dymensionxyz/rollapp/x/epochs/types"
 )
 
@@ -35,8 +34,8 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 
 			// Capitalize the epoch identifier for the logs
 			epochAlias := strings.ToUpper(strings.ReplaceAll(epochInfo.Identifier, "_epoch", ""))
-			logger.Info(utils.LogHeader("%s EPOCH %d", epochAlias, epochInfo.CurrentEpoch))
-			logger.Info(utils.LogHeader("Epoch Start Time: %s", epochInfo.CurrentEpochStartTime))
+			logger.Info(fmt.Sprintf("%s EPOCH %d", epochAlias, epochInfo.CurrentEpoch))
+			logger.Info(fmt.Sprintf("Epoch Start Time: %s", epochInfo.CurrentEpochStartTime))
 
 			ctx.EventManager().EmitEvent(
 				sdk.NewEvent(

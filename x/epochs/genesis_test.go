@@ -5,8 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	keepertest "github.com/dymensionxyz/rollapp/testutil/keeper"
+	testkeepers "github.com/dymensionxyz/rollapp/testutil/keepers"
 	"github.com/dymensionxyz/rollapp/testutil/nullify"
+	"github.com/dymensionxyz/rollapp/testutil/utils"
 	"github.com/dymensionxyz/rollapp/x/epochs"
 	"github.com/dymensionxyz/rollapp/x/epochs/types"
 )
@@ -16,7 +17,10 @@ func TestGenesis(t *testing.T) {
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
-	k, ctx := keepertest.EpochsKeeper(t)
+	app := utils.Setup(t, false)
+	//EpochsKeeper
+	k, ctx := testkeepers.NewTestEpochKeeperFromApp(t, app)
+
 	epochs.InitGenesis(ctx, *k, genesisState)
 	got := epochs.ExportGenesis(ctx, *k)
 	require.NotNil(t, got)
