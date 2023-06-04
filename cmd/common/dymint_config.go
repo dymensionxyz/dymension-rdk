@@ -22,6 +22,7 @@ import (
 
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
+	"github.com/dymensionxyz/dymint/settlement"
 )
 
 // DymintContextKey defines the context key used to retrieve a server.Context from
@@ -85,13 +86,16 @@ func DymintConfigPreRunHandler(cmd *cobra.Command) error {
 	//FIXME: bind Dymint flags as well to allow overriding config file values
 
 	//prepare default settlement config
-	//TODO: wrap in method
-	dymintCtx.Config.SettlementConfig.RollappID = clientCtx.ChainID
-	if dymintCtx.Config.SettlementLayer == "mock" {
-		dymintCtx.Config.SettlementConfig.KeyringHomeDir = rootDir
-	} else {
-		dymintCtx.Config.SettlementConfig.KeyringHomeDir = rootify("/sequencer", rootDir)
+	//TODO: move to dymint config package
+	defaultSLconfig := settlement.Config{
+		KeyringBackend: "test",
+		NodeAddress:    "http://127.0.0.1:36657",
+		RollappID:      clientCtx.ChainID,
+		KeyringHomeDir: rootDir,
+		DymAccountName: fmt.Sprintf("%s-sequencer", clientCtx.ChainID),
+		GasPrices:      "0.025udym",
 	}
+	dymintCtx.Config.SettlementConfig = defaultSLconfig
 
 	dymintCtx.Viper.SetConfigType("toml")
 	dymintCtx.Viper.SetConfigName("dymint")
@@ -199,22 +203,23 @@ const defaultConfigTemplate = `
 aggregator = "{{ .Aggregator }}"
 
 block_time = "{{ .BlockManagerConfig.BlockTime }}"
-da_block_time = "{{ .BlockManagerConfig.DABlockTime }}"
-batch_sync_interval = "{{ .BlockManagerConfig.BatchSyncInterval }}"
-da_start_height = {{ .BlockManagerConfig.DAStartHeight }}
-namespace_id = "{{ .BlockManagerConfig.NamespaceID }}"
 block_batch_size = {{ .BlockManagerConfig.BlockBatchSize }}
 block_batch_size_bytes = {{ .BlockManagerConfig.BlockBatchSizeBytes }}
 
+### da config ###
 da_layer = "{{ .DALayer }}" # mock, celestia
-da_config = "{{ .DAConfig }}"
+da_start_height = {{ .BlockManagerConfig.DAStartHeight }}
+namespace_id = "{{ .BlockManagerConfig.NamespaceID }}"
+
+#celestia config
 # example config:
 # da_config = "{\"base_url\": \"http://127.0.0.1:26659\", \"timeout\": 60000000000, \"fee\":20000, \"gas_limit\": 20000000, \"namespace_id\":\"000000000000ffff\"}"
-# da_config = "30s"
+da_config = "{{ .DAConfig }}"
 
-
-
+### settlement config ###
 settlement_layer = "{{ .SettlementLayer }}" # mock, dymension
+
+# dymension config
 node_address = "{{ .SettlementConfig.NodeAddress }}"
 gas_limit = {{ .SettlementConfig.GasLimit }}
 gas_prices = "{{ .SettlementConfig.GasPrices }}"
@@ -224,44 +229,4 @@ gas_fees = "{{ .SettlementConfig.GasFees }}"
 keyring_backend = "{{ .SettlementConfig.KeyringBackend }}"
 keyring_home_dir = "{{ .SettlementConfig.KeyringHomeDir }}"
 dym_account_name = "{{ .SettlementConfig.DymAccountName }}"
-
-
-# example config:
-#settlement_config = "{\"node_address\": \"127.0.0.1:36657\", \"rollapp_id\": \"rollappevm_100_1\", \"dym_account_name\": \"rollappevm_100_1-sequenceer\", \"keyring_home_dir\": \"./sequencer\", \"keyring_backend\":\"test\", \"gas_prices\": \"0.0udym\"}"
 `
-
-//FIXME: split config to config.objs
-// # split settlement config to settlement.objs
-
-// func bindFlags(basename string, cmd *cobra.Command, v *viper.Viper) (err error) {
-// 	defer func() {
-// 		if r := recover(); r != nil {
-// 			err = fmt.Errorf("bindFlags failed: %v", r)
-// 		}
-// 	}()
-
-// 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
-// 		// Environment variables can't have dashes in them, so bind them to their equivalent
-// 		// keys with underscores, e.g. --favorite-color to STING_FAVORITE_COLOR
-// 		err = v.BindEnv(f.Name, fmt.Sprintf("%s_%s", basename, strings.ToUpper(strings.ReplaceAll(f.Name, "-", "_"))))
-// 		if err != nil {
-// 			panic(err)
-// 		}
-
-// 		err = v.BindPFlag(f.Name, f)
-// 		if err != nil {
-// 			panic(err)
-// 		}
-
-// 		// Apply the viper config value to the flag when the flag is not set and viper has a value
-// 		if !f.Changed && v.IsSet(f.Name) {
-// 			val := v.Get(f.Name)
-// 			err = cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
-// 			if err != nil {
-// 				panic(err)
-// 			}
-// 		}
-// 	})
-
-// 	return nil
-// }
