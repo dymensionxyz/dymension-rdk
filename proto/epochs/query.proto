@@ -13,8 +13,6 @@ service Query {
   // EpochInfos provide running epochInfos
   rpc EpochInfos(QueryEpochsInfoRequest) returns (QueryEpochsInfoResponse) {
     option (google.api.http).get = "/dymensionxyz/rollapp/sequencers";
-    option (google.api.http).get = "/dymensionxyz/rollapp/sequencers";
-
   }
   // CurrentEpoch provide current epoch of specified identifier
   rpc CurrentEpoch(QueryCurrentEpochRequest)

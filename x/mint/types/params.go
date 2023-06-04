@@ -32,8 +32,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 
 func NewParams(
 	mintDenom string, genesisEpochProvisions sdk.Dec, epochIdentifier string,
-	ReductionFactor sdk.Dec, reductionPeriodInEpochs int64, distrProportions DistributionProportions,
-	mintingRewardsDistributionStartEpoch int64,
+	ReductionFactor sdk.Dec, reductionPeriodInEpochs int64, mintingRewardsDistributionStartEpoch int64,
 ) Params {
 	return Params{
 		MintDenom:                            mintDenom,
@@ -41,7 +40,6 @@ func NewParams(
 		EpochIdentifier:                      epochIdentifier,
 		ReductionPeriodInEpochs:              reductionPeriodInEpochs,
 		ReductionFactor:                      ReductionFactor,
-		DistributionProportions:              distrProportions,
 		MintingRewardsDistributionStartEpoch: mintingRewardsDistributionStartEpoch,
 	}
 }
@@ -49,17 +47,11 @@ func NewParams(
 // minting params
 func DefaultParams() Params {
 	return Params{
-		MintDenom:               sdk.DefaultBondDenom,
-		GenesisEpochProvisions:  sdk.NewDec(2_500_000).Mul(sdk.NewDec(1_000_000)).Quo(sdk.NewDec(24 * 365)), // 2.5MST first year, broken into hours ~= 285ST / hour
-		EpochIdentifier:         "mint",                                                                     // 1 hour
-		ReductionPeriodInEpochs: 24 * 365,                                                                   // 24hrs*365d = 8760
-		ReductionFactor:         sdk.NewDec(1).QuoInt64(2),
-		DistributionProportions: DistributionProportions{
-			Staking:                     sdk.MustNewDecFromStr("0.2764"),
-			CommunityPoolGrowth:         sdk.MustNewDecFromStr("0.1860"),
-			StrategicReserve:            sdk.MustNewDecFromStr("0.4205"),
-			CommunityPoolSecurityBudget: sdk.MustNewDecFromStr("0.1171"),
-		},
+		MintDenom:                            sdk.DefaultBondDenom,
+		GenesisEpochProvisions:               sdk.NewDec(2_500_000).Mul(sdk.NewDec(1_000_000)).Quo(sdk.NewDec(24 * 365)), // 2.5MST first year, broken into hours ~= 285ST / hour
+		EpochIdentifier:                      "mint",                                                                     // 1 hour
+		ReductionPeriodInEpochs:              24 * 365,                                                                   // 24hrs*365d = 8760
+		ReductionFactor:                      sdk.NewDec(1).QuoInt64(2),
 		MintingRewardsDistributionStartEpoch: 0,
 	}
 }
@@ -79,9 +71,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	if err := validateReductionFactor(p.ReductionFactor); err != nil {
-		return err
-	}
-	if err := validateDistributionProportions(p.DistributionProportions); err != nil {
 		return err
 	}
 	if err := validateMintingRewardsDistributionStartEpoch(p.MintingRewardsDistributionStartEpoch); err != nil {
@@ -105,7 +94,6 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyEpochIdentifier, &p.EpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
 		paramtypes.NewParamSetPair(KeyReductionPeriodInEpochs, &p.ReductionPeriodInEpochs, validateReductionPeriodInEpochs),
 		paramtypes.NewParamSetPair(KeyReductionFactor, &p.ReductionFactor, validateReductionFactor),
-		paramtypes.NewParamSetPair(KeyPoolAllocationRatio, &p.DistributionProportions, validateDistributionProportions),
 		paramtypes.NewParamSetPair(KeyMintingRewardsDistributionStartEpoch, &p.MintingRewardsDistributionStartEpoch, validateMintingRewardsDistributionStartEpoch),
 	}
 }
@@ -164,37 +152,6 @@ func validateReductionFactor(i interface{}) error {
 
 	if v.IsNegative() {
 		return fmt.Errorf("reduction factor cannot be negative")
-	}
-
-	return nil
-}
-
-func validateDistributionProportions(i interface{}) error {
-	v, ok := i.(DistributionProportions)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v.Staking.IsNegative() {
-		return errors.New("staking distribution ratio should not be negative")
-	}
-
-	if v.CommunityPoolGrowth.IsNegative() {
-		return errors.New("community pool growth distribution ratio should not be negative")
-	}
-
-	if v.CommunityPoolSecurityBudget.IsNegative() {
-		return errors.New("community pool growth distribution ratio should not be negative")
-	}
-
-	if v.StrategicReserve.IsNegative() {
-		return errors.New("community pool growth distribution ratio should not be negative")
-	}
-
-	totalProportions := v.Staking.Add(v.CommunityPoolGrowth).Add(v.CommunityPoolSecurityBudget).Add(v.StrategicReserve)
-
-	if !totalProportions.Equal(sdk.NewDec(1)) {
-		return fmt.Errorf(fmt.Sprintf("total distributions ratio should be 1, instead got %s", totalProportions.String()))
 	}
 
 	return nil

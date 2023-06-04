@@ -145,17 +145,10 @@ func (k Keeper) GetProportions(ctx sdk.Context, mintedCoin sdk.Coin, ratio sdk.D
 
 // DistributeMintedCoins implements distribution of minted coins from mint to external modules.
 func (k Keeper) DistributeMintedCoin(ctx sdk.Context, mintedCoin sdk.Coin) error {
-	params := k.GetParams(ctx)
-	proportions := params.DistributionProportions
-
 	k.Logger(ctx).Info(fmt.Sprintf("Distributing minted x/mint rewards: %d coins...", mintedCoin.Amount.Int64()))
 
-	// allocate staking incentives into fee collector account to be moved to on next begin blocker by staking module
-	stakingIncentivesProportions := k.GetProportions(ctx, mintedCoin, proportions.Staking)
-	stakingIncentivesCoins := sdk.NewCoins(stakingIncentivesProportions)
-	k.Logger(ctx).Info(fmt.Sprintf("\t\t\t...staking rewards: %d to %s", stakingIncentivesProportions.Amount.Int64(), k.feeCollectorName))
-
-	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, stakingIncentivesCoins)
+	mintAmt := sdk.NewCoins(mintedCoin)
+	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, mintAmt)
 	if err != nil {
 		return err
 	}
