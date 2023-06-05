@@ -51,28 +51,10 @@ ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 
 
 # ------------------------------- dymint config ------------------------------ #
-KEY_NAME_DYM=${KEY_NAME_DYM:-"$MONIKER"}
+KEY_NAME_DYM=${KEY_NAME_DYM:-"sequencer"}
 
 #Its the keyring that will be used by dymint sequencer
 KEYRING_PATH=${KEYRING_PATH:-$ROLLAPP_CHAIN_DIR/sequencer}
-
-AGGREGATOR=${AGGREGATOR:-"true"}
-BATCH_SIZE=${BATCH_SIZE:-"60"}
-BLOCK_TIME=${BLOCK_TIME:-"0.2s"}
-DYMINT_FEES=${DYMINT_FEES:-"2000000udym"}
-
-# DA CONFIG
-DA_LAYER=${DA_LAYER:-"mock"}
-DA_LC_ENDPOINT=${DA_LC_ENDPOINT:-"127.0.0.1:26659"}
-NAMESPACE_ID=${NAMESPACE_ID:-"000000000000ffff"}
-DA_NAMESPACE_ID=${DA_NAMESPACE_ID:-"[0,0,0,0,0,0,255,255]"}
-DA_LAYER_CONFIG=${DA_LAYER_CONFIG:-"{\"base_url\": \"http:\/\/$DA_LC_ENDPOINT\", \"timeout\": 60000000000, \"fee\":20000, \"gas_limit\": 20000000, \"namespace_id\":$DA_NAMESPACE_ID}"}
-
-# Settlement config
-SETTLEMENT_LAYER=${SETTLEMENT_LAYER:-"mock"}
-SETTLEMENT_CONFIG=${SETTLEMENT_CONFIG:-"{\"node_address\": \"$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_prices\": \"0.0$DENOM\"}"}
-SETTLEMENT_CONFIG_MOCK=${SETTLEMENT_CONFIG_MOCK:-"{\"root_dir\": \"$ROLLAPP_CHAIN_DIR\", \"db_path\": \"data\", \"proposer_pub_key\":\"$ROLLAPP_CHAIN_DIR/config/priv_validator_key.json\"}"}
-
 
 # ---------------------------------------------------------------------------- #
 #                                  IBC CONFIG                                  #

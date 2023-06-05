@@ -130,11 +130,11 @@ if [ "$SETTLEMENT_LAYER" = "dymension" ]; then
 
 $EXECUTABLE gentx_seq --pubkey "$($EXECUTABLE dymint show-sequencer --home $ROLLAPP_CHAIN_DIR)" --from "$KEY_NAME_ROLLAPP" --home "$ROLLAPP_CHAIN_DIR"
 
-echo "Do you want to include staker on genesis? (Y/n) "
-read -r answer
-if [ ! "$answer" != "${answer#[Nn]}" ] ;then
-  $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$ROLLAPP_CHAIN_ID" --keyring-backend test --home "$ROLLAPP_CHAIN_DIR"
-  $EXECUTABLE collect-gentxs --home "$ROLLAPP_CHAIN_DIR"
-fi
+# echo "Do you want to include staker on genesis? (Y/n) "
+# read -r answer
+# if [ ! "$answer" != "${answer#[Nn]}" ] ;then
+#   $EXECUTABLE gentx "$KEY_NAME_ROLLAPP" "$STAKING_AMOUNT" --chain-id "$ROLLAPP_CHAIN_ID" --keyring-backend test --home "$ROLLAPP_CHAIN_DIR"
+#   $EXECUTABLE collect-gentxs --home "$ROLLAPP_CHAIN_DIR"
+# fi
 
 $EXECUTABLE validate-genesis --home "$ROLLAPP_CHAIN_DIR"
