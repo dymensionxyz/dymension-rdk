@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	epochtypes "github.com/dymensionxyz/rollapp/x/epochs/types"
 	claimstypes "github.com/evmos/evmos/v10/x/claims/types"
 )
 
@@ -31,6 +32,7 @@ func (app App) RegisterUpgradeHandlers() {
 			Added: []string{
 				group.StoreKey,
 				claimstypes.StoreKey,
+				epochtypes.StoreKey,
 			},
 		}
 
