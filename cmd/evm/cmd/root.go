@@ -1,7 +1,7 @@
 //go:build evm
 // +build evm
 
-package main
+package cmd
 
 import (
 	"errors"
@@ -16,6 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -33,9 +34,10 @@ import (
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
+	dymintserver "github.com/dymensionxyz/dymint/server"
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
-	"github.com/dymensionxyz/rollapp/cmd/common"
+	"github.com/dymensionxyz/rollapp/utils"
 
 	evmflags "github.com/dymensionxyz/rollapp/app/evm/flags"
 	ethermintclient "github.com/evmos/ethermint/client"
@@ -129,7 +131,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 
 			//We initilaze dyming config after tendermint initialize, so we could read from it's configuration
-			err = common.DymintConfigPreRunHandler(cmd)
+			err = dymintserver.DymintConfigPreRunHandler(cmd)
 			if err != nil {
 				return err
 			}
@@ -173,7 +175,11 @@ func initAppConfig() (string, interface{}) {
 }
 
 func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
-	initSDKConfig()
+
+	sdkconfig := sdk.GetConfig()
+	utils.SetPrefixes(sdkconfig, app.AccountAddressPrefix)
+	utils.SetBip44CoinType(sdkconfig)
+	sdkconfig.Seal()
 
 	ac := appCreator{
 		encCfg: encodingConfig,
@@ -197,7 +203,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		config.Cmd(),
 	)
 
-	common.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	dymintserver.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands

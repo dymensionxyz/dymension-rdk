@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/pruning"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -30,9 +31,10 @@ import (
 
 	// this line is used by starport scaffolding # root/moduleImport
 
+	dymintserver "github.com/dymensionxyz/dymint/server"
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
-	"github.com/dymensionxyz/rollapp/cmd/common"
+	"github.com/dymensionxyz/rollapp/utils"
 )
 
 const rollappAscii = `
@@ -90,7 +92,7 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 
 			//We initilaze dyming config after tendermint initialize, so we could read from it's configuration
-			err = common.DymintConfigPreRunHandler(cmd)
+			err = dymintserver.DymintConfigPreRunHandler(cmd)
 			if err != nil {
 				return err
 			}
@@ -129,7 +131,9 @@ func initRootCmd(
 	encodingConfig params.EncodingConfig,
 ) {
 	// Set config
-	initSDKConfig()
+	sdkconfig := sdk.GetConfig()
+	utils.SetPrefixes(sdkconfig, app.AccountAddressPrefix)
+	sdkconfig.Seal()
 
 	ac := appCreator{
 		encCfg: encodingConfig,
@@ -147,13 +151,12 @@ func initRootCmd(
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
-		// NewTestnetCmd(simapp.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 		debug.Cmd(),
 		config.Cmd(),
 		pruning.PruningCmd(ac.newApp),
 	)
 
-	common.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	dymintserver.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands
