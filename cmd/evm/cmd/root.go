@@ -38,6 +38,7 @@ import (
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/dymensionxyz/rollapp/utils"
+	sequencercli "github.com/dymensionxyz/rollapp/x/sequencers/client/cli"
 
 	evmflags "github.com/dymensionxyz/rollapp/app/evm/flags"
 	ethermintclient "github.com/evmos/ethermint/client"
@@ -189,6 +190,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.MigrateGenesisCmd(),
+		sequencercli.GenTxCmd(),
 		genutilcli.GenTxCmd(
 			app.ModuleBasics,
 			encodingConfig.TxConfig,
