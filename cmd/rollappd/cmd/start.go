@@ -89,7 +89,7 @@ const (
 
 	// logging flags
 	flagLogFile                = "log-file"
-	flagLogLevel               = "log-level"
+	flagLogLevel               = "log_level"
 	flagMaxLogSize             = "max-log-size"
 	flagModuleLogLevelOverride = "module-log-level-override"
 )
