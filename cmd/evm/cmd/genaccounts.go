@@ -1,7 +1,7 @@
 //go:build evm
 // +build evm
 
-package main
+package cmd
 
 import (
 	"encoding/json"

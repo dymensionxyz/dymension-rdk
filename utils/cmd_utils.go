@@ -1,4 +1,4 @@
-package common
+package utils
 
 import (
 	"io"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	ethermint "github.com/evmos/ethermint/types"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -25,6 +26,23 @@ func SetPrefixes(config *sdk.Config, accountAddressPrefix string) {
 	config.SetBech32PrefixForAccount(accountAddressPrefix, accountPubKeyPrefix)
 	config.SetBech32PrefixForValidator(validatorAddressPrefix, validatorPubKeyPrefix)
 	config.SetBech32PrefixForConsensusNode(consNodeAddressPrefix, consNodePubKeyPrefix)
+}
+
+// SetBip44CoinType sets the global coin type to be used in hierarchical deterministic wallets.
+func SetBip44CoinType(config *sdk.Config) {
+	config.SetCoinType(ethermint.Bip44CoinType)
+	config.SetPurpose(sdk.Purpose)
+}
+
+// RegisterDenoms registers the base and display denominations to the SDK.
+func RegisterDenoms(denom, baseDenom string, decimals int64) {
+	if err := sdk.RegisterDenom(denom, sdk.OneDec()); err != nil {
+		panic(err)
+	}
+
+	if err := sdk.RegisterDenom(baseDenom, sdk.NewDecWithPrec(1, decimals)); err != nil {
+		panic(err)
+	}
 }
 
 func OpenDB(rootDir string) (dbm.DB, error) {

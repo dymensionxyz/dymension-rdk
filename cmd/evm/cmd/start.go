@@ -1,7 +1,7 @@
 //go:build evm
 // +build evm
 
-package main
+package cmd
 
 import (
 	"context"
@@ -41,8 +41,8 @@ import (
 	dymintconv "github.com/dymensionxyz/dymint/conv"
 	dymintnode "github.com/dymensionxyz/dymint/node"
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
+	dymintserver "github.com/dymensionxyz/dymint/server"
 	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/cmd/common"
 	"github.com/dymensionxyz/rollapp/utils"
 
 	"github.com/evmos/ethermint/indexer"
@@ -184,7 +184,7 @@ which accepts a path for the resulting pprof file.
 			}
 
 			serverCtx.Logger.Info("starting ABCI with Dymint")
-			dymintCtx := common.GetDymintContextFromCmd(cmd)
+			dymintCtx := dymintserver.GetDymintContextFromCmd(cmd)
 
 			// amino is needed here for backwards compatibility of REST routes
 			err = wrapCPUProfile(serverCtx, func() error {
@@ -271,17 +271,17 @@ which accepts a path for the resulting pprof file.
 	return cmd
 }
 
-func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx common.DymintContext, appCreator types.AppCreator) error {
+func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx dymintserver.DymintContext, appCreator types.AppCreator) error {
 	cfg := ctx.Config
 	home := cfg.RootDir
 
-	db, err := common.OpenDB(home)
+	db, err := utils.OpenDB(home)
 	if err != nil {
 		return err
 	}
 
 	traceWriterFile := ctx.Viper.GetString(flagTraceStore)
-	traceWriter, err := common.OpenTraceWriter(traceWriterFile)
+	traceWriter, err := utils.OpenTraceWriter(traceWriterFile)
 	if err != nil {
 		return err
 	}
@@ -528,7 +528,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx com
 
 	if gRPCOnly {
 		// wait for signal capture and gracefully return
-		return common.WaitForQuitSignals()
+		return utils.WaitForQuitSignals()
 	}
 
 	var rosettaSrv crgserver.Server
@@ -594,7 +594,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx com
 	}()
 
 	// wait for signal capture and gracefully return
-	return common.WaitForQuitSignals()
+	return utils.WaitForQuitSignals()
 }
 
 func startTelemetry(cfg ethconfig.Config) (*telemetry.Metrics, error) {
