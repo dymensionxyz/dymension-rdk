@@ -34,11 +34,13 @@ import (
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	dymintserver "github.com/dymensionxyz/dymint/server"
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
+	"github.com/dymensionxyz/rollapp/cmd"
 	"github.com/dymensionxyz/rollapp/utils"
 	sequencercli "github.com/dymensionxyz/rollapp/x/sequencers/client/cli"
+
+	dymintconf "github.com/dymensionxyz/dymint/config"
 
 	evmflags "github.com/dymensionxyz/rollapp/app/evm/flags"
 	ethermintclient "github.com/evmos/ethermint/client"
@@ -131,11 +133,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			//We initilaze dyming config after tendermint initialize, so we could read from it's configuration
-			err = dymintserver.DymintConfigPreRunHandler(cmd)
-			if err != nil {
-				return err
-			}
+			//create dymint toml config file
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			dymintconf.EnsureRoot(serverCtx.Viper.GetString(tmcli.HomeFlag))
 
 			return nil
 		},
@@ -205,7 +205,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		config.Cmd(),
 	)
 
-	dymintserver.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	cmd.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands
