@@ -11,7 +11,6 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
 	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
-	tmcfg "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/p2p"
 )
 
@@ -24,7 +23,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 
 	dymintCmd.AddCommand(
 		ShowSequencer(),
-		ShowNodeIDCmd(nil),
+		ShowNodeIDCmd(),
 		ResetAll(),
 		tmcmd.ResetStateCmd,
 		server.VersionCmd(),
@@ -39,15 +38,13 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 }
 
 // ShowNodeIDCmd - ported from Tendermint, dump node ID to stdout
-func ShowNodeIDCmd(cfg *tmcfg.Config) *cobra.Command {
+func ShowNodeIDCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "show-node-id",
 		Short: "Show this node's ID",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if cfg == nil {
-				serverCtx := server.GetServerContextFromCmd(cmd)
-				cfg = serverCtx.Config
-			}
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			cfg := serverCtx.Config
 
 			nodeKey, err := p2p.LoadNodeKey(cfg.NodeKeyFile())
 			if err != nil {
