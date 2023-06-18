@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
@@ -100,7 +99,7 @@ const (
 
 	// logging flags
 	flagLogFile                = "log-file"
-	flagLogLevel               = "log-level"
+	flagLogLevel               = "log_level"
 	flagMaxLogSize             = "max-log-size"
 	flagModuleLogLevelOverride = "module-log-level-override"
 )
@@ -266,7 +265,6 @@ which accepts a path for the resulting pprof file.
 	cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
 
 	// add support for all Tendermint-specific command line options
-	tmcmd.AddNodeFlags(cmd)
 	dymintconf.AddFlags(cmd)
 	return cmd
 }
