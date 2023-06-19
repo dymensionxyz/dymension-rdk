@@ -45,8 +45,7 @@ if [ -f "$GENESIS_FILE" ]; then
   fi
 fi
 
-
-$EXECUTABLE dymint unsafe-reset-all  --home "$ROLLAPP_CHAIN_DIR"
+# ------------------------------- init rollapp ------------------------------- #
 $EXECUTABLE init "$MONIKER" --chain-id "$ROLLAPP_CHAIN_ID" --home "$ROLLAPP_CHAIN_DIR"
 
 if [ -n "$LOG_FILE_PATH" ]; then

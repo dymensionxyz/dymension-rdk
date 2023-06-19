@@ -183,7 +183,7 @@ which accepts a path for the resulting pprof file.
 
 			serverCtx.Logger.Info("starting ABCI with Dymint")
 
-			dymconfig := dymintconf.DefaultConfig()
+			dymconfig := dymintconf.DefaultConfig("", "")
 			err = dymconfig.GetViperConfig(cmd, serverCtx.Viper.GetString(flags.FlagHome))
 			if err != nil {
 				return err

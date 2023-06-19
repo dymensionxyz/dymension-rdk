@@ -134,8 +134,9 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			}
 
 			//create dymint toml config file
-			serverCtx := server.GetServerContextFromCmd(cmd)
-			dymintconf.EnsureRoot(serverCtx.Viper.GetString(tmcli.HomeFlag))
+			home := server.GetServerContextFromCmd(cmd).Viper.GetString(tmcli.HomeFlag)
+			chainID := client.GetClientContextFromCmd(cmd).Viper.GetString(flags.FlagChainID)
+			dymintconf.EnsureRoot(home, dymintconf.DefaultConfig(home, chainID))
 
 			return nil
 		},

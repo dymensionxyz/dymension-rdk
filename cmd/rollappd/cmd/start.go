@@ -167,7 +167,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 			serverCtx.Logger.Info("starting ABCI with Dymint")
 
-			dymconfig := dymintconf.DefaultConfig()
+			dymconfig := dymintconf.DefaultConfig("", "")
 			err = dymconfig.GetViperConfig(cmd, serverCtx.Viper.GetString(flags.FlagHome))
 			if err != nil {
 				return err
