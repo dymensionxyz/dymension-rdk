@@ -43,12 +43,12 @@ import (
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/utils"
 
-	"github.com/evmos/ethermint/indexer"
-	ethserver "github.com/evmos/ethermint/server"
-	"github.com/evmos/ethermint/server/config"
-	ethconfig "github.com/evmos/ethermint/server/config"
-	srvflags "github.com/evmos/ethermint/server/flags"
-	ethermint "github.com/evmos/ethermint/types"
+	"github.com/evmos/evmos/v12/indexer"
+	ethserver "github.com/evmos/evmos/v12/server"
+	"github.com/evmos/evmos/v12/server/config"
+	ethconfig "github.com/evmos/evmos/v12/server/config"
+	srvflags "github.com/evmos/evmos/v12/server/flags"
+	ethermint "github.com/evmos/evmos/v12/types"
 )
 
 const (
