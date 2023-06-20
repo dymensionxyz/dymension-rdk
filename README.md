@@ -63,7 +63,8 @@ Follow the instructions on [Dymension Hub docs](https://docs.dymension.xyz/devel
 create sequencer key using `dymd`
 
 ```shell
-dymd keys add sequencer --keyring-dir ~/.rollapp/sequencer --keyring-backend test
+dymd keys add sequencer --keyring-dir ~/.rollapp/sequencer_keys --keyring-backend test --algo secp256k1
+SEQUENCER_ADDR=`dymd keys show sequencer --address --keyring-backend test --keyring-dir ~/.rollapp/sequencer_keys`
 ```
 
 fund the sequencer account

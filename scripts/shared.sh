@@ -54,7 +54,7 @@ ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
 KEY_NAME_DYM=${KEY_NAME_DYM:-"sequencer"}
 
 #Its the keyring that will be used by dymint sequencer
-KEYRING_PATH=${KEYRING_PATH:-$ROLLAPP_CHAIN_DIR/sequencer}
+KEYRING_PATH=${KEYRING_PATH:-$ROLLAPP_CHAIN_DIR/sequencer_keys}
 
 # ---------------------------------------------------------------------------- #
 #                                  IBC CONFIG                                  #
