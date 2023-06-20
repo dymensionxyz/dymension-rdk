@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------- #
 SETTLEMENT_EXECUTABLE=${SETTLEMENT_EXECUTABLE:-dymd}
 KEY_NAME_GENESIS=${KEY_NAME_GENESIS:-"local-user"}
-SETTLEMENT_CHAIN_ID=${SETTLEMENT_CHAIN_ID:-"local-testnet"}
+SETTLEMENT_CHAIN_ID=${SETTLEMENT_CHAIN_ID:-"dymension_100-1"}
 SETTLEMENT_RPC=${SETTLEMENT_RPC:-"tcp://127.0.0.1:36657"}
 
 # ---------------------------------------------------------------------------- #

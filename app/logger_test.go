@@ -3,7 +3,6 @@ package app_test
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -126,7 +125,7 @@ func TestMaxFileSize(t *testing.T) {
 	logger := app.NewLogger(logPath, 1, "info", nil)
 	fillUpLog(&logger)
 
-	files, err := ioutil.ReadDir(logDir)
+	files, err := os.ReadDir(logDir)
 	assert.NoError(t, err)
 
 	assert.Greater(t, len(files), 1)

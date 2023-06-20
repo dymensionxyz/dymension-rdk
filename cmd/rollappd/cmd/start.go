@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
@@ -38,7 +37,6 @@ import (
 	dymintnode "github.com/dymensionxyz/dymint/node"
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
 	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/cmd/common"
 	"github.com/dymensionxyz/rollapp/utils"
 )
 
@@ -89,7 +87,7 @@ const (
 
 	// logging flags
 	flagLogFile                = "log-file"
-	flagLogLevel               = "log-level"
+	flagLogLevel               = "log_level"
 	flagMaxLogSize             = "max-log-size"
 	flagModuleLogLevelOverride = "module-log-level-override"
 )
@@ -168,11 +166,16 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 			}
 
 			serverCtx.Logger.Info("starting ABCI with Dymint")
-			dymintCtx := common.GetDymintContextFromCmd(cmd)
+
+			dymconfig := dymintconf.DefaultConfig("", "")
+			err = dymconfig.GetViperConfig(cmd, serverCtx.Viper.GetString(flags.FlagHome))
+			if err != nil {
+				return err
+			}
 
 			// amino is needed here for backwards compatibility of REST routes
 			err = wrapCPUProfile(serverCtx, func() error {
-				return startInProcess(serverCtx, clientCtx, *dymintCtx, appCreator)
+				return startInProcess(serverCtx, clientCtx, dymconfig, appCreator)
 			})
 			errCode, ok := err.(server.ErrorCode)
 			if !ok {
@@ -232,22 +235,21 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 	_ = cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
 
 	// add support for all Tendermint-specific command line options
-	tmcmd.AddNodeFlags(cmd)
-	dymintconf.AddFlags(cmd)
+	dymintconf.AddNodeFlags(cmd)
 	return cmd
 }
 
-func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx common.DymintContext, appCreator types.AppCreator) error {
+func startInProcess(ctx *server.Context, clientCtx client.Context, nodeConfig *dymintconf.NodeConfig, appCreator types.AppCreator) error {
 	cfg := ctx.Config
 	home := cfg.RootDir
 
-	db, err := common.OpenDB(home)
+	db, err := utils.OpenDB(home)
 	if err != nil {
 		return err
 	}
 
 	traceWriterFile := ctx.Viper.GetString(flagTraceStore)
-	traceWriter, err := common.OpenTraceWriter(traceWriterFile)
+	traceWriter, err := utils.OpenTraceWriter(traceWriterFile)
 	if err != nil {
 		return err
 	}
@@ -290,7 +292,11 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx com
 		return err
 	}
 
-	nodeConfig := dymintCtx.Config
+	err = dymintconv.GetNodeConfig(nodeConfig, cfg)
+	if err != nil {
+		return err
+	}
+
 	ctx.Logger.Info("starting node with ABCI dymint in-process")
 	tmNode, err := dymintnode.NewNode(
 		context.Background(),
@@ -430,7 +436,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx com
 	// we do not need to start Rosetta or handle any Tendermint related processes.
 	if gRPCOnly {
 		// wait for signal capture and gracefully return
-		return common.WaitForQuitSignals()
+		return utils.WaitForQuitSignals()
 	}
 
 	var rosettaSrv crgserver.Server
@@ -497,7 +503,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, dymintCtx com
 	}()
 
 	// wait for signal capture and gracefully return
-	return common.WaitForQuitSignals()
+	return utils.WaitForQuitSignals()
 }
 
 func startTelemetry(cfg serverconfig.Config) (*telemetry.Metrics, error) {

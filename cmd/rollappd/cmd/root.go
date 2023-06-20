@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/client/pruning"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -30,9 +31,12 @@ import (
 
 	// this line is used by starport scaffolding # root/moduleImport
 
+	dymintconf "github.com/dymensionxyz/dymint/config"
 	"github.com/dymensionxyz/rollapp/app"
 	"github.com/dymensionxyz/rollapp/app/params"
-	"github.com/dymensionxyz/rollapp/cmd/common"
+	"github.com/dymensionxyz/rollapp/cmd"
+	"github.com/dymensionxyz/rollapp/utils"
+	sequencercli "github.com/dymensionxyz/rollapp/x/sequencers/client/cli"
 )
 
 const rollappAscii = `
@@ -89,11 +93,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 				return err
 			}
 
-			//We initilaze dyming config after tendermint initialize, so we could read from it's configuration
-			err = common.DymintConfigPreRunHandler(cmd)
-			if err != nil {
-				return err
-			}
+			//create dymint toml config file
+			home := server.GetServerContextFromCmd(cmd).Viper.GetString(tmcli.HomeFlag)
+			chainID := client.GetClientContextFromCmd(cmd).ChainID
+			dymintconf.EnsureRoot(home, dymintconf.DefaultConfig(home, chainID))
 
 			return nil
 		},
@@ -129,7 +132,9 @@ func initRootCmd(
 	encodingConfig params.EncodingConfig,
 ) {
 	// Set config
-	initSDKConfig()
+	sdkconfig := sdk.GetConfig()
+	utils.SetPrefixes(sdkconfig, app.AccountAddressPrefix)
+	sdkconfig.Seal()
 
 	ac := appCreator{
 		encCfg: encodingConfig,
@@ -138,6 +143,7 @@ func initRootCmd(
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.MigrateGenesisCmd(),
+		sequencercli.GenTxCmd(),
 		genutilcli.GenTxCmd(
 			app.ModuleBasics,
 			encodingConfig.TxConfig,
@@ -147,13 +153,12 @@ func initRootCmd(
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
-		// NewTestnetCmd(simapp.ModuleBasics, banktypes.GenesisBalancesIterator{}),
 		debug.Cmd(),
 		config.Cmd(),
 		pruning.PruningCmd(ac.newApp),
 	)
 
-	common.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	cmd.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands

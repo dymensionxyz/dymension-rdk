@@ -1,4 +1,4 @@
-package common
+package cmd
 
 import (
 	"fmt"
@@ -7,14 +7,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	dymintcmd "github.com/dymensionxyz/dymint/cmd/dymint/commands"
 	"github.com/dymensionxyz/dymint/conv"
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
 	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
 	"github.com/tendermint/tendermint/p2p"
-
-	sequencercli "github.com/dymensionxyz/rollapp/x/sequencers/client/cli"
 )
 
 // add Rollapp commands
@@ -28,14 +25,12 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		ShowSequencer(),
 		ShowNodeIDCmd(),
 		ResetAll(),
-		InitFiles(),
 		tmcmd.ResetStateCmd,
 		server.VersionCmd(),
 	)
 
 	rootCmd.AddCommand(
 		dymintCmd,
-		sequencercli.GenTxCmd(),
 		server.ExportCmd(appExport, defaultNodeHome),
 		version.NewVersionCommand(),
 		server.NewRollbackCmd(appCreator, defaultNodeHome),
@@ -84,16 +79,4 @@ func ResetAll() *cobra.Command {
 	resetAll.Short = "(unsafe) Remove all the data and WAL, reset this node's sequencer to genesis state"
 
 	return resetAll
-}
-
-func InitFiles() *cobra.Command {
-	return &cobra.Command{
-		Use:   "init",
-		Short: "Initialize a rollapp node directory",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			serverCtx := server.GetServerContextFromCmd(cmd)
-			cfg := serverCtx.Config
-			return dymintcmd.InitFilesWithConfig(cfg)
-		},
-	}
 }
