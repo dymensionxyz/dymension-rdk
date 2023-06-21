@@ -22,7 +22,7 @@ SETTLEMENT_RPC=${SETTLEMENT_RPC:-"tcp://127.0.0.1:36657"}
 
 # EXECUTABLE="rollapp_evm"
 # ROLLAPP_CHAIN_DIR="$HOME/.rollapp_evm"
-# ROLLAPP_CHAIN_ID="rollappevm_100_1"
+# ROLLAPP_CHAIN_ID="rollappevm_100-1"
 
 # ---------------------------------- GLOBAL ---------------------------------- #
 KEY_NAME_ROLLAPP=${KEY_NAME_ROLLAPP:-"rol-user"}
