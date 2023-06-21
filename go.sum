@@ -490,10 +490,14 @@ github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230514120937-449e9becd080 h
 github.com/dymensionxyz/cosmosclient v0.3.0-beta.0.20230514120937-449e9becd080/go.mod h1:+zZkh3ntB21qQsfJjdn9aRGLLMmeDWWO+FxnWl8RWpw=
 github.com/dymensionxyz/dymension v0.2.0-beta.0.20230607115558-745644a96ea6 h1:dnriGXmMdYEiF/8lMrj+PDlN1vyQc6zgs/ZHL67eoyI=
 github.com/dymensionxyz/dymension v0.2.0-beta.0.20230607115558-745644a96ea6/go.mod h1:rDkVuF+DxBDi5tTgVHFk1D2xpqf8bOccs6aB1wTOvP0=
+github.com/dymensionxyz/dymint v0.4.0-beta.0.20230619143942-325e9d156860 h1:IDBdcKgDERawHU0KXkrZNt6XBstc3w5p1j4hPRxvfns=
+github.com/dymensionxyz/dymint v0.4.0-beta.0.20230619143942-325e9d156860/go.mod h1:xdxKvxuhMD7DYxwlWANzhBhqlbnZ/RxPQwcnU0uLk2A=
 github.com/dymensionxyz/evmos/v12 v12.1.5-dymension h1:1cN2ZnJOiF9kSaU83tnTvirnDBd/gpHZWh0/ZDPDM5g=
 github.com/dymensionxyz/evmos/v12 v12.1.5-dymension/go.mod h1:6yxmaNvnFuQJwnuZanCrldigA5GbqO4bWPfc6Ne4joM=
 github.com/dymensionxyz/go-cnc v0.2.2 h1:C7WUFJ+PkkB62HPegBJJL+YlQExqvYudTTRdNiCNIDk=
 github.com/dymensionxyz/go-cnc v0.2.2/go.mod h1:CZBVUhQnJnAVcfQnnEAqREF+PNWr97m/BhJ5fp1K44Q=
+github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71 h1:T04fab8CTYu+FR6mAC/nYB78WtHM4YsI99ikrYydncM=
+github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71/go.mod h1:CY3zh2HLfetRiW8LY6kVHMATe90Wj/UOoY8T6cuB0is=
 github.com/dymensionxyz/rpc v1.3.1 h1:7EXWIobaBes5zldRvTIg7TmNsEKjicrWA/OjCc0NaGs=
 github.com/dymensionxyz/rpc v1.3.1/go.mod h1:f+WpX8ysy8wt95iGc6auYlHcnHj2bUkhiRVkkKNys8c=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=

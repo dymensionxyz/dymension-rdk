@@ -7,7 +7,7 @@ require (
 	cosmossdk.io/math v1.0.0-rc.0
 	github.com/cosmos/cosmos-sdk v0.46.13
 	github.com/cosmos/ibc-go/v6 v6.1.1
-	github.com/dymensionxyz/dymint v0.4.0-beta.0.20230619084145-81bdfd131e10
+	github.com/dymensionxyz/dymint v0.4.0-beta.0.20230619143942-325e9d156860
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/evmos/evmos/v12 v12.1.5
 	github.com/gogo/protobuf v1.3.3
@@ -295,26 +295,20 @@ require (
 )
 
 replace (
-	github.com/celestiaorg/go-cnc => github.com/dymensionxyz/go-cnc v0.2.2
-
-	// dymint replaces
 	github.com/centrifuge/go-substrate-rpc-client/v4 => github.com/availproject/go-substrate-rpc-client/v4 v4.0.12-avail-1.4.0-rc1-5e286e3
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
 
-	// Using forked version of evm
-	github.com/evmos/evmos/v12 => github.com/dymensionxyz/evmos/v12 v12.1.5-dymension
-	// github.com/cosmos/ibc-go/v5 => github.com/dymensionxyz/ibc-go/v5 v5.1.1-0.20230514080809-5b60849eab24
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
 
 	// replace broken goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 
-	// github.com/tendermint/tendermint => github.com/informalsystems/tendermint v0.34.26
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.28
 )
 
 replace (
-	github.com/cosmos/ibc-go/v6 => /Users/mtsitrin/Applications/dymension/ibc-go/
-	github.com/dymensionxyz/dymint => /Users/mtsitrin/Applications/dymension/dymint
+	github.com/celestiaorg/go-cnc => github.com/dymensionxyz/go-cnc v0.2.2
+	github.com/cosmos/ibc-go/v6 => github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71
+	github.com/evmos/evmos/v12 => github.com/dymensionxyz/evmos/v12 v12.1.5-dymension
+	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
 )
