@@ -9,7 +9,6 @@ require (
 	github.com/cosmos/ibc-go/v6 v6.1.1
 	github.com/dymensionxyz/dymint v0.4.0-beta.0.20230619084145-81bdfd131e10
 	github.com/ethereum/go-ethereum v1.10.26
-	github.com/evmos/ethermint v0.20.0
 	github.com/evmos/evmos/v12 v12.1.5
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.3
@@ -101,6 +100,7 @@ require (
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
+	github.com/evmos/ethermint v0.20.0 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/flynn/noise v1.0.0 // indirect
 	github.com/francoispqt/gojay v1.2.13 // indirect
@@ -300,6 +300,9 @@ replace (
 	// dymint replaces
 	github.com/centrifuge/go-substrate-rpc-client/v4 => github.com/availproject/go-substrate-rpc-client/v4 v4.0.12-avail-1.4.0-rc1-5e286e3
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
+
+	// Using forked version of evm
+	github.com/evmos/evmos/v12 => github.com/dymensionxyz/evmos/v12 v12.1.5-dymension
 	// github.com/cosmos/ibc-go/v5 => github.com/dymensionxyz/ibc-go/v5 v5.1.1-0.20230514080809-5b60849eab24
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
