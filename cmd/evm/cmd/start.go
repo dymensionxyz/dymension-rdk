@@ -326,6 +326,11 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, nodeConfig *d
 		return err
 	}
 
+	err = dymintconv.GetNodeConfig(nodeConfig, cfg)
+	if err != nil {
+		return err
+	}
+
 	ctx.Logger.Info("starting node with ABCI dymint in-process")
 	tmNode, err := dymintnode.NewNode(
 		context.Background(),
