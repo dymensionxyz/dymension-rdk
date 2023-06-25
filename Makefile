@@ -118,13 +118,6 @@ lint: ## Run linter
 	golangci-lint run
 
 
-# ----------------------------------- WASM ----------------------------------- #
-.PHONY: build_wasm
-build_wasm: ## Compiles the binary
-  # build_tags += wasm
-	go build $(BUILD_FLAGS) -tags wasm ./cmd/wasm
-
-
 # ------------------------------------ EVM ----------------------------------- #
 .PHONY: install_evm
 install_evm: build_evm go.sum ## Install the rollapp_evm binary	 
