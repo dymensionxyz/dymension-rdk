@@ -4,10 +4,9 @@ import (
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/group"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	epochtypes "github.com/dymensionxyz/rollapp/x/epochs/types"
-	claimstypes "github.com/evmos/evmos/v10/x/claims/types"
+	claimstypes "github.com/evmos/evmos/v12/x/claims/types"
 )
 
 // UpgradeName defines the on-chain upgrade name for the sample simap upgrade from v045 to v046.
@@ -30,7 +29,6 @@ func (app App) RegisterUpgradeHandlers() {
 	if upgradeInfo.Name == UpgradeName && !app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
 		storeUpgrades := storetypes.StoreUpgrades{
 			Added: []string{
-				group.StoreKey,
 				claimstypes.StoreKey,
 				epochtypes.StoreKey,
 			},

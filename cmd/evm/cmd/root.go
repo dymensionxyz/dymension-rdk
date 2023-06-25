@@ -43,11 +43,11 @@ import (
 	dymintconf "github.com/dymensionxyz/dymint/config"
 
 	evmflags "github.com/dymensionxyz/rollapp/app/evm/flags"
-	ethermintclient "github.com/evmos/ethermint/client"
-	"github.com/evmos/ethermint/crypto/hd"
-	etherencoding "github.com/evmos/ethermint/encoding"
-	evmserver "github.com/evmos/ethermint/server"
-	evmconfig "github.com/evmos/ethermint/server/config"
+	ethermintclient "github.com/evmos/evmos/v12/client"
+	"github.com/evmos/evmos/v12/crypto/hd"
+	etherencoding "github.com/evmos/evmos/v12/encoding"
+	evmserver "github.com/evmos/evmos/v12/server"
+	evmconfig "github.com/evmos/evmos/v12/server/config"
 )
 
 const rollappAscii = `

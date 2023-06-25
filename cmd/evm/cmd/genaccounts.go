@@ -21,9 +21,9 @@ import (
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	ethtutil "github.com/ethereum/go-ethereum/common"
-	"github.com/evmos/ethermint/crypto/hd"
-	ethermint "github.com/evmos/ethermint/types"
-	evmtypes "github.com/evmos/ethermint/x/evm/types"
+	"github.com/evmos/evmos/v12/crypto/hd"
+	ethermint "github.com/evmos/evmos/v12/types"
+	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
 )
 
 const (

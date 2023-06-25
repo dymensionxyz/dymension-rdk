@@ -9,7 +9,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/server"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	ethermint "github.com/evmos/ethermint/types"
+	ethermint "github.com/evmos/evmos/v12/types"
 	dbm "github.com/tendermint/tm-db"
 )
 

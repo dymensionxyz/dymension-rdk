@@ -10,7 +10,7 @@ import (
 	"github.com/dymensionxyz/dymint/conv"
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
-	tmcmd "github.com/tendermint/tendermint/cmd/tendermint/commands"
+	tmcmd "github.com/tendermint/tendermint/cmd/cometbft/commands"
 	"github.com/tendermint/tendermint/p2p"
 )
 

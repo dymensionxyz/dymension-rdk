@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	etherencoding "github.com/evmos/ethermint/encoding"
+	etherencoding "github.com/evmos/evmos/v12/encoding"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 
