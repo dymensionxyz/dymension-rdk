@@ -184,7 +184,7 @@ For the 2nd rollapp, run the following in a new tab:
 ```shell
 export CHAIN_ID=rollapp2
 export CHAIN_DIR="$HOME/.rollapp2"
-export ROLLAPP_ID=rollapp2
+export ROLLAPP_CHAIN_ID=rollapp2
 export RPC_PORT="0.0.0.0:27667"
 export P2P_PORT="0.0.0.0:27668"
 export GRPC_PORT="0.0.0.0:9180"

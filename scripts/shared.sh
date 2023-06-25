@@ -31,7 +31,6 @@ DENOM=${DENOM:-"urax"}
 EXECUTABLE=${EXECUTABLE:-rollappd}
 ROLLAPP_CHAIN_DIR=${ROLLAPP_CHAIN_DIR:-$HOME/.rollapp}
 ROLLAPP_CHAIN_ID=${ROLLAPP_CHAIN_ID:-rollapp}
-ROLLAPP_ID=${ROLLAPP_ID:-$ROLLAPP_CHAIN_ID}
 MONIKER=${MONIKER:-$ROLLAPP_CHAIN_ID-sequencer}
 
 RPC_LADDRESS=${RPC_LADDRESS:-"0.0.0.0:26657"}
@@ -46,10 +45,6 @@ LOG_LEVEL=${LOG_LEVEL:-"info"}
 MAX_LOG_SIZE=${MAX_LOG_SIZE:-"2000"}
 MODULE_LOG_LEVEL_OVERRIDE=${MODULE_LOG_LEVEL_OVERRIDE:-""}
 
-P2P_SEEDS=${P2P_SEEDS:-""}
-ROLLAPP_PEERS=${ROLLAPP_PEERS:-""}
-
-
 # ------------------------------- dymint config ------------------------------ #
 KEY_NAME_DYM=${KEY_NAME_DYM:-"sequencer"}
 
@@ -59,7 +54,6 @@ KEYRING_PATH=${KEYRING_PATH:-$ROLLAPP_CHAIN_DIR/sequencer_keys}
 # ---------------------------------------------------------------------------- #
 #                                  IBC CONFIG                                  #
 # ---------------------------------------------------------------------------- #
-RELAYER_FEES=${RELAYER_FEES:-$DYMINT_FEES}
 RELAYER_KEY_FOR_ROLLAP=${RELAYER_KEY_FOR_ROLLAP:-"relayer-rollapp-key"}
 RELAYER_KEY_FOR_HUB=${RELAYER_KEY_FOR_HUB:-"relayer-hub-key"}
 RELAYER_PATH=${RELAYER_PATH:-"hub-rollapp"}
@@ -67,5 +61,3 @@ ROLLAPP_RPC_FOR_RELAYER=${ROLLAPP_RPC_FOR_RELAYER:-"tcp://127.0.0.1:26657"}
 SETTLEMENT_RPC_FOR_RELAYER=${SETTLEMENT_RPC_FOR_RELAYER:-$SETTLEMENT_RPC}
 ROLLAPP_CHANNEL_NAME=${ROLLAPP_CHANNEL_NAME:-"channel-0"}
 HUB_CHANNEL_NAME=${HUB_CHANNEL_NAME:-"channel-0"}
-
-RELAYER_SETTLEMENT_CONFIG=${RELAYER_SETTLEMENT_CONFIG:-"{\"node_address\": \"$SETTLEMENT_RPC\", \"rollapp_id\": \"$ROLLAPP_ID\", \"dym_account_name\": \"$KEY_NAME_DYM\", \"keyring_home_dir\": \"$KEYRING_PATH\", \"keyring_backend\":\"test\", \"gas_fees\": \"$RELAYER_FEES\"}"}
