@@ -23,7 +23,7 @@ If you want to get started quickly and learn how to build on top of Cosmos SDK, 
 
 This repository hosts `rollappd`, the first implementation of a dymension rollapp.
 
-**Note**: Requires [Go 1.18](https://go.dev/)
+**Note**: Requires [Go 1.19](https://go.dev/)
 
 ## Quick guide
 
