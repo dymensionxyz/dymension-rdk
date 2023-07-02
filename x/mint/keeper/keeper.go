@@ -140,7 +140,7 @@ func (k Keeper) MintCoins(ctx sdk.Context, newCoins sdk.Coins) error {
 
 // DistributeMintedCoins implements distribution of minted coins from mint to external modules.
 func (k Keeper) DistributeMintedCoin(ctx sdk.Context, mintedCoin sdk.Coin) error {
-	k.Logger(ctx).Info(fmt.Sprintf("Distributing minted x/mint rewards: %d coins...", mintedCoin.Amount.Int64()))
+	k.Logger(ctx).Info(fmt.Sprintf("Distributing minted x/mint rewards: %s coins...", mintedCoin.Amount.String()))
 
 	mintAmt := sdk.NewCoins(mintedCoin)
 	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, mintAmt)
