@@ -7,7 +7,7 @@ require (
 	cosmossdk.io/math v1.0.0-rc.0
 	github.com/cosmos/cosmos-sdk v0.46.13
 	github.com/cosmos/ibc-go/v6 v6.1.1
-	github.com/dymensionxyz/dymint v0.4.0-beta.0.20230621133409-32482443159f
+	github.com/dymensionxyz/dymint v0.5.0-rc1
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/evmos/evmos/v12 v12.1.5
 	github.com/gogo/protobuf v1.3.3
