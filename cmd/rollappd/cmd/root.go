@@ -33,7 +33,7 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/app"
 	"github.com/dymensionxyz/dymension-rdk/app/params"
-	"github.com/dymensionxyz/dymension-rdk/cmd"
+	rdkserver "github.com/dymensionxyz/dymension-rdk/server"
 	"github.com/dymensionxyz/dymension-rdk/utils"
 	sequencercli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
 	dymintconf "github.com/dymensionxyz/dymint/config"
@@ -158,7 +158,7 @@ func initRootCmd(
 		pruning.PruningCmd(ac.newApp),
 	)
 
-	cmd.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	rdkserver.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands

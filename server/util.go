@@ -1,4 +1,4 @@
-package cmd
+package server
 
 import (
 	"fmt"
@@ -25,8 +25,8 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		ShowSequencer(),
 		ShowNodeIDCmd(),
 		ResetAll(),
-		tmcmd.ResetStateCmd,
 		server.VersionCmd(),
+		tmcmd.ResetStateCmd,
 	)
 
 	rootCmd.AddCommand(

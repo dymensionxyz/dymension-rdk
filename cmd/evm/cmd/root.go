@@ -36,7 +36,6 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/app"
 	"github.com/dymensionxyz/dymension-rdk/app/params"
-	"github.com/dymensionxyz/dymension-rdk/cmd"
 	"github.com/dymensionxyz/dymension-rdk/utils"
 	sequencercli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
 
@@ -48,6 +47,8 @@ import (
 	etherencoding "github.com/evmos/evmos/v12/encoding"
 	evmserver "github.com/evmos/evmos/v12/server"
 	evmconfig "github.com/evmos/evmos/v12/server/config"
+
+	rdkserver "github.com/dymensionxyz/dymension-rdk/server"
 )
 
 const rollappAscii = `
@@ -206,7 +207,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		config.Cmd(),
 	)
 
-	cmd.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	rdkserver.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands
