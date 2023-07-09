@@ -20,10 +20,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/dymensionxyz/rollapp/x/epochs/client/cli"
-	"github.com/dymensionxyz/rollapp/x/epochs/keeper"
-	"github.com/dymensionxyz/rollapp/x/epochs/simulation"
-	"github.com/dymensionxyz/rollapp/x/epochs/types"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/client/cli"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/simulation"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 )
 
 var (

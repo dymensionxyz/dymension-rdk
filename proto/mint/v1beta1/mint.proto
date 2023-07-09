@@ -1,7 +1,7 @@
 syntax = "proto3";
 package rollapp.mint.v1beta1;
 
-option go_package = "github.com/dymensionxyz/rollapp/x/mint/types";
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/mint/types";
 
 import "gogoproto/gogo.proto";
 

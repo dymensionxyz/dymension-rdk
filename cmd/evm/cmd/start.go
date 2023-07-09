@@ -36,12 +36,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
 
+	"github.com/dymensionxyz/dymension-rdk/app"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
 	dymintnode "github.com/dymensionxyz/dymint/node"
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
-	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/utils"
 
 	"github.com/evmos/evmos/v12/indexer"
 	ethserver "github.com/evmos/evmos/v12/server"
@@ -158,7 +158,7 @@ which accepts a path for the resulting pprof file.
 				return fmt.Errorf("max log size <=0 not supported")
 			}
 
-			serverCtx.Logger = app.NewLogger(log_path, maxLogSize, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
+			serverCtx.Logger = utils.NewLogger(log_path, maxLogSize, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
 
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {

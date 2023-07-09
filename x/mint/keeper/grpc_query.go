@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/dymensionxyz/rollapp/x/mint/types"
+	"github.com/dymensionxyz/dymension-rdk/x/mint/types"
 )
 
 var _ types.QueryServer = Querier{}

@@ -85,13 +85,13 @@ import (
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"github.com/dymensionxyz/rollapp/x/mint"
-	mintkeeper "github.com/dymensionxyz/rollapp/x/mint/keeper"
-	minttypes "github.com/dymensionxyz/rollapp/x/mint/types"
+	"github.com/dymensionxyz/dymension-rdk/x/mint"
+	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
+	minttypes "github.com/dymensionxyz/dymension-rdk/x/mint/types"
 
-	"github.com/dymensionxyz/rollapp/x/epochs"
-	epochskeeper "github.com/dymensionxyz/rollapp/x/epochs/keeper"
-	epochstypes "github.com/dymensionxyz/rollapp/x/epochs/types"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs"
+	epochskeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
+	epochstypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 
 	ibctransfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
@@ -105,19 +105,19 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
 	ibctestingtypes "github.com/cosmos/ibc-go/v6/testing/types"
 
-	rollappparams "github.com/dymensionxyz/rollapp/app/params"
+	rollappparams "github.com/dymensionxyz/dymension-rdk/app/params"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
 
-	staking "github.com/dymensionxyz/rollapp/x/staking"
+	staking "github.com/dymensionxyz/dymension-rdk/x/staking"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers"
-	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
-	seqtypes "github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers"
+	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
-	distr "github.com/dymensionxyz/rollapp/x/dist"
-	distrkeeper "github.com/dymensionxyz/rollapp/x/dist/keeper"
+	distr "github.com/dymensionxyz/dymension-rdk/x/dist"
+	distrkeeper "github.com/dymensionxyz/dymension-rdk/x/dist/keeper"
 )
 
 const (

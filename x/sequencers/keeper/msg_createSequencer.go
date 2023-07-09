@@ -8,7 +8,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 // CreateSequencer defines a method for creating a new sequencer

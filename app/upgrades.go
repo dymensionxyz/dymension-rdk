@@ -5,7 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	epochtypes "github.com/dymensionxyz/rollapp/x/epochs/types"
+	epochtypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 	claimstypes "github.com/evmos/evmos/v12/x/claims/types"
 )
 

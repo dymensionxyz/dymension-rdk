@@ -83,13 +83,13 @@ import (
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
-	"github.com/dymensionxyz/rollapp/x/mint"
-	mintkeeper "github.com/dymensionxyz/rollapp/x/mint/keeper"
-	minttypes "github.com/dymensionxyz/rollapp/x/mint/types"
+	"github.com/dymensionxyz/dymension-rdk/x/mint"
+	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
+	minttypes "github.com/dymensionxyz/dymension-rdk/x/mint/types"
 
-	"github.com/dymensionxyz/rollapp/x/epochs"
-	epochskeeper "github.com/dymensionxyz/rollapp/x/epochs/keeper"
-	epochstypes "github.com/dymensionxyz/rollapp/x/epochs/types"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs"
+	epochskeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
+	epochstypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 
 	ibctransfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
@@ -102,17 +102,17 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v6/modules/core/keeper"
 	ibctestingtypes "github.com/cosmos/ibc-go/v6/testing/types"
 
-	"github.com/dymensionxyz/rollapp/app/evm/flags"
-	rollappparams "github.com/dymensionxyz/rollapp/app/params"
+	"github.com/dymensionxyz/dymension-rdk/app/evm/flags"
+	rollappparams "github.com/dymensionxyz/dymension-rdk/app/params"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers"
-	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
-	seqtypes "github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers"
+	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
-	staking "github.com/dymensionxyz/rollapp/x/staking"
+	staking "github.com/dymensionxyz/dymension-rdk/x/staking"
 
-	distr "github.com/dymensionxyz/rollapp/x/dist"
-	distrkeeper "github.com/dymensionxyz/rollapp/x/dist/keeper"
+	distr "github.com/dymensionxyz/dymension-rdk/x/dist"
+	distrkeeper "github.com/dymensionxyz/dymension-rdk/x/dist/keeper"
 
 	ethante "github.com/evmos/evmos/v12/app/ante"
 	ethanteevm "github.com/evmos/evmos/v12/app/ante/evm"

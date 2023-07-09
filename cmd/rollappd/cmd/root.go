@@ -31,12 +31,12 @@ import (
 
 	// this line is used by starport scaffolding # root/moduleImport
 
+	"github.com/dymensionxyz/dymension-rdk/app"
+	"github.com/dymensionxyz/dymension-rdk/app/params"
+	"github.com/dymensionxyz/dymension-rdk/cmd"
+	"github.com/dymensionxyz/dymension-rdk/utils"
+	sequencercli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
 	dymintconf "github.com/dymensionxyz/dymint/config"
-	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/app/params"
-	"github.com/dymensionxyz/rollapp/cmd"
-	"github.com/dymensionxyz/rollapp/utils"
-	sequencercli "github.com/dymensionxyz/rollapp/x/sequencers/client/cli"
 )
 
 const rollappAscii = `

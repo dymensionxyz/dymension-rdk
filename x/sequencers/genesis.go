@@ -4,8 +4,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers/keeper"
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 // InitGenesis initializes the capability module's state from a provided genesis

@@ -6,7 +6,7 @@ import (
 	flag "github.com/spf13/pflag"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"

@@ -1,7 +1,7 @@
 package keeper
 
 import (
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 // this line is used by starport scaffolding # proto/tx/rpc

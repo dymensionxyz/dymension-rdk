@@ -32,12 +32,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	"github.com/dymensionxyz/dymension-rdk/utils"
+	log "github.com/dymensionxyz/dymension-rdk/utils/logger"
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
 	dymintnode "github.com/dymensionxyz/dymint/node"
 	dymintrpc "github.com/dymensionxyz/dymint/rpc"
-	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/utils"
 )
 
 const (
@@ -152,7 +152,7 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 				return fmt.Errorf("max log size <=0 not supported")
 			}
 
-			serverCtx.Logger = app.NewLogger(log_path, maxLogSize, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
+			serverCtx.Logger = log.NewLogger(log_path, maxLogSize, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
 
 			clientCtx, err := client.GetClientQueryContext(cmd)
 			if err != nil {

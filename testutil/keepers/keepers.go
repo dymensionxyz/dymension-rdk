@@ -6,10 +6,10 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/dymensionxyz/rollapp/app"
-	epochkeeper "github.com/dymensionxyz/rollapp/x/epochs/keeper"
-	mintkeeper "github.com/dymensionxyz/rollapp/x/mint/keeper"
-	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
+	"github.com/dymensionxyz/dymension-rdk/app"
+	epochkeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
+	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
+	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )

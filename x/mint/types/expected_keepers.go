@@ -1,7 +1,7 @@
 package types // noalias
 
 import (
-	epochstypes "github.com/dymensionxyz/rollapp/x/epochs/types"
+	epochstypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"

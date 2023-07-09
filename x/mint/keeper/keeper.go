@@ -8,7 +8,7 @@ import (
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	"github.com/dymensionxyz/rollapp/x/mint/types"
+	"github.com/dymensionxyz/dymension-rdk/x/mint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"

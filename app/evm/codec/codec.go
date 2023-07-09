@@ -13,7 +13,7 @@ import (
 	cryptocodec "github.com/evmos/evmos/v12/crypto/codec"
 	ethermint "github.com/evmos/evmos/v12/types"
 
-	"github.com/dymensionxyz/rollapp/app/params"
+	"github.com/dymensionxyz/dymension-rdk/app/params"
 )
 
 // MakeEncodingConfig creates a new EncodingConfig with all modules registered
