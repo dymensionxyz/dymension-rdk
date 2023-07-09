@@ -33,7 +33,7 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/app"
 	"github.com/dymensionxyz/dymension-rdk/app/params"
-	rdkserver "github.com/dymensionxyz/dymension-rdk/server"
+	rdkserver "github.com/dymensionxyz/dymension-rdk/cmd"
 	"github.com/dymensionxyz/dymension-rdk/utils"
 	sequencercli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
 	dymintconf "github.com/dymensionxyz/dymint/config"

@@ -48,7 +48,7 @@ import (
 	evmserver "github.com/evmos/evmos/v12/server"
 	evmconfig "github.com/evmos/evmos/v12/server/config"
 
-	rdkserver "github.com/dymensionxyz/dymension-rdk/server"
+	rdkserver "github.com/dymensionxyz/dymension-rdk/cmd"
 )
 
 const rollappAscii = `
