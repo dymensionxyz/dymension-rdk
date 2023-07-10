@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/dymensionxyz/dymension-rdk/app"
-	"github.com/dymensionxyz/dymension-rdk/app/params"
+	"github.com/dymensionxyz/rollapp/app"
+	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/tendermint/tendermint/libs/log"
 
 	abci "github.com/tendermint/tendermint/abci/types"

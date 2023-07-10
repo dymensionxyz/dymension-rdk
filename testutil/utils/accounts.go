@@ -3,7 +3,7 @@ package utils
 import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/dymension-rdk/app"
+	"github.com/dymensionxyz/rollapp/app"
 	"github.com/tendermint/tendermint/crypto/ed25519"
 
 	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
