@@ -7,7 +7,7 @@ import "cosmos/staking/v1beta1/staking.proto";
 
 // this line is used by starport scaffolding # genesis/proto/import
 
-option go_package = "github.com/dymensionxyz/rollapp/x/sequencers/types";
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 
 // GenesisState defines the test module's genesis state.
 message GenesisState {

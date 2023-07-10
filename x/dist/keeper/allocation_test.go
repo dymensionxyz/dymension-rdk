@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/testutil/utils"
+	"github.com/dymensionxyz/dymension-rdk/app"
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -14,8 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
-	seqtypes "github.com/dymensionxyz/rollapp/x/sequencers/types"
+	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"

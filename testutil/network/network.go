@@ -19,7 +19,7 @@ import (
 	tmrand "github.com/tendermint/tendermint/libs/rand"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/dymensionxyz/rollapp/app"
+	"github.com/dymensionxyz/dymension-rdk/app"
 )
 
 type (

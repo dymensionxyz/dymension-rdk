@@ -1,4 +1,4 @@
-module github.com/dymensionxyz/rollapp
+module github.com/dymensionxyz/dymension-rdk
 
 go 1.19
 

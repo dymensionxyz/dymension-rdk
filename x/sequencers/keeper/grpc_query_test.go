@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/rollapp/x/sequencers/keeper"
-	"github.com/dymensionxyz/rollapp/x/sequencers/testutils"
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/testutils"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/require"
 )
 

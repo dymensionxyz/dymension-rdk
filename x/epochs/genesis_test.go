@@ -5,11 +5,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	testkeepers "github.com/dymensionxyz/rollapp/testutil/keepers"
-	"github.com/dymensionxyz/rollapp/testutil/nullify"
-	"github.com/dymensionxyz/rollapp/testutil/utils"
-	"github.com/dymensionxyz/rollapp/x/epochs"
-	"github.com/dymensionxyz/rollapp/x/epochs/types"
+	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
+	"github.com/dymensionxyz/dymension-rdk/testutil/nullify"
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 )
 
 func TestGenesis(t *testing.T) {

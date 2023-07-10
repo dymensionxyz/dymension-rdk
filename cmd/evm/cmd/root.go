@@ -34,20 +34,21 @@ import (
 	tmlog "github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/app/params"
-	"github.com/dymensionxyz/rollapp/cmd"
-	"github.com/dymensionxyz/rollapp/utils"
-	sequencercli "github.com/dymensionxyz/rollapp/x/sequencers/client/cli"
+	"github.com/dymensionxyz/dymension-rdk/app"
+	"github.com/dymensionxyz/dymension-rdk/app/params"
+	"github.com/dymensionxyz/dymension-rdk/utils"
+	sequencercli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
 
 	dymintconf "github.com/dymensionxyz/dymint/config"
 
-	evmflags "github.com/dymensionxyz/rollapp/app/evm/flags"
+	evmflags "github.com/dymensionxyz/dymension-rdk/app/evm/flags"
 	ethermintclient "github.com/evmos/evmos/v12/client"
 	"github.com/evmos/evmos/v12/crypto/hd"
 	etherencoding "github.com/evmos/evmos/v12/encoding"
 	evmserver "github.com/evmos/evmos/v12/server"
 	evmconfig "github.com/evmos/evmos/v12/server/config"
+
+	rdkserver "github.com/dymensionxyz/dymension-rdk/server"
 )
 
 const rollappAscii = `
@@ -206,7 +207,7 @@ func initRootCmd(rootCmd *cobra.Command, encodingConfig params.EncodingConfig) {
 		config.Cmd(),
 	)
 
-	cmd.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	rdkserver.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands

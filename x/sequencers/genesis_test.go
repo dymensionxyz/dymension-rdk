@@ -7,13 +7,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	testkeepers "github.com/dymensionxyz/rollapp/testutil/keepers"
-	"github.com/dymensionxyz/rollapp/testutil/nullify"
-	utils "github.com/dymensionxyz/rollapp/testutil/utils"
+	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
+	"github.com/dymensionxyz/dymension-rdk/testutil/nullify"
+	utils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

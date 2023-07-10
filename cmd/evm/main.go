@@ -9,8 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/cmd/evm/cmd"
+	"github.com/dymensionxyz/dymension-rdk/app"
+	"github.com/dymensionxyz/dymension-rdk/cmd/evm/cmd"
 )
 
 func main() {

@@ -7,8 +7,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/dymensionxyz/rollapp/x/epochs/keeper"
-	"github.com/dymensionxyz/rollapp/x/epochs/types"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 )
 
 // NewHandler returns a handler for epochs module messages

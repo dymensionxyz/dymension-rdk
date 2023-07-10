@@ -9,8 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
-	sequencerssimulation "github.com/dymensionxyz/rollapp/x/sequencers/simulation"
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	sequencerssimulation "github.com/dymensionxyz/dymension-rdk/x/sequencers/simulation"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 // avoid unused import issue

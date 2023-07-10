@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
-	"github.com/dymensionxyz/rollapp/x/dist/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/dist/keeper"
 
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 )

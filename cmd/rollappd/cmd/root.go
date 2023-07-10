@@ -31,12 +31,12 @@ import (
 
 	// this line is used by starport scaffolding # root/moduleImport
 
+	"github.com/dymensionxyz/dymension-rdk/app"
+	"github.com/dymensionxyz/dymension-rdk/app/params"
+	rdkserver "github.com/dymensionxyz/dymension-rdk/server"
+	"github.com/dymensionxyz/dymension-rdk/utils"
+	sequencercli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
 	dymintconf "github.com/dymensionxyz/dymint/config"
-	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/app/params"
-	"github.com/dymensionxyz/rollapp/cmd"
-	"github.com/dymensionxyz/rollapp/utils"
-	sequencercli "github.com/dymensionxyz/rollapp/x/sequencers/client/cli"
 )
 
 const rollappAscii = `
@@ -158,7 +158,7 @@ func initRootCmd(
 		pruning.PruningCmd(ac.newApp),
 	)
 
-	cmd.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	rdkserver.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
 	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands

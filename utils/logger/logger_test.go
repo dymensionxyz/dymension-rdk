@@ -1,4 +1,4 @@
-package app_test
+package logger_test
 
 import (
 	"bytes"
@@ -11,14 +11,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils"
+	log "github.com/dymensionxyz/dymension-rdk/utils/logger"
 )
 
 func TestLogLevel(t *testing.T) {
 	var buf bytes.Buffer
 
-	logger := app.NewLogger("", 0, "error", nil)
+	logger := log.NewLogger("", 0, "error", nil)
 	logger.SetOutput(&buf)
 
 	logger.Debug("debug msg")
@@ -34,7 +34,7 @@ func TestLogLevel(t *testing.T) {
 func TestMultipleLoggerWithMethod(t *testing.T) {
 	var buf bytes.Buffer
 
-	logger := app.NewLogger("", 0, "info", nil)
+	logger := log.NewLogger("", 0, "info", nil)
 	logger.SetOutput(&buf)
 
 	logger1 := logger.With("module", "logger1")
@@ -56,7 +56,7 @@ func TestMultipleWithCalls(t *testing.T) {
 	// t.Skip("nested With calls not supported")
 	var buf bytes.Buffer
 
-	logger := app.NewLogger("", 0, "info", nil)
+	logger := log.NewLogger("", 0, "info", nil)
 	logger.SetOutput(&buf)
 
 	logger1 := logger.With("module", "module1")
@@ -78,7 +78,7 @@ func TestModuleOverrideLevel(t *testing.T) {
 	var buf bytes.Buffer
 
 	moduleOverrides := utils.ConvertStringToStringMap("module2:error", ",", ":")
-	logger := app.NewLogger("", 0, "info", moduleOverrides)
+	logger := log.NewLogger("", 0, "info", moduleOverrides)
 	logger.SetOutput(&buf)
 
 	logger1 := logger.With("module", "module1")
@@ -122,7 +122,7 @@ func TestMaxFileSize(t *testing.T) {
 		os.RemoveAll(logDir)
 	}()
 
-	logger := app.NewLogger(logPath, 1, "info", nil)
+	logger := log.NewLogger(logPath, 1, "info", nil)
 	fillUpLog(&logger)
 
 	files, err := os.ReadDir(logDir)
@@ -131,7 +131,7 @@ func TestMaxFileSize(t *testing.T) {
 	assert.Greater(t, len(files), 1)
 }
 
-func fillUpLog(logger *app.Logger) {
+func fillUpLog(logger *log.Logger) {
 	for i := 0; i < 100000; i++ {
 		logger.Infof("Log message %d", i)
 	}

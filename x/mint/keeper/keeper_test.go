@@ -8,9 +8,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
-	testkeepers "github.com/dymensionxyz/rollapp/testutil/keepers"
-	utils "github.com/dymensionxyz/rollapp/testutil/utils"
-	"github.com/dymensionxyz/rollapp/x/mint/types"
+	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
+	utils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	"github.com/dymensionxyz/dymension-rdk/x/mint/types"
 )
 
 func TestMintDistribution(t *testing.T) {
