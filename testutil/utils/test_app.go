@@ -5,12 +5,10 @@ import (
 	"testing"
 	"time"
 
-	etherencoding "github.com/evmos/evmos/v12/encoding"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/app/params"
 	"github.com/tendermint/tendermint/libs/log"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -45,19 +43,10 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 	return nil
 }
 
-func setup(withGenesis bool, invCheckPeriod uint, isEVM bool) (*app.App, app.GenesisState) {
+func setup(withGenesis bool, invCheckPeriod uint) (*app.App, app.GenesisState) {
 	db := dbm.NewMemDB()
 
 	encCdc := app.MakeEncodingConfig()
-	if isEVM {
-		ethEncodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
-		encCdc = params.EncodingConfig{
-			InterfaceRegistry: ethEncodingConfig.InterfaceRegistry,
-			Codec:             ethEncodingConfig.Codec,
-			TxConfig:          ethEncodingConfig.TxConfig,
-			Amino:             ethEncodingConfig.Amino,
-		}
-	}
 	testApp := app.NewRollapp(
 		log.NewNopLogger(), db, nil, true, map[int64]bool{}, app.DefaultNodeHome, invCheckPeriod, encCdc, EmptyAppOptions{},
 	)
@@ -71,7 +60,7 @@ func setup(withGenesis bool, invCheckPeriod uint, isEVM bool) (*app.App, app.Gen
 func Setup(t *testing.T, isCheckTx bool) *app.App {
 	t.Helper()
 
-	app, genesisState := setup(true, 5, true)
+	app, genesisState := setup(true, 5)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
