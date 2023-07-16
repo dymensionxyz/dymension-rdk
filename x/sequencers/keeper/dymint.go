@@ -23,7 +23,10 @@ func (k Keeper) SetDymintSequencers(ctx sdk.Context, validators []abci.Validator
 		if err != nil {
 			panic(err)
 		}
-		k.SetDymintSequencerByAddr(ctx, sdk.ConsAddress(pubKey.Address()), uint64(val.Power))
+		err = k.SetDymintSequencerByAddr(ctx, sdk.ConsAddress(pubKey.Address()), uint64(val.Power))
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

@@ -61,8 +61,10 @@ func TestGenesis(t *testing.T) {
 	}
 
 	//Init dymint sequencers
-	k.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(pks[0]), 0)
-	k.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(pks[1]), 0)
+	err := k.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(pks[0]), 0)
+	require.NoError(t, err)
+	err = k.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(pks[1]), 0)
+	require.NoError(t, err)
 
 	//Init rollapp sequencers
 	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, addr1, pks[0]))
