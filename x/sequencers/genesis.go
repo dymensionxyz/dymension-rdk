@@ -17,19 +17,11 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 
 	// Set all the sequencer
 	for _, elem := range genState.Sequencers {
-		// If no operator address is set, then it is a dymint sequencer
-		if elem.OperatorAddress == "" {
-			if err := k.SetDymintSequencerByAddr(ctx, elem); err != nil {
-				panic(err)
-			}
-			updates = append(updates, elem.ABCIValidatorUpdate(sdk.DefaultPowerReduction))
-		} else {
-			pk, _ := elem.ConsPubKey()
-			if _, err := k.CreateSequencer(ctx, elem.OperatorAddress, pk); err != nil {
-				panic(err)
-			}
+		pk, _ := elem.ConsPubKey()
+		if _, err := k.CreateSequencer(ctx, elem.OperatorAddress, pk); err != nil {
+			panic(err)
 		}
-
+		updates = append(updates, elem.ABCIValidatorUpdate(sdk.DefaultPowerReduction))
 	}
 	return updates
 }
