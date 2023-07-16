@@ -13,6 +13,7 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers"
 
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/testutils"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -47,8 +48,7 @@ func TestFailedInitGenesis(t *testing.T) {
 }
 
 func TestGenesis(t *testing.T) {
-	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(t, app)
+	k, ctx := testutils.NewTestSequencerKeeper(t)
 
 	pks := utils.CreateTestPubKeys(2)
 	addr1 := sdk.ValAddress(pks[0].Address())
@@ -61,8 +61,8 @@ func TestGenesis(t *testing.T) {
 	}
 
 	//Init dymint sequencers
-	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, sdk.ValAddress{}, pks[0]))
-	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, sdk.ValAddress{}, pks[1]))
+	k.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(pks[0]), 0)
+	k.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(pks[1]), 0)
 
 	//Init rollapp sequencers
 	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, addr1, pks[0]))

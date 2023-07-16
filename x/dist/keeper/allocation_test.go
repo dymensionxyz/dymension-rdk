@@ -67,9 +67,7 @@ func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
 
 func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddress) {
 	// create sequencer for dymint
-	sequencer, err := seqtypes.NewSequencer(valAddr, valConsPk2, 0)
-	require.NoError(t, err)
-	app.SequencersKeeper.SetDymintSequencerByAddr(ctx, sequencer)
+	app.SequencersKeeper.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(valConsPk2), 0)
 
 	// create sequencer
 	msgServ := seqkeeper.NewMsgServerImpl(app.SequencersKeeper)
@@ -84,7 +82,7 @@ func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddre
 	msg, _ := seqtypes.NewMsgCreateSequencer(
 		sdk.ValAddress(valAddr), valConsPk2, description,
 	)
-	_, err = msgServ.CreateSequencer(sdk.WrapSDKContext(ctx), msg)
+	_, err := msgServ.CreateSequencer(sdk.WrapSDKContext(ctx), msg)
 	require.NoError(t, err)
 }
 
