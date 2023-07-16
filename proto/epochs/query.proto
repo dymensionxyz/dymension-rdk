@@ -12,16 +12,16 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/epochs/types";
 service Query {
   // EpochInfos provide running epochInfos
   rpc EpochInfos(QueryEpochsInfoRequest) returns (QueryEpochsInfoResponse) {
-    option (google.api.http).get = "/dymensionxyz/dymension-rdk/sequencers";
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/epochs";
   }
   // CurrentEpoch provide current epoch of specified identifier
   rpc CurrentEpoch(QueryCurrentEpochRequest)
       returns (QueryCurrentEpochResponse) {
-    option (google.api.http).get = "/dymensionxyz/dymension-rdk/sequencers/current_epoch";
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/epochs/current_epoch";
   }
   // CurrentEpoch provide current epoch of specified identifier
   rpc EpochInfo(QueryEpochInfoRequest) returns (QueryEpochInfoResponse) {
-    option (google.api.http).get = "/dymensionxyz/dymension-rdk/sequencers/epoch_info";
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/epochs/epoch_info";
   }
 }
 
