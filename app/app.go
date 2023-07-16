@@ -714,7 +714,7 @@ func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.Res
 	res := app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 
 	//Hack to avoid the baseApp validation
-	res.Validators = req.Validators
+	// res.Validators = req.Validators
 	return res
 }
 

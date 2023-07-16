@@ -60,6 +60,11 @@ func TestGenesis(t *testing.T) {
 		Exported:   false,
 	}
 
+	//Init dymint sequencers
+	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, sdk.ValAddress{}, pks[0]))
+	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, sdk.ValAddress{}, pks[1]))
+
+	//Init rollapp sequencers
 	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, addr1, pks[0]))
 	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, addr2, pks[1]))
 
