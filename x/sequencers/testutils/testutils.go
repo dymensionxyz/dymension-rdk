@@ -3,8 +3,6 @@ package testutils
 import (
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/store"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,6 +12,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 
+	"github.com/dymensionxyz/dymension-rdk/app"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
@@ -28,8 +27,8 @@ func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	stateStore.MountStoreWithDB(t_storeKey, storetypes.StoreTypeTransient, nil)
 	require.NoError(t, stateStore.LoadLatestVersion())
 
-	registry := codectypes.NewInterfaceRegistry()
-	cdc := codec.NewProtoCodec(registry)
+	encCdc := app.MakeEncodingConfig()
+	cdc := encCdc.Codec
 
 	paramsSubspace := typesparams.NewSubspace(cdc,
 		types.Amino,

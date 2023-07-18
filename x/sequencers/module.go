@@ -1,12 +1,12 @@
 package sequencers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	// this line is used by starport scaffolding # 1
 
-	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
@@ -40,9 +40,6 @@ func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
-func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino) {
-	types.RegisterCodec(cdc)
-}
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterCodec(cdc)
 }
@@ -64,16 +61,11 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 	return genState.ValidateGenesis()
 }
 
-// RegisterRESTRoutes registers the capability module's REST service handlers.
-func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
-	//FIXME: no REST routes for now
-	// rest.RegisterHandlers(clientCtx, rtr)
-}
-
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
-	//FIXME: not grpc/REST routes for now
-	// types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx))
+	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
+		panic(err)
+	}
 }
 
 // GetTxCmd returns the capability module's root tx command.
@@ -83,7 +75,7 @@ func (a AppModuleBasic) GetTxCmd() *cobra.Command {
 
 // GetQueryCmd returns the capability module's root query command.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return cli.GetQueryCmd(types.StoreKey)
+	return cli.GetQueryCmd()
 }
 
 // ----------------------------------------------------------------------------
@@ -120,7 +112,7 @@ func (am AppModule) Name() string {
 
 // Route returns the capability module's message routing key.
 func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
+	return sdk.Route{}
 }
 
 // QuerierRoute returns the capability module's query routing key.

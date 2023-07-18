@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"encoding/binary"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
@@ -61,17 +59,6 @@ func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress
 	return k.GetValidator(ctx, opAddr)
 }
 
-// get a single sequencer registered on dymint by consensus address
-func (k Keeper) GetDymintSequencerByAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (power uint64, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	powerByte := store.Get(types.GetDymintSeqKey(consAddr))
-	if powerByte == nil {
-		return 0, false
-	}
-
-	return binary.LittleEndian.Uint64(powerByte), true
-}
-
 /* --------------------------------- SETTERS -------------------------------- */
 // set the main record holding validator details
 func (k Keeper) SetValidator(ctx sdk.Context, validator stakingtypes.Validator) {
@@ -91,24 +78,6 @@ func (k Keeper) SetValidatorByConsAddr(ctx sdk.Context, validator stakingtypes.V
 
 	return nil
 }
-
-// get a single sequencer registered on dymint by consensus address
-func (k Keeper) SetDymintSequencerByAddr(ctx sdk.Context, validator stakingtypes.Validator) error {
-	consAddr, err := validator.GetConsAddr()
-	if err != nil {
-		return err
-	}
-
-	power := validator.ConsensusPower(sdk.DefaultPowerReduction)
-	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(power))
-
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetDymintSeqKey(consAddr), b)
-	return nil
-}
-
-// get groups of validators
 
 // get the set of all validators with no limits, used during genesis dump
 func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []stakingtypes.Validator) {
