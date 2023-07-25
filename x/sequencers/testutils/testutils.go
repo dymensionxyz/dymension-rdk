@@ -12,9 +12,9 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/dymensionxyz/dymension-rdk/app"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
+	"github.com/dymensionxyz/rollapp/app"
 )
 
 func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {

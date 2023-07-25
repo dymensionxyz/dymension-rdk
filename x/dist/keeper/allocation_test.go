@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dymensionxyz/dymension-rdk/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	"github.com/dymensionxyz/rollapp/app"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"

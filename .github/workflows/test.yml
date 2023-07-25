@@ -20,10 +20,6 @@ jobs:
       uses: magnetikonline/action-golang-cache@v4
       with:
         go-version-file: go.mod
-    - name: Build
-      run: go build ./cmd/rollappd
-    - name: Build_evm
-      run: go build -tags evm ./cmd/evm
     - name: Test
       run: go test ./...
   lint:
