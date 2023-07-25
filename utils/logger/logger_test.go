@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dymensionxyz/dymension-rdk/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils/logger"
 	log "github.com/dymensionxyz/dymension-rdk/utils/logger"
 )
 
@@ -77,7 +77,7 @@ func TestMultipleWithCalls(t *testing.T) {
 func TestModuleOverrideLevel(t *testing.T) {
 	var buf bytes.Buffer
 
-	moduleOverrides := utils.ConvertStringToStringMap("module2:error", ",", ":")
+	moduleOverrides := logger.ConvertStringToStringMap("module2:error", ",", ":")
 	logger := log.NewLogger("", 0, "info", moduleOverrides)
 	logger.SetOutput(&buf)
 
