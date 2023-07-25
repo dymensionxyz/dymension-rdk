@@ -16,6 +16,10 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	seqcli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
+	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 var DefaultConsensusParams = &abci.ConsensusParams{
@@ -59,19 +63,20 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, app.GenesisState) {
 // Setup initializes a new SimApp. A Nop logger is set in SimApp.
 func Setup(t *testing.T, isCheckTx bool) *app.App {
 	t.Helper()
+	pks := CreateTestPubKeys(1)
+	pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
+	require.NoError(t, err)
+	seq, err := seqtypes.NewSequencer(sdk.ValAddress("dsadas"), pks[0], 1)
+	require.NoError(t, err)
 
 	app, genesisState := setup(true, 5)
 
-	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+	//setting genesis sequencer as returned later from InitChain
+	genesisState, err = seqcli.AddSequencerToGenesis(app.AppCodec(), genesisState, seq)
 	require.NoError(t, err)
 
-	pks := CreateTestPubKeys(1)
-
-	pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
-	if err != nil {
-		panic(err)
-	}
-
+	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+	require.NoError(t, err)
 	// init chain will set the validator set and initialize the genesis accounts
 	app.InitChain(
 		abci.RequestInitChain{

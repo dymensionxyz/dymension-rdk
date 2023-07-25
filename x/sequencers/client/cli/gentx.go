@@ -91,6 +91,7 @@ $ %s gentx \'%s dymint show-sequencer\' --home=/path/to/home/dir --keyring-backe
 
 	cmd.Flags().AddFlagSet(stakingcli.FlagSetPublicKey())
 	cmd.Flags().String(flags.FlagFrom, "", "Name or address of private key with which to sign")
+	cmd.Flags().String(flags.FlagKeyringBackend, flags.DefaultKeyringBackend, "Select keyring's backend (os|file|kwallet|pass|test|memory)")
 
 	_ = cmd.MarkFlagRequired(stakingcli.FlagPubKey)
 	_ = cmd.MarkFlagRequired(flags.FlagFrom)

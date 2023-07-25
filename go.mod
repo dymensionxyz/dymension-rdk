@@ -8,7 +8,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.46.13
 	github.com/cosmos/ibc-go/v6 v6.1.1
 	github.com/dymensionxyz/dymint v0.5.0-rc2
-	github.com/dymensionxyz/rollapp v0.0.0-20230711112100-2caf0577876a
+	github.com/dymensionxyz/rollapp v0.0.0-20230724112726-f9219f1e8984
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.0
@@ -229,20 +229,15 @@ require (
 )
 
 replace (
-	github.com/centrifuge/go-substrate-rpc-client/v4 => github.com/availproject/go-substrate-rpc-client/v4 v4.0.12-avail-1.4.0-rc1-5e286e3
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
-
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
 	// replace broken goleveldb
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.28
 )
 
 replace (
-	github.com/celestiaorg/go-cnc => github.com/dymensionxyz/go-cnc v0.2.2
 	github.com/cosmos/ibc-go/v6 => github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71
-	github.com/evmos/evmos/v12 => github.com/dymensionxyz/evmos/v12 v12.1.5-dymension
 	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
 )
