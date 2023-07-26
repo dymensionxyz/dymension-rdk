@@ -4,12 +4,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers/keeper"
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
-// InitGenesis initializes the capability module's state from a provided genesis
-// state.
+// InitGenesis initializes the capability module's state from a provided genesis state.
+// We return the for ValidatorUpdate only the sequencers set by dymint
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) []abci.ValidatorUpdate {
 	k.SetParams(ctx, genState.Params)
 
@@ -17,17 +17,10 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 
 	// Set all the sequencer
 	for _, elem := range genState.Sequencers {
-		if elem.OperatorAddress == "" {
-			if err := k.SetDymintSequencerByAddr(ctx, elem); err != nil {
-				panic(err)
-			}
-		} else {
-			pk, _ := elem.ConsPubKey()
-			if _, err := k.CreateSequencer(ctx, elem.OperatorAddress, pk); err != nil {
-				panic(err)
-			}
+		pk, _ := elem.ConsPubKey()
+		if _, err := k.CreateSequencer(ctx, elem.OperatorAddress, pk); err != nil {
+			panic(err)
 		}
-
 		updates = append(updates, elem.ABCIValidatorUpdate(sdk.DefaultPowerReduction))
 	}
 	return updates

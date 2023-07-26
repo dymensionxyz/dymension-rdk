@@ -7,7 +7,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	epochtypes "github.com/dymensionxyz/rollapp/x/epochs/types"
+	epochtypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"

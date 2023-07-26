@@ -3,8 +3,8 @@ package keeper
 import (
 	"fmt"
 
-	epochstypes "github.com/dymensionxyz/rollapp/x/epochs/types"
-	"github.com/dymensionxyz/rollapp/x/mint/types"
+	epochstypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
+	"github.com/dymensionxyz/dymension-rdk/x/mint/types"
 
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"

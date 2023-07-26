@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/rollapp/app"
-	"github.com/dymensionxyz/rollapp/testutil/utils"
 
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -14,8 +14,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	seqkeeper "github.com/dymensionxyz/rollapp/x/sequencers/keeper"
-	seqtypes "github.com/dymensionxyz/rollapp/x/sequencers/types"
+	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -66,6 +66,10 @@ func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
 }
 
 func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddress) {
+	// create sequencer for dymint
+	err := app.SequencersKeeper.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(valConsPk2), 0)
+	require.NoError(t, err)
+
 	// create sequencer
 	msgServ := seqkeeper.NewMsgServerImpl(app.SequencersKeeper)
 	description := stakingtypes.NewDescription(
@@ -79,7 +83,7 @@ func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddre
 	msg, _ := seqtypes.NewMsgCreateSequencer(
 		sdk.ValAddress(valAddr), valConsPk2, description,
 	)
-	_, err := msgServ.CreateSequencer(sdk.WrapSDKContext(ctx), msg)
+	_, err = msgServ.CreateSequencer(sdk.WrapSDKContext(ctx), msg)
 	require.NoError(t, err)
 }
 

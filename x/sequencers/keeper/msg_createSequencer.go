@@ -8,13 +8,11 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 // CreateSequencer defines a method for creating a new sequencer
-func (k msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
+func (k msgServer) CreateSequencer(ctx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
 	// Pubkey can be nil only in simulation mode
 	if msg.Pubkey == nil {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidPubKey, "sequencer pubkey can not be empty")
@@ -24,7 +22,7 @@ func (k msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	if !ok {
 		return nil, sdkerrors.Wrapf(sdkerrors.ErrInvalidType, "Expecting cryptotypes.PubKey, got %T", pk)
 	}
-	_, err := k.Keeper.CreateSequencer(ctx, msg.SequencerAddress, pk)
+	_, err := k.Keeper.CreateSequencer(sdk.UnwrapSDKContext(ctx), msg.SequencerAddress, pk)
 
 	//TODO: add event emit
 	return &types.MsgCreateSequencerResponse{}, err
@@ -36,19 +34,23 @@ func (k Keeper) CreateSequencer(ctx sdk.Context, seqAddr string, pk cryptotypes.
 	if _, found := k.GetValidatorByConsAddr(ctx, consAddr); found {
 		return nil, types.ErrValidatorPubKeyExists
 	}
-
-	// check to see if the sequencer address has been registered before
 	valAddr, err := sdk.ValAddressFromBech32(seqAddr)
 	if err != nil {
 		return nil, err
 	}
 
+	//make sure the pubkey is registered on dymint
+	power, ok := k.GetDymintSequencerByAddr(ctx, consAddr)
+	if !ok {
+		return nil, types.ErrSequencerNotRegistered
+	}
+
+	// check to see if the sequencer address has been registered before
+	//TODO: we probably should remove this enformcement,
+	//since we want to allow single operator address to have multiple sequencer address
 	if _, found := k.GetValidator(ctx, valAddr); found {
 		return nil, types.ErrValidatorOwnerExists
 	}
-
-	//Get the power of the sequencer if it been registered on dymint
-	power, _ := k.GetDymintSequencerByAddr(ctx, consAddr)
 
 	sequencer, err := types.NewSequencer(valAddr, pk, power)
 	if err != nil {

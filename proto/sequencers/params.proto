@@ -3,7 +3,7 @@ package rollapp.sequencers.types;
 import "gogoproto/gogo.proto";
 import "google/protobuf/duration.proto";
 
-option go_package = "github.com/dymensionxyz/rollapp/x/sequencers/types";
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 
 // Params defines the parameters for the module.
 message Params {

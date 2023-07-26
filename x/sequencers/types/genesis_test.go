@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/require"
 )
 

@@ -3,7 +3,7 @@ package keeper
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 
-	"github.com/dymensionxyz/rollapp/x/dist/types"
+	"github.com/dymensionxyz/dymension-rdk/x/dist/types"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	distkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"

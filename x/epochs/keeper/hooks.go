@@ -3,7 +3,7 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/dymensionxyz/rollapp/x/epochs/types"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 )
 
 // AfterEpochEnd executes the indicated hook after epochs ends

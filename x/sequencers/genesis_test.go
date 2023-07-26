@@ -7,13 +7,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	testkeepers "github.com/dymensionxyz/rollapp/testutil/keepers"
-	"github.com/dymensionxyz/rollapp/testutil/nullify"
-	utils "github.com/dymensionxyz/rollapp/testutil/utils"
+	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
+	"github.com/dymensionxyz/dymension-rdk/testutil/nullify"
+	utils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers"
 
-	"github.com/dymensionxyz/rollapp/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/testutils"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -47,8 +48,7 @@ func TestFailedInitGenesis(t *testing.T) {
 }
 
 func TestGenesis(t *testing.T) {
-	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(t, app)
+	k, ctx := testutils.NewTestSequencerKeeper(t)
 
 	pks := utils.CreateTestPubKeys(2)
 	addr1 := sdk.ValAddress(pks[0].Address())
@@ -60,6 +60,13 @@ func TestGenesis(t *testing.T) {
 		Exported:   false,
 	}
 
+	//Init dymint sequencers
+	err := k.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(pks[0]), 0)
+	require.NoError(t, err)
+	err = k.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(pks[1]), 0)
+	require.NoError(t, err)
+
+	//Init rollapp sequencers
 	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, addr1, pks[0]))
 	genesisState.Sequencers = append(genesisState.Sequencers, utils.NewValidator(t, addr2, pks[1]))
 

@@ -14,7 +14,7 @@ const (
 	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
 
-	// RouterKey is the message route for slashing
+	// RouterKey is the module's message route key
 	RouterKey = ModuleName
 
 	// QuerierRoute defines the module's query routing key

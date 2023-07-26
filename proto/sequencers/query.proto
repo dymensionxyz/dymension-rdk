@@ -10,26 +10,26 @@ import "sequencers/params.proto";
 
 // this line is used by starport scaffolding # 1
 
-option go_package = "github.com/dymensionxyz/rollapp/x/sequencers/types";
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 
 // Query defines the gRPC querier service.
 service Query {
   // Sequencers queries all sequencers that match the given status.
   rpc Sequencers(QuerySequencersRequest) returns (QuerySequencersResponse) {
-    option (google.api.http).get = "/dymensionxyz/rollapp/sequencers";
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/sequencers";
   }
 
   // Sequencer queries validator info for given validator address.
   rpc Sequencer(QuerySequencerRequest) returns (QuerySequencerResponse) {
     option (google.api.http).get =
-        "/dymensionxyz/rollapp/sequencers/sequencers/{sequencer_addr}";
+        "/dymensionxyz/dymension-rdk/sequencers/sequencers/{sequencer_addr}";
   }
 
   // HistoricalInfo queries the historical info for given height.
   rpc HistoricalInfo(QueryHistoricalInfoRequest)
       returns (QueryHistoricalInfoResponse) {
     option (google.api.http).get =
-        "/dymensionxyz/rollapp/sequencers/historical_info/{height}";
+        "/dymensionxyz/dymension-rdk/sequencers/historical_info/{height}";
   }
 
   // Parameters queries the staking parameters.

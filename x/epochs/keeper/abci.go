@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/dymensionxyz/rollapp/x/epochs/types"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 )
 
 // BeginBlocker of epochs module

@@ -17,11 +17,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"github.com/dymensionxyz/rollapp/x/mint/client/cli"
-	"github.com/dymensionxyz/rollapp/x/mint/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/mint/client/cli"
+	"github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 
-	//"github.com/dymensionxyz/rollapp/x/mint/simulation"
-	"github.com/dymensionxyz/rollapp/x/mint/types"
+	//"github.com/dymensionxyz/dymension-rdk/x/mint/simulation"
+	"github.com/dymensionxyz/dymension-rdk/x/mint/types"
 )
 
 var (

@@ -9,7 +9,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/types/module"
 
-	"github.com/dymensionxyz/rollapp/x/epochs/types"
+	"github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 )
 
 // RandomizedGenState generates a random GenesisState for mint
