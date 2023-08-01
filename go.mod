@@ -16,7 +16,7 @@ require (
 	github.com/libp2p/go-libp2p v0.26.0
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cast v1.5.0
+	github.com/spf13/cast v1.5.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
