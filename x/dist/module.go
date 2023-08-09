@@ -13,8 +13,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/distribution"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/dymensionxyz/dymension-rdk/x/dist/keeper"
-
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 )
 
 var (
@@ -41,7 +39,7 @@ type AppModule struct {
 // NewAppModule creates a new AppModule object using the native x/distribution AppModule constructor.
 func NewAppModule(
 	cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper,
-	bk types.BankKeeper, sk stakingkeeper.Keeper,
+	bk types.BankKeeper, sk types.StakingKeeper,
 ) AppModule {
 	distAppMod := distribution.NewAppModule(cdc, keeper.Keeper, ak, bk, sk)
 	return AppModule{

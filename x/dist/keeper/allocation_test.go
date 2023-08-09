@@ -90,14 +90,14 @@ func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddre
 func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
 	addrs := utils.AddTestAddrs(app, ctx, 2, sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper)
+	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
 	// create validator with 6 power and 50% commission
 	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
 	coin := sdk.NewCoin(sdk.DefaultBondDenom, sdk.TokensFromConsensusPower(6, sdk.DefaultPowerReduction))
 	msg, err := stakingtypes.NewMsgCreateValidator(valAddrs[0], valConsPk1, coin, stakingtypes.Description{}, tstaking.Commission, sdk.OneInt())
 	require.NoError(t, err)
-	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper).CreateValidator(ctx, msg)
+	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper.Keeper).CreateValidator(ctx, msg)
 	require.NoError(t, err)
 
 	// create second validator with 4 power and 10% commision
@@ -105,7 +105,7 @@ func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddr
 	coin = sdk.NewCoin(sdk.DefaultBondDenom, sdk.TokensFromConsensusPower(4, sdk.DefaultPowerReduction))
 	msg, err = stakingtypes.NewMsgCreateValidator(valAddrs[1], valConsPk2, coin, stakingtypes.Description{}, tstaking.Commission, sdk.OneInt())
 	require.NoError(t, err)
-	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper).CreateValidator(ctx, msg)
+	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper.Keeper).CreateValidator(ctx, msg)
 	require.NoError(t, err)
 	return valAddrs
 }
@@ -310,7 +310,7 @@ func TestAllocateTokensTruncation(t *testing.T) {
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper)
+	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
 	// create validator with 10% commission
 	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
@@ -384,7 +384,7 @@ func TestAllocateTokensToValidatorWithCommission(t *testing.T) {
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper)
+	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
 	// create validator with 50% commission
 	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
