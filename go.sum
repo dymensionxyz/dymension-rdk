@@ -477,8 +477,8 @@ github.com/dymensionxyz/dymint v0.5.0-rc4 h1:wx6Be6O8rtOf+klDAMwv+tbfiJiyKEqiK69
 github.com/dymensionxyz/dymint v0.5.0-rc4/go.mod h1:wwYbbeqhzANMDbpAaZLTTpypDvfQmt0+WuIiaT3xWQk=
 github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71 h1:T04fab8CTYu+FR6mAC/nYB78WtHM4YsI99ikrYydncM=
 github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71/go.mod h1:CY3zh2HLfetRiW8LY6kVHMATe90Wj/UOoY8T6cuB0is=
-github.com/dymensionxyz/rollapp v0.0.0-20230724112726-f9219f1e8984 h1:b8U9zGkQBNf4iosdKlSyXFXvLVeDDwA1HY1PoRHDnBQ=
-github.com/dymensionxyz/rollapp v0.0.0-20230724112726-f9219f1e8984/go.mod h1:dvkiTtE+VzeTqAyuBNwqSeYOQA5GTLpMqO6S/KQSRtU=
+github.com/dymensionxyz/rollapp v0.0.0-20230809150048-b0c1bb3e880f h1:9lZtf57KUjr5FIoH2HAdGKG2MrxTjMymkfWEESYSHfw=
+github.com/dymensionxyz/rollapp v0.0.0-20230809150048-b0c1bb3e880f/go.mod h1:NwpAQmeMr5ihwwMNVNeIFFdSQkzL3W8cgizIDiKwTgk=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
