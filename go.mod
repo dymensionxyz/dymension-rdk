@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	cosmossdk.io/errors v1.0.0-beta.7
-	cosmossdk.io/math v1.0.0-rc.0
+	cosmossdk.io/math v1.0.1
 	github.com/cosmos/cosmos-sdk v0.46.13
 	github.com/cosmos/ibc-go/v6 v6.1.1
 	github.com/dymensionxyz/dymint v0.5.0-rc4
