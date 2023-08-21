@@ -227,7 +227,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 }
 
 /* -------------------------------------------------------------------------- */
-/*                          both proposer and agents                          */
+/*                          both proposer and members                          */
 /* -------------------------------------------------------------------------- */
 func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 	app := utils.Setup(t, false)

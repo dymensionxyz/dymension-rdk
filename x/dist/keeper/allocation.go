@@ -50,18 +50,18 @@ func (k Keeper) AllocateTokens(
 		//TODO: emit event for sequencer reward
 	}
 
-	/* ---------------------- reward the agents/validators ---------------------- */
+	/* ---------------------- reward the members/validators ---------------------- */
 	totalPreviousPower := k.stakingKeeper.GetLastTotalPower(ctx)
 
-	agentsMultipler := sdk.OneDec().Sub(k.GetBaseProposerReward(ctx)).Sub(k.GetCommunityTax(ctx))
-	agentsRewards := feesCollected.MulDecTruncate(agentsMultipler)
+	membersMultipler := sdk.OneDec().Sub(k.GetBaseProposerReward(ctx)).Sub(k.GetCommunityTax(ctx))
+	membersRewards := feesCollected.MulDecTruncate(membersMultipler)
 
 	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingtypes.ValidatorI) (stop bool) {
 		//Staking module calculates power factored by sdk.DefaultPowerReduction. hardcoded.
 		valPower := validator.GetConsensusPower(sdk.DefaultPowerReduction)
 		powerFraction := sdk.NewDec(valPower).QuoTruncate(sdk.NewDecFromInt(totalPreviousPower))
 
-		reward := agentsRewards.MulDecTruncate(powerFraction)
+		reward := membersRewards.MulDecTruncate(powerFraction)
 		k.AllocateTokensToValidator(ctx, validator, reward)
 		remainingFees = remainingFees.Sub(reward)
 
