@@ -7,8 +7,8 @@ require (
 	cosmossdk.io/math v1.0.0-rc.0
 	github.com/cosmos/cosmos-sdk v0.46.13
 	github.com/cosmos/ibc-go/v6 v6.1.1
-	github.com/dymensionxyz/dymint v0.5.0-rc4
-	github.com/dymensionxyz/rollapp v0.0.0-20230724112726-f9219f1e8984
+	github.com/dymensionxyz/dymint v0.5.0-rc9
+	github.com/dymensionxyz/rollapp v0.0.0-20230809150048-b0c1bb3e880f
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.0
@@ -16,7 +16,7 @@ require (
 	github.com/libp2p/go-libp2p v0.26.0
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cast v1.5.0
+	github.com/spf13/cast v1.5.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
