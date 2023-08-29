@@ -262,6 +262,7 @@ github.com/armon/go-metrics v0.4.1/go.mod h1:E6amYzXo6aW1tqzoZGT755KkbgrJsSdpwZ+
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/aryann/difflib v0.0.0-20170710044230-e206f873d14a/go.mod h1:DAHtR1m6lCRdSC2Tm3DSWRPvIPr6xNKyeHdqDQSQT+A=
 github.com/avast/retry-go v3.0.0+incompatible h1:4SOWQ7Qs+oroOTQOYnAHqelpCO0biHSxpiH9JdtuBj0=
+github.com/avast/retry-go/v4 v4.5.0 h1:QoRAZZ90cj5oni2Lsgl2GW8mNTnUCnmpx/iKpwVisHg=
 github.com/aws/aws-lambda-go v1.13.3/go.mod h1:4UKl9IzQMoD+QF79YdCuzCwp8VbmG4VAQwij/eHl5CU=
 github.com/aws/aws-sdk-go v1.27.0/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.44.122 h1:p6mw01WBaNpbdP2xrisz5tIkcNwzj/HysobNoaAHjgo=
@@ -473,8 +474,8 @@ github.com/dvsekhvalnov/jose2go v1.5.0 h1:3j8ya4Z4kMCwT5nXIKFSV84YS+HdqSSO0VsTQx
 github.com/dvsekhvalnov/jose2go v1.5.0/go.mod h1:QsHjhyTlD/lAVqn/NSbVZmSCGeDehTB/mPZadG+mhXU=
 github.com/dymensionxyz/cosmosclient v0.4.0-beta h1:IWyEEdvJ60n/v/DGNelD0n23lS6ED/5rsQJBClgIfhA=
 github.com/dymensionxyz/dymension v0.2.0-beta.0.20230607115558-745644a96ea6 h1:dnriGXmMdYEiF/8lMrj+PDlN1vyQc6zgs/ZHL67eoyI=
-github.com/dymensionxyz/dymint v0.5.0-rc4 h1:wx6Be6O8rtOf+klDAMwv+tbfiJiyKEqiK69f9114KoE=
-github.com/dymensionxyz/dymint v0.5.0-rc4/go.mod h1:wwYbbeqhzANMDbpAaZLTTpypDvfQmt0+WuIiaT3xWQk=
+github.com/dymensionxyz/dymint v0.5.0-rc9 h1:KyDz9KnRmYqriPP37wQgaQl5l8xqYLxshd13CmRyP8E=
+github.com/dymensionxyz/dymint v0.5.0-rc9/go.mod h1:eeSzdzu4+SDMHtC+5/I3F1AgpH7RCU7iHf65ZP5kQL4=
 github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71 h1:T04fab8CTYu+FR6mAC/nYB78WtHM4YsI99ikrYydncM=
 github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71/go.mod h1:CY3zh2HLfetRiW8LY6kVHMATe90Wj/UOoY8T6cuB0is=
 github.com/dymensionxyz/rollapp v0.0.0-20230809150048-b0c1bb3e880f h1:9lZtf57KUjr5FIoH2HAdGKG2MrxTjMymkfWEESYSHfw=
