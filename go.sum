@@ -474,8 +474,8 @@ github.com/dvsekhvalnov/jose2go v1.5.0 h1:3j8ya4Z4kMCwT5nXIKFSV84YS+HdqSSO0VsTQx
 github.com/dvsekhvalnov/jose2go v1.5.0/go.mod h1:QsHjhyTlD/lAVqn/NSbVZmSCGeDehTB/mPZadG+mhXU=
 github.com/dymensionxyz/cosmosclient v0.4.0-beta h1:IWyEEdvJ60n/v/DGNelD0n23lS6ED/5rsQJBClgIfhA=
 github.com/dymensionxyz/dymension v0.2.0-beta.0.20230607115558-745644a96ea6 h1:dnriGXmMdYEiF/8lMrj+PDlN1vyQc6zgs/ZHL67eoyI=
-github.com/dymensionxyz/dymint v0.5.0-rc9 h1:KyDz9KnRmYqriPP37wQgaQl5l8xqYLxshd13CmRyP8E=
-github.com/dymensionxyz/dymint v0.5.0-rc9/go.mod h1:eeSzdzu4+SDMHtC+5/I3F1AgpH7RCU7iHf65ZP5kQL4=
+github.com/dymensionxyz/dymint v0.5.1-rc01 h1:yhhYcMElxw4YCOooVj6hdlnOovfkJrdNeN3992auGVw=
+github.com/dymensionxyz/dymint v0.5.1-rc01/go.mod h1:eeSzdzu4+SDMHtC+5/I3F1AgpH7RCU7iHf65ZP5kQL4=
 github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71 h1:T04fab8CTYu+FR6mAC/nYB78WtHM4YsI99ikrYydncM=
 github.com/dymensionxyz/ibc-go/v6 v6.0.0-rc0.0.20230619115257-1a1038e16d71/go.mod h1:CY3zh2HLfetRiW8LY6kVHMATe90Wj/UOoY8T6cuB0is=
 github.com/dymensionxyz/rollapp v0.0.0-20230809150048-b0c1bb3e880f h1:9lZtf57KUjr5FIoH2HAdGKG2MrxTjMymkfWEESYSHfw=
