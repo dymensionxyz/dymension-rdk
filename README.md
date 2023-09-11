@@ -15,7 +15,7 @@ For more information about Dymension RollApps please visit the [documentation ce
 
 ### Quick guide
 
-Get started with [building RollApps](docs.dymension.xyz/build/adv-guide/rdk/setup/rdk-repo)
+Get started with [building RollApps](https://docs.dymension.xyz/build/adv-guide/rdk/setup/rdk-repo)
 
 ### Tools and frameworks
 
