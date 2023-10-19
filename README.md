@@ -1,27 +1,36 @@
+<!-- markdownlint-disable MD033 -->
 <h1 align="center">Dymension Rollapp</h1>
+<!-- markdownlint-enable MD033 -->
 
 ![banner](https://user-images.githubusercontent.com/109034310/204804891-bdc0f7bc-4b17-4b4a-99ff-25153d3887ee.jpg)
 [![license](https://img.shields.io/github/license/cosmos/cosmos-sdk.svg#thumbnail)](https://github.com/dymensionxyz/rdk/blob/main/LICENSE)
 
 Dymension RDK, which stands for *RollApp Development Kit* is based on the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework, modified and enhanced for building autonomous RollApps (app-specific-rollups) on top of the [Dymension Hub](https://github.com/dymensionxyz/dymension).
 
-The RDK provides the following capabilities ***on top*** of the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework:
-
-* The RDK is coupled with the [Dymint](https://github.com/dymensionxyz/dymint) client to form RollApp's blazing speed consensus and networking layer, while ***the Dymension Hub is securing the rollapp***
-* Custom modules that convert a cosmos based PoS (proof-of-stake) chain to a rollapp
-* EVM support (based on Ethermint)
-
-### Learn more
+## Learn more
 
 For more information about Dymension RollApps please visit the [documentation center](https://docs.dymension.xyz/)
 
-To learn how the Cosmos SDK works from a high-level perspective, see the Cosmos SDK [High-Level Intro](https://docs.cosmos.network/main/intro/overview.html).
+### Tools and frameworks
 
-If you want to get started quickly and learn how to build on top of Cosmos SDK, visit [Cosmos SDK Tutorials](https://tutorials.cosmos.network). You can also fork the tutorial's repository to get started building your own Cosmos SDK application.
-
++ [roller](https://github.com/dymensionxyz/roller) is a command-line interface tool to create and operate a RollApp
++ [rollapp-evm](https://github.com/dymensionxyz/rollapp-evm) is a template rollapp, wired with EVM and ERC20 modules by [Evmos](https://github.com/evmos/evmos)
 ---
 
-This repository hosts `rollappd`, the first implementation of a dymension rollapp.
+# Rollappd - A template RollApp chain
+
+This repository hosts `rollappd`, a template implementation of a dymension rollapp.
+
+`rollappd` is an example of a working RollApp using `dymension-RDK` and `dymint`.
+
+It uses Cosmos-SDK's [simapp](https://github.com/cosmos/cosmos-sdk/tree/main/simapp) as a reference, but with the following changes:
+
+- minimal app setup
+- wired IBC for [ICS 20 Fungible Token Transfers](https://github.com/cosmos/ibc/tree/main/spec/app/ics-020-fungible-token-transfer)
+- Uses `dymint` for block sequencing and replacing `tendermint`
+- Uses modules from `dymension-RDK` to sync with `dymint` and provide RollApp custom logic 
+
+## Overview
 
 **Note**: Requires [Go 1.19](https://go.dev/)
 
@@ -39,18 +48,28 @@ make install
 
 ### Initial configuration
 
-Set custom configuration params at `scripts/shared.sh`
-This will initialize the rollapp:
+export the following variables:
 
 ```shell
-sh scripts/init_rollapp.sh
+export ROLLAPP_CHAIN_ID="demo-dymension-rollapp"
+export KEY_NAME_ROLLAPP="rol-user"
+export DENOM="urax"
+export MONIKER="$ROLLAPP_CHAIN_ID-sequencer"
+```
+
+And initialize the rollapp:
+
+```shell
+sh scripts/init.sh
 ```
 
 ### Run rollapp
 
 ```shell
-sh scripts/run_rollapp.sh
+rollappd start
 ```
+
+You should have a running local rollapp!
 
 ## Run a rollapp with local settlement node
 
@@ -63,14 +82,14 @@ Follow the instructions on [Dymension Hub docs](https://docs.dymension.xyz/devel
 create sequencer key using `dymd`
 
 ```shell
-dymd keys add sequencer --keyring-dir ~/.rollapp/sequencer_keys --keyring-backend test --algo secp256k1
+dymd keys add sequencer --keyring-dir ~/.rollapp/sequencer_keys --keyring-backend test
 SEQUENCER_ADDR=`dymd keys show sequencer --address --keyring-backend test --keyring-dir ~/.rollapp/sequencer_keys`
 ```
 
 fund the sequencer account
 
 ```shell
-dymd tx bank send local-user $SEQUENCER_ADDR 10000000000udym --keyring-backend test
+dymd tx bank send local-user $SEQUENCER_ADDR 10000000000000000000000udym --keyring-backend test --broadcast-mode block
 ```
 
 ### Register rollapp on settlement
@@ -92,106 +111,38 @@ set:
 
 ```shell
 settlement_layer = "dymension"
-
 ```
 
-### Run rollapp
+### Run rollapp locally
 
 ```shell
-sh scripts/run_rollapp.sh
+rollappd start
 ```
 
-## Running EVM-based rollapp
+## Setup IBC between rollapp and local dymension hub node
 
-:construction:  To run an EVM-based rollapp, one should:
+### Install dymension relayer
 
-1. Build and EVM binary instead of default binary:
+```shell
+git clone https://github.com/cosmos/relayer.git --branch v2.3.1
+cd relayer && make install
+```
 
-    ```shell
-    make install_evm
-    ```
+### Establish IBC channel
 
-    This will build and install the ```rollapp_evm``` binary
-
-2. EVM-based configuration:
-
-    Uncomment the **EVM section** in `scripts/shared.sh`, **then** initializing the rollapp
-
-    ```shell
-    sh scripts/init_rollapp.sh
-    ```
-
-## Establish IBC channel between hub and rollapp
-
-The following script will create all the dependencies for IBC channel between the hub and the rollapp.
-It will create dedicated accounts for the relayer on both the hub and the rollapp, and transfer some funds to them from the genesis accounts.
+while the rollapp and the local dymension hub node running, run:
 
 ```shell
 sh scripts/ibc/setup_ibc.sh
 ```
 
-after it finishes (it might take few mins), run the relayer:
+After successful run, the new established channels will be shown
+
+### run the relayer
 
 ```shell
-sh scripts/run_relayer.sh
+rly start hub-rollapp
 ```
-
-To run ibc-transfers between rollapp and the hub,
-first check and set the connection name:
-
-```shell
-//check the connectionID of the rollapp and the hub on the active path
-rly paths show hub-rollapp --json | jq '.chains.src'
-rly paths show hub-rollapp --json | jq '.chains.dst'
-
-//check the channel_ID based on the connectionID
-rollappd q ibc channel connections <connectionID from rly command> -o json | jq '.channels[0].channel_id'
-dymd q ibc channel connections <connectionID from rly command> -o json | jq '.channels[0].channel_id'
-
-//Use the above result
-export ROLLAPP_CHANNEL_NAME=<channel_id>
-export HUB_CHANNEL_NAME=<channel_id>
-```
-
-Now you can do ibc transfers
-
-```shell
-sh scripts/ibc/ibc_transfer.sh [arg]
-
-Available:
--q:         query balances of local-user on hub and rol-user on rollapp
-rol2hub:    ibc-transfer of 5555urap to local-user from rol-user
-hub_back:   transfer back the tokens from the hub to the rollapp
-hub2rol:    ibc-transfer of 5555dym to rol-user from local-user
-hub_back:   transfer back the tokens from the hub to the rollapp
-```
-
-### Run rollapp with IBC native token
-
-To run a rollapp based on foreign IBC token, set the following when initializing the rollapp:
-
-```shell
-DENOM=IBC/<denom trace>
-TOKEN_AMOUNT = 0$DENOM
-```
-
-## Running multiple rollapp instances locally
-
-Run the first rollapp as described above.
-
-For the 2nd rollapp, run the following in a new tab:
-
-```shell
-export CHAIN_ID=rollapp2
-export CHAIN_DIR="$HOME/.rollapp2"
-export ROLLAPP_CHAIN_ID=rollapp2
-export RPC_PORT="0.0.0.0:27667"
-export P2P_PORT="0.0.0.0:27668"
-export GRPC_PORT="0.0.0.0:9180"
-export GRPC_WEB_PORT="0.0.0.0:9181"
-```
-
-Then run the scripts as described in the readme
 
 ## Developers guide
 

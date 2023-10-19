@@ -12,6 +12,6 @@
     "timeout": "10s",
     "output-format": "json",
     "sign-mode": "direct",
-    "client-type": "01-dymint"
+    "client-type": "07-tendermint"
   }
 }
