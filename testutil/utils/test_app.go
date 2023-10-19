@@ -5,10 +5,14 @@ import (
 	"testing"
 	"time"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	etherencoding "github.com/evmos/evmos/v12/encoding"
 	"github.com/stretchr/testify/require"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/dymensionxyz/rollapp/app"
+	"github.com/dymensionxyz/dymension-rdk/app"
+	"github.com/dymensionxyz/dymension-rdk/app/params"
 	"github.com/tendermint/tendermint/libs/log"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -16,7 +20,6 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	seqcli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
 	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
@@ -47,10 +50,19 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 	return nil
 }
 
-func setup(withGenesis bool, invCheckPeriod uint) (*app.App, app.GenesisState) {
+func setup(withGenesis bool, invCheckPeriod uint, isEVM bool) (*app.App, app.GenesisState) {
 	db := dbm.NewMemDB()
 
 	encCdc := app.MakeEncodingConfig()
+	if isEVM {
+		ethEncodingConfig := etherencoding.MakeConfig(app.ModuleBasics)
+		encCdc = params.EncodingConfig{
+			InterfaceRegistry: ethEncodingConfig.InterfaceRegistry,
+			Codec:             ethEncodingConfig.Codec,
+			TxConfig:          ethEncodingConfig.TxConfig,
+			Amino:             ethEncodingConfig.Amino,
+		}
+	}
 	testApp := app.NewRollapp(
 		log.NewNopLogger(), db, nil, true, map[int64]bool{}, app.DefaultNodeHome, invCheckPeriod, encCdc, EmptyAppOptions{},
 	)
@@ -69,7 +81,7 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	seq, err := seqtypes.NewSequencer(sdk.ValAddress("dsadas"), pks[0], 1)
 	require.NoError(t, err)
 
-	app, genesisState := setup(true, 5)
+	app, genesisState := setup(true, 5, true)
 
 	//setting genesis sequencer as returned later from InitChain
 	genesisState, err = seqcli.AddSequencerToGenesis(app.AppCodec(), genesisState, seq)
