@@ -3,7 +3,7 @@
   "value": {
     "key": "relayer-hub-key",
     "chain-id": "dymension_100-1",
-    "rpc-addr": "tcp://127.0.0.1:36657",
+    "rpc-addr": "http://127.0.0.1:36657",
     "account-prefix": "dym",
     "keyring-backend": "test",
     "gas-adjustment": 1.2,

@@ -23,7 +23,6 @@ import (
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/api"
-	"github.com/cosmos/cosmos-sdk/server/config"
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servergrpc "github.com/cosmos/cosmos-sdk/server/grpc"
 	"github.com/cosmos/cosmos-sdk/server/rosetta"
@@ -33,7 +32,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/dymensionxyz/dymension-rdk/utils"
-	log "github.com/dymensionxyz/dymension-rdk/utils/logger"
+	rdklogger "github.com/dymensionxyz/dymension-rdk/utils/logger"
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
 	dymintnode "github.com/dymensionxyz/dymint/node"
@@ -41,8 +40,6 @@ import (
 )
 
 const (
-	// Tendermint full-node start flags
-	flagWithTendermint     = "with-tendermint"
 	flagAddress            = "address"
 	flagTransport          = "transport"
 	flagTraceStore         = "trace-store"
@@ -79,17 +76,10 @@ const (
 	FlagAPIEnableUnsafeCORS   = "api.enabled-unsafe-cors"
 
 	// gRPC-related flags
-	flagGRPCOnly       = "grpc-only"
 	flagGRPCEnable     = "grpc.enable"
 	flagGRPCAddress    = "grpc.address"
 	flagGRPCWebEnable  = "grpc-web.enable"
 	flagGRPCWebAddress = "grpc-web.address"
-
-	// logging flags
-	flagLogFile                = "log-file"
-	flagLogLevel               = "log_level"
-	flagMaxLogSize             = "max-log-size"
-	flagModuleLogLevelOverride = "module-log-level-override"
 )
 
 // StartCmd runs the service passed in, either stand-alone or in-process with Dymint.
@@ -97,8 +87,7 @@ func StartCmd(appCreator types.AppCreator, defaultNodeHome string) *cobra.Comman
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: "Run the full node",
-		Long: `Run the full node application with Tendermint in or out of process. By
-default, the application will run with Tendermint in process.
+		Long: `Run the full node application with Dymint in process.
 
 Pruning options can be provided via the '--pruning' flag or alternatively with '--pruning-keep-recent', and
 'pruning-interval' together.
@@ -118,11 +107,6 @@ will not be able to commit subsequent blocks.
 
 For profiling and benchmarking purposes, CPU profiling can be enabled via the '--cpu-profile' flag
 which accepts a path for the resulting pprof file.
-
-The node may be started in a 'query only' mode where only the gRPC and JSON HTTP
-API services are enabled via the 'grpc-only' flag. In this mode, Tendermint is
-bypassed and can be used when legacy queries are needed after an on-chain upgrade
-is performed. Note, when enabled, gRPC will also be automatically enabled.
 `,
 		PreRunE: func(cmd *cobra.Command, _ []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
@@ -139,33 +123,22 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 		},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
 
-			// setup logging
-			moduleOverrides := utils.ConvertStringToStringMap(serverCtx.Viper.GetString(flagModuleLogLevelOverride), ",", ":")
-
-			log_path := serverCtx.Viper.GetString(flagLogFile)
-			maxLogSize, err := strconv.Atoi(serverCtx.Viper.GetString(flagMaxLogSize))
+			/* ------------------------------ setup logging ----------------------------- */
+			log_path := serverCtx.Viper.GetString(rdklogger.FlagLogFile)
+			log_level := serverCtx.Viper.GetString(rdklogger.FlagLogLevel)
+			maxLogSize, err := strconv.Atoi(serverCtx.Viper.GetString(rdklogger.FlagMaxLogSize))
 			if err != nil {
 				return err
 			}
 			if maxLogSize <= 0 {
 				return fmt.Errorf("max log size <=0 not supported")
 			}
-
-			serverCtx.Logger = log.NewLogger(log_path, maxLogSize, serverCtx.Viper.GetString(flagLogLevel), moduleOverrides)
-
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			withTM, _ := cmd.Flags().GetBool(flagWithTendermint)
-			if !withTM {
-				serverCtx.Logger.Error("starting ABCI without Dymint not supported")
-				return fmt.Errorf("starting ABCI without Dymint not supported")
-			}
-
-			serverCtx.Logger.Info("starting ABCI with Dymint")
+			serverCtx.Logger = rdklogger.NewLogger(log_path, maxLogSize, log_level, map[string]string{})
 
 			dymconfig := dymintconf.DefaultConfig("", "")
 			err = dymconfig.GetViperConfig(cmd, serverCtx.Viper.GetString(flags.FlagHome))
@@ -188,7 +161,6 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 	}
 
 	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
-	cmd.Flags().Bool(flagWithTendermint, true, "Run abci app embedded in-process with tendermint")
 	cmd.Flags().String(flagAddress, "tcp://0.0.0.0:26658", "Listen address")
 	cmd.Flags().String(flagTransport, "socket", "Transport protocol: socket, grpc")
 	cmd.Flags().String(flagTraceStore, "", "Enable KVStore tracing to an output file")
@@ -214,7 +186,6 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 	cmd.Flags().Uint(FlagRPCMaxBodyBytes, 1000000, "Define the Tendermint maximum response body (in bytes)")
 	cmd.Flags().Bool(FlagAPIEnableUnsafeCORS, false, "Define if CORS should be enabled (unsafe - use it at your own risk)")
 
-	cmd.Flags().Bool(flagGRPCOnly, false, "Start the node in gRPC query only mode (no Tendermint process is started)")
 	cmd.Flags().Bool(flagGRPCEnable, true, "Define if the gRPC server should be enabled")
 	cmd.Flags().String(flagGRPCAddress, serverconfig.DefaultGRPCAddress, "the gRPC server address to listen on")
 
@@ -226,16 +197,8 @@ is performed. Note, when enabled, gRPC will also be automatically enabled.
 
 	cmd.Flags().Bool(FlagDisableIAVLFastNode, false, "Disable fast node for IAVL tree")
 
-	cmd.Flags().String(flagLogLevel, "debug", "Log leve. one of [\"debug\", \"info\", \"warn\", \"error\", \"dpanic\", \"panic\", \"fatal\"]")
-	cmd.Flags().String(flagLogFile, "", "log file full path. If not set, logs to stdout")
-	cmd.Flags().String(flagMaxLogSize, "1000", "Max log size in MB")
-
-	//dev option
-	cmd.Flags().String(flagModuleLogLevelOverride, "", "Override module log level for customizable logging. For example \"module1:info,module2:error\"")
-	_ = cmd.Flags().MarkHidden(flagModuleLogLevelOverride)
-
-	// add support for all Tendermint-specific command line options
 	dymintconf.AddNodeFlags(cmd)
+	rdklogger.AddLogFlags(cmd)
 	return cmd
 }
 
@@ -254,11 +217,10 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, nodeConfig *d
 		return err
 	}
 
-	config, err := config.GetConfig(ctx.Viper)
+	config, err := serverconfig.GetConfig(ctx.Viper)
 	if err != nil {
 		return err
 	}
-	gRPCOnly := ctx.Viper.GetBool(flagGRPCOnly)
 
 	if err := config.ValidateBasic(); err != nil {
 		return err
@@ -317,7 +279,6 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, nodeConfig *d
 		return err
 	}
 
-	ctx.Logger.Debug("initialization: tmNode created")
 	if err := tmNode.Start(); err != nil {
 		return err
 	}
@@ -326,7 +287,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, nodeConfig *d
 	// service if API or gRPC is enabled, and avoid doing so in the general
 	// case, because it spawns a new local tendermint RPC client.
 	if (config.API.Enable || config.GRPC.Enable) && tmNode != nil {
-		clientCtx := clientCtx.WithClient(server.Client())
+		clientCtx = clientCtx.WithClient(server.Client())
 
 		app.RegisterTxService(clientCtx)
 		app.RegisterTendermintService(clientCtx)
@@ -432,13 +393,6 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, nodeConfig *d
 		}
 	}
 
-	// At this point it is safe to block the process if we're in gRPC only mode as
-	// we do not need to start Rosetta or handle any Tendermint related processes.
-	if gRPCOnly {
-		// wait for signal capture and gracefully return
-		return utils.WaitForQuitSignals()
-	}
-
 	var rosettaSrv crgserver.Server
 	if config.Rosetta.Enable {
 		offlineMode := config.Rosetta.Offline
@@ -493,6 +447,7 @@ func startInProcess(ctx *server.Context, clientCtx client.Context, nodeConfig *d
 	defer func() {
 		if tmNode != nil && tmNode.IsRunning() {
 			_ = tmNode.Stop()
+			_ = app.Close()
 		}
 
 		if apiSrv != nil {

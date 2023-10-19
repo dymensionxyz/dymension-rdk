@@ -1,6 +1,3 @@
-//go:build !evm
-// +build !evm
-
 package app
 
 import (
@@ -11,7 +8,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
-	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	"github.com/tendermint/tendermint/libs/log"
@@ -31,6 +27,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/store/streaming"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -43,23 +40,14 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
-	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
-	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/x/capability"
 	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	"github.com/cosmos/cosmos-sdk/x/feegrant"
-	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
-	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
@@ -76,7 +64,6 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
@@ -109,6 +96,7 @@ import (
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
 
 	staking "github.com/dymensionxyz/dymension-rdk/x/staking"
+	stakingkeeper "github.com/dymensionxyz/dymension-rdk/x/staking/keeper"
 
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
@@ -131,17 +119,12 @@ var (
 		govtypes.StoreKey, paramstypes.StoreKey,
 		ibchost.StoreKey, upgradetypes.StoreKey,
 		epochstypes.StoreKey,
-		feegrant.StoreKey,
 		ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
-		authzkeeper.StoreKey,
 	}
 )
 
-// this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
-
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	var govProposalHandlers []govclient.ProposalHandler
-	// this line is used by starport scaffolding # stargate/app/govProposalHandlers
 
 	govProposalHandlers = append(govProposalHandlers,
 		paramsclient.ProposalHandler,
@@ -150,7 +133,6 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		upgradeclient.LegacyCancelProposalHandler,
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
-		// this line is used by starport scaffolding # stargate/app/govProposalHandler
 	)
 
 	return govProposalHandlers
@@ -175,10 +157,7 @@ var (
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(getGovProposalHandlers()),
 		params.AppModuleBasic{},
-		crisis.AppModuleBasic{},
-		feegrantmodule.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
-		authzmodule.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		ibctransfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
@@ -229,7 +208,6 @@ type App struct {
 
 	// keepers
 	AccountKeeper    authkeeper.AccountKeeper
-	AuthzKeeper      authzkeeper.Keeper
 	BankKeeper       bankkeeper.Keeper
 	CapabilityKeeper *capabilitykeeper.Keeper
 	StakingKeeper    stakingkeeper.Keeper
@@ -238,18 +216,14 @@ type App struct {
 	EpochsKeeper     epochskeeper.Keeper
 	DistrKeeper      distrkeeper.Keeper
 	GovKeeper        govkeeper.Keeper
-	CrisisKeeper     crisiskeeper.Keeper
 	UpgradeKeeper    upgradekeeper.Keeper
 	ParamsKeeper     paramskeeper.Keeper
 	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	TransferKeeper   ibctransferkeeper.Keeper
-	FeeGrantKeeper   feegrantkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
-
-	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
 	mm *module.Manager
@@ -341,13 +315,6 @@ func NewRollapp(
 		sdk.Bech32PrefixAccAddr, //Bech32MainPrefix
 	)
 
-	app.AuthzKeeper = authzkeeper.NewKeeper(
-		keys[authz.ModuleName],
-		appCodec,
-		app.MsgServiceRouter(),
-		app.AccountKeeper,
-	)
-
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
 		appCodec,
 		keys[banktypes.StoreKey],
@@ -379,21 +346,12 @@ func NewRollapp(
 		appCodec, keys[distrtypes.StoreKey], app.GetSubspace(distrtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
 		&stakingKeeper, &app.SequencersKeeper, authtypes.FeeCollectorName, app.ModuleAccountAddrs(),
 	)
-	app.CrisisKeeper = crisiskeeper.NewKeeper(
-		app.GetSubspace(crisistypes.ModuleName),
-		invCheckPeriod,
-		app.BankKeeper,
-		authtypes.FeeCollectorName,
-	)
 
-	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp, authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
-	app.StakingKeeper = *stakingKeeper.SetHooks(
-		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks()),
-	)
+	app.StakingKeeper = *stakingKeeper.SetHooks(app.DistrKeeper.Hooks())
 
 	app.EpochsKeeper.SetHooks(
 		epochstypes.NewMultiEpochHooks(
@@ -406,7 +364,7 @@ func NewRollapp(
 		appCodec, keys[seqtypes.StoreKey], app.GetSubspace(seqtypes.ModuleName),
 	)
 
-	app.IBCKeeper = ibckeeper.NewKeeperWithDymint(
+	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
 
@@ -459,10 +417,6 @@ func NewRollapp(
 
 	/**** Module Options ****/
 
-	// NOTE: we may consider parsing `appOpts` inside module constructors. For the moment
-	// we prefer to be more strict in what arguments the modules expect.
-	skipGenesisInvariants := cast.ToBool(appOpts.Get(crisis.FlagSkipGenesisInvariants))
-
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 
@@ -475,19 +429,16 @@ func NewRollapp(
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
-		crisis.NewAppModule(&app.CrisisKeeper, skipGenesisInvariants),
-		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, app.BankKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		sequencers.NewAppModule(appCodec, app.SequencersKeeper, app.AccountKeeper, app.BankKeeper),
-		upgrade.NewAppModule(app.UpgradeKeeper),
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		params.NewAppModule(app.ParamsKeeper),
-		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(app.TransferKeeper),
+		upgrade.NewAppModule(app.UpgradeKeeper),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -508,38 +459,30 @@ func NewRollapp(
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
 		authtypes.ModuleName,
-		authz.ModuleName,
 		banktypes.ModuleName,
 		govtypes.ModuleName,
-		crisistypes.ModuleName,
 		genutiltypes.ModuleName,
 		epochstypes.ModuleName,
-		feegrant.ModuleName,
 		paramstypes.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	}
 	app.mm.SetOrderBeginBlockers(beginBlockersList...)
 
 	endBlockersList := []string{
-		crisistypes.ModuleName,
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
 		seqtypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
-		authz.ModuleName,
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
 		vestingtypes.ModuleName,
 		minttypes.ModuleName,
 		genutiltypes.ModuleName,
-		feegrant.ModuleName,
 		epochstypes.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/endBlockers
 	}
 	app.mm.SetOrderEndBlockers(endBlockersList...)
 
@@ -552,7 +495,6 @@ func NewRollapp(
 	initGenesisList := []string{
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
-		authz.ModuleName,
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -560,29 +502,25 @@ func NewRollapp(
 		vestingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
-		crisistypes.ModuleName,
 		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		paramstypes.ModuleName,
 		epochstypes.ModuleName,
 		upgradetypes.ModuleName,
 		ibctransfertypes.ModuleName,
-		feegrant.ModuleName,
-		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 	app.mm.SetOrderInitGenesis(initGenesisList...)
 
-	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
 	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
 	app.mm.RegisterServices(app.configurator)
 
 	// RegisterUpgradeHandlers is used for registering any on-chain upgrades.
 	// Make sure it's called after `app.mm` and `app.configurator` are set.
-	app.RegisterUpgradeHandlers()
+	// app.RegisterUpgradeHandlers()
 
 	// add test gRPC service for testing gRPC queries in isolation
-	// testdata.RegisterQueryServer(app.GRPCQueryRouter(), testdata.QueryImpl{})
+	testdata.RegisterQueryServer(app.GRPCQueryRouter(), testdata.QueryImpl{})
 
 	// create the simulation manager and define the order of the modules for deterministic simulations
 	//
@@ -639,7 +577,6 @@ func (app *App) setAnteHandler(txConfig client.TxConfig) {
 				AccountKeeper:   app.AccountKeeper,
 				BankKeeper:      app.BankKeeper,
 				SignModeHandler: txConfig.SignModeHandler(),
-				FeegrantKeeper:  app.FeeGrantKeeper,
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
 			IBCKeeper: app.IBCKeeper,
@@ -779,7 +716,6 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 	clientCtx := apiSvr.ClientCtx
 	// Register new tx routes from grpc-gateway.
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
-
 	// Register new tendermint queries routes from grpc-gateway.
 	tmservice.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 
@@ -879,10 +815,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(epochstypes.ModuleName)
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govv1.ParamKeyTable())
-	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
 }

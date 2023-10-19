@@ -1,15 +1,16 @@
 #!/bin/bash
-BASEDIR=$(dirname "$0")
-. "$BASEDIR"/../shared.sh
+
+EXECUTABLE="rollappd"
+KEYRING_PATH="$HOME/.rollapp/sequencer_keys"
+KEY_NAME_SEQUENCER="sequencer"
+
 
 #Register Sequencer
-DESCRIPTION="{\"Moniker\":\"$MONIKER\",\"Identity\":\"\",\"Website\":\"\",\"SecurityContact\":\"\",\"Details\":\"\"}";
-SEQ_PUB_KEY="$($EXECUTABLE dymint show-sequencer --home $ROLLAPP_CHAIN_DIR)"
+DESCRIPTION="{\"Moniker\":\"myrollapp-sequencer\",\"Identity\":\"\",\"Website\":\"\",\"SecurityContact\":\"\",\"Details\":\"\"}";
+SEQ_PUB_KEY="$($EXECUTABLE dymint show-sequencer)"
 
-$SETTLEMENT_EXECUTABLE tx sequencer create-sequencer "$SEQ_PUB_KEY" "$ROLLAPP_CHAIN_ID" "$DESCRIPTION" \
-  --from "$KEY_NAME_DYM" \
-  --chain-id "$SETTLEMENT_CHAIN_ID" \
+dymd tx sequencer create-sequencer "$SEQ_PUB_KEY" "$ROLLAPP_CHAIN_ID" "$DESCRIPTION" \
+  --from "$KEY_NAME_SEQUENCER" \
   --keyring-dir "$KEYRING_PATH" \
   --keyring-backend test \
-  --broadcast-mode block \
-  --node "$SETTLEMENT_RPC"
+  --broadcast-mode block

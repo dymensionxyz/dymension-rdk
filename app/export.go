@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
@@ -11,8 +12,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
-// ExportAppStateAndValidators exports the state of the application for a genesis
-// file.
+// ExportAppStateAndValidators exports the state of the application for a genesis file.
 func (app *App) ExportAppStateAndValidators(
 	forZeroHeight bool, jailAllowedAddrs []string,
 ) (servertypes.ExportedApp, error) {
@@ -33,7 +33,7 @@ func (app *App) ExportAppStateAndValidators(
 		return servertypes.ExportedApp{}, err
 	}
 
-	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
+	validators, err := staking.WriteValidators(ctx, app.StakingKeeper.Keeper)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}
@@ -46,8 +46,7 @@ func (app *App) ExportAppStateAndValidators(
 }
 
 // prepare for fresh start at zero height
-// NOTE zero height genesis is a temporary feature which will be deprecated
-// in favour of export at a block height
+// NOTE zero height genesis is a temporary feature, which will be deprecated in favour of export at a block height
 func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []string) {
 	applyAllowedAddrs := false
 
@@ -66,27 +65,28 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		allowedAddrsMap[addr] = true
 	}
 
-	/* Just to be safe, assert the invariants on current state. */
-	app.CrisisKeeper.AssertInvariants(ctx)
-
 	/* Handle fee distribution state. */
 
 	// withdraw all validator commission
 	app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
-		_, err := app.DistrKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
-		if err != nil {
-			panic(err)
-		}
+		_, _ = app.DistrKeeper.WithdrawValidatorCommission(ctx, val.GetOperator())
 		return false
 	})
 
 	// withdraw all delegator rewards
 	dels := app.StakingKeeper.GetAllDelegations(ctx)
 	for _, delegation := range dels {
-		_, err := app.DistrKeeper.WithdrawDelegationRewards(ctx, delegation.GetDelegatorAddr(), delegation.GetValidatorAddr())
+		valAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
 		if err != nil {
 			panic(err)
 		}
+
+		delAddr, err := sdk.AccAddressFromBech32(delegation.DelegatorAddress)
+		if err != nil {
+			panic(err)
+		}
+
+		_, _ = app.DistrKeeper.WithdrawDelegationRewards(ctx, delAddr, valAddr)
 	}
 
 	// clear validator slash events
@@ -107,8 +107,7 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 		feePool.CommunityPool = feePool.CommunityPool.Add(scraps...)
 		app.DistrKeeper.SetFeePool(ctx, feePool)
 
-		err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator())
-		if err != nil {
+		if err := app.DistrKeeper.Hooks().AfterValidatorCreated(ctx, val.GetOperator()); err != nil {
 			panic(err)
 		}
 		return false
@@ -116,13 +115,24 @@ func (app *App) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs []str
 
 	// reinitialize all delegations
 	for _, del := range dels {
-		err := app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
+		valAddr, err := sdk.ValAddressFromBech32(del.ValidatorAddress)
 		if err != nil {
 			panic(err)
 		}
-		err = app.DistrKeeper.Hooks().AfterDelegationModified(ctx, del.GetDelegatorAddr(), del.GetValidatorAddr())
+
+		delAddr, err := sdk.AccAddressFromBech32(del.DelegatorAddress)
 		if err != nil {
 			panic(err)
+		}
+
+		if err := app.DistrKeeper.Hooks().BeforeDelegationCreated(ctx, delAddr, valAddr); err != nil {
+			// never called as BeforeDelegationCreated always returns nil
+			panic(fmt.Errorf("error while incrementing period: %w", err))
+		}
+
+		if err := app.DistrKeeper.Hooks().AfterDelegationModified(ctx, delAddr, valAddr); err != nil {
+			// never called as AfterDelegationModified always returns nil
+			panic(fmt.Errorf("error while creating a new delegation period record: %w", err))
 		}
 	}
 

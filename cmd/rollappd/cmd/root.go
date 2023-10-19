@@ -10,17 +10,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/debug"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/keys"
-	"github.com/cosmos/cosmos-sdk/client/pruning"
+	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/server"
+	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/spf13/cast"
 	"github.com/spf13/cobra"
@@ -47,10 +47,11 @@ const rollappAscii = `
 ██   ██  ██████  ███████ ███████ ██   ██ ██      ██                     
 `
 
-// NewRootCmd creates a new root rollappd command. It is called once in the
-// main function.
+// NewRootCmd creates a new root rollappd command. It is called once in the main function.
 func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	encodingConfig := app.MakeEncodingConfig()
+
+	//TODO: refactor to use depinject
 
 	initClientCtx := client.Context{}.
 		WithCodec(encodingConfig.Codec).
@@ -92,9 +93,10 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 			if err != nil {
 				return err
 			}
+			serverCtx := server.GetServerContextFromCmd(cmd)
 
 			//create dymint toml config file
-			home := server.GetServerContextFromCmd(cmd).Viper.GetString(tmcli.HomeFlag)
+			home := serverCtx.Viper.GetString(tmcli.HomeFlag)
 			chainID := client.GetClientContextFromCmd(cmd).ChainID
 			dymintconf.EnsureRoot(home, dymintconf.DefaultConfig(home, chainID))
 
@@ -103,7 +105,6 @@ func NewRootCmd() (*cobra.Command, params.EncodingConfig) {
 	}
 
 	initRootCmd(rootCmd, encodingConfig)
-
 	return rootCmd, encodingConfig
 }
 
@@ -122,9 +123,15 @@ func initTendermintConfig() *tmcfg.Config {
 // initAppConfig helps to override default appConfig template and configs.
 // return "", nil if no custom configuration is required for the application.
 func initAppConfig() (string, interface{}) {
-	// srvCfg := serverconfig.DefaultConfig()
-	// customAppTemplate := serverconfig.DefaultConfigTemplate
-	return "", nil
+	customAppTemplate := serverconfig.DefaultConfigTemplate
+	srvCfg := serverconfig.DefaultConfig()
+
+	//Default pruning for a rollapp, represent 2 weeks of states kept while pruning in intervals of 10 minutes
+	srvCfg.Pruning = pruningtypes.PruningOptionCustom
+	srvCfg.PruningInterval = "18000"
+	srvCfg.PruningKeepRecent = "6048000"
+
+	return customAppTemplate, srvCfg
 }
 
 func initRootCmd(
@@ -143,22 +150,18 @@ func initRootCmd(
 		genutilcli.InitCmd(app.ModuleBasics, app.DefaultNodeHome),
 		genutilcli.CollectGenTxsCmd(banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
 		genutilcli.MigrateGenesisCmd(),
+		genutilcli.GenTxCmd(app.ModuleBasics, encodingConfig.TxConfig, banktypes.GenesisBalancesIterator{}, app.DefaultNodeHome),
+
 		sequencercli.GenTxCmd(),
-		genutilcli.GenTxCmd(
-			app.ModuleBasics,
-			encodingConfig.TxConfig,
-			banktypes.GenesisBalancesIterator{},
-			app.DefaultNodeHome,
-		),
+
 		genutilcli.ValidateGenesisCmd(app.ModuleBasics),
 		AddGenesisAccountCmd(app.DefaultNodeHome),
 		tmcli.NewCompletionCmd(rootCmd, true),
 		debug.Cmd(),
 		config.Cmd(),
-		pruning.PruningCmd(ac.newApp),
 	)
 
-	rdkserver.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, addModuleInitFlags)
+	rdkserver.AddRollappCommands(rootCmd, app.DefaultNodeHome, ac.newApp, ac.appExport, nil)
 	rootCmd.AddCommand(StartCmd(ac.newApp, app.DefaultNodeHome))
 
 	// add keybase, auxiliary RPC, query, and tx child commands
@@ -168,9 +171,6 @@ func initRootCmd(
 		txCommand(),
 		keys.Commands(app.DefaultNodeHome),
 	)
-
-	// add rosetta
-	// rootCmd.AddCommand(server.RosettaCommand(encodingConfig.InterfaceRegistry, encodingConfig.Codec))
 }
 
 // queryCommand returns the sub-command to send queries to the app
@@ -224,11 +224,6 @@ func txCommand() *cobra.Command {
 	cmd.PersistentFlags().String(flags.FlagChainID, "", "The network chain ID")
 
 	return cmd
-}
-
-func addModuleInitFlags(startCmd *cobra.Command) {
-	crisis.AddModuleInitFlags(startCmd)
-	// this line is used by starport scaffolding # root/arguments
 }
 
 type appCreator struct {
