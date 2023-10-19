@@ -479,8 +479,8 @@ github.com/dymensionxyz/cosmosclient v0.4.2-beta h1:sokBefcN1tIOlUKmB8Q2E9XMJ93L
 github.com/dymensionxyz/dymension v0.2.0-beta.0.20230607115558-745644a96ea6 h1:dnriGXmMdYEiF/8lMrj+PDlN1vyQc6zgs/ZHL67eoyI=
 github.com/dymensionxyz/dymint v0.6.0-beta h1:O531cgADz+iZ256gJ7XQ2juwlq7wacd5pnkckj+/c9c=
 github.com/dymensionxyz/dymint v0.6.0-beta/go.mod h1:6gPmjTwN/yGXyehCV3wzez1E31f2zX5n9IeMWATj7ik=
-github.com/dymensionxyz/rollapp v0.1.0-rc5 h1:/w4szrkpo0P35Hxzzz/vtbt7wUUJYZIDvLgJO+BlciI=
-github.com/dymensionxyz/rollapp v0.1.0-rc5/go.mod h1:EJlr7hoH3V+553fo18ESKBQr/uFdZyFJpEmE+Wu9RNQ=
+github.com/dymensionxyz/rollapp v1.0.0-beta h1:3OFoeFMT/t5aVRwQ8jR5bge4to/ulhyilVOBgE7fK04=
+github.com/dymensionxyz/rollapp v1.0.0-beta/go.mod h1:eH/qCtYW9caA7IDWFuM+QZNg0apDIR9MLGa2GPMQSRI=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
