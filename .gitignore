@@ -1,6 +1,7 @@
 vue/node_modules
 vue/dist
 cmd/rollappd/rollappd
+build/
 release/
 .idea/
 .vscode/
