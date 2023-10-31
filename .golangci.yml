@@ -1,0 +1,37 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+  skip-files:
+    - ./*_test.go    
+
+linters:
+  disable-all: true
+  enable:
+    - gofmt
+    - goimports
+    - misspell
+    - revive
+    - deadcode
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    - gosec
+    - gocyclo
+
+issues:
+  exclude-use-default: false
+  exclude:
+    - "^.*SA1019.*$"  # Excluding SA1019 errors
+
+linters-settings:
+  revive:
+    rules:
+      - name: exported
+        severity: warning
+        disabled: true
