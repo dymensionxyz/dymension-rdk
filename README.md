@@ -124,8 +124,8 @@ rollappd start
 ### Install dymension relayer
 
 ```shell
-git clone https://github.com/cosmos/relayer.git --branch v2.3.1
-cd relayer && make install
+git clone https://github.com/dymensionxyz/go-relayer.git --branch v0.1.0-v2.3.1-relayer
+cd go-relayer && make install
 ```
 
 ### Establish IBC channel
