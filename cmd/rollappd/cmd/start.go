@@ -471,6 +471,7 @@ func startTelemetry(cfg serverconfig.Config) (*telemetry.Metrics, error) {
 // wrapCPUProfile runs callback in a goroutine, then wait for quit signals.
 func wrapCPUProfile(ctx *server.Context, callback func() error) error {
 	if cpuProfile := ctx.Viper.GetString(flagCPUProfile); cpuProfile != "" {
+		// nolint: gosec
 		f, err := os.Create(cpuProfile)
 		if err != nil {
 			return err

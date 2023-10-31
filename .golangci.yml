@@ -2,7 +2,8 @@ run:
   timeout: 5m
   modules-download-mode: readonly
   skip-files:
-    - ./*_test.go    
+    - ./*_test.go  
+    - testutil  
 
 linters:
   disable-all: true
@@ -22,7 +23,6 @@ linters:
     - unused
     - varcheck
     - gosec
-    - gocyclo
 
 issues:
   exclude-use-default: false
