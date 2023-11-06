@@ -11,7 +11,7 @@ require (
 	github.com/dymensionxyz/rollapp v1.0.0-beta
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.3
-	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/libp2p/go-libp2p v0.26.0
 	github.com/regen-network/cosmos-proto v0.3.1
