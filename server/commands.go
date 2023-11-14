@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
 
+	"github.com/dymensionxyz/dymension-rdk/server/commands"
 	"github.com/dymensionxyz/dymint/conv"
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
@@ -18,12 +19,13 @@ import (
 func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport types.AppExporter, addStartFlags types.ModuleInitFlags) {
 	dymintCmd := &cobra.Command{
 		Use:   "dymint",
-		Short: "Dymint subcommands",
+		Short: "dymint subcommands",
 	}
 
 	dymintCmd.AddCommand(
 		ShowSequencer(),
 		ShowNodeIDCmd(),
+		commands.InspectStateCmd(),
 		ResetAll(),
 		server.VersionCmd(),
 		tmcmd.ResetStateCmd,
