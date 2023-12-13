@@ -30950,7 +30950,7 @@ paths:
                               identifier
                         description: >-
                           Version defines the versioning scheme used to
-                          negotiate the IBC verison in
+                          negotiate the IBC version in
 
                           the connection handshake.
                       title: >-
@@ -31339,7 +31339,7 @@ paths:
                             identifier
                       description: >-
                         Version defines the versioning scheme used to negotiate
-                        the IBC verison in
+                        the IBC version in
 
                         the connection handshake.
                     description: >-
@@ -39548,7 +39548,7 @@ definitions:
     type: object
     properties:
       commission:
-        description: commission defines the commision the validator received.
+        description: commission defines the commission the validator received.
         type: object
         properties:
           commission:
@@ -46229,7 +46229,7 @@ definitions:
       gas to be used by the transaction. The ratio yields an effective
       "gasprice",
 
-      which must be above some miminum to be accepted into the mempool.
+      which must be above some minimum to be accepted into the mempool.
   cosmos.tx.v1beta1.GetBlockWithTxsResponse:
     type: object
     properties:
@@ -53929,7 +53929,7 @@ definitions:
               title: list of features compatible with the specified identifier
           description: >-
             Version defines the versioning scheme used to negotiate the IBC
-            verison in
+            version in
 
             the connection handshake.
         description: >-
@@ -54051,7 +54051,7 @@ definitions:
               title: list of features compatible with the specified identifier
           description: >-
             Version defines the versioning scheme used to negotiate the IBC
-            verison in
+            version in
 
             the connection handshake.
         title: >-
@@ -54606,7 +54606,7 @@ definitions:
                   title: list of features compatible with the specified identifier
               description: >-
                 Version defines the versioning scheme used to negotiate the IBC
-                verison in
+                version in
 
                 the connection handshake.
             description: >-
@@ -54743,7 +54743,7 @@ definitions:
                     title: list of features compatible with the specified identifier
                 description: >-
                   Version defines the versioning scheme used to negotiate the
-                  IBC verison in
+                  IBC version in
 
                   the connection handshake.
               title: >-
@@ -54888,7 +54888,7 @@ definitions:
           type: string
         title: list of features compatible with the specified identifier
     description: |-
-      Version defines the versioning scheme used to negotiate the IBC verison in
+      Version defines the versioning scheme used to negotiate the IBC version in
       the connection handshake.
   tendermint.spn.monitoringp.ConnectionChannelID:
     type: object
