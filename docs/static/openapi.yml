@@ -6671,7 +6671,7 @@ paths:
             type: object
             properties:
               commission:
-                description: commission defines the commision the validator received.
+                description: commission defines the commission the validator received.
                 type: object
                 properties:
                   commission:
@@ -11115,7 +11115,7 @@ paths:
           type: string
           format: uint64
         - name: voter
-          description: voter defines the oter address for the proposals.
+          description: voter defines the other address for the proposals.
           in: path
           required: true
           type: string
@@ -20147,7 +20147,7 @@ paths:
         - Query
   /cosmwasm/wasm/v1/code/{code_id}:
     get:
-      summary: Code gets the binary code and metadata for a singe wasm code
+      summary: Code gets the binary code and metadata for a single wasm code
       operationId: CosmwasmWasmV1Code
       responses:
         '200':
