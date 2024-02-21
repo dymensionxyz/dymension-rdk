@@ -2,14 +2,14 @@
 
 The `x/mint` module mints tokens at the end of epochs.
 
-The `x/distribution` module is responsible for allocating tokens to stakers, community pool, etc.
+The `x/dist` module is responsible for allocating tokens to stakers, community pool, etc.
 
 The mint module uses time basis epochs from the `x/epochs` module.
 
 The `x/mint` module is designed by Osmosis. It is used to handle the regular printing of new tokens within a chain. Its core function is to:
 
-- Mint new tokens once per epoch (default one week)
-- Have a "Reductioning factor" every period, which reduces the amount of rewards per epoch.
+-   Mint new tokens once per epoch (default one week)
+-   Have a "Reductioning factor" every period, which reduces the amount of rewards per epoch.
     (default: period is 3 years, where a year is 52 epochs. The next period's rewards are 2/3 of the prior period's rewards)
 
 ## Params
@@ -23,22 +23,20 @@ type Params struct {
     EpochIdentifier         string                  // identifier of epoch
     ReductionPeriodInEpochs int64                   // number of epochs between reward reductions
     ReductionFactor         sdk.Dec                 // reduction multiplier to execute on each period
- DistributionProportions DistributionProportions // distribution_proportions defines the proportion of the minted denom
- WeightedDeveloperRewardsReceivers    []WeightedAddress // address to receive developer rewards
- MintingRewardsDistributionStartEpoch int64             // start epoch to distribute minting rewards
+    MintingRewardsDistributionStartEpoch int64             // start epoch to distribute minting rewards
 }
 ```
 
 The minting module contains the following parameters:
 
-| Key                                        | Type         | Example                                |
-| ------------------------------------------ | ------------ | -------------------------------------- |
-| mint_denom                                 | string       | "uosmo"                                |
-| genesis_epoch_provisions                   | string (dec) | "500000000"                            |
-| epoch_identifier                           | string       | "weekly"                               |
-| reduction_period_in_epochs                 | int64        | 156                                    |
-| reduction_factor                           | string (dec) | "0.6666666666666"                      |
-| minting_rewards_distribution_start_epoch   | int64        | 10                                     |
+| Key                                      | Type         | Example           |
+| ---------------------------------------- | ------------ | ----------------- |
+| mint_denom                               | string       | "uosmo"           |
+| genesis_epoch_provisions                 | string (dec) | "500000000"       |
+| epoch_identifier                         | string       | "weekly"          |
+| reduction_period_in_epochs               | int64        | 156               |
+| reduction_factor                         | string (dec) | "0.6666666666666" |
+| minting_rewards_distribution_start_epoch | int64        | 10                |
 
 ## EpochProvision
 
