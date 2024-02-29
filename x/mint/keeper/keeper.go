@@ -6,14 +6,11 @@ import (
 	"github.com/spf13/cast"
 	"github.com/tendermint/tendermint/libs/log"
 
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-
 	"github.com/dymensionxyz/dymension-rdk/x/mint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/address"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -76,22 +73,7 @@ func (k *Keeper) SetHooks(h types.MintHooks) *Keeper {
 	return k
 }
 
-// GetLastReductionEpochNum returns last Reduction epoch number.
-func (k Keeper) GetLastReductionEpochNum(ctx sdk.Context) int64 {
-	store := ctx.KVStore(k.storeKey)
-	b := store.Get(types.LastReductionEpochKey)
-	if b == nil {
-		return 0
-	}
-
-	return cast.ToInt64(sdk.BigEndianToUint64(b))
-}
-
-// SetLastReductionEpochNum set last Reduction epoch number.
-func (k Keeper) SetLastReductionEpochNum(ctx sdk.Context, epochNum int64) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.LastReductionEpochKey, sdk.Uint64ToBigEndian(cast.ToUint64(epochNum)))
-}
+// _____________________________________________________________________
 
 // get the minter.
 func (k Keeper) GetMinter(ctx sdk.Context) (minter types.Minter) {
@@ -110,6 +92,25 @@ func (k Keeper) SetMinter(ctx sdk.Context, minter types.Minter) {
 	store := ctx.KVStore(k.storeKey)
 	b := k.cdc.MustMarshal(&minter)
 	store.Set(types.MinterKey, b)
+}
+
+// _____________________________________________________________________
+
+// GetLastReductionEpochNum returns last Reduction epoch number.
+func (k Keeper) GetLastReductionEpochNum(ctx sdk.Context) int64 {
+	store := ctx.KVStore(k.storeKey)
+	b := store.Get(types.LastReductionEpochKey)
+	if b == nil {
+		return 0
+	}
+
+	return cast.ToInt64(sdk.BigEndianToUint64(b))
+}
+
+// SetLastReductionEpochNum set last Reduction epoch number.
+func (k Keeper) SetLastReductionEpochNum(ctx sdk.Context, epochNum int64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.LastReductionEpochKey, sdk.Uint64ToBigEndian(cast.ToUint64(epochNum)))
 }
 
 // _____________________________________________________________________
@@ -149,29 +150,7 @@ func (k Keeper) DistributeMintedCoin(ctx sdk.Context, mintedCoin sdk.Coin) error
 	}
 
 	// call a hook after the minting and distribution of new coins
-	// see osmosis' pool incentives hooks.go for an example
-	// k.hooks.AfterDistributeMintedCoin(ctx, mintedCoin)
+	k.hooks.AfterDistributeMintedCoin(ctx, mintedCoin)
 
 	return nil
-}
-
-// set up a new module account address
-func (k Keeper) SetupNewModuleAccount(ctx sdk.Context, submoduleName string, submoduleNamespace string) {
-	// create and save the module account to the account keeper
-	acctAddress := k.GetSubmoduleAddress(submoduleName, submoduleNamespace)
-	acc := k.accountKeeper.NewAccount(
-		ctx,
-		authtypes.NewModuleAccount(
-			authtypes.NewBaseAccountWithAddress(acctAddress),
-			acctAddress.String(),
-		),
-	)
-	k.Logger(ctx).Info(fmt.Sprintf("Created new %s.%s module account %s", types.ModuleName, submoduleName, acc.GetAddress().String()))
-	k.accountKeeper.SetAccount(ctx, acc)
-}
-
-// helper: get the address of a submodule
-func (k Keeper) GetSubmoduleAddress(submoduleName string, submoduleNamespace string) sdk.AccAddress {
-	key := append([]byte(submoduleNamespace), []byte(submoduleName)...)
-	return address.Module(types.ModuleName, key)
 }

@@ -47,7 +47,7 @@ func DefaultParams() Params {
 	return Params{
 		MintDenom:                            sdk.DefaultBondDenom,
 		GenesisEpochProvisions:               sdk.NewDec(2_500_000).Mul(sdk.NewDec(1_000_000)).Quo(sdk.NewDec(24 * 365)), // 2.5MST first year, broken into hours ~= 285ST / hour
-		EpochIdentifier:                      "mint",                                                                     // 1 hour
+		EpochIdentifier:                      "day",                                                                      // 1 hour
 		ReductionPeriodInEpochs:              24 * 365,                                                                   // 24hrs*365d = 8760
 		ReductionFactor:                      sdk.NewDec(1).QuoInt64(2),
 		MintingRewardsDistributionStartEpoch: 0,
@@ -118,7 +118,7 @@ func validateGenesisEpochProvisions(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if v.LT(sdk.ZeroDec()) {
+	if v.IsNegative() {
 		return fmt.Errorf("genesis epoch provision must be non-negative")
 	}
 
