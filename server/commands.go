@@ -2,6 +2,8 @@ package server
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
@@ -12,6 +14,7 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
 	tmcmd "github.com/tendermint/tendermint/cmd/cometbft/commands"
+	cmtos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/p2p"
 )
 
@@ -28,7 +31,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		commands.InspectStateCmd(),
 		ResetAll(),
 		server.VersionCmd(),
-		tmcmd.ResetStateCmd,
+		ResetState(),
 	)
 
 	rootCmd.AddCommand(
@@ -81,4 +84,50 @@ func ResetAll() *cobra.Command {
 	resetAll.Short = "(unsafe) Remove all the data and WAL, reset this node's sequencer to genesis state"
 
 	return resetAll
+}
+
+func ResetState() *cobra.Command {
+	// ResetStateCmd removes the database of the specified CometBFT core instance.
+	return &cobra.Command{
+		Use:     "reset-state",
+		Aliases: []string{"reset_state"},
+		Short:   "Remove all the data and WAL",
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+
+			config := server.GetServerContextFromCmd(cmd).Config
+			appdb := filepath.Join(config.DBDir(), "application.db")
+			dymintdb := filepath.Join(config.DBDir(), "dymint")
+			settlementdb := filepath.Join(config.DBDir(), "settlement")
+			snapshotsdb := filepath.Join(config.DBDir(), "snapshots")
+			if cmtos.FileExists(appdb) {
+				if err := os.RemoveAll(appdb); err == nil {
+					fmt.Println("Removed application.db", "file", appdb)
+				} else {
+					fmt.Println("error removing application.db", "file", appdb, "err", err)
+				}
+			}
+			if cmtos.FileExists(dymintdb) {
+				if err := os.RemoveAll(dymintdb); err == nil {
+					fmt.Println("Removed all dymint data", "dir", dymintdb)
+				} else {
+					fmt.Println("error removing dymint data", "dir", dymintdb, "err", err)
+				}
+			}
+			if cmtos.FileExists(settlementdb) {
+				if err := os.RemoveAll(settlementdb); err == nil {
+					fmt.Println("Removed all settlement data", "dir", settlementdb)
+				} else {
+					fmt.Println("error removing settlement data", "dir", settlementdb, "err", err)
+				}
+			}
+			if cmtos.FileExists(snapshotsdb) {
+				if err := os.RemoveAll(snapshotsdb); err == nil {
+					fmt.Println("Removed all snapshots data", "dir", snapshotsdb)
+				} else {
+					fmt.Println("error removing snapshots data", "dir", snapshotsdb, "err", err)
+				}
+			}
+			return nil
+		},
+	}
 }
