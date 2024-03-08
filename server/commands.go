@@ -86,8 +86,8 @@ func ResetAll() *cobra.Command {
 	return resetAll
 }
 
+// ResetState removes all the block state stored in dymint
 func ResetState() *cobra.Command {
-	// ResetStateCmd removes the database of the specified CometBFT core instance.
 	return &cobra.Command{
 		Use:     "reset-state",
 		Aliases: []string{"reset_state"},
@@ -95,39 +95,29 @@ func ResetState() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 
 			config := server.GetServerContextFromCmd(cmd).Config
+			var paths []string
 			appdb := filepath.Join(config.DBDir(), "application.db")
 			dymintdb := filepath.Join(config.DBDir(), "dymint")
 			settlementdb := filepath.Join(config.DBDir(), "settlement")
-			snapshotsdb := filepath.Join(config.DBDir(), "snapshots")
-			if cmtos.FileExists(appdb) {
-				if err := os.RemoveAll(appdb); err == nil {
-					fmt.Println("Removed application.db", "file", appdb)
-				} else {
-					fmt.Println("error removing application.db", "file", appdb, "err", err)
-				}
-			}
-			if cmtos.FileExists(dymintdb) {
-				if err := os.RemoveAll(dymintdb); err == nil {
-					fmt.Println("Removed all dymint data", "dir", dymintdb)
-				} else {
-					fmt.Println("error removing dymint data", "dir", dymintdb, "err", err)
-				}
-			}
-			if cmtos.FileExists(settlementdb) {
-				if err := os.RemoveAll(settlementdb); err == nil {
-					fmt.Println("Removed all settlement data", "dir", settlementdb)
-				} else {
-					fmt.Println("error removing settlement data", "dir", settlementdb, "err", err)
-				}
-			}
-			if cmtos.FileExists(snapshotsdb) {
-				if err := os.RemoveAll(snapshotsdb); err == nil {
-					fmt.Println("Removed all snapshots data", "dir", snapshotsdb)
-				} else {
-					fmt.Println("error removing snapshots data", "dir", snapshotsdb, "err", err)
+			paths = append(paths, appdb, dymintdb, settlementdb)
+			for _, path := range paths {
+				err := removePath(path)
+				if err != nil {
+					fmt.Printf("error removing %s with error %s\n", path, err)
 				}
 			}
 			return nil
 		},
 	}
+}
+
+func removePath(path string) error {
+	if cmtos.FileExists(path) {
+		if err := os.RemoveAll(path); err == nil {
+			fmt.Println("Removed application.db", "file", path)
+		} else {
+			return err
+		}
+	}
+	return nil
 }
