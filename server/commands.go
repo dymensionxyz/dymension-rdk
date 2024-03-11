@@ -114,7 +114,7 @@ func ResetState() *cobra.Command {
 func removePath(path string) error {
 	if cmtos.FileExists(path) {
 		if err := os.RemoveAll(path); err == nil {
-			fmt.Println("Removed application.db", "file", path)
+			fmt.Println("Path removed", "path", path)
 		} else {
 			return err
 		}
