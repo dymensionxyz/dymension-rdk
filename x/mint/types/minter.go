@@ -14,7 +14,7 @@ func NewMinter(inflationRate sdk.Dec) Minter {
 
 // InitialMinter returns an initial Minter object.
 func InitialMinter() Minter {
-	return NewMinter(sdk.NewDec(0))
+	return NewMinter(sdk.NewDecWithPrec(8, 2)) // 8%
 }
 
 // DefaultInitialMinter returns a default initial Minter object for a new chain.

@@ -15,10 +15,13 @@ func (k Keeper) HandleMintingEpoch(ctx sdk.Context) (sdk.Coins, error) {
 	//calculate coins
 	total := k.bankKeeper.GetSupply(ctx, params.MintDenom)
 	mintAmount := minter.CurrentInflationRate.MulInt(total.Amount).QuoInt(sdk.NewInt(params.MintEpochSpreadFactor))
+	if mintAmount.IsZero() {
+		return mintedCoins, nil
+	}
 
 	// mint coins, update supply
 	mintedCoins = sdk.NewCoins(sdk.NewCoin(params.MintDenom, mintAmount.TruncateInt()))
-	err := k.MintCoins(ctx, mintedCoins)
+	err := k.bankKeeper.MintCoins(ctx, types.ModuleName, mintedCoins)
 	if err != nil {
 		return mintedCoins, err
 	}
@@ -33,18 +36,6 @@ func (k Keeper) HandleMintingEpoch(ctx sdk.Context) (sdk.Coins, error) {
 }
 
 // ___________________________________________________________________________________________________
-
-// MintCoins implements an alias call to the underlying supply keeper's
-// MintCoins to be used in BeginBlocker.
-func (k Keeper) MintCoins(ctx sdk.Context, newCoins sdk.Coins) error {
-	if newCoins.Empty() {
-		// skip as no coins need to be minted
-		return nil
-	}
-
-	return k.bankKeeper.MintCoins(ctx, types.ModuleName, newCoins)
-}
-
 // DistributeMintedCoins implements distribution of minted coins from mint to external modules.
 func (k Keeper) DistributeMintedCoin(ctx sdk.Context, mintedCoins sdk.Coins) error {
 	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, mintedCoins)

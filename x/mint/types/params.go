@@ -47,7 +47,6 @@ func NewParams(
 
 // minting params
 func DefaultParams() Params {
-
 	return Params{
 		MintDenom:                            sdk.DefaultBondDenom,
 		MintEpochIdentifier:                  "day",
@@ -55,7 +54,7 @@ func DefaultParams() Params {
 		MintingRewardsDistributionStartEpoch: 0,
 		InflationEpochIdentifier:             "year",
 		InflationRateChange:                  sdk.NewDecWithPrec(10, 2), // 10% inflation change
-		TargetInflationRate:                  sdk.NewDecWithPrec(8, 2),  // 8%
+		TargetInflationRate:                  sdk.NewDecWithPrec(2, 2),  // 2%
 	}
 }
 
