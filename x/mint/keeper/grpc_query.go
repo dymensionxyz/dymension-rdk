@@ -33,5 +33,9 @@ func (q Querier) EpochProvisions(c context.Context, _ *types.QueryEpochProvision
 	ctx := sdk.UnwrapSDKContext(c)
 	minter := q.Keeper.GetMinter(ctx)
 
-	return &types.QueryEpochProvisionsResponse{EpochProvisions: minter.EpochProvisions}, nil
+	_ = minter
+	//FIXME: need to return provisions
+
+	// return &types.QueryEpochProvisionsResponse{EpochProvisions: minter.EpochProvisions}, nil
+	return &types.QueryEpochProvisionsResponse{EpochProvisions: sdk.NewDec(0)}, nil
 }

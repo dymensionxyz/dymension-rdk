@@ -1,9 +1,6 @@
 package keeper
 
 import (
-	"fmt"
-
-	"github.com/spf13/cast"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/dymensionxyz/dymension-rdk/x/mint/types"
@@ -21,7 +18,6 @@ type Keeper struct {
 	paramSpace       paramtypes.Subspace
 	accountKeeper    types.AccountKeeper
 	bankKeeper       types.BankKeeper
-	distrKeeper      types.DistrKeeper
 	epochKeeper      types.EpochKeeper
 	hooks            types.MintHooks
 	feeCollectorName string
@@ -30,7 +26,7 @@ type Keeper struct {
 // NewKeeper creates a new mint Keeper instance.
 func NewKeeper(
 	cdc codec.BinaryCodec, key storetypes.StoreKey, paramSpace paramtypes.Subspace,
-	ak types.AccountKeeper, bk types.BankKeeper, dk types.DistrKeeper, epochKeeper types.EpochKeeper,
+	ak types.AccountKeeper, bk types.BankKeeper, epochKeeper types.EpochKeeper,
 	feeCollectorName string,
 ) Keeper {
 	// ensure mint module account is set
@@ -49,7 +45,6 @@ func NewKeeper(
 		paramSpace:       paramSpace,
 		accountKeeper:    ak,
 		bankKeeper:       bk,
-		distrKeeper:      dk,
 		epochKeeper:      epochKeeper,
 		feeCollectorName: feeCollectorName,
 	}
@@ -96,25 +91,6 @@ func (k Keeper) SetMinter(ctx sdk.Context, minter types.Minter) {
 
 // _____________________________________________________________________
 
-// GetLastReductionEpochNum returns last Reduction epoch number.
-func (k Keeper) GetLastReductionEpochNum(ctx sdk.Context) int64 {
-	store := ctx.KVStore(k.storeKey)
-	b := store.Get(types.LastReductionEpochKey)
-	if b == nil {
-		return 0
-	}
-
-	return cast.ToInt64(sdk.BigEndianToUint64(b))
-}
-
-// SetLastReductionEpochNum set last Reduction epoch number.
-func (k Keeper) SetLastReductionEpochNum(ctx sdk.Context, epochNum int64) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.LastReductionEpochKey, sdk.Uint64ToBigEndian(cast.ToUint64(epochNum)))
-}
-
-// _____________________________________________________________________
-
 // GetParams returns the total set of minting parameters.
 func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	k.paramSpace.GetParamSet(ctx, &params)
@@ -124,33 +100,4 @@ func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 // SetParams sets the total set of minting parameters.
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramSpace.SetParamSet(ctx, &params)
-}
-
-// _____________________________________________________________________
-
-// MintCoins implements an alias call to the underlying supply keeper's
-// MintCoins to be used in BeginBlocker.
-func (k Keeper) MintCoins(ctx sdk.Context, newCoins sdk.Coins) error {
-	if newCoins.Empty() {
-		// skip as no coins need to be minted
-		return nil
-	}
-
-	return k.bankKeeper.MintCoins(ctx, types.ModuleName, newCoins)
-}
-
-// DistributeMintedCoins implements distribution of minted coins from mint to external modules.
-func (k Keeper) DistributeMintedCoin(ctx sdk.Context, mintedCoin sdk.Coin) error {
-	k.Logger(ctx).Info(fmt.Sprintf("Distributing minted x/mint rewards: %s coins...", mintedCoin.Amount.String()))
-
-	mintAmt := sdk.NewCoins(mintedCoin)
-	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, mintAmt)
-	if err != nil {
-		return err
-	}
-
-	// call a hook after the minting and distribution of new coins
-	k.hooks.AfterDistributeMintedCoin(ctx, mintedCoin)
-
-	return nil
 }

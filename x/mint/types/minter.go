@@ -6,9 +6,9 @@ import (
 
 // NewMinter returns a new Minter object with the given epoch
 // provisions values.
-func NewMinter(epochProvisions sdk.Dec) Minter {
+func NewMinter(inflationRate sdk.Dec) Minter {
 	return Minter{
-		EpochProvisions: epochProvisions,
+		CurrentInflationRate: inflationRate,
 	}
 }
 
@@ -24,17 +24,5 @@ func DefaultInitialMinter() Minter {
 
 // validate minter.
 func ValidateMinter(minter Minter) error {
-	return nil
-}
-
-// NextEpochProvisions returns the epoch provisions.
-func (m Minter) NextEpochProvisions(params Params) sdk.Dec {
-	return m.EpochProvisions.Mul(params.ReductionFactor)
-}
-
-// EpochProvision returns the provisions for a block based on the epoch
-// provisions rate.
-func (m Minter) EpochProvision(params Params) sdk.Coin {
-	provisionAmt := m.EpochProvisions
-	return sdk.NewCoin(params.MintDenom, provisionAmt.TruncateInt())
+	return validateInflationRate(minter.CurrentInflationRate)
 }
