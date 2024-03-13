@@ -28,7 +28,7 @@ func TestMintDistribution(t *testing.T) {
 	initialSupply := app.BankKeeper.GetSupply(ctx, params.MintDenom)
 
 	// mint coins, update supply
-	mintedCoin, err := k.HandleMintingEpoch(ctx)
+	mintedCoins, err := k.HandleMintingEpoch(ctx)
 	require.NoError(t, err)
 
 	// TODO: assert amounts minted
@@ -36,5 +36,6 @@ func TestMintDistribution(t *testing.T) {
 	_ = initialSupply
 
 	distrBalance := app.BankKeeper.GetBalance(ctx, recipientAcc, params.MintDenom)
-	require.Equal(t, mintedCoin, sdk.NewCoins(distrBalance))
+
+	require.True(t, mintedCoins.IsEqual(sdk.NewCoins(distrBalance)))
 }

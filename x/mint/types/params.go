@@ -51,7 +51,7 @@ func DefaultParams() Params {
 		MintDenom:                            sdk.DefaultBondDenom,
 		MintEpochIdentifier:                  "day",
 		MintEpochSpreadFactor:                365,
-		MintingRewardsDistributionStartEpoch: 0,
+		MintingRewardsDistributionStartEpoch: 1,
 		InflationEpochIdentifier:             "year",
 		InflationRateChange:                  sdk.NewDecWithPrec(10, 2), // 10% inflation change
 		TargetInflationRate:                  sdk.NewDecWithPrec(2, 2),  // 2%
@@ -66,7 +66,7 @@ func (p Params) Validate() error {
 	if err := epochtypes.ValidateEpochIdentifierInterface(p.MintEpochIdentifier); err != nil {
 		return err
 	}
-	if err := validateSpreadFactor(p.MintEpochSpreadFactor); err != nil {
+	if err := validateInt(p.MintEpochSpreadFactor); err != nil {
 		return err
 	}
 	if err := epochtypes.ValidateEpochIdentifierInterface(p.InflationEpochIdentifier); err != nil {
@@ -93,9 +93,9 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMintDenom, &p.MintDenom, validateMintDenom),
 		paramtypes.NewParamSetPair(KeyMintEpochIdentifier, &p.MintEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
-		paramtypes.NewParamSetPair(KeyMintEpochSpreadFactor, &p.MintEpochSpreadFactor, validateSpreadFactor),
-		paramtypes.NewParamSetPair(KeyMintingRewardsDistributionStartEpoch, &p.MintingRewardsDistributionStartEpoch, epochtypes.ValidateEpochIdentifierInterface),
 		paramtypes.NewParamSetPair(KeyInflationEpochIdentifier, &p.InflationEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
+		paramtypes.NewParamSetPair(KeyMintEpochSpreadFactor, &p.MintEpochSpreadFactor, validateInt),
+		paramtypes.NewParamSetPair(KeyMintingRewardsDistributionStartEpoch, &p.MintingRewardsDistributionStartEpoch, validateInt),
 		paramtypes.NewParamSetPair(KeyInflationRateChange, &p.InflationRateChange, validateInflationRate),
 		paramtypes.NewParamSetPair(KeyTargetInflationRate, &p.TargetInflationRate, validateInflationRate),
 	}
@@ -117,14 +117,14 @@ func validateMintDenom(i interface{}) error {
 	return nil
 }
 
-func validateSpreadFactor(i interface{}) error {
+func validateInt(i interface{}) error {
 	v, ok := i.(int64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
 	if v <= 0 {
-		return fmt.Errorf("max validators must be positive: %d", v)
+		return fmt.Errorf("value must be positive: %d", v)
 	}
 
 	return nil

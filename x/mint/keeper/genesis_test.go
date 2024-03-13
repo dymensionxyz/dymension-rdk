@@ -21,6 +21,7 @@ func TestGenesis(t *testing.T) {
 	k.InitGenesis(ctx, &state)
 	got := k.ExportGenesis(ctx)
 	require.NotNil(t, got)
-	require.ElementsMatch(t, state.Params, got.Params)
+
+	require.Equal(t, state.Params, got.Params)
 	require.Equal(t, state.Minter, got.Minter)
 }
