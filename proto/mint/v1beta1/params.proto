@@ -20,8 +20,8 @@ message Params {
   int64 mint_epoch_spread_factor = 3
   [ (gogoproto.moretags) = "yaml:\"mint_epoch_spread_factor\"" ];
 
-  // start epoch to distribute minting rewards
-  int64 minting_rewards_distribution_start_epoch = 4
+  // start epoch to start minting rewards from
+  int64 mint_start_epoch = 4
       [ (gogoproto.moretags) =
             "yaml:\"minting_rewards_distribution_start_epoch\"" ];
 

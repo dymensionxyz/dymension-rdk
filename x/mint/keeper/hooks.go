@@ -42,7 +42,7 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochInfo epochstypes.EpochInfo) 
 		)
 	}
 
-	if epochIdentifier == params.MintEpochIdentifier && epochNumber >= params.MintingRewardsDistributionStartEpoch {
+	if epochIdentifier == params.MintEpochIdentifier && epochNumber >= params.MintStartEpoch {
 		mintedCoins, err := k.HandleMintingEpoch(ctx)
 		if err != nil {
 			k.Logger(ctx).Error("error minting coins", "error", err)

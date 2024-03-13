@@ -15,13 +15,13 @@ import (
 
 // Parameter store keys.
 var (
-	KeyMintDenom                            = []byte("MintDenom")
-	KeyMintEpochIdentifier                  = []byte("MintEpochIdentifier")
-	KeyMintEpochSpreadFactor                = []byte("MintEpochSpreadFactor")
-	KeyMintingRewardsDistributionStartEpoch = []byte("MintingRewardsDistributionStartEpoch")
-	KeyInflationEpochIdentifier             = []byte("InflationEpochIdentifier")
-	KeyInflationRateChange                  = []byte("InflationRateChange")
-	KeyTargetInflationRate                  = []byte("TargetInflationRate")
+	KeyMintDenom                = []byte("MintDenom")
+	KeyMintEpochIdentifier      = []byte("MintEpochIdentifier")
+	KeyMintEpochSpreadFactor    = []byte("MintEpochSpreadFactor")
+	KeyMintStartEpoch           = []byte("MintStartEpoch")
+	KeyInflationEpochIdentifier = []byte("InflationEpochIdentifier")
+	KeyInflationRateChange      = []byte("InflationRateChange")
+	KeyTargetInflationRate      = []byte("TargetInflationRate")
 )
 
 // ParamTable for minting module.
@@ -31,30 +31,30 @@ func ParamKeyTable() paramtypes.KeyTable {
 
 func NewParams(
 	mintDenom string, mintEpochIdentifier string, mintEpochSpreadFactor int64,
-	mintingRewardsDistributionStartEpoch int64, inflationEpochIdentifier string,
+	mintStartEpoch int64, inflationEpochIdentifier string,
 	inflationRateChange sdk.Dec, targetInflationRate sdk.Dec,
 ) Params {
 	return Params{
-		MintDenom:                            mintDenom,
-		MintEpochIdentifier:                  mintEpochIdentifier,
-		MintEpochSpreadFactor:                mintEpochSpreadFactor,
-		MintingRewardsDistributionStartEpoch: mintingRewardsDistributionStartEpoch,
-		InflationEpochIdentifier:             inflationEpochIdentifier,
-		InflationRateChange:                  inflationRateChange,
-		TargetInflationRate:                  targetInflationRate,
+		MintDenom:                mintDenom,
+		MintEpochIdentifier:      mintEpochIdentifier,
+		MintEpochSpreadFactor:    mintEpochSpreadFactor,
+		MintStartEpoch:           mintStartEpoch,
+		InflationEpochIdentifier: inflationEpochIdentifier,
+		InflationRateChange:      inflationRateChange,
+		TargetInflationRate:      targetInflationRate,
 	}
 }
 
 // minting params
 func DefaultParams() Params {
 	return Params{
-		MintDenom:                            sdk.DefaultBondDenom,
-		MintEpochIdentifier:                  "day",
-		MintEpochSpreadFactor:                365,
-		MintingRewardsDistributionStartEpoch: 1,
-		InflationEpochIdentifier:             "year",
-		InflationRateChange:                  sdk.NewDecWithPrec(10, 2), // 10% inflation change
-		TargetInflationRate:                  sdk.NewDecWithPrec(2, 2),  // 2%
+		MintDenom:                sdk.DefaultBondDenom,
+		MintEpochIdentifier:      "day",
+		MintEpochSpreadFactor:    365,
+		MintStartEpoch:           1,
+		InflationEpochIdentifier: "year",
+		InflationRateChange:      sdk.NewDecWithPrec(10, 2), // 10% inflation change
+		TargetInflationRate:      sdk.NewDecWithPrec(2, 2),  // 2%
 	}
 }
 
@@ -95,7 +95,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyMintEpochIdentifier, &p.MintEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
 		paramtypes.NewParamSetPair(KeyInflationEpochIdentifier, &p.InflationEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
 		paramtypes.NewParamSetPair(KeyMintEpochSpreadFactor, &p.MintEpochSpreadFactor, validateInt),
-		paramtypes.NewParamSetPair(KeyMintingRewardsDistributionStartEpoch, &p.MintingRewardsDistributionStartEpoch, validateInt),
+		paramtypes.NewParamSetPair(KeyMintStartEpoch, &p.MintStartEpoch, validateInt),
 		paramtypes.NewParamSetPair(KeyInflationRateChange, &p.InflationRateChange, validateInflationRate),
 		paramtypes.NewParamSetPair(KeyTargetInflationRate, &p.TargetInflationRate, validateInflationRate),
 	}
