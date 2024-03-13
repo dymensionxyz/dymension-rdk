@@ -53,8 +53,8 @@ func DefaultParams() Params {
 		MintEpochSpreadFactor:    365,
 		MintStartEpoch:           1,
 		InflationEpochIdentifier: "year",
-		InflationRateChange:      sdk.NewDecWithPrec(10, 2), // 10% inflation change
-		TargetInflationRate:      sdk.NewDecWithPrec(2, 2),  // 2%
+		InflationRateChange:      sdk.NewDecWithPrec(1, 2), // 1% annual inflation change
+		TargetInflationRate:      sdk.NewDecWithPrec(2, 2), // 2%
 	}
 }
 

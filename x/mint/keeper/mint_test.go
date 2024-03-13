@@ -12,7 +12,7 @@ import (
 	utils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
 )
 
-func TestMintDistribution(t *testing.T) {
+func TestMinting(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestMintKeeperFromApp(t, app)
 

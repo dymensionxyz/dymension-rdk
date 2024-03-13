@@ -8,13 +8,23 @@ func (k Keeper) HandleInflationChange(ctx sdk.Context) (inflationRate sdk.Dec, e
 	params := k.GetParams(ctx)
 	minter := k.GetMinter(ctx)
 
-	newInfaltion := minter.CurrentInflationRate.Mul(params.InflationRateChange)
-	if newInfaltion.GT(params.TargetInflationRate) {
-		newInfaltion = params.TargetInflationRate
+	if minter.CurrentInflationRate.LT(params.TargetInflationRate) {
+		// Increase inflation
+		newInflation := minter.CurrentInflationRate.Add(params.InflationRateChange)
+		if newInflation.GT(params.TargetInflationRate) {
+			newInflation = params.TargetInflationRate
+		}
+		minter.CurrentInflationRate = newInflation
+	} else if minter.CurrentInflationRate.GT(params.TargetInflationRate) {
+		// Decrease inflation
+		newInflation := minter.CurrentInflationRate.Sub(params.InflationRateChange)
+		if newInflation.LT(params.TargetInflationRate) {
+			newInflation = params.TargetInflationRate
+		}
+		minter.CurrentInflationRate = newInflation
 	}
-	minter.CurrentInflationRate = newInfaltion
 
 	k.SetMinter(ctx, minter)
 
-	return newInfaltion, nil
+	return minter.CurrentInflationRate, nil
 }
