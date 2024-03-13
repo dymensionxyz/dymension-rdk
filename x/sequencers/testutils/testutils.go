@@ -12,9 +12,9 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 
+	testutils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
-	"github.com/dymensionxyz/rollapp/app"
 )
 
 func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
@@ -27,7 +27,7 @@ func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	stateStore.MountStoreWithDB(t_storeKey, storetypes.StoreTypeTransient, nil)
 	require.NoError(t, stateStore.LoadLatestVersion())
 
-	encCdc := app.MakeEncodingConfig()
+	encCdc := testutils.MakeEncodingConfig()
 	cdc := encCdc.Codec
 
 	paramsSubspace := typesparams.NewSubspace(cdc,
