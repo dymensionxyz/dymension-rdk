@@ -13,12 +13,14 @@ var (
 	HOUR_EPOCH = "hour"
 	DAY_EPOCH  = "day"
 	WEEK_EPOCH = "week"
+	//TODO: fix me to year
 	MINT_EPOCH = "mint"
 )
 
 // DefaultGenesis returns the default Capability genesis state
 // The hour epoch was not included in the mainnet genesis config,
-//  but has been included here for local testing
+//
+//	but has been included here for local testing
 func DefaultGenesis() *GenesisState {
 	epochs := []EpochInfo{
 		{

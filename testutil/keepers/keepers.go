@@ -12,23 +12,23 @@ import (
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	testutils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 )
 
-func NewTestEpochKeeperFromApp(t *testing.T, app *testutils.App) (*epochkeeper.Keeper, sdk.Context) {
+func NewTestEpochKeeperFromApp(t *testing.T, app *app.App) (*epochkeeper.Keeper, sdk.Context) {
 	k := &app.EpochsKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
 
 	return k, ctx
 }
 
-func NewTestSequencerKeeperFromApp(t *testing.T, app *testutils.App) (*seqkeeper.Keeper, sdk.Context) {
+func NewTestSequencerKeeperFromApp(t *testing.T, app *app.App) (*seqkeeper.Keeper, sdk.Context) {
 	k := &app.SequencersKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
 	return k, ctx
 }
 
-func NewTestMintKeeperFromApp(t *testing.T, app *testutils.App) (*mintkeeper.Keeper, sdk.Context) {
+func NewTestMintKeeperFromApp(t *testing.T, app *app.App) (*mintkeeper.Keeper, sdk.Context) {
 	k := &app.MintKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
 	return k, ctx

@@ -6,7 +6,7 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 
-	testutils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -43,7 +43,7 @@ var (
 /* -------------------------------------------------------------------------- */
 /*                                    utils                                   */
 /* -------------------------------------------------------------------------- */
-func assertInitial(t *testing.T, ctx sdk.Context, app *testutils.App, valAddrs []sdk.ValAddress) {
+func assertInitial(t *testing.T, ctx sdk.Context, app *app.App, valAddrs []sdk.ValAddress) {
 	// assert initial state: zero outstanding rewards, zero community pool, zero commission, zero current rewards
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards.IsZero())
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards.IsZero())
@@ -54,7 +54,7 @@ func assertInitial(t *testing.T, ctx sdk.Context, app *testutils.App, valAddrs [
 	require.True(t, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards.IsZero())
 }
 
-func fundModules(t *testing.T, ctx sdk.Context, app *testutils.App) {
+func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
 	fees := sdk.NewCoins(totalFeesCoin)
 	feeCollector := app.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
 	require.NotNil(t, feeCollector)
@@ -65,7 +65,7 @@ func fundModules(t *testing.T, ctx sdk.Context, app *testutils.App) {
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
 }
 
-func createSeq(t *testing.T, ctx sdk.Context, app *testutils.App, valAddr sdk.ValAddress) {
+func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddress) {
 	// create sequencer for dymint
 	err := app.SequencersKeeper.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(valConsPk2), 0)
 	require.NoError(t, err)
@@ -87,7 +87,7 @@ func createSeq(t *testing.T, ctx sdk.Context, app *testutils.App, valAddr sdk.Va
 	require.NoError(t, err)
 }
 
-func createValidators(t *testing.T, ctx sdk.Context, app *testutils.App) []sdk.ValAddress {
+func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
 	addrs := utils.AddTestAddrs(app, ctx, 2, sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
 	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
