@@ -86,5 +86,8 @@ func (k Keeper) SetOperatorAddressForGenesisSequencer(ctx sdk.Context, proposerV
 	k.DeleteSequencer(ctx, val)
 	val.OperatorAddress = proposerValAddr.String()
 	k.SetSequencer(ctx, val)
-	k.SetSequencerByConsAddr(ctx, val)
+	err := k.SetSequencerByConsAddr(ctx, val)
+	if err != nil {
+		panic(err)
+	}
 }

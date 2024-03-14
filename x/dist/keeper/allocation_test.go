@@ -28,8 +28,6 @@ var (
 	valConsPk2 = PKS[1]
 	valConsPk3 = PKS[2]
 
-	valConsAddr2 = sdk.ConsAddress(valConsPk2.Address())
-
 	totalFees     = sdk.NewInt(100)
 	totalFeesCoin = sdk.NewCoin(sdk.DefaultBondDenom, totalFees)
 	totalFeesDec  = sdk.NewDecFromInt(totalFees)
