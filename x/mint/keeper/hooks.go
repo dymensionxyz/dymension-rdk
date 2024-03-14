@@ -14,9 +14,9 @@ func (k Keeper) BeforeEpochStart(ctx sdk.Context, epochInfo epochstypes.EpochInf
 
 // AfterEpochEnd is a hook which is executed after the end of an epoch.
 // This hook should attempt to mint and distribute coins according to
-// the configuration set via parameters. In addition, it handles the logic
-// for reducing minted coins according to the parameters.
-// For an attempt to mint to occur:
+// the configuration set via parameters.
+// In addition, it handles the logic for updating the inflation according to the parameters.
+// For a mint to occur:
 // - given epochIdentifier must be equal to the mint epoch identifier set via parameters.
 // - given epochNumber must be greater than or equal to the mint start epoch set via parameters.
 func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochInfo epochstypes.EpochInfo) {
@@ -26,7 +26,6 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochInfo epochstypes.EpochInfo) 
 
 	// Update inflation
 	if epochIdentifier == params.InflationEpochIdentifier {
-		//TODO: update inflation
 		newInfaltion, err := k.HandleInflationChange(ctx)
 		if err != nil {
 			k.Logger(ctx).Error("error updating inflation", "error", err)
@@ -42,6 +41,7 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochInfo epochstypes.EpochInfo) 
 		)
 	}
 
+	// Mint coins
 	if epochIdentifier == params.MintEpochIdentifier && epochNumber >= params.MintStartEpoch {
 		mintedCoins, err := k.HandleMintingEpoch(ctx)
 		if err != nil {
@@ -58,7 +58,6 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochInfo epochstypes.EpochInfo) 
 		)
 		return
 	}
-
 }
 
 // ___________________________________________________________________________________________________

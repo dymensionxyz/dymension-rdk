@@ -30,6 +30,7 @@ func TestMinting(t *testing.T) {
 
 	// set expectations
 	totalSupplyAmt := sdk.NewInt(100000000) // 100M
+	totalSupplyCoin := sdk.NewCoin(params.MintDenom, totalSupplyAmt)
 	expectedMintedAmt := sdk.NewInt(150000) // 150K (15% of 100M / spread_factor)
 
 	/* ---------------------------------- test ---------------------------------- */
@@ -39,7 +40,7 @@ func TestMinting(t *testing.T) {
 	require.True(t, initialBalance.IsZero())
 
 	//mint supply
-	err := app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(sdk.NewCoin(params.MintDenom, totalSupplyAmt)))
+	err := app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(totalSupplyCoin))
 	require.NoError(t, err)
 
 	// mint coins, update supply
@@ -57,7 +58,7 @@ func TestMinting(t *testing.T) {
 	require.True(t, mintedCoins.IsEqual(sdk.NewCoins(distrBalance)))
 
 	newSupply := app.BankKeeper.GetSupply(ctx, params.MintDenom)
-	assert.True(t, newSupply.IsEqual(initialBalance.Add(mintedCoin)))
+	assert.True(t, newSupply.IsEqual(totalSupplyCoin.Add(mintedCoin)))
 }
 
 //TODO: test start time

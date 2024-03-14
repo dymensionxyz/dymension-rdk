@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -24,7 +23,6 @@ func GetQueryCmd() *cobra.Command {
 
 	mintingQueryCmd.AddCommand(
 		GetCmdQueryParams(),
-		GetCmdQueryEpochProvisions(),
 	)
 
 	return mintingQueryCmd
@@ -51,35 +49,6 @@ func GetCmdQueryParams() *cobra.Command {
 			}
 
 			return clientCtx.PrintProto(&res.Params)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-
-	return cmd
-}
-
-// GetCmdQueryEpochProvisions implements a command to return the current minting
-// epoch provisions value.
-func GetCmdQueryEpochProvisions() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "epoch-provisions",
-		Short: "Query the current minting epoch provisions value",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			params := &types.QueryEpochProvisionsRequest{}
-			res, err := queryClient.EpochProvisions(context.Background(), params)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintString(fmt.Sprintf("%s\n", res.EpochProvisions))
 		},
 	}
 
