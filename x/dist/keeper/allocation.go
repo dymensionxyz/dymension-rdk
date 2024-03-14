@@ -29,25 +29,26 @@ func (k Keeper) AllocateTokens(
 	}
 
 	/* ---------------------------- Pay the proposer ---------------------------- */
-	proposerValidator := k.seqKeeper.ValidatorByConsAddr(ctx, blockProposer)
-	proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
+	proposerReward := sdk.DecCoins{}
+	proposerValidator, found := k.seqKeeper.GetValidatorByConsAddr(ctx, blockProposer)
 
 	// calculate and pay previous proposer reward
-	if proposerValidator == nil {
+	if !found {
 		logger.Error("failed to find the validator for this block. reward not allocated")
-		proposerReward = sdk.DecCoins{}
-	}
+	} else {
+		proposerReward = feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
 
-	proposerCoins, proposerRemainder := proposerReward.TruncateDecimal()
-	if !proposerCoins.IsZero() {
-		err := k.AllocateTokensToSequencer(ctx, proposerValidator, proposerCoins)
-		if err != nil {
-			logger.Error("failed to reward the proposer")
+		proposerCoins, proposerRemainder := proposerReward.TruncateDecimal()
+		if !proposerCoins.IsZero() {
+			err := k.AllocateTokensToSequencer(ctx, proposerValidator, proposerCoins)
+			if err != nil {
+				logger.Error("failed to reward the proposer")
+			}
+
+			remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
+
+			//TODO: emit event for sequencer reward
 		}
-
-		remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
-
-		//TODO: emit event for sequencer reward
 	}
 
 	/* ---------------------- reward the members/validators ---------------------- */

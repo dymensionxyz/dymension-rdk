@@ -10,15 +10,18 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
-// Implements ValidatorSet interface
-// stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-// var _ stakingtypes.ValidatorSet = Keeper{}
+// StakingKeeper returns the historical headers kept in store.
+type StakingKeeper interface {
+	GetHistoricalInfo(ctx sdk.Context, height int64) (stakingtypes.HistoricalInfo, bool)
+	GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingtypes.ValidatorI, found bool)
+	UnbondingTime(ctx sdk.Context) time.Duration
+}
 
-// Implements DelegationSet interface
-// var _ stakingtypes.DelegationSet = Keeper{}
+var _ StakingKeeper = (*Keeper)(nil)
 
 type Keeper struct {
 	cdc        codec.BinaryCodec

@@ -6,34 +6,13 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
-//TODO: rename all to sequencer
+/* ---------------------------------- alias --------------------------------- */
 
-/* -------------------------------------------------------------------------- */
-/*                                    Alias func                              */
-/* -------------------------------------------------------------------------- */
-// Validator gets the Validator interface for a particular address
-func (k Keeper) Validator(ctx sdk.Context, address sdk.ValAddress) stakingtypes.ValidatorI {
-	val, found := k.GetValidator(ctx, address)
-	if !found {
-		return nil
-	}
-
-	return val
+// get a single validator by consensus address
+func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingtypes.ValidatorI, found bool) {
+	return k.GetSequencerByConsAddr(ctx, consAddr)
 }
 
-// ValidatorByConsAddr gets the validator interface for a particular pubkey
-func (k Keeper) ValidatorByConsAddr(ctx sdk.Context, addr sdk.ConsAddress) stakingtypes.ValidatorI {
-	val, found := k.GetValidatorByConsAddr(ctx, addr)
-	if !found {
-		return nil
-	}
-
-	return val
-}
-
-/* -------------------------------------------------------------------------- */
-/*                               implementation                              */
-/* -------------------------------------------------------------------------- */
 /* --------------------------------- GETTERS -------------------------------- */
 // get a single validator
 func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator stakingtypes.Validator, found bool) {
@@ -49,11 +28,11 @@ func (k Keeper) GetValidator(ctx sdk.Context, addr sdk.ValAddress) (validator st
 }
 
 // get a single validator by consensus address
-func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingtypes.Validator, found bool) {
+func (k Keeper) GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (sequencer stakingtypes.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	opAddr := store.Get(types.GetValidatorByConsAddrKey(consAddr))
 	if opAddr == nil {
-		return validator, false
+		return sequencer, false
 	}
 
 	return k.GetValidator(ctx, opAddr)
@@ -65,6 +44,12 @@ func (k Keeper) SetValidator(ctx sdk.Context, validator stakingtypes.Validator) 
 	store := ctx.KVStore(k.storeKey)
 	bz := stakingtypes.MustMarshalValidator(k.cdc, &validator)
 	store.Set(types.GetValidatorKey(validator.GetOperator()), bz)
+}
+
+// delete the main record holding validator details
+func (k Keeper) DeletetValidator(ctx sdk.Context, validator stakingtypes.Validator) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.GetValidatorKey(validator.GetOperator()))
 }
 
 // validator index
