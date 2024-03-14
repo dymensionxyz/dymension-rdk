@@ -173,7 +173,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 		WithdrawAddrEnabled: false,
 	})
 	// allocate tokens as if both had voted and second was proposer
-	app.DistrKeeper.AllocateTokens(ctx, valConsAddr2)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
 
 	/* ------------------------- Test proposer rewards ------------------------ */
 	proposerFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", proposerReward)))
