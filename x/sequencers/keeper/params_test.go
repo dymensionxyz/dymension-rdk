@@ -21,7 +21,6 @@ func TestGetParams(t *testing.T) {
 			desc: "non-default params",
 			params: types.Params{
 				UnbondingTime:     100,
-				MaxSequencers:     5,
 				HistoricalEntries: 999,
 			},
 		},

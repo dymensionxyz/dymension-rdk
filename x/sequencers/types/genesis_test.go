@@ -3,7 +3,6 @@ package types_test
 import (
 	"testing"
 
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/require"
 )
@@ -19,31 +18,7 @@ func TestGenesisState_Validate(t *testing.T) {
 			genState: *types.DefaultGenesis(),
 			valid:    true,
 		},
-		{
-			desc: "genesis state with predefined sequencers",
-			genState: types.GenesisState{
-				Params: types.DefaultParams(),
-				Sequencers: []stakingtypes.Validator{{
-					OperatorAddress: "sequencer1",
-				},
-				},
-				Exported: false,
-			},
-			valid: true,
-		},
-		{
-			desc: "duplicated sequencer",
-			genState: types.GenesisState{
-				Params: types.DefaultParams(),
-				Sequencers: []stakingtypes.Validator{{
-					OperatorAddress: "sequencer1",
-				}, {
-					OperatorAddress: "sequencer1",
-				}},
-				Exported: false,
-			},
-			valid: false,
-		},
+		//TODO: bad params
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
 			err := tc.genState.ValidateGenesis()

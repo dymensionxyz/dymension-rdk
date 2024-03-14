@@ -153,13 +153,10 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 	//set proposer address if not set
-	val, ok := am.keeper.GetValidator(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
+	_, ok := am.keeper.GetValidator(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
 	//TODO: make sure we're in genesis block
 	if ok {
-		am.keeper.DeletetValidator(ctx, val)
-		val.OperatorAddress = sdk.ValAddress(ctx.BlockHeader().ProposerAddress).String()
-		am.keeper.SetValidator(ctx, val)
-		am.keeper.SetValidatorByConsAddr(ctx, val)
+		am.keeper.SetOperatorAddressForGenesisSequencer(ctx, string(ctx.BlockHeader().ProposerAddress))
 	}
 
 	am.keeper.TrackHistoricalInfo(ctx)

@@ -14,18 +14,12 @@ import (
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 
-	seqcli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
-
-	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 var DefaultConsensusParams = &abci.ConsensusParams{
@@ -72,14 +66,8 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	pks := CreateTestPubKeys(1)
 	pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
 	require.NoError(t, err)
-	seq, err := seqtypes.NewSequencer(sdk.ValAddress("dsadas"), pks[0], 1)
-	require.NoError(t, err)
 
 	app, genesisState := setup(true, 5)
-
-	//setting genesis sequencer as returned later from InitChain
-	genesisState, err = seqcli.AddSequencerToGenesis(app.AppCodec(), genesisState, seq)
-	require.NoError(t, err)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
