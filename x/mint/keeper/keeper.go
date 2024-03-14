@@ -99,5 +99,20 @@ func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 
 // SetParams sets the total set of minting parameters.
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	//validate existing correct epoch identifiers.
+	//this is the only place where we have access to the epoch keeper when changing params
+
+	_, ok := k.epochKeeper.GetEpochInfo(ctx, params.MintEpochIdentifier)
+	if !ok {
+		k.Logger(ctx).Error("mint epoch identifier not found. aborting params change")
+		return
+	}
+
+	_, ok = k.epochKeeper.GetEpochInfo(ctx, params.InflationEpochIdentifier)
+	if !ok {
+		k.Logger(ctx).Error("inflation epoch identifier not found. aborting params change")
+		return
+	}
+
 	k.paramSpace.SetParamSet(ctx, &params)
 }
