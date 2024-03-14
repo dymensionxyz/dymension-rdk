@@ -153,15 +153,21 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	am.keeper.TrackHistoricalInfo(ctx)
+	//set proposer address if not set
+	val, ok := am.keeper.GetValidator(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
+	//TODO: make sure we're in genesis block
+	if ok {
+		am.keeper.DeletetValidator(ctx, val)
+		val.OperatorAddress = sdk.ValAddress(ctx.BlockHeader().ProposerAddress).String()
+		am.keeper.SetValidator(ctx, val)
+		am.keeper.SetValidatorByConsAddr(ctx, val)
+	}
 
+	am.keeper.TrackHistoricalInfo(ctx)
 }
 
 // EndBlock executes all ABCI EndBlock logic respective to the capability module. It
 // returns no validator updates.
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	//FIXME: add back when compiles
-	// return am.keeper.BlockValidatorUpdates(ctx)
-
 	return []abci.ValidatorUpdate{}
 }

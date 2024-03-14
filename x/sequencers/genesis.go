@@ -11,11 +11,11 @@ import (
 // InitGenesis initializes the capability module's state from a provided genesis state.
 // We return the for ValidatorUpdate only the sequencers set by dymint
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) []abci.ValidatorUpdate {
-	k.SetParams(ctx, genState.Params)
-
 	var updates []abci.ValidatorUpdate
 
-	// Set all the sequencer
+	k.SetParams(ctx, genState.Params)
+
+	// Set all the sequencer if exists on genesis file
 	for _, elem := range genState.Sequencers {
 		pk, _ := elem.ConsPubKey()
 		if _, err := k.CreateSequencer(ctx, elem.OperatorAddress, pk); err != nil {
@@ -23,6 +23,15 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		}
 		updates = append(updates, elem.ABCIValidatorUpdate(sdk.DefaultPowerReduction))
 	}
+
+	//get the dymint sequencers if it's clean genesis
+	if len(updates) == 0 {
+		val, ok := k.GetValidator(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
+		if ok {
+			updates = append(updates, val.ABCIValidatorUpdate(sdk.DefaultPowerReduction))
+		}
+	}
+
 	return updates
 }
 
