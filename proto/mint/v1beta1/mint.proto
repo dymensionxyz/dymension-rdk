@@ -7,7 +7,7 @@ import "gogoproto/gogo.proto";
 
 // Minter represents the minting state.
 message Minter {
-  string current_inflation_rate = 2 [
+  string current_inflation_rate = 1 [
     (gogoproto.moretags) = "yaml:\"current_inflation_rate\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false
