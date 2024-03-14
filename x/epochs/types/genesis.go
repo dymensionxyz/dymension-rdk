@@ -13,20 +13,16 @@ var (
 	HOUR_EPOCH = "hour"
 	DAY_EPOCH  = "day"
 	WEEK_EPOCH = "week"
-	//TODO: fix me to year
-	MINT_EPOCH = "mint"
+	YEAR_EPOCH = "year"
 )
 
-// DefaultGenesis returns the default Capability genesis state
-// The hour epoch was not included in the mainnet genesis config,
-//
-//	but has been included here for local testing
+// DefaultGenesis returns the default Epochs genesis state
 func DefaultGenesis() *GenesisState {
 	epochs := []EpochInfo{
 		{
-			Identifier:              WEEK_EPOCH,
+			Identifier:              HOUR_EPOCH,
 			StartTime:               time.Time{},
-			Duration:                time.Hour * 24 * 7,
+			Duration:                time.Hour,
 			CurrentEpoch:            0,
 			CurrentEpochStartHeight: 0,
 			CurrentEpochStartTime:   time.Time{},
@@ -42,18 +38,18 @@ func DefaultGenesis() *GenesisState {
 			EpochCountingStarted:    false,
 		},
 		{
-			Identifier:              MINT_EPOCH,
+			Identifier:              WEEK_EPOCH,
 			StartTime:               time.Time{},
-			Duration:                time.Minute * 60,
+			Duration:                time.Hour * 24 * 7,
 			CurrentEpoch:            0,
 			CurrentEpochStartHeight: 0,
 			CurrentEpochStartTime:   time.Time{},
 			EpochCountingStarted:    false,
 		},
 		{
-			Identifier:              HOUR_EPOCH,
+			Identifier:              YEAR_EPOCH,
 			StartTime:               time.Time{},
-			Duration:                time.Hour,
+			Duration:                time.Hour * 24 * 365,
 			CurrentEpoch:            0,
 			CurrentEpochStartHeight: 0,
 			CurrentEpochStartTime:   time.Time{},
