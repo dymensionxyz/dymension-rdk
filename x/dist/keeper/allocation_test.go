@@ -14,9 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
-	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
-
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"

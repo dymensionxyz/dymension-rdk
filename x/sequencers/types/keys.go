@@ -19,6 +19,8 @@ const (
 
 	// QuerierRoute defines the module's query routing key
 	QuerierRoute = ModuleName
+
+	GenesisOperatorAddrStub = "dymensionvaloper1"
 )
 
 var (
@@ -41,12 +43,6 @@ func GetValidatorKey(operatorAddr sdk.ValAddress) []byte {
 // VALUE: validator operator address ([]byte)
 func GetValidatorByConsAddrKey(addr sdk.ConsAddress) []byte {
 	return append(ValidatorsByConsAddrKey, address.MustLengthPrefix(addr)...)
-}
-
-// DymintSeqKey creates the key for the validator with address
-// VALUE: staking/Validator
-func GetDymintSeqKey(addr sdk.ConsAddress) []byte {
-	return append(DymintSeqKey, address.MustLengthPrefix(addr)...)
 }
 
 // GetHistoricalInfoKey returns a key prefix for indexing HistoricalInfo objects.

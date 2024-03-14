@@ -15,19 +15,18 @@ func TestGenesisState_Validate(t *testing.T) {
 		valid    bool
 	}{
 		{
-			desc:     "default is not valid. missing sequencers",
+			desc:     "default",
 			genState: *types.DefaultGenesis(),
-			valid:    false,
+			valid:    true,
 		},
 		{
-			desc: "valid genesis state",
+			desc: "genesis state with predefined sequencers",
 			genState: types.GenesisState{
 				Params: types.DefaultParams(),
 				Sequencers: []stakingtypes.Validator{{
 					OperatorAddress: "sequencer1",
-				}, {
-					OperatorAddress: "sequencer2",
-				}},
+				},
+				},
 				Exported: false,
 			},
 			valid: true,
