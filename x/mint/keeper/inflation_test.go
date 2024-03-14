@@ -8,6 +8,7 @@ import (
 	utils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/mint/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInflationChangeTCs(t *testing.T) {
@@ -62,7 +63,8 @@ func TestInflationChangeTCs(t *testing.T) {
 			params.InflationRateChange = tc.inflationRateChange
 			k.SetParams(ctx, params)
 
-			k.HandleInflationChange(ctx)
+			_, err := k.HandleInflationChange(ctx)
+			require.NoError(t, err)
 
 			minter = k.GetMinter(ctx)
 			assert.Equal(t, tc.expectedInflation, minter.CurrentInflationRate)
