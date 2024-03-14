@@ -11,13 +11,13 @@ import (
 )
 
 // set dymint sequencers from InitChain
-func (k Keeper) SetDymintSequencers(ctx sdk.Context, validators []abci.ValidatorUpdate) {
-	if len(validators) > 1 {
-		panic("more than one sequencer is not supported")
+func (k Keeper) SetDymintSequencers(ctx sdk.Context, sequencers []abci.ValidatorUpdate) {
+	if len(sequencers) > 1 {
+		panic(types.ErrMultipleDymintSequencers)
 	}
-	val := validators[0]
+	seq := sequencers[0]
 
-	tmkey, err := tmcrypto.PubKeyFromProto(val.PubKey)
+	tmkey, err := tmcrypto.PubKeyFromProto(seq.PubKey)
 	if err != nil {
 		panic(err)
 	}
@@ -26,10 +26,10 @@ func (k Keeper) SetDymintSequencers(ctx sdk.Context, validators []abci.Validator
 		panic(err)
 	}
 
-	sequencer, err := types.NewSequencer(sdk.ValAddress(types.GenesisOperatorAddrStub), pubKey, uint64(val.Power))
+	sequencer, err := types.NewSequencer(sdk.ValAddress(types.GenesisOperatorAddrStub), pubKey, uint64(seq.Power))
 	if err != nil {
 		panic(err)
 	}
 
-	k.SetValidator(ctx, sequencer)
+	k.SetSequencer(ctx, sequencer)
 }

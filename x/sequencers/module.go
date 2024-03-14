@@ -86,22 +86,16 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper        keeper.Keeper
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	keeper keeper.Keeper
 }
 
 func NewAppModule(
 	cdc codec.Codec,
 	keeper keeper.Keeper,
-	accountKeeper types.AccountKeeper,
-	bankKeeper types.BankKeeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
-		accountKeeper:  accountKeeper,
-		bankKeeper:     bankKeeper,
 	}
 }
 
@@ -132,8 +126,8 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 // RegisterInvariants registers the capability module's invariants.
 func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// InitGenesis performs the capability module's genesis initialization It returns
-// no validator updates.
+// InitGenesis performs the capability module's genesis initialization
+// It returns the sequencers set by dymint as the validator updates
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {
 	// Initialize global index to index in genesis state
 	var genState types.GenesisState
@@ -153,7 +147,7 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 	//set proposer address if not set
-	_, ok := am.keeper.GetValidator(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
+	_, ok := am.keeper.GetSequencer(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
 	if ok {
 		//make sure we're in genesis block
 		if ctx.BlockHeight() > 1 {

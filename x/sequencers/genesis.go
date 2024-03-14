@@ -15,7 +15,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	k.SetParams(ctx, genState.Params)
 
 	//get the dymint sequencers if it's clean genesis
-	val, ok := k.GetValidator(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
+	val, ok := k.GetSequencer(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
 	if ok {
 		updates = append(updates, val.ABCIValidatorUpdate(sdk.DefaultPowerReduction))
 	}
