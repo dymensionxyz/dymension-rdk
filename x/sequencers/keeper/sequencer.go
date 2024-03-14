@@ -8,7 +8,7 @@ import (
 
 /* ---------------------------------- alias --------------------------------- */
 // get a single validator by consensus address
-func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingtypes.ValidatorI, found bool) {
+func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingtypes.Validator, found bool) {
 	return k.GetSequencerByConsAddr(ctx, consAddr)
 }
 
@@ -27,7 +27,7 @@ func (k Keeper) GetSequencer(ctx sdk.Context, addr sdk.ValAddress) (sequencer st
 }
 
 // get a single sequencer by consensus address
-func (k Keeper) GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (sequencer stakingtypes.ValidatorI, found bool) {
+func (k Keeper) GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (sequencer stakingtypes.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	opAddr := store.Get(types.GetSequencerByConsAddrKey(consAddr))
 	if opAddr == nil {

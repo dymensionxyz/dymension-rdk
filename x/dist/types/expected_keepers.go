@@ -9,7 +9,7 @@ import (
 
 // StakingKeeper expected staking keeper (noalias)
 type SequencerKeeper interface {
-	GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (stakingtypes.ValidatorI, bool)
+	GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (stakingtypes.Validator, bool)
 }
 
 // StakingKeeper expected staking keeper (noalias)
