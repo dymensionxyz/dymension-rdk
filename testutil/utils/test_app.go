@@ -5,8 +5,10 @@ import (
 	"testing"
 	"time"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 
+	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/stretchr/testify/require"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -47,6 +49,11 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 	return nil
 }
 
+var (
+	ProposerPK       = simapp.CreateTestPubKeys(1)[0]
+	ProposerConsAddr = sdk.ConsAddress(ProposerPK.Address())
+)
+
 func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 
@@ -63,8 +70,8 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.Raw
 // Setup initializes a new Rollapp. A Nop logger is set in Rollapp.
 func Setup(t *testing.T, isCheckTx bool) *app.App {
 	t.Helper()
-	pks := CreateTestPubKeys(1)
-	pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
+
+	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
 	require.NoError(t, err)
 
 	app, genesisState := setup(true, 5)

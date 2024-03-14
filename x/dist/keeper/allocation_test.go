@@ -35,7 +35,7 @@ var (
 	totalFeesDec  = sdk.NewDecFromInt(totalFees)
 )
 
-//Test multiple sequencers, each propose a block
+//TODO: Test multiple sequencers, each propose a block
 
 /* -------------------------------------------------------------------------- */
 /*                                    utils                                   */
@@ -60,28 +60,6 @@ func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
 	utils.FundModuleAccount(app, ctx, feeCollector.GetName(), fees)
 	// require.NoError(t, simapp.FundModuleAccount(app.BankKeeper, ctx, feeCollector.GetName(), fees))
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
-}
-
-func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddress) {
-	// create sequencer for dymint
-	err := app.SequencersKeeper.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(valConsPk2), 0)
-	require.NoError(t, err)
-
-	// create sequencer
-	msgServ := seqkeeper.NewMsgServerImpl(app.SequencersKeeper)
-	description := stakingtypes.NewDescription(
-		"moniker",
-		"identity",
-		"website",
-		"security",
-		"details",
-	)
-
-	msg, _ := seqtypes.NewMsgCreateSequencer(
-		sdk.ValAddress(valAddr), valConsPk2, description,
-	)
-	_, err = msgServ.CreateSequencer(sdk.WrapSDKContext(ctx), msg)
-	require.NoError(t, err)
 }
 
 func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
@@ -133,7 +111,7 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// allocate tokens as if both had voted and second was proposer
-	app.DistrKeeper.AllocateTokens(ctx, valConsAddr2)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
 
 	/* ------------------------------ Test stakers ------------------------------ */
 	// outstanding rewards: 60% to val1 and 40% to val2
@@ -184,7 +162,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 	fundModules(t, ctx, app)
 
 	// create sequencer
-	createSeq(t, ctx, app, valAddrs[1])
+	app.SequencersKeeper.SetOperatorAddressForGenesisSequencer(ctx, valAddrs[1])
 
 	proposerReward := 0.4
 	communityTax := 0.02
@@ -239,7 +217,7 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// create sequencer
-	createSeq(t, ctx, app, valAddrs[1])
+	app.SequencersKeeper.SetOperatorAddressForGenesisSequencer(ctx, valAddrs[1])
 
 	proposerReward := 0.4
 	communityTax := 0.02
@@ -250,7 +228,7 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 		WithdrawAddrEnabled: false,
 	})
 	// allocate tokens as if both had voted and second was proposer
-	app.DistrKeeper.AllocateTokens(ctx, valConsAddr2)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
 
 	/* ------------------------- Test proposer rewards ------------------------ */
 	proposerFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", proposerReward)))
@@ -368,7 +346,7 @@ func TestAllocateTokensTruncation(t *testing.T) {
 			SignedLastBlock: true,
 		},
 	}
-	app.DistrKeeper.AllocateTokens(ctx, sdk.ConsAddress(valConsPk2.Address()))
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
 
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards.IsValid())
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards.IsValid())

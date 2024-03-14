@@ -154,9 +154,12 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 	//set proposer address if not set
 	_, ok := am.keeper.GetValidator(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
-	//TODO: make sure we're in genesis block
 	if ok {
-		am.keeper.SetOperatorAddressForGenesisSequencer(ctx, string(ctx.BlockHeader().ProposerAddress))
+		//make sure we're in genesis block
+		if ctx.BlockHeight() > 1 {
+			panic("operator address should be set on genesis")
+		}
+		am.keeper.SetOperatorAddressForGenesisSequencer(ctx, sdk.ValAddress(ctx.BlockHeader().ProposerAddress))
 	}
 
 	am.keeper.TrackHistoricalInfo(ctx)

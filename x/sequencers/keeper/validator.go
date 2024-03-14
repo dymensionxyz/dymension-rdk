@@ -79,14 +79,14 @@ func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []stakingtypes.Val
 	return validators
 }
 
-func (k Keeper) SetOperatorAddressForGenesisSequencer(ctx sdk.Context, proposerAddr string) {
+func (k Keeper) SetOperatorAddressForGenesisSequencer(ctx sdk.Context, proposerValAddr sdk.ValAddress) {
 	val, ok := k.GetValidator(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
 	if !ok {
 		return
 	}
 
 	k.DeletetValidator(ctx, val)
-	val.OperatorAddress = proposerAddr
+	val.OperatorAddress = proposerValAddr.String()
 	k.SetValidator(ctx, val)
 	k.SetValidatorByConsAddr(ctx, val)
 }

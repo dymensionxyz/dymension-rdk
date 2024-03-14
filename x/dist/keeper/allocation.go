@@ -7,9 +7,7 @@ import (
 )
 
 // AllocateTokens handles distribution of the collected fees
-func (k Keeper) AllocateTokens(
-	ctx sdk.Context, blockProposer sdk.ConsAddress) {
-
+func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	logger := k.Logger(ctx)
 
 	// fetch and clear the collected fees for distribution, since this is
@@ -29,10 +27,9 @@ func (k Keeper) AllocateTokens(
 	}
 
 	/* ---------------------------- Pay the proposer ---------------------------- */
+	// calculate and pay proposer reward
 	proposerReward := sdk.DecCoins{}
 	proposerValidator, found := k.seqKeeper.GetValidatorByConsAddr(ctx, blockProposer)
-
-	// calculate and pay previous proposer reward
 	if !found {
 		logger.Error("failed to find the validator for this block. reward not allocated")
 	} else {
