@@ -9,12 +9,9 @@ func (k Keeper) HandleMintingEpoch(ctx sdk.Context) (sdk.Coins, error) {
 	var mintedCoins sdk.Coins
 	params := k.GetParams(ctx)
 
-	// fetch stored minter & params
-	minter := k.GetMinter(ctx)
-
 	//calculate coins
 	total := k.bankKeeper.GetSupply(ctx, params.MintDenom)
-	mintAmount := minter.CurrentInflationRate.MulInt(total.Amount).QuoInt(sdk.NewInt(params.MintEpochSpreadFactor))
+	mintAmount := k.CalcMintedCoins(ctx, total.Amount)
 	if mintAmount.IsZero() {
 		return mintedCoins, nil
 	}
@@ -35,7 +32,13 @@ func (k Keeper) HandleMintingEpoch(ctx sdk.Context) (sdk.Coins, error) {
 	return mintedCoins, nil
 }
 
-// ___________________________________________________________________________________________________
+func (k Keeper) CalcMintedCoins(ctx sdk.Context, totalAmt sdk.Int) sdk.Dec {
+	params := k.GetParams(ctx)
+	minter := k.GetMinter(ctx)
+	mintAmount := minter.CurrentInflationRate.MulInt(totalAmt).QuoInt(sdk.NewInt(params.MintEpochSpreadFactor))
+	return mintAmount
+}
+
 // DistributeMintedCoins implements distribution of minted coins from mint to external modules.
 func (k Keeper) DistributeMintedCoin(ctx sdk.Context, mintedCoins sdk.Coins) error {
 	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, mintedCoins)

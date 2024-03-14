@@ -412,6 +412,11 @@ func NewRollapp(
 		app.EpochsKeeper,
 		authtypes.FeeCollectorName,
 	)
+	app.MintKeeper.SetHooks(
+		minttypes.NewMultiMintHooks(
+		// insert mint hooks receivers here
+		),
+	)
 
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec, keys[distrtypes.StoreKey], app.GetSubspace(distrtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
