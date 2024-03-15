@@ -13,10 +13,6 @@ type Keeper struct {
 	cdc      codec.BinaryCodec
 
 	bankKeeper denommetadatatypes.BankKeeper
-
-	// the address capable of executing a MsgUpdateParams message. Typically, this
-	// should be the x/gov module account.
-	authority string
 }
 
 // NewKeeper creates new instances of the Keeper
@@ -31,11 +27,5 @@ func NewKeeper(
 		storeKey:   storeKey,
 		cdc:        cdc,
 		bankKeeper: bk,
-		authority:  authority,
 	}
-}
-
-// GetAuthority returns the x/mint module's authority.
-func (k Keeper) GetAuthority() string {
-	return k.authority
 }
