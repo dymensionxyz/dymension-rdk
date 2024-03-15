@@ -8,7 +8,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.46.13
 	github.com/cosmos/ibc-go/v6 v6.1.1
 	github.com/dymensionxyz/dymint v0.6.0-beta
-	github.com/dymensionxyz/rollapp v1.0.0-beta
+	github.com/dymensionxyz/rollapp v1.0.0-beta.0.20240315140709-3c5d62c73452
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.3
 	github.com/gorilla/mux v1.8.0

@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	epochkeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
+	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	"github.com/dymensionxyz/rollapp/app"
@@ -29,6 +30,12 @@ func NewTestSequencerKeeperFromApp(t *testing.T, app *app.App) (*seqkeeper.Keepe
 
 func NewTestMintKeeperFromApp(t *testing.T, app *app.App) (*mintkeeper.Keeper, sdk.Context) {
 	k := &app.MintKeeper
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
+	return k, ctx
+}
+
+func NewTestHubGenesisKeeperFromApp(app *app.App) (*hubgenkeeper.Keeper, sdk.Context) {
+	k := &app.HubGenesisKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
 	return k, ctx
 }
