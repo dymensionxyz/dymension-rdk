@@ -310,11 +310,11 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_EpochInfos_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"dymensionxyz", "rollapp", "sequencers"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_EpochInfos_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"dymensionxyz", "dymension-rdk", "epochs"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_CurrentEpoch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"dymensionxyz", "rollapp", "sequencers", "current_epoch"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_CurrentEpoch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"dymensionxyz", "dymension-rdk", "epochs", "current_epoch"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_EpochInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"dymensionxyz", "rollapp", "sequencers", "epoch_info"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_EpochInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"dymensionxyz", "dymension-rdk", "epochs", "epoch_info"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (
