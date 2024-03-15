@@ -28,7 +28,7 @@ func NewParams(
 	}
 }
 
-// DefaultParams returns default x/drip module parameters.
+// DefaultParams returns default x/denommetadata module parameters.
 func DefaultParams() Params {
 	return Params{
 		AllowedAddresses: DefaultAllowedAddresses,

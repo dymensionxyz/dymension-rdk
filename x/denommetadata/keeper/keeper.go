@@ -7,7 +7,6 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
-	denommetadatatypes "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
 
 // Keeper of this module maintains distributing tokens to all stakers.
@@ -16,19 +15,19 @@ type Keeper struct {
 	cdc        codec.BinaryCodec
 	paramSpace paramtypes.Subspace
 
-	bankKeeper denommetadatatypes.BankKeeper
+	bankKeeper types.BankKeeper
 }
 
 // NewKeeper creates new instances of the Keeper
 func NewKeeper(
 	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
-	bk denommetadatatypes.BankKeeper,
+	bk types.BankKeeper,
 	paramSpace paramtypes.Subspace,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
-		paramSpace = paramSpace.WithKeyTable(denommetadatatypes.ParamKeyTable())
+		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
 	}
 
 	return Keeper{
