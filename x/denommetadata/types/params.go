@@ -4,14 +4,20 @@ import (
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var (
-	DefaultEnableDrip       = true
+	KeyAllowedAddresses     = []byte("AllowedAddresses")
 	DefaultAllowedAddresses = []string(nil) // no one allowed
 )
+
+// ParamTable for minting module.
+func ParamKeyTable() paramtypes.KeyTable {
+	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
+}
 
 // NewParams creates a new Params object
 func NewParams(
@@ -29,24 +35,16 @@ func DefaultParams() Params {
 	}
 }
 
-func validateArray(i interface{}) error {
-	_, ok := i.([]string)
+func (p Params) Validate() error {
+	return assertValidAddresses(p.AllowedAddresses)
+}
+
+func assertValidAddresses(i interface{}) error {
+	addrs, ok := i.([]string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	return nil
-}
-
-func (p Params) Validate() error {
-	if err := validateArray(p.AllowedAddresses); err != nil {
-		return err
-	}
-
-	return assertValidAddresses(p.AllowedAddresses)
-}
-
-func assertValidAddresses(addrs []string) error {
 	idx := make(map[string]struct{}, len(addrs))
 	for _, a := range addrs {
 		if a == "" {
@@ -61,4 +59,11 @@ func assertValidAddresses(addrs []string) error {
 		idx[a] = struct{}{}
 	}
 	return nil
+}
+
+// Implements params.ParamSet.
+func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
+	return paramtypes.ParamSetPairs{
+		paramtypes.NewParamSetPair(KeyAllowedAddresses, &p.AllowedAddresses, assertValidAddresses),
+	}
 }

@@ -13,9 +13,7 @@ func InitGenesis(
 	k keeper.Keeper,
 	data types.GenesisState,
 ) {
-	if err := k.SetParams(ctx, data.Params); err != nil {
-		panic(err)
-	}
+	k.SetParams(ctx, data.Params)
 }
 
 // ExportGenesis export module state
