@@ -1,7 +1,6 @@
 syntax = "proto3";
 package rollapp.mint.v1beta1;
 
-
 import "gogoproto/gogo.proto";
 import "mint/v1beta1/mint.proto";
 
