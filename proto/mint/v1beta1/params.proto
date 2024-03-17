@@ -16,26 +16,22 @@ message Params {
   string mint_epoch_identifier = 2
       [ (gogoproto.moretags) = "yaml:\"mint_epoch_identifier\"" ];
 
-    // how many epochs of type "epoch_identifier" are in annually (e.g 365 days)
-  int64 mint_epoch_spread_factor = 3
-  [ (gogoproto.moretags) = "yaml:\"mint_epoch_spread_factor\"" ];
-
   // start epoch to start minting rewards from
-  int64 mint_start_epoch = 4
+  int64 mint_start_epoch = 3
       [ (gogoproto.moretags) =
             "yaml:\"minting_rewards_distribution_start_epoch\"" ];
 
 
-  string inflation_epoch_identifier = 5
-      [ (gogoproto.moretags) = "yaml:\"inflation_epoch_identifier\"" ];
+  string inflation_change_epoch_identifier = 4
+      [ (gogoproto.moretags) = "yaml:\"inflation_change_epoch_identifier\"" ];
 
-  string inflation_rate_change = 6 [
+  string inflation_rate_change = 5 [
     (gogoproto.moretags) = "yaml:\"inflation_rate_change\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
 
-  string target_inflation_rate = 7 [
+  string target_inflation_rate = 6 [
     (gogoproto.moretags) = "yaml:\"target_inflation_rate\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable) = false

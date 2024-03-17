@@ -21,13 +21,11 @@ func TestMinting(t *testing.T) {
 	/* ---------------------------------- setup --------------------------------- */
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestMintKeeperFromApp(t, app)
-
 	params := k.GetParams(ctx)
-	params.MintEpochSpreadFactor = 100
+
 	minter := types.Minter{
 		CurrentInflationRate: sdk.NewDecWithPrec(15, 2), // 15%
 	}
-	k.SetParams(ctx, params)
 	k.SetMinter(ctx, minter)
 
 	// set expectations
