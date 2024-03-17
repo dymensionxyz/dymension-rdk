@@ -6,6 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	epochkeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
 	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
@@ -29,6 +30,13 @@ func NewTestSequencerKeeperFromApp(t *testing.T, app *app.App) (*seqkeeper.Keepe
 
 func NewTestMintKeeperFromApp(t *testing.T, app *app.App) (*mintkeeper.Keeper, sdk.Context) {
 	k := &app.MintKeeper
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
+	return k, ctx
+}
+
+// TODO: when dymension release denommetadata module, replace this with denommetadata keeper and remove this
+func NewTestBankKeeperFromApp(t *testing.T, app *app.App) (*bankkeeper.Keeper, sdk.Context) {
+	k := &app.BankKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
 	return k, ctx
 }

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	amino = codec.NewLegacyAmino()
+	Amino = codec.NewLegacyAmino()
 
 	// ModuleCdc references the global erc20 module codec. Note, the codec should
 	// ONLY be used in certain instances of tests and for JSON encoding.
@@ -19,7 +19,7 @@ var (
 	ModuleCdc = codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
 
 	// AminoCdc is a amino codec created to support amino JSON compatible msgs.
-	AminoCdc = codec.NewAminoCodec(amino)
+	AminoCdc = codec.NewAminoCodec(Amino)
 )
 
 const (
@@ -30,9 +30,9 @@ const (
 
 // NOTE: This is required for the GetSignBytes function
 func init() {
-	RegisterLegacyAminoCodec(amino)
-	sdk.RegisterLegacyAminoCodec(amino)
-	amino.Seal()
+	RegisterLegacyAminoCodec(Amino)
+	sdk.RegisterLegacyAminoCodec(Amino)
+	Amino.Seal()
 
 	// Register all Amino interfaces and concrete types on the authz Amino codec
 	// so that this can later be used to properly serialize MsgGrant and MsgExec

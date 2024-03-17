@@ -20,7 +20,7 @@ func NewQuerier(k Keeper) Querier {
 	return Querier{Keeper: k}
 }
 
-// Params returns the fees module params
+// Params returns denommetadata module params
 func (q Querier) Params(
 	c context.Context,
 	_ *types.QueryParamsRequest,
