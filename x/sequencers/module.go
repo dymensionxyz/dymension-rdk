@@ -150,7 +150,7 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 	_, ok := am.keeper.GetSequencer(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
 	if ok {
 		//make sure we're in genesis block
-		if ctx.BlockHeight() > 1 {
+		if ctx.BlockHeader().LastBlockId.Hash != nil {
 			panic("operator address should be set on genesis")
 		}
 		am.keeper.SetOperatorAddressForGenesisSequencer(ctx, sdk.ValAddress(ctx.BlockHeader().ProposerAddress))
