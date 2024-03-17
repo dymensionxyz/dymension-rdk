@@ -49,8 +49,8 @@ func NewParams(
 func DefaultParams() Params {
 	return Params{
 		MintDenom:                sdk.DefaultBondDenom,
-		MintEpochIdentifier:      "day",
-		MintEpochSpreadFactor:    365,
+		MintEpochIdentifier:      "minute",
+		MintEpochSpreadFactor:    60 * 24 * 365,
 		MintStartEpoch:           1,
 		InflationEpochIdentifier: "year",
 		InflationRateChange:      sdk.NewDecWithPrec(1, 2), // 1% annual inflation change

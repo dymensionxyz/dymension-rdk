@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"testing"
 
+	"cosmossdk.io/math"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -68,10 +70,10 @@ func TestCalcMintedCoins(t *testing.T) {
 
 	testCases := []struct {
 		name                 string
-		totalSupply          sdk.Int
+		totalSupply          math.Int
 		currentInflationRate sdk.Dec
 		spreadFactor         int64
-		expectedAmount       sdk.Int
+		expectedAmount       math.Int
 	}{
 		{
 			name:                 "Test Default Params",

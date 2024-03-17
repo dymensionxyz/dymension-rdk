@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/x/mint/types"
 )
@@ -32,7 +33,7 @@ func (k Keeper) HandleMintingEpoch(ctx sdk.Context) (sdk.Coins, error) {
 	return mintedCoins, nil
 }
 
-func (k Keeper) CalcMintedCoins(ctx sdk.Context, totalAmt sdk.Int) sdk.Dec {
+func (k Keeper) CalcMintedCoins(ctx sdk.Context, totalAmt math.Int) sdk.Dec {
 	params := k.GetParams(ctx)
 	minter := k.GetMinter(ctx)
 	mintAmount := minter.CurrentInflationRate.MulInt(totalAmt).QuoInt(sdk.NewInt(params.MintEpochSpreadFactor))

@@ -26,7 +26,7 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochInfo epochstypes.EpochInfo) 
 
 	// Update inflation
 	if epochIdentifier == params.InflationEpochIdentifier {
-		newInfaltion, err := k.HandleInflationChange(ctx)
+		newInflation, err := k.HandleInflationChange(ctx)
 		if err != nil {
 			k.Logger(ctx).Error("error updating inflation", "error", err)
 			return
@@ -36,7 +36,7 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochInfo epochstypes.EpochInfo) 
 			sdk.NewEvent(
 				types.EventTypeInflation,
 				sdk.NewAttribute(types.AttributeEpochNumber, fmt.Sprintf("%d", epochNumber)),
-				sdk.NewAttribute(types.AttributeKeyInflationRate, newInfaltion.String()),
+				sdk.NewAttribute(types.AttributeKeyInflationRate, newInflation.String()),
 			),
 		)
 	}
