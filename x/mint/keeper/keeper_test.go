@@ -17,7 +17,7 @@ func TestMintDistribution(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestMintKeeperFromApp(t, app)
 
-	// // fetch stored minter & params
+	// fetch stored minter & params
 	minter := k.GetMinter(ctx)
 	params := types.DefaultParams()
 	const mintAmt = 1000000000000000000
