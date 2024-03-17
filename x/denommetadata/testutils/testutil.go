@@ -23,7 +23,7 @@ import (
 // NewTestDenommetadataKeeper creates a new denommetadata keeper for testing
 func NewTestDenommetadataKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	app := utils.Setup(t, false)
-	bankKeeper, ctx := testkeepers.NewTestBankKeeperFromApp(t, app)
+	bankKeeper, _ := testkeepers.NewTestBankKeeperFromApp(t, app)
 
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	fmt.Println("storeKey: ", storeKey)
@@ -53,7 +53,7 @@ func NewTestDenommetadataKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 		paramsSubspace,
 	)
 
-	ctx = sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger()).WithMultiStore(stateStore)
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger()).WithMultiStore(stateStore)
 	// Initialize default params
 	denommetadataKeeper.SetParams(ctx, types.DefaultParams())
 
