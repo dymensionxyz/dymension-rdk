@@ -47,9 +47,8 @@ func assertValidAddresses(i interface{}) error {
 
 	idx := make(map[string]struct{}, len(addrs))
 	for _, a := range addrs {
-		if a == "" {
-			return ErrBlank.Wrapf("address: %s", a)
-		}
+
+		// this also checks for empty addresses
 		if _, err := sdk.AccAddressFromBech32(a); err != nil {
 			return errorsmod.Wrapf(err, "address: %s", a)
 		}
