@@ -21,18 +21,7 @@ func (k Keeper) CreateDenomMetadata(
 		return nil, err
 	}
 
-	params := k.GetParams(ctx)
-
-	// Check if sender is allowed
-	authorized := false
-	for _, addr := range params.AllowedAddresses {
-		if msg.SenderAddress == addr {
-			authorized = true
-			break
-		}
-	}
-
-	if !authorized {
+	if !k.IsAddressPermissioned(ctx, msg.SenderAddress) {
 		return nil, types.ErrNoPermission
 	}
 
@@ -56,18 +45,7 @@ func (k Keeper) UpdateDenomMetadata(
 		return nil, err
 	}
 
-	params := k.GetParams(ctx)
-
-	// Check if sender is allowed
-	authorized := false
-	for _, addr := range params.AllowedAddresses {
-		if msg.SenderAddress == addr {
-			authorized = true
-			break
-		}
-	}
-
-	if !authorized {
+	if !k.IsAddressPermissioned(ctx, msg.SenderAddress) {
 		return nil, types.ErrNoPermission
 	}
 

@@ -48,3 +48,14 @@ func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramSpace.SetParamSet(ctx, &params)
 }
+
+// IsAddressPermissioned checks if the given address is permissioned to create or update denom metadata
+func (k Keeper) IsAddressPermissioned(ctx sdk.Context, address string) bool {
+	params := k.GetParams(ctx)
+	for _, PermissionedAddress := range params.AllowedAddresses {
+		if PermissionedAddress == address {
+			return true
+		}
+	}
+	return false
+}
