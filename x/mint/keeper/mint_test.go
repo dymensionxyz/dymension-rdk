@@ -33,7 +33,7 @@ func TestMinting(t *testing.T) {
 	// set expectations
 	totalSupplyAmt := sdk.NewInt(100000000) // 100M
 	totalSupplyCoin := sdk.NewCoin(params.MintDenom, totalSupplyAmt)
-	expectedMintedAmt := sdk.NewInt(150000) // 150K (15% of 100M / spread_factor)
+	expectedMintedAmt := sdk.NewInt(28) // 28 (15% of 100M / (365*24*60))
 
 	/* ---------------------------------- test ---------------------------------- */
 	//assert initial state
@@ -72,22 +72,19 @@ func TestCalcMintedCoins(t *testing.T) {
 		name                 string
 		totalSupply          math.Int
 		currentInflationRate sdk.Dec
-		spreadFactor         int64
 		expectedAmount       math.Int
 	}{
 		{
 			name:                 "Test Default Params",
-			totalSupply:          sdk.NewInt(1000000),
+			totalSupply:          sdk.NewInt(100000000),
 			currentInflationRate: sdk.NewDecWithPrec(15, 2), // 15%
-			spreadFactor:         100,
-			expectedAmount:       sdk.NewInt(1500),
+			expectedAmount:       sdk.NewInt(28),
 		},
 		{
 			name:                 "Test dymension decimals",
-			totalSupply:          sdk.NewInt(1000000).Mul(DymDecimals),
+			totalSupply:          sdk.NewInt(100000000).Mul(DymDecimals),
 			currentInflationRate: sdk.NewDecWithPrec(15, 2), // 15%
-			spreadFactor:         100,
-			expectedAmount:       sdk.NewInt(1500).Mul(DymDecimals),
+			expectedAmount:       sdk.NewInt(15000000).Mul(DymDecimals).QuoRaw(365 * 24 * 60),
 		},
 	}
 
@@ -102,11 +99,52 @@ func TestCalcMintedCoins(t *testing.T) {
 			}
 			k.SetMinter(ctx, minter)
 
+			mintedCoins := k.CalcMintedCoins(ctx, tc.totalSupply)
+			require.False(t, mintedCoins.IsZero())
+			assert.Equal(t, tc.expectedAmount, mintedCoins.TruncateInt())
+		})
+
+	}
+}
+
+func TestDifferentMintEpochs(t *testing.T) {
+	totalSupply := sdk.NewInt(100000000)              // 100M
+	currentInflationRate := sdk.NewDecWithPrec(10, 2) // 10%
+
+	testCases := []struct {
+		name           string
+		mintEpoch      string
+		expectedAmount math.Int
+	}{
+		{
+			name:           "Test Minute Mint Epoch",
+			mintEpoch:      "minute",
+			expectedAmount: sdk.NewInt(10000000).QuoRaw(365 * 24 * 60),
+		},
+		{
+			name:           "Test Day Mint Epoch",
+			mintEpoch:      "day",
+			expectedAmount: sdk.NewInt(10000000).QuoRaw(365),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			app := utils.Setup(t, false)
+			k, ctx := testkeepers.NewTestMintKeeperFromApp(t, app)
+
+			// Set params
 			params := k.GetParams(ctx)
-			params.MintEpochSpreadFactor = tc.spreadFactor
+			params.MintEpochIdentifier = tc.mintEpoch
 			k.SetParams(ctx, params)
 
-			mintedCoins := k.CalcMintedCoins(ctx, tc.totalSupply)
+			// Set minter
+			minter := types.Minter{
+				CurrentInflationRate: currentInflationRate,
+			}
+			k.SetMinter(ctx, minter)
+
+			mintedCoins := k.CalcMintedCoins(ctx, totalSupply)
 			require.False(t, mintedCoins.IsZero())
 			assert.Equal(t, tc.expectedAmount, mintedCoins.TruncateInt())
 		})

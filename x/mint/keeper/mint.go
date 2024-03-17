@@ -36,7 +36,10 @@ func (k Keeper) HandleMintingEpoch(ctx sdk.Context) (sdk.Coins, error) {
 func (k Keeper) CalcMintedCoins(ctx sdk.Context, totalAmt math.Int) sdk.Dec {
 	params := k.GetParams(ctx)
 	minter := k.GetMinter(ctx)
-	mintAmount := minter.CurrentInflationRate.MulInt(totalAmt).QuoInt(sdk.NewInt(params.MintEpochSpreadFactor))
+
+	epoch, _ := k.epochKeeper.GetEpochInfo(ctx, params.MintEpochIdentifier)
+	spreadFactor := types.InflationAnnualDuration / epoch.Duration
+	mintAmount := minter.CurrentInflationRate.MulInt(totalAmt.QuoRaw(int64(spreadFactor)))
 	return mintAmount
 }
 
