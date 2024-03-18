@@ -16,6 +16,7 @@ type Keeper struct {
 	paramSpace paramtypes.Subspace
 
 	bankKeeper types.BankKeeper
+	hooks      types.MultiDenomMetadataHooks
 }
 
 // NewKeeper creates new instances of the Keeper
@@ -24,6 +25,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	bk types.BankKeeper,
 	paramSpace paramtypes.Subspace,
+	hooks types.MultiDenomMetadataHooks,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
@@ -35,6 +37,7 @@ func NewKeeper(
 		cdc:        cdc,
 		paramSpace: paramSpace,
 		bankKeeper: bk,
+		hooks:      hooks,
 	}
 }
 
@@ -58,4 +61,17 @@ func (k Keeper) IsAddressPermissioned(ctx sdk.Context, address string) bool {
 		}
 	}
 	return false
+}
+
+// Set the denommetadata hooks
+func (k *Keeper) SetHooks(sh types.MultiDenomMetadataHooks) {
+	if k.hooks != nil {
+		panic("cannot set rollapp hooks twice")
+	}
+	k.hooks = sh
+}
+
+// Get the denommetadata hooks
+func (k *Keeper) GetHooks() types.MultiDenomMetadataHooks {
+	return k.hooks
 }

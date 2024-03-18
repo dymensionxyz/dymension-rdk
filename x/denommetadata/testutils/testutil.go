@@ -50,6 +50,7 @@ func NewTestDenommetadataKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 		cdc,
 		*bankKeeper,
 		paramsSubspace,
+		nil,
 	)
 
 	ctx = ctx.WithMultiStore(stateStore)
