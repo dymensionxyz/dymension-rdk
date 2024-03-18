@@ -20,7 +20,7 @@ import (
 func TestMinting(t *testing.T) {
 	/* ---------------------------------- setup --------------------------------- */
 	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestMintKeeperFromApp(t, app)
+	k, ctx := testkeepers.NewTestMintKeeperFromApp(app)
 	params := k.GetParams(ctx)
 
 	minter := types.Minter{
@@ -89,7 +89,7 @@ func TestCalcMintedCoins(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			app := utils.Setup(t, false)
-			k, ctx := testkeepers.NewTestMintKeeperFromApp(t, app)
+			k, ctx := testkeepers.NewTestMintKeeperFromApp(app)
 
 			// Set minter
 			minter := types.Minter{
@@ -129,7 +129,7 @@ func TestDifferentMintEpochs(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			app := utils.Setup(t, false)
-			k, ctx := testkeepers.NewTestMintKeeperFromApp(t, app)
+			k, ctx := testkeepers.NewTestMintKeeperFromApp(app)
 
 			// Set params
 			params := k.GetParams(ctx)
