@@ -1,8 +1,6 @@
 package types
 
 import (
-	fmt "fmt"
-
 	errorsmod "cosmossdk.io/errors"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -39,10 +37,8 @@ func (msg MsgCreateDenomMetadata) Type() string { return TypeMsgCreateDenomMetad
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgCreateDenomMetadata) ValidateBasic() error {
-	if msg.SenderAddress == "" {
-		return fmt.Errorf("sender address cannot be empty")
-	}
 
+	// this also checks for empty addresses
 	if _, err := sdk.AccAddressFromBech32(msg.SenderAddress); err != nil {
 		return errorsmod.Wrapf(err, "invalid sender address: %s", err.Error())
 	}
@@ -85,10 +81,8 @@ func (msg MsgUpdateDenomMetadata) Type() string { return TypeMsgUpdateDenomMetad
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateDenomMetadata) ValidateBasic() error {
-	if msg.SenderAddress == "" {
-		return fmt.Errorf("sender address cannot be empty")
-	}
 
+	// this also checks for empty addresses
 	if _, err := sdk.AccAddressFromBech32(msg.SenderAddress); err != nil {
 		return errorsmod.Wrapf(err, "invalid sender address: %s", err.Error())
 	}
