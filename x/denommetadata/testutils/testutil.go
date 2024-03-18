@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	tmdb "github.com/tendermint/tm-db"
 
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/keeper"
@@ -25,12 +26,16 @@ func NewTestDenommetadataKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	// setup store for denommetadata and bank module
 	storeKey := storetypes.NewKVStoreKey(types.StoreKey)
 	t_storeKey := storetypes.NewTransientStoreKey("t_" + types.StoreKey)
+	bankStoreKey := storetypes.NewKVStoreKey(banktypes.StoreKey)
+	bank_t_storeKey := storetypes.NewTransientStoreKey("t_" + banktypes.StoreKey)
 
 	db := tmdb.NewMemDB()
 	stateStore := store.NewCommitMultiStore(db)
 
 	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
-	stateStore.MountStoreWithDB(t_storeKey, storetypes.StoreTypeTransient, nil)
+	stateStore.MountStoreWithDB(t_storeKey, storetypes.StoreTypeTransient, db)
+	stateStore.MountStoreWithDB(bankStoreKey, storetypes.StoreTypeIAVL, db)
+	stateStore.MountStoreWithDB(bank_t_storeKey, storetypes.StoreTypeTransient, db)
 
 	require.NoError(t, stateStore.LoadLatestVersion(), "loading latest version failed")
 
