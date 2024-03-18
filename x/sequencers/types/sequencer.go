@@ -7,14 +7,14 @@ import (
 )
 
 /* ---------------------------------- UTILS --------------------------------- */
-func NewSequencer(operator sdk.ValAddress, pubKey cryptotypes.PubKey, power uint64) (stakingtypes.Validator, error) {
+func NewSequencer(operator sdk.ValAddress, pubKey cryptotypes.PubKey, power int64) (stakingtypes.Validator, error) {
 	val, err := stakingtypes.NewValidator(operator, pubKey, stakingtypes.Description{})
 	if err != nil {
 		return stakingtypes.Validator{}, err
 	}
 	if power > 0 {
 		val.Status = stakingtypes.Bonded
-		val.Tokens = sdk.TokensFromConsensusPower(int64(power), sdk.DefaultPowerReduction)
+		val.Tokens = sdk.TokensFromConsensusPower(power, sdk.DefaultPowerReduction)
 	}
 	return val, nil
 }

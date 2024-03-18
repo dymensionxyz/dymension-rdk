@@ -76,18 +76,3 @@ func (k Keeper) GetAllSequencers(ctx sdk.Context) (sequencers []stakingtypes.Val
 
 	return sequencers
 }
-
-func (k Keeper) SetOperatorAddressForGenesisSequencer(ctx sdk.Context, proposerValAddr sdk.ValAddress) {
-	val, ok := k.GetSequencer(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
-	if !ok {
-		panic("genesis sequencer not found")
-	}
-
-	k.DeleteSequencer(ctx, val)
-	val.OperatorAddress = proposerValAddr.String()
-	k.SetSequencer(ctx, val)
-	err := k.SetSequencerByConsAddr(ctx, val)
-	if err != nil {
-		panic(err)
-	}
-}
