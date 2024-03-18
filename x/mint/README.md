@@ -11,4 +11,4 @@ The `x/mint` module core functions are to:
 - Mint new tokens once per `mint_epoch` (default one day)
 - Have an inflation change function per `inflation_epoch` (default one year)
 
-# TODO::
+## TODO
