@@ -3,10 +3,6 @@ package app
 import (
 	"encoding/json"
 
-	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
-	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
-	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-
 	"github.com/cosmos/cosmos-sdk/std"
 
 	"io"
@@ -121,7 +117,7 @@ var (
 		minttypes.StoreKey, distrtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey,
 		ibchost.StoreKey, upgradetypes.StoreKey,
-		epochstypes.StoreKey, hubgentypes.StoreKey,
+		epochstypes.StoreKey,
 		ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 	}
 )
@@ -164,7 +160,6 @@ var (
 		ibc.AppModuleBasic{},
 		ibctransfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
-		hubgenesis.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -176,7 +171,6 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		hubgentypes.ModuleName:         {authtypes.Burner},
 	}
 )
 
@@ -207,7 +201,6 @@ type App struct {
 	EpochsKeeper     epochskeeper.Keeper
 	DistrKeeper      distrkeeper.Keeper
 	GovKeeper        govkeeper.Keeper
-	HubGenesisKeeper hubgenkeeper.Keeper
 	UpgradeKeeper    upgradekeeper.Keeper
 	ParamsKeeper     paramskeeper.Keeper
 	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -408,15 +401,6 @@ func NewRollapp(
 	)
 	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
 
-	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
-		appCodec,
-		keys[hubgentypes.StoreKey],
-		app.GetSubspace(hubgentypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
-		app.BankKeeper,
-		app.AccountKeeper,
-	)
-
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
@@ -446,7 +430,6 @@ func NewRollapp(
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
-		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper, app.AccountKeeper),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -472,7 +455,6 @@ func NewRollapp(
 		genutiltypes.ModuleName,
 		epochstypes.ModuleName,
 		paramstypes.ModuleName,
-		hubgentypes.ModuleName,
 	}
 	app.mm.SetOrderBeginBlockers(beginBlockersList...)
 
@@ -492,7 +474,6 @@ func NewRollapp(
 		upgradetypes.ModuleName,
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
-		hubgentypes.ModuleName,
 	}
 	app.mm.SetOrderEndBlockers(endBlockersList...)
 
@@ -518,7 +499,6 @@ func NewRollapp(
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		ibctransfertypes.ModuleName,
-		hubgentypes.ModuleName,
 	}
 	app.mm.SetOrderInitGenesis(initGenesisList...)
 
@@ -829,7 +809,6 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govv1.ParamKeyTable())
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	paramsKeeper.Subspace(hubgentypes.ModuleName)
 
 	return paramsKeeper
 }

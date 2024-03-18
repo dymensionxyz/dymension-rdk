@@ -84,7 +84,7 @@ func (k Keeper) GetAllValidators(ctx sdk.Context) (validators []stakingtypes.Val
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.ValidatorsKey)
-	defer func() { _ = iterator.Close() }()
+	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
 		validator := stakingtypes.MustUnmarshalValidator(k.cdc, iterator.Value())

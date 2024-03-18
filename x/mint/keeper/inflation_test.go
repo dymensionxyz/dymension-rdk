@@ -50,7 +50,7 @@ func TestInflationChangeTCs(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			app := utils.Setup(t, false)
-			k, ctx := testkeepers.NewTestMintKeeperFromApp(app)
+			k, ctx := testkeepers.NewTestMintKeeperFromApp(t, app)
 
 			// Set initial minter & params
 			minter := types.Minter{
