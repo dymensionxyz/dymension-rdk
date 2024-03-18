@@ -12,7 +12,7 @@ import (
 
 func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
+	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(t, app)
 	return k, ctx
 }
 

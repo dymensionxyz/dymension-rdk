@@ -21,7 +21,7 @@ import (
 
 func TestFailedInitGenesis(t *testing.T) {
 	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
+	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(t, app)
 
 	pks := utils.CreateTestPubKeys(1)
 	addr := sdk.ValAddress(pks[0].Address())

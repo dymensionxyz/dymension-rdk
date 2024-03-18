@@ -42,4 +42,4 @@ jobs:
         uses: nosborn/github-action-markdown-cli@v3.2.0
         with:
           files: .
-          config_file: .markdownlint.yaml
+          config-file: .markdownlint.yaml
