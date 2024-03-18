@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	ibctypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	"github.com/tendermint/tendermint/libs/log"
 

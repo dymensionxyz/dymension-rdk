@@ -2,13 +2,14 @@ package utils
 
 import (
 	"encoding/json"
+	"testing"
+	"time"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	"testing"
-	"time"
 
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 
