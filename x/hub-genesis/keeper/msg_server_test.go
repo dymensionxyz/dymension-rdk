@@ -2,18 +2,19 @@ package keeper_test
 
 import (
 	"fmt"
+	"testing"
+
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibctypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/stretchr/testify/suite"
-	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/ibctest"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	"github.com/dymensionxyz/rollapp/app"
 )
 
 const (

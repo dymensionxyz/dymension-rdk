@@ -5,8 +5,8 @@ import (
 
 	ibctypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	ibctesting "github.com/cosmos/ibc-go/v6/testing"
+	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	"github.com/dymensionxyz/rollapp/app"
 	"github.com/stretchr/testify/suite"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
