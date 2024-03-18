@@ -10,8 +10,8 @@ import (
 var _ paramtypes.ParamSet = (*Params)(nil)
 
 var (
-	// GenesisTriggerrerWhitelist is store's key for GenesisTriggerrerWhitelist Params
-	KeyGenesisTriggerrerWhitelist = []byte("GenesisTriggerrerWhitelist")
+	// GenesisTriggererWhitelist is store's key for GenesisTriggererWhitelist Params
+	KeyGenesisTriggererWhitelist = []byte("GenesisTriggererWhitelist")
 )
 
 // ParamTable for hub_genesis module.
@@ -19,14 +19,14 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewParams(genesisTriggererWhitelist []GenesisTriggerrerParams) Params {
+func NewParams(genesisTriggererWhitelist []GenesisTriggererParams) Params {
 	return Params{
-		GenesisTriggerrerWhitelist: genesisTriggererWhitelist,
+		GenesisTriggererWhitelist: genesisTriggererWhitelist,
 	}
 }
 
 func DefaultParams() Params {
-	return NewParams([]GenesisTriggerrerParams{})
+	return NewParams([]GenesisTriggererParams{})
 }
 
 // String implements the Stringer interface.
@@ -38,24 +38,24 @@ func (p Params) String() string {
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyGenesisTriggerrerWhitelist, &p.GenesisTriggerrerWhitelist, validateGenesisTriggerrerWhitelist),
+		paramtypes.NewParamSetPair(KeyGenesisTriggererWhitelist, &p.GenesisTriggererWhitelist, validateGenesisTriggererWhitelist),
 	}
 }
 
 // Validate checks that the parameters have valid values.
 func (p Params) Validate() error {
-	return validateGenesisTriggerrerWhitelist(p.GenesisTriggerrerWhitelist)
+	return validateGenesisTriggererWhitelist(p.GenesisTriggererWhitelist)
 }
 
-// validateGenesisTriggerrerWhitelist validates the GenesisTriggerrerWhitelist param
-func validateGenesisTriggerrerWhitelist(v interface{}) error {
-	genesisTriggererWhitelist, ok := v.([]GenesisTriggerrerParams)
+// validateGenesisTriggererWhitelist validates the GenesisTriggererWhitelist param
+func validateGenesisTriggererWhitelist(v interface{}) error {
+	genesisTriggererWhitelist, ok := v.([]GenesisTriggererParams)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", v)
 	}
 
-	// Check for duplicated index in genesis triggerrer address
-	rollappGenesisTriggerrerIndexMap := make(map[string]struct{})
+	// Check for duplicated index in genesis triggerer address
+	rollappGenesisTriggererIndexMap := make(map[string]struct{})
 
 	for i, item := range genesisTriggererWhitelist {
 		// check Bech32 format
@@ -64,10 +64,10 @@ func validateGenesisTriggerrerWhitelist(v interface{}) error {
 		}
 
 		// check duplicate
-		if _, ok := rollappGenesisTriggerrerIndexMap[item.Address]; ok {
+		if _, ok := rollappGenesisTriggererIndexMap[item.Address]; ok {
 			return fmt.Errorf("duplicated genesis trigerrer address in genesisTriggererWhitelist")
 		}
-		rollappGenesisTriggerrerIndexMap[item.Address] = struct{}{}
+		rollappGenesisTriggererIndexMap[item.Address] = struct{}{}
 	}
 
 	return nil

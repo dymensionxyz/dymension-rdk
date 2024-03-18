@@ -18,7 +18,6 @@ import (
 func NewTestEpochKeeperFromApp(t *testing.T, app *app.App) (*epochkeeper.Keeper, sdk.Context) {
 	k := &app.EpochsKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
-
 	return k, ctx
 }
 

@@ -24,7 +24,7 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Get the sender and validate they are in the whitelist
-	if !m.IsAddressInGenesisTriggerrerWhiteList(ctx, msg.Address) {
+	if !m.IsAddressInGenesisTriggererWhiteList(ctx, msg.Address) {
 		return nil, sdkerrors.ErrUnauthorized
 	}
 
@@ -43,6 +43,7 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 			msg.ChannelId, tmClientState.GetChainID(), msg.HubId)
 	}
 
+	// if the hub is found, the genesis event was already triggered
 	_, found := m.GetHub(ctx, msg.HubId)
 	if found {
 		return nil, types.ErrGenesisEventAlreadyTriggered
@@ -54,6 +55,7 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 		return nil, sdkerrors.Wrapf(types.ErrLockingGenesisTokens, "failed to lock tokens: %v", err)
 	}
 
+	// we save the hub in order to prevent the genesis event from being triggered again
 	m.SetHub(ctx, hub)
 
 	return &types.MsgHubGenesisEventResponse{}, nil

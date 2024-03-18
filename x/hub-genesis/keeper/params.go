@@ -16,14 +16,14 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramstore.SetParamSet(ctx, &params)
 }
 
-// GenesisTriggerrerWhitelist returns the GenesisTriggerrerWhitelist param
-func (k Keeper) GenesisTriggerrerWhitelist(ctx sdk.Context) (res []types.GenesisTriggerrerParams) {
-	k.paramstore.Get(ctx, types.KeyGenesisTriggerrerWhitelist, &res)
+// GenesisTriggererWhitelist returns the GenesisTriggererWhitelist param
+func (k Keeper) GenesisTriggererWhitelist(ctx sdk.Context) (res []types.GenesisTriggererParams) {
+	k.paramstore.Get(ctx, types.KeyGenesisTriggererWhitelist, &res)
 	return
 }
 
-func (k Keeper) IsAddressInGenesisTriggerrerWhiteList(ctx sdk.Context, address string) bool {
-	whitelist := k.GenesisTriggerrerWhitelist(ctx)
+func (k Keeper) IsAddressInGenesisTriggererWhiteList(ctx sdk.Context, address string) bool {
+	whitelist := k.GenesisTriggererWhitelist(ctx)
 	for _, item := range whitelist {
 		if item.Address == address {
 			return true

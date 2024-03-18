@@ -32,7 +32,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type MsgHubGenesisEvent struct {
 	// address is the bech32-encoded address of the sender
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// channel_id is the rollapp channel id on the hub
+	// channel_id is the hub channel id on the rollapp
 	ChannelId string `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
 	// hub_id is the hub id
 	HubId string `protobuf:"bytes,3,opt,name=hub_id,json=hubId,proto3" json:"hub_id,omitempty"`

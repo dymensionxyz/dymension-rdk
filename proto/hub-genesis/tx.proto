@@ -15,7 +15,7 @@ service Msg {
 message MsgHubGenesisEvent {
   // address is the bech32-encoded address of the sender
   string address = 1;
-  // channel_id is the rollapp channel id on the hub
+  // channel_id is the hub channel id on the rollapp
   string channel_id = 2;
   // hub_id is the hub id
   string hub_id = 3;
