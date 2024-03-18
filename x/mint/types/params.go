@@ -15,12 +15,12 @@ import (
 
 // Parameter store keys.
 var (
-	KeyMintDenom                            = []byte("MintDenom")
-	KeyGenesisEpochProvisions               = []byte("GenesisEpochProvisions")
-	KeyEpochIdentifier                      = []byte("EpochIdentifier")
-	KeyReductionPeriodInEpochs              = []byte("ReductionPeriodInEpochs")
-	KeyReductionFactor                      = []byte("ReductionFactor")
-	KeyMintingRewardsDistributionStartEpoch = []byte("MintingRewardsDistributionStartEpoch")
+	KeyMintDenom                      = []byte("MintDenom")
+	KeyMintEpochIdentifier            = []byte("MintEpochIdentifier")
+	KeyMintStartEpoch                 = []byte("MintStartEpoch")
+	KeyInflationChangeEpochIdentifier = []byte("InflationChangeEpochIdentifier")
+	KeyInflationRateChange            = []byte("InflationRateChange")
+	KeyTargetInflationRate            = []byte("TargetInflationRate")
 )
 
 // ParamTable for minting module.
@@ -29,28 +29,29 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 func NewParams(
-	mintDenom string, genesisEpochProvisions sdk.Dec, epochIdentifier string,
-	ReductionFactor sdk.Dec, reductionPeriodInEpochs int64, mintingRewardsDistributionStartEpoch int64,
+	mintDenom string, mintEpochIdentifier string,
+	mintStartEpoch int64, inflationEpochIdentifier string,
+	inflationRateChange sdk.Dec, targetInflationRate sdk.Dec,
 ) Params {
 	return Params{
-		MintDenom:                            mintDenom,
-		GenesisEpochProvisions:               genesisEpochProvisions,
-		EpochIdentifier:                      epochIdentifier,
-		ReductionPeriodInEpochs:              reductionPeriodInEpochs,
-		ReductionFactor:                      ReductionFactor,
-		MintingRewardsDistributionStartEpoch: mintingRewardsDistributionStartEpoch,
+		MintDenom:                      mintDenom,
+		MintEpochIdentifier:            mintEpochIdentifier,
+		MintStartEpoch:                 mintStartEpoch,
+		InflationChangeEpochIdentifier: inflationEpochIdentifier,
+		InflationRateChange:            inflationRateChange,
+		TargetInflationRate:            targetInflationRate,
 	}
 }
 
 // minting params
 func DefaultParams() Params {
 	return Params{
-		MintDenom:                            sdk.DefaultBondDenom,
-		GenesisEpochProvisions:               sdk.NewDec(2_500_000).Mul(sdk.NewDec(1_000_000)).Quo(sdk.NewDec(24 * 365)), // 2.5MST first year, broken into hours ~= 285ST / hour
-		EpochIdentifier:                      "mint",                                                                     // 1 hour
-		ReductionPeriodInEpochs:              24 * 365,                                                                   // 24hrs*365d = 8760
-		ReductionFactor:                      sdk.NewDec(1).QuoInt64(2),
-		MintingRewardsDistributionStartEpoch: 0,
+		MintDenom:                      sdk.DefaultBondDenom,
+		MintEpochIdentifier:            "minute",
+		MintStartEpoch:                 1,
+		InflationChangeEpochIdentifier: "year",
+		InflationRateChange:            sdk.NewDecWithPrec(1, 2), // 1% annual inflation change
+		TargetInflationRate:            sdk.NewDecWithPrec(2, 2), // 2%
 	}
 }
 
@@ -59,19 +60,16 @@ func (p Params) Validate() error {
 	if err := validateMintDenom(p.MintDenom); err != nil {
 		return err
 	}
-	if err := validateGenesisEpochProvisions(p.GenesisEpochProvisions); err != nil {
+	if err := epochtypes.ValidateEpochIdentifierInterface(p.MintEpochIdentifier); err != nil {
 		return err
 	}
-	if err := epochtypes.ValidateEpochIdentifierInterface(p.EpochIdentifier); err != nil {
+	if err := epochtypes.ValidateEpochIdentifierInterface(p.InflationChangeEpochIdentifier); err != nil {
 		return err
 	}
-	if err := validateReductionPeriodInEpochs(p.ReductionPeriodInEpochs); err != nil {
+	if err := validateInflationRate(p.InflationRateChange); err != nil {
 		return err
 	}
-	if err := validateReductionFactor(p.ReductionFactor); err != nil {
-		return err
-	}
-	if err := validateMintingRewardsDistributionStartEpoch(p.MintingRewardsDistributionStartEpoch); err != nil {
+	if err := validateInflationRate(p.TargetInflationRate); err != nil {
 		return err
 	}
 
@@ -88,11 +86,11 @@ func (p Params) String() string {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMintDenom, &p.MintDenom, validateMintDenom),
-		paramtypes.NewParamSetPair(KeyGenesisEpochProvisions, &p.GenesisEpochProvisions, validateGenesisEpochProvisions),
-		paramtypes.NewParamSetPair(KeyEpochIdentifier, &p.EpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
-		paramtypes.NewParamSetPair(KeyReductionPeriodInEpochs, &p.ReductionPeriodInEpochs, validateReductionPeriodInEpochs),
-		paramtypes.NewParamSetPair(KeyReductionFactor, &p.ReductionFactor, validateReductionFactor),
-		paramtypes.NewParamSetPair(KeyMintingRewardsDistributionStartEpoch, &p.MintingRewardsDistributionStartEpoch, validateMintingRewardsDistributionStartEpoch),
+		paramtypes.NewParamSetPair(KeyMintEpochIdentifier, &p.MintEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
+		paramtypes.NewParamSetPair(KeyInflationChangeEpochIdentifier, &p.InflationChangeEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
+		paramtypes.NewParamSetPair(KeyMintStartEpoch, &p.MintStartEpoch, validateInt),
+		paramtypes.NewParamSetPair(KeyInflationRateChange, &p.InflationRateChange, validateInflationRate),
+		paramtypes.NewParamSetPair(KeyTargetInflationRate, &p.TargetInflationRate, validateInflationRate),
 	}
 }
 
@@ -112,57 +110,31 @@ func validateMintDenom(i interface{}) error {
 	return nil
 }
 
-func validateGenesisEpochProvisions(i interface{}) error {
-	v, ok := i.(sdk.Dec)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v.LT(sdk.ZeroDec()) {
-		return fmt.Errorf("genesis epoch provision must be non-negative")
-	}
-
-	return nil
-}
-
-func validateReductionPeriodInEpochs(i interface{}) error {
+func validateInt(i interface{}) error {
 	v, ok := i.(int64)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
 	if v <= 0 {
-		return fmt.Errorf("max validators must be positive: %d", v)
+		return fmt.Errorf("value must be positive: %d", v)
 	}
 
 	return nil
 }
 
-func validateReductionFactor(i interface{}) error {
+func validateInflationRate(i interface{}) error {
 	v, ok := i.(sdk.Dec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
 	if v.GT(sdk.NewDec(1)) {
-		return fmt.Errorf("reduction factor cannot be greater than 1")
+		return fmt.Errorf("inflation rate cannot be greater than 1")
 	}
 
 	if v.IsNegative() {
-		return fmt.Errorf("reduction factor cannot be negative")
-	}
-
-	return nil
-}
-
-func validateMintingRewardsDistributionStartEpoch(i interface{}) error {
-	v, ok := i.(int64)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	if v < 0 {
-		return fmt.Errorf("start epoch must be non-negative")
+		return fmt.Errorf("inflation rate cannot be negative")
 	}
 
 	return nil

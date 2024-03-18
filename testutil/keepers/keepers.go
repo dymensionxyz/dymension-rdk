@@ -10,9 +10,10 @@ import (
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
-	"github.com/dymensionxyz/rollapp/app"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+
+	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 )
 
 func NewTestEpochKeeperFromApp(t *testing.T, app *app.App) (*epochkeeper.Keeper, sdk.Context) {

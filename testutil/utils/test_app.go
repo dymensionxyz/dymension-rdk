@@ -10,20 +10,26 @@ import (
 	"testing"
 	"time"
 
+	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
+
 	"github.com/stretchr/testify/require"
-	dbm "github.com/tendermint/tm-db"
 
-	"github.com/dymensionxyz/rollapp/app"
-	"github.com/tendermint/tendermint/libs/log"
-
-	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	seqcli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
+
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/log"
+	dbm "github.com/tendermint/tm-db"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	// unnamed import of statik for swagger UI support
+	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
+
 	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
@@ -52,20 +58,20 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 	return nil
 }
 
-func setup(withGenesis bool, invCheckPeriod uint) (*app.App, app.GenesisState) {
+func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 
 	encCdc := app.MakeEncodingConfig()
 	testApp := app.NewRollapp(
-		log.NewNopLogger(), db, nil, true, map[int64]bool{}, app.DefaultNodeHome, invCheckPeriod, encCdc, EmptyAppOptions{},
+		log.NewNopLogger(), db, nil, true, map[int64]bool{}, "/tmp", invCheckPeriod, encCdc, EmptyAppOptions{},
 	)
 	if withGenesis {
 		return testApp, app.NewDefaultGenesisState(encCdc.Codec)
 	}
-	return testApp, app.GenesisState{}
+	return testApp, map[string]json.RawMessage{}
 }
 
-// Setup initializes a new SimApp. A Nop logger is set in SimApp.
+// Setup initializes a new Rollapp. A Nop logger is set in Rollapp.
 func Setup(t *testing.T, isCheckTx bool) *app.App {
 	t.Helper()
 	pks := CreateTestPubKeys(1)
