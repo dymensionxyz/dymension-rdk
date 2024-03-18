@@ -32,11 +32,10 @@ var (
 type HubGenesisMsgServerTestSuite struct {
 	ibctest.IBCTestUtilSuite
 
-	app         *app.App
-	k           *keeper.Keeper
-	msgServer   types.MsgServer
-	ctx         sdk.Context
-	queryClient types.QueryClient
+	app       *app.App
+	k         *keeper.Keeper
+	msgServer types.MsgServer
+	ctx       sdk.Context
 }
 
 func TestHubGenesisMsgServerTestSuite(t *testing.T) {

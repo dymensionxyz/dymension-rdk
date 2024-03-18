@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"testing"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -10,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtypes "github.com/tendermint/tendermint/types"
-	"testing"
 )
 
 // TODO: tech debt - this is almost exactly like the code in github.com/cosmos/ibc-go/v6/testing/chain.go
