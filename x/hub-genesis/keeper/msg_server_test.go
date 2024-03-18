@@ -69,7 +69,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			name: "successful hub genesis event",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggerrerWhitelist: []types.GenesisTriggerrerParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
 			},
 			msg: &types.MsgHubGenesisEvent{
@@ -86,7 +86,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			name: "invalid rollapp genesis event - genesis event already triggered",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggerrerWhitelist: []types.GenesisTriggerrerParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
 				Hub: types.Hub{
 					HubId: path.EndpointB.Chain.ChainID,
@@ -106,7 +106,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			name: "invalid rollapp genesis event - address not in whitelist",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggerrerWhitelist: []types.GenesisTriggerrerParams{{Address: utils.AccAddress().String()}},
+					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: utils.AccAddress().String()}},
 				},
 			},
 			msg: &types.MsgHubGenesisEvent{
@@ -123,7 +123,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			name: "invalid rollapp genesis event - invalid channel id",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggerrerWhitelist: []types.GenesisTriggerrerParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
 			},
 			msg: &types.MsgHubGenesisEvent{
@@ -140,7 +140,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			name: "invalid rollapp genesis event - invalid chain id",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggerrerWhitelist: []types.GenesisTriggerrerParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
 			},
 			msg: &types.MsgHubGenesisEvent{
@@ -157,7 +157,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			name: "invalid rollapp genesis event - module account has no coins",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggerrerWhitelist: []types.GenesisTriggerrerParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
 			},
 			msg: &types.MsgHubGenesisEvent{
