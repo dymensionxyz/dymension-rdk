@@ -2,16 +2,14 @@ package app
 
 import (
 	"encoding/json"
+	"io"
+	"net/http"
 
 	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 
 	"github.com/cosmos/cosmos-sdk/std"
-
-	"io"
-	"net/http"
-
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
 	abci "github.com/tendermint/tendermint/abci/types"
