@@ -25,8 +25,8 @@ const (
 
 var (
 	// Keys for store prefixes
-	SequencersKey           = []byte{0x01} // prefix for each key to a sequencer
-	SequencersByConsAddrKey = []byte{0x02} // prefix for each key to a sequencer index, by pubkey
+	SequencersKey           = []byte{0x21} // prefix for each key to a sequencer
+	SequencersByConsAddrKey = []byte{0x22} // prefix for each key to a sequencer index, by pubkey
 
 	HistoricalInfoKey = []byte{0x50} // prefix for the historical info
 )
