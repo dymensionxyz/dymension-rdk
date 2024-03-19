@@ -17,7 +17,7 @@ func TestGenesis(t *testing.T) {
 
 	app := utils.Setup(t, false)
 	//EpochsKeeper
-	k, ctx := testkeepers.NewTestEpochKeeperFromApp(t, app)
+	k, ctx := testkeepers.NewTestEpochKeeperFromApp(app)
 
 	epochs.InitGenesis(ctx, *k, genesisState)
 	got := epochs.ExportGenesis(ctx, *k)
