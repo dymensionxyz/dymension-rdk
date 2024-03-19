@@ -1,7 +1,13 @@
 package types
 
 import (
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+const (
+	InflationAnnualDuration = time.Duration(365 * 24 * 60 * time.Minute)
 )
 
 // NewMinter returns a new Minter object with the given epoch

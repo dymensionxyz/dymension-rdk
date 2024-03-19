@@ -26,7 +26,7 @@ var (
 	ValidatorsKey           = []byte{0x21} // prefix for each key to a validator
 	ValidatorsByConsAddrKey = []byte{0x22} // prefix for each key to a validator index, by pubkey
 
-	DymintSeqKey = []byte{0x23} // prefix for each key sequencer registerd on dymint, by pubkey
+	DymintSeqKey = []byte{0x23} // prefix for each key sequencer registered on dymint, by pubkey
 
 	HistoricalInfoKey = []byte{0x50} // prefix for the historical info
 )

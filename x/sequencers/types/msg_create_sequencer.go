@@ -1,6 +1,7 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -83,7 +84,7 @@ func (msg MsgCreateSequencer) ValidateBasic() error {
 		return err
 	}
 	if !sdk.AccAddress(valAddr).Equals(delAddr) {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "validator address is invalid")
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "validator address is invalid")
 	}
 
 	if msg.Pubkey == nil {
@@ -91,11 +92,11 @@ func (msg MsgCreateSequencer) ValidateBasic() error {
 	}
 
 	if msg.Description == (stakingtypes.Description{}) {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "empty description")
 	}
 
 	if msg.Description.Moniker == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "missing moniker")
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "missing moniker")
 	}
 
 	return nil

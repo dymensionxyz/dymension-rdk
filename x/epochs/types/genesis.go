@@ -10,15 +10,25 @@ func NewGenesisState(epochs []EpochInfo) *GenesisState {
 }
 
 var (
-	HOUR_EPOCH = "hour"
-	DAY_EPOCH  = "day"
-	WEEK_EPOCH = "week"
-	YEAR_EPOCH = "year"
+	MINUTE_EPOCH = "minute"
+	HOUR_EPOCH   = "hour"
+	DAY_EPOCH    = "day"
+	WEEK_EPOCH   = "week"
+	YEAR_EPOCH   = "year"
 )
 
 // DefaultGenesis returns the default Epochs genesis state
 func DefaultGenesis() *GenesisState {
 	epochs := []EpochInfo{
+		{
+			Identifier:              MINUTE_EPOCH,
+			StartTime:               time.Time{},
+			Duration:                time.Minute,
+			CurrentEpoch:            0,
+			CurrentEpochStartHeight: 0,
+			CurrentEpochStartTime:   time.Time{},
+			EpochCountingStarted:    false,
+		},
 		{
 			Identifier:              HOUR_EPOCH,
 			StartTime:               time.Time{},
