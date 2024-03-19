@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"cosmossdk.io/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/spf13/cobra"
 
 	tmtypes "github.com/tendermint/tendermint/types"
@@ -63,7 +63,7 @@ $ %s gentx \'%s dymint show-sequencer\' --home=/path/to/home/dir --keyring-backe
 			config := serverCtx.Config
 			genDoc, err := tmtypes.GenesisDocFromFile(config.GenesisFile())
 			if err != nil {
-				return errors.Wrap(err, "failed to read genesis doc from file")
+				return errorsmod.Wrap(err, "failed to read genesis doc from file")
 			}
 
 			// create the app state
