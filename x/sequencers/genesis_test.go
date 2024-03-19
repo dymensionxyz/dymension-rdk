@@ -50,7 +50,8 @@ func TestFailedInitGenesis(t *testing.T) {
 func TestGenesis(t *testing.T) {
 	k, ctx := testutils.NewTestSequencerKeeper(t)
 
-	pks := utils.CreateTestPubKeys(2)
+	pks := utils.CreateTestPubKeys(10)
+	pks = pks[5:]
 	addr1 := sdk.ValAddress(pks[0].Address())
 	addr2 := sdk.ValAddress(pks[1].Address())
 
