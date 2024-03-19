@@ -10,8 +10,6 @@ import (
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
-
-	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
