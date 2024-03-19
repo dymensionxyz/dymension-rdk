@@ -168,8 +168,6 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 	pks := CreateTestPubKeys(1)
 	pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
 	require.NoError(t, err)
-	seq, err := seqtypes.NewSequencer(sdk.ValAddress("dsadas"), pks[0], 1)
-	require.NoError(t, err)
 
 	// set validators and delegations
 	stakingGenesis = *stakingtypes.NewGenesisState(stakingGenesis.Params, validators, delegations)
@@ -177,10 +175,6 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 
 	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, sdk.NewCoins(), []banktypes.Metadata{})
 	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
-
-	//setting genesis sequencer as returned later from InitChain
-	genesisState, err = seqcli.AddSequencerToGenesis(app.AppCodec(), genesisState, seq)
-	require.NoError(t, err)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)

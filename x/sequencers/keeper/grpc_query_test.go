@@ -14,7 +14,7 @@ import (
 func TestParamsQuery(t *testing.T) {
 
 	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(t, app)
+	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
 
 	q := keeper.Querier{Keeper: *k}
 
