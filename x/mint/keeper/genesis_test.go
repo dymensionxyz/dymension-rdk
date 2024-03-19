@@ -11,7 +11,7 @@ import (
 
 func TestGenesis(t *testing.T) {
 	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestMintKeeperFromApp(t, app)
+	k, ctx := testkeepers.NewTestMintKeeperFromApp(app)
 
 	state := types.GenesisState{}
 
