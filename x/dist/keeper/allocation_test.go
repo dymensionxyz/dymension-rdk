@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	"github.com/dymensionxyz/rollapp/app"
 
+	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"

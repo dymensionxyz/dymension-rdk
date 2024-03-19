@@ -3,20 +3,20 @@ package testutils
 import (
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/store"
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	typesparams "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/stretchr/testify/require"
-	"github.com/tendermint/tendermint/libs/log"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmdb "github.com/tendermint/tm-db"
 
+	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
-	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
-	"github.com/dymensionxyz/rollapp/app"
 )
 
+func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
+	app := utils.Setup(t, false)
+	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(t, app)
+	return k, ctx
+}
+
+/*
 func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	storeKey := sdk.NewKVStoreKey(types.StoreKey)
 	t_storeKey := sdk.NewTransientStoreKey("t_" + types.StoreKey)
@@ -27,7 +27,7 @@ func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 	stateStore.MountStoreWithDB(t_storeKey, storetypes.StoreTypeTransient, nil)
 	require.NoError(t, stateStore.LoadLatestVersion())
 
-	encCdc := app.MakeEncodingConfig()
+	encCdc := testutils.MakeEncodingConfig()
 	cdc := encCdc.Codec
 
 	paramsSubspace := typesparams.NewSubspace(cdc,
@@ -48,3 +48,4 @@ func NewTestSequencerKeeper(t *testing.T) (*keeper.Keeper, sdk.Context) {
 
 	return k, ctx
 }
+*/
