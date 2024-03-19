@@ -67,7 +67,7 @@ func (k Keeper) GetAllSequencers(ctx sdk.Context) (sequencers []stakingtypes.Val
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.SequencersKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		sequencer := stakingtypes.MustUnmarshalValidator(k.cdc, iterator.Value())
