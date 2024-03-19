@@ -404,11 +404,11 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Sequencers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"dymensionxyz", "rollapp", "sequencers"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_Sequencers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"dymensionxyz", "dymension-rdk", "sequencers"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_Sequencer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"dymensionxyz", "rollapp", "sequencers", "sequencer_addr"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_Sequencer_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"dymensionxyz", "dymension-rdk", "sequencers", "sequencer_addr"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_HistoricalInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"dymensionxyz", "rollapp", "sequencers", "historical_info", "height"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_HistoricalInfo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"dymensionxyz", "dymension-rdk", "sequencers", "historical_info", "height"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"cosmos", "staking", "v1beta1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 )

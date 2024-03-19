@@ -5,20 +5,11 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 // AccountKeeper defines the contract required for account APIs.
 type AccountKeeper interface {
 	GetModuleAddress(name string) sdk.AccAddress
-	HasAccount(ctx sdk.Context, addr sdk.AccAddress) bool
-
-	SetAccount(ctx sdk.Context, acc authtypes.AccountI)
-	NewAccount(sdk.Context, authtypes.AccountI) authtypes.AccountI
-	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
-
-	// TODO remove with genesis 2-phases refactor https://github.com/cosmos/cosmos-sdk/issues/2862
-	SetModuleAccount(sdk.Context, types.ModuleAccountI)
 	GetModuleAccount(ctx sdk.Context, moduleName string) types.ModuleAccountI
 }
 
@@ -27,11 +18,7 @@ type AccountKeeper interface {
 type BankKeeper interface {
 	SendCoinsFromModuleToModule(ctx sdk.Context, senderModule, recipientModule string, amt sdk.Coins) error
 	MintCoins(ctx sdk.Context, name string, amt sdk.Coins) error
-}
-
-// DistrKeeper defines the contract needed to be fulfilled for distribution keeper.
-type DistrKeeper interface {
-	FundCommunityPool(ctx sdk.Context, amount sdk.Coins, sender sdk.AccAddress) error
+	GetSupply(ctx sdk.Context, denom string) sdk.Coin
 }
 
 // EpochKeeper defines the contract needed to be fulfilled for epochs keeper.

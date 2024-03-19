@@ -6,7 +6,6 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
@@ -113,120 +112,34 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
-// QueryEpochProvisionsRequest is the request type for the
-// Query/EpochProvisions RPC method.
-type QueryEpochProvisionsRequest struct {
-}
-
-func (m *QueryEpochProvisionsRequest) Reset()         { *m = QueryEpochProvisionsRequest{} }
-func (m *QueryEpochProvisionsRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryEpochProvisionsRequest) ProtoMessage()    {}
-func (*QueryEpochProvisionsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0718dda172d2cb4, []int{2}
-}
-func (m *QueryEpochProvisionsRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryEpochProvisionsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryEpochProvisionsRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryEpochProvisionsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryEpochProvisionsRequest.Merge(m, src)
-}
-func (m *QueryEpochProvisionsRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryEpochProvisionsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryEpochProvisionsRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryEpochProvisionsRequest proto.InternalMessageInfo
-
-// QueryEpochProvisionsResponse is the response type for the
-// Query/EpochProvisions RPC method.
-type QueryEpochProvisionsResponse struct {
-	// epoch_provisions is the current minting per epoch provisions value.
-	EpochProvisions github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,1,opt,name=epoch_provisions,json=epochProvisions,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"epoch_provisions"`
-}
-
-func (m *QueryEpochProvisionsResponse) Reset()         { *m = QueryEpochProvisionsResponse{} }
-func (m *QueryEpochProvisionsResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryEpochProvisionsResponse) ProtoMessage()    {}
-func (*QueryEpochProvisionsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0718dda172d2cb4, []int{3}
-}
-func (m *QueryEpochProvisionsResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryEpochProvisionsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryEpochProvisionsResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryEpochProvisionsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryEpochProvisionsResponse.Merge(m, src)
-}
-func (m *QueryEpochProvisionsResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryEpochProvisionsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryEpochProvisionsResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryEpochProvisionsResponse proto.InternalMessageInfo
-
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "rollapp.mint.v1beta1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "rollapp.mint.v1beta1.QueryParamsResponse")
-	proto.RegisterType((*QueryEpochProvisionsRequest)(nil), "rollapp.mint.v1beta1.QueryEpochProvisionsRequest")
-	proto.RegisterType((*QueryEpochProvisionsResponse)(nil), "rollapp.mint.v1beta1.QueryEpochProvisionsResponse")
 }
 
 func init() { proto.RegisterFile("mint/v1beta1/query.proto", fileDescriptor_b0718dda172d2cb4) }
 
 var fileDescriptor_b0718dda172d2cb4 = []byte{
-	// 391 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x52, 0xc1, 0x4e, 0xf2, 0x40,
-	0x18, 0x6c, 0xc9, 0xff, 0x73, 0xd8, 0xff, 0x4f, 0x30, 0x6b, 0xa3, 0xa4, 0xd6, 0x42, 0x7a, 0x20,
-	0x98, 0xe8, 0x6e, 0xc0, 0x9b, 0x47, 0xa2, 0x9e, 0x81, 0x9b, 0x5e, 0x4c, 0x29, 0x9b, 0xd2, 0x48,
-	0xbb, 0x4b, 0x77, 0x21, 0x54, 0x6f, 0x3e, 0x81, 0x89, 0x2f, 0xe0, 0xcd, 0x57, 0xe1, 0x48, 0xe2,
-	0xc5, 0x78, 0x20, 0x06, 0x7c, 0x10, 0xd3, 0x6d, 0x35, 0x16, 0x1b, 0xa3, 0xa7, 0x36, 0x3b, 0xf3,
-	0xcd, 0xcc, 0x37, 0xbb, 0xa0, 0xec, 0x7b, 0x81, 0xc0, 0x93, 0x46, 0x8f, 0x08, 0xbb, 0x81, 0x47,
-	0x63, 0x12, 0x46, 0x88, 0x85, 0x54, 0x50, 0xa8, 0x85, 0x74, 0x38, 0xb4, 0x19, 0x43, 0x31, 0x03,
-	0xa5, 0x0c, 0x5d, 0x73, 0xa9, 0x4b, 0x25, 0x01, 0xc7, 0x7f, 0x09, 0x57, 0x37, 0x5c, 0x4a, 0xdd,
-	0x21, 0xc1, 0x36, 0xf3, 0xb0, 0x1d, 0x04, 0x54, 0xd8, 0xc2, 0xa3, 0x01, 0x4f, 0xd1, 0xed, 0x8c,
-	0x87, 0x94, 0x93, 0x80, 0xa5, 0x01, 0xd8, 0x89, 0x1d, 0xdb, 0x76, 0x68, 0xfb, 0xbc, 0x4b, 0x46,
-	0x63, 0xc2, 0x85, 0xd5, 0x01, 0x9b, 0x99, 0x53, 0xce, 0x68, 0xc0, 0x09, 0x3c, 0x02, 0x45, 0x26,
-	0x4f, 0xca, 0x6a, 0x55, 0xad, 0xff, 0x6b, 0x1a, 0x28, 0x2f, 0x20, 0x4a, 0xa6, 0x5a, 0x7f, 0x66,
-	0x8b, 0x8a, 0xd2, 0x4d, 0x27, 0xac, 0x5d, 0xb0, 0x23, 0x25, 0x4f, 0x18, 0x75, 0x06, 0xed, 0x90,
-	0x4e, 0x3c, 0x1e, 0xe7, 0x7b, 0x77, 0x8c, 0x80, 0x91, 0x0f, 0xa7, 0xd6, 0x67, 0x60, 0x83, 0xc4,
-	0xd0, 0x05, 0xfb, 0xc0, 0x64, 0x88, 0xff, 0x2d, 0x14, 0xdb, 0x3c, 0x2f, 0x2a, 0x35, 0xd7, 0x13,
-	0x83, 0x71, 0x0f, 0x39, 0xd4, 0xc7, 0x0e, 0xe5, 0x3e, 0xe5, 0xe9, 0xe7, 0x80, 0xf7, 0x2f, 0xb1,
-	0x88, 0x18, 0xe1, 0xe8, 0x98, 0x38, 0xdd, 0x12, 0xc9, 0x5a, 0x34, 0x1f, 0x0a, 0xe0, 0xaf, 0xf4,
-	0x86, 0xd7, 0xa0, 0x98, 0x64, 0x87, 0xf5, 0xfc, 0xcd, 0xbe, 0x56, 0xa5, 0xef, 0xfd, 0x80, 0x99,
-	0xec, 0x60, 0x19, 0x37, 0x8f, 0xaf, 0x77, 0x85, 0x2d, 0xa8, 0xe1, 0xcc, 0x6d, 0x24, 0x05, 0xc1,
-	0x7b, 0x15, 0x94, 0xd6, 0xb6, 0x87, 0x8d, 0x6f, 0xc4, 0xf3, 0x8b, 0xd4, 0x9b, 0xbf, 0x19, 0x49,
-	0x83, 0xd5, 0x64, 0xb0, 0x2a, 0x34, 0xb3, 0xc1, 0xd6, 0x0b, 0x6f, 0x9d, 0xce, 0x96, 0xa6, 0x3a,
-	0x5f, 0x9a, 0xea, 0xcb, 0xd2, 0x54, 0x6f, 0x57, 0xa6, 0x32, 0x5f, 0x99, 0xca, 0xd3, 0xca, 0x54,
-	0xce, 0xf7, 0x3f, 0x95, 0xdf, 0x8f, 0x7c, 0x12, 0xc4, 0x03, 0xd3, 0xe8, 0x0a, 0xa7, 0x61, 0xf0,
-	0x34, 0x91, 0x96, 0xd7, 0xd0, 0x2b, 0xca, 0xb7, 0x77, 0xf8, 0x16, 0x00, 0x00, 0xff, 0xff, 0x8e,
-	0x2a, 0xe9, 0x7a, 0xfa, 0x02, 0x00, 0x00,
+	// 293 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0xc8, 0xcd, 0xcc, 0x2b,
+	0xd1, 0x2f, 0x33, 0x4c, 0x4a, 0x2d, 0x49, 0x34, 0xd4, 0x2f, 0x2c, 0x4d, 0x2d, 0xaa, 0xd4, 0x2b,
+	0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x29, 0xca, 0xcf, 0xc9, 0x49, 0x2c, 0x28, 0xd0, 0x03, 0xa9,
+	0xd0, 0x83, 0xaa, 0x90, 0x12, 0x49, 0xcf, 0x4f, 0xcf, 0x07, 0x2b, 0xd0, 0x07, 0xb1, 0x20, 0x6a,
+	0xa5, 0x64, 0xd2, 0xf3, 0xf3, 0xd3, 0x73, 0x52, 0xf5, 0x13, 0x0b, 0x32, 0xf5, 0x13, 0xf3, 0xf2,
+	0xf2, 0x4b, 0x12, 0x4b, 0x32, 0xf3, 0xf3, 0x8a, 0xa1, 0xb2, 0xe2, 0x28, 0x76, 0x80, 0x8d, 0x83,
+	0x48, 0x48, 0xa2, 0x48, 0x14, 0x24, 0x16, 0x25, 0xe6, 0x42, 0xf5, 0x28, 0x89, 0x70, 0x09, 0x05,
+	0x82, 0x1c, 0x13, 0x00, 0x16, 0x0c, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x51, 0x0a, 0xe4, 0x12,
+	0x46, 0x11, 0x2d, 0x2e, 0xc8, 0xcf, 0x2b, 0x4e, 0x15, 0xb2, 0xe2, 0x62, 0x83, 0x68, 0x96, 0x60,
+	0x54, 0x60, 0xd4, 0xe0, 0x36, 0x92, 0xd1, 0xc3, 0xe6, 0x76, 0x3d, 0x88, 0x2e, 0x27, 0x96, 0x13,
+	0xf7, 0xe4, 0x19, 0x82, 0xa0, 0x3a, 0x8c, 0x5a, 0x18, 0xb9, 0x58, 0xc1, 0x66, 0x0a, 0x55, 0x73,
+	0xb1, 0x41, 0x54, 0x08, 0x69, 0x60, 0xd7, 0x8f, 0xe9, 0x20, 0x29, 0x4d, 0x22, 0x54, 0x42, 0x1c,
+	0xa9, 0x24, 0xd3, 0x74, 0xf9, 0xc9, 0x64, 0x26, 0x31, 0x21, 0x11, 0x7d, 0x2c, 0xbe, 0x76, 0xf2,
+	0x39, 0xf1, 0x48, 0x8e, 0xf1, 0xc2, 0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4, 0x18, 0x27, 0x3c, 0x96,
+	0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1, 0xc6, 0x63, 0x39, 0x86, 0x28, 0xa3, 0xf4, 0xcc, 0x92, 0x8c,
+	0xd2, 0x24, 0xbd, 0xe4, 0xfc, 0x5c, 0xfd, 0x94, 0xca, 0xdc, 0xd4, 0xbc, 0xe2, 0xcc, 0xfc, 0xbc,
+	0x8a, 0xca, 0x2a, 0x04, 0x47, 0xb7, 0x28, 0x25, 0x5b, 0xbf, 0x02, 0x62, 0x6c, 0x49, 0x65, 0x41,
+	0x6a, 0x71, 0x12, 0x1b, 0x38, 0x10, 0x8d, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x23, 0xfe, 0xca,
+	0x8d, 0xde, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -243,8 +156,6 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	// Params returns the total set of minting parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// EpochProvisions current minting epoch provisions value.
-	EpochProvisions(ctx context.Context, in *QueryEpochProvisionsRequest, opts ...grpc.CallOption) (*QueryEpochProvisionsResponse, error)
 }
 
 type queryClient struct {
@@ -264,21 +175,10 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
-func (c *queryClient) EpochProvisions(ctx context.Context, in *QueryEpochProvisionsRequest, opts ...grpc.CallOption) (*QueryEpochProvisionsResponse, error) {
-	out := new(QueryEpochProvisionsResponse)
-	err := c.cc.Invoke(ctx, "/rollapp.mint.v1beta1.Query/EpochProvisions", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // QueryServer is the server API for Query service.
 type QueryServer interface {
 	// Params returns the total set of minting parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// EpochProvisions current minting epoch provisions value.
-	EpochProvisions(context.Context, *QueryEpochProvisionsRequest) (*QueryEpochProvisionsResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -287,9 +187,6 @@ type UnimplementedQueryServer struct {
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
-}
-func (*UnimplementedQueryServer) EpochProvisions(ctx context.Context, req *QueryEpochProvisionsRequest) (*QueryEpochProvisionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EpochProvisions not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -314,24 +211,6 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_EpochProvisions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryEpochProvisionsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(QueryServer).EpochProvisions(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/rollapp.mint.v1beta1.Query/EpochProvisions",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).EpochProvisions(ctx, req.(*QueryEpochProvisionsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "rollapp.mint.v1beta1.Query",
 	HandlerType: (*QueryServer)(nil),
@@ -339,10 +218,6 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Params",
 			Handler:    _Query_Params_Handler,
-		},
-		{
-			MethodName: "EpochProvisions",
-			Handler:    _Query_EpochProvisions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -405,62 +280,6 @@ func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryEpochProvisionsRequest) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryEpochProvisionsRequest) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryEpochProvisionsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryEpochProvisionsResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryEpochProvisionsResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryEpochProvisionsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	{
-		size := m.EpochProvisions.Size()
-		i -= size
-		if _, err := m.EpochProvisions.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintQuery(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0xa
-	return len(dAtA) - i, nil
-}
-
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -488,26 +307,6 @@ func (m *QueryParamsResponse) Size() (n int) {
 	var l int
 	_ = l
 	l = m.Params.Size()
-	n += 1 + l + sovQuery(uint64(l))
-	return n
-}
-
-func (m *QueryEpochProvisionsRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *QueryEpochProvisionsResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = m.EpochProvisions.Size()
 	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
@@ -627,139 +426,6 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryEpochProvisionsRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryEpochProvisionsRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryEpochProvisionsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryEpochProvisionsResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryEpochProvisionsResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryEpochProvisionsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field EpochProvisions", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.EpochProvisions.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
