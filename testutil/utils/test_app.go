@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 
@@ -52,6 +53,8 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 var (
 	ProposerPK       = simapp.CreateTestPubKeys(1)[0]
 	ProposerConsAddr = sdk.ConsAddress(ProposerPK.Address())
+
+	OperatorPK = secp256k1.GenPrivKey().PubKey()
 )
 
 func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.RawMessage) {
@@ -74,6 +77,9 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
 	require.NoError(t, err)
 
+	operatorPk, err := cryptocodec.ToTmProtoPublicKey(OperatorPK)
+	require.NoError(t, err)
+
 	app, genesisState := setup(true, 5)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
@@ -84,9 +90,12 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 			Time:            time.Time{},
 			ChainId:         "test_100-1",
 			ConsensusParams: DefaultConsensusParams,
-			Validators:      []abci.ValidatorUpdate{{PubKey: pk, Power: 1}},
-			AppStateBytes:   stateBytes,
-			InitialHeight:   0,
+			Validators: []abci.ValidatorUpdate{
+				{PubKey: pk, Power: 1},
+				{PubKey: operatorPk, Power: 1},
+			},
+			AppStateBytes: stateBytes,
+			InitialHeight: 0,
 		},
 	)
 

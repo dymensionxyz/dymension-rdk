@@ -35,6 +35,8 @@ var (
 
 //TODO: Test multiple sequencers, each propose a block
 
+//TODO: test staker which is the proposer as well
+
 /* -------------------------------------------------------------------------- */
 /*                                    utils                                   */
 /* -------------------------------------------------------------------------- */
@@ -90,8 +92,7 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	//TODO: test with different params
-	proposerReward := 0.4
+	proposerReward := 0.0
 	communityTax := 0.02
 	app.DistrKeeper.SetParams(ctx, disttypes.Params{
 		CommunityTax:        sdk.MustNewDecFromStr(fmt.Sprintf("%f", communityTax)),
@@ -154,13 +155,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	addrs := utils.AddTestAddrs(app, ctx, 2, sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction))
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-
 	fundModules(t, ctx, app)
-
-	// create sequencer
-	app.SequencersKeeper.SetOperatorAddressForGenesisSequencer(ctx, valAddrs[1])
 
 	proposerReward := 0.4
 	communityTax := 0.02
@@ -176,12 +171,8 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 	/* ------------------------- Test proposer rewards ------------------------ */
 	proposerFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", proposerReward)))
 
-	initialBalance := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
-	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(valAddrs[1]))
-	//expected = initial + proposer fees
-	expectedBalance := initialBalance.Add(proposerFees.RoundInt())
-	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, expectedBalance))
-
+	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(sdk.ValAddress(utils.OperatorPK.Address())))
+	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, proposerFees.RoundInt()))
 	require.Equal(t, expectedCoins, currentBalance)
 
 	/* ------------------------ Test community pool coins ----------------------- */
@@ -214,9 +205,6 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
-	// create sequencer
-	app.SequencersKeeper.SetOperatorAddressForGenesisSequencer(ctx, valAddrs[1])
-
 	proposerReward := 0.4
 	communityTax := 0.02
 	app.DistrKeeper.SetParams(ctx, disttypes.Params{
@@ -230,13 +218,8 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 
 	/* ------------------------- Test proposer rewards ------------------------ */
 	proposerFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", proposerReward)))
-
-	initialBalance := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
-	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(valAddrs[1]))
-	//expected = initial + proposer fees - staked amount
-	expectedBalance := initialBalance.Add(proposerFees.RoundInt()).Sub(sdk.TokensFromConsensusPower(4, sdk.DefaultPowerReduction))
-	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, expectedBalance))
-
+	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(sdk.ValAddress(utils.OperatorPK.Address())))
+	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, proposerFees.RoundInt()))
 	require.Equal(t, expectedCoins, currentBalance)
 
 	/* ------------------------------ Test stakers ------------------------------ */
