@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -31,6 +32,12 @@ func (k Keeper) CreateDenomMetadata(
 	}
 
 	k.bankKeeper.SetDenomMetaData(ctx, msg.TokenMetadata)
+	// set hook after denom metadata creation
+	err := k.hooks.AfterDenomMetadataCreation(ctx, msg.TokenMetadata)
+	if err != nil {
+		return nil, fmt.Errorf("error in after denom metadata creation hook: %w", err)
+	}
+
 	return &types.MsgCreateDenomMetadataResponse{}, nil
 }
 
@@ -55,5 +62,12 @@ func (k Keeper) UpdateDenomMetadata(
 	}
 
 	k.bankKeeper.SetDenomMetaData(ctx, msg.TokenMetadata)
+
+	// set hook after denom metadata update
+	err := k.hooks.AfterDenomMetadataUpdate(ctx, msg.TokenMetadata)
+	if err != nil {
+		return nil, fmt.Errorf("error in after denom metadata update hook: %w", err)
+	}
+
 	return &types.MsgUpdateDenomMetadataResponse{}, nil
 }
