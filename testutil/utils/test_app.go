@@ -165,8 +165,10 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 		Coins:   sdk.Coins{sdk.NewCoin(rollAppDenom, genModuleAmount)},
 	})
 
-	pks := CreateTestPubKeys(1)
-	pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
+	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
+	require.NoError(t, err)
+
+	operatorPk, err := cryptocodec.ToTmProtoPublicKey(OperatorPK)
 	require.NoError(t, err)
 
 	// set validators and delegations
@@ -185,9 +187,12 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 			Time:            time.Time{},
 			ChainId:         chainID,
 			ConsensusParams: DefaultConsensusParams,
-			Validators:      []abci.ValidatorUpdate{{PubKey: pk, Power: 1}},
-			AppStateBytes:   stateBytes,
-			InitialHeight:   0,
+			Validators: []abci.ValidatorUpdate{
+				{PubKey: pk, Power: 1},
+				{PubKey: operatorPk, Power: 1},
+			},
+			AppStateBytes: stateBytes,
+			InitialHeight: 0,
 		},
 	)
 
