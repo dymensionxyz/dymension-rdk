@@ -15,13 +15,12 @@ import (
 
 // Parameter store keys.
 var (
-	KeyMintDenom                = []byte("MintDenom")
-	KeyMintEpochIdentifier      = []byte("MintEpochIdentifier")
-	KeyMintEpochSpreadFactor    = []byte("MintEpochSpreadFactor")
-	KeyMintStartEpoch           = []byte("MintStartEpoch")
-	KeyInflationEpochIdentifier = []byte("InflationEpochIdentifier")
-	KeyInflationRateChange      = []byte("InflationRateChange")
-	KeyTargetInflationRate      = []byte("TargetInflationRate")
+	KeyMintDenom                      = []byte("MintDenom")
+	KeyMintEpochIdentifier            = []byte("MintEpochIdentifier")
+	KeyMintStartEpoch                 = []byte("MintStartEpoch")
+	KeyInflationChangeEpochIdentifier = []byte("InflationChangeEpochIdentifier")
+	KeyInflationRateChange            = []byte("InflationRateChange")
+	KeyTargetInflationRate            = []byte("TargetInflationRate")
 )
 
 // ParamTable for minting module.
@@ -30,31 +29,29 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 func NewParams(
-	mintDenom string, mintEpochIdentifier string, mintEpochSpreadFactor int64,
+	mintDenom string, mintEpochIdentifier string,
 	mintStartEpoch int64, inflationEpochIdentifier string,
 	inflationRateChange sdk.Dec, targetInflationRate sdk.Dec,
 ) Params {
 	return Params{
-		MintDenom:                mintDenom,
-		MintEpochIdentifier:      mintEpochIdentifier,
-		MintEpochSpreadFactor:    mintEpochSpreadFactor,
-		MintStartEpoch:           mintStartEpoch,
-		InflationEpochIdentifier: inflationEpochIdentifier,
-		InflationRateChange:      inflationRateChange,
-		TargetInflationRate:      targetInflationRate,
+		MintDenom:                      mintDenom,
+		MintEpochIdentifier:            mintEpochIdentifier,
+		MintStartEpoch:                 mintStartEpoch,
+		InflationChangeEpochIdentifier: inflationEpochIdentifier,
+		InflationRateChange:            inflationRateChange,
+		TargetInflationRate:            targetInflationRate,
 	}
 }
 
 // minting params
 func DefaultParams() Params {
 	return Params{
-		MintDenom:                sdk.DefaultBondDenom,
-		MintEpochIdentifier:      "day",
-		MintEpochSpreadFactor:    365,
-		MintStartEpoch:           1,
-		InflationEpochIdentifier: "year",
-		InflationRateChange:      sdk.NewDecWithPrec(1, 2), // 1% annual inflation change
-		TargetInflationRate:      sdk.NewDecWithPrec(2, 2), // 2%
+		MintDenom:                      sdk.DefaultBondDenom,
+		MintEpochIdentifier:            "minute",
+		MintStartEpoch:                 1,
+		InflationChangeEpochIdentifier: "year",
+		InflationRateChange:            sdk.NewDecWithPrec(1, 2), // 1% annual inflation change
+		TargetInflationRate:            sdk.NewDecWithPrec(2, 2), // 2%
 	}
 }
 
@@ -66,10 +63,7 @@ func (p Params) Validate() error {
 	if err := epochtypes.ValidateEpochIdentifierInterface(p.MintEpochIdentifier); err != nil {
 		return err
 	}
-	if err := validateInt(p.MintEpochSpreadFactor); err != nil {
-		return err
-	}
-	if err := epochtypes.ValidateEpochIdentifierInterface(p.InflationEpochIdentifier); err != nil {
+	if err := epochtypes.ValidateEpochIdentifierInterface(p.InflationChangeEpochIdentifier); err != nil {
 		return err
 	}
 	if err := validateInflationRate(p.InflationRateChange); err != nil {
@@ -93,8 +87,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyMintDenom, &p.MintDenom, validateMintDenom),
 		paramtypes.NewParamSetPair(KeyMintEpochIdentifier, &p.MintEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
-		paramtypes.NewParamSetPair(KeyInflationEpochIdentifier, &p.InflationEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
-		paramtypes.NewParamSetPair(KeyMintEpochSpreadFactor, &p.MintEpochSpreadFactor, validateInt),
+		paramtypes.NewParamSetPair(KeyInflationChangeEpochIdentifier, &p.InflationChangeEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
 		paramtypes.NewParamSetPair(KeyMintStartEpoch, &p.MintStartEpoch, validateInt),
 		paramtypes.NewParamSetPair(KeyInflationRateChange, &p.InflationRateChange, validateInflationRate),
 		paramtypes.NewParamSetPair(KeyTargetInflationRate, &p.TargetInflationRate, validateInflationRate),
