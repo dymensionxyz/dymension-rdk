@@ -60,6 +60,7 @@ func ShowNodeIDCmd() *cobra.Command {
 				return err
 			}
 			// convert nodeKey to libp2p key
+			// nolint: typecheck
 			host, err := libp2p.New(libp2p.Identity(signingKey))
 			if err != nil {
 				return err
