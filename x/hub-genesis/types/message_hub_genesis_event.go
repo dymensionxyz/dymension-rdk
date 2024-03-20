@@ -1,6 +1,7 @@
 package types
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -41,15 +42,15 @@ func (msg *MsgHubGenesisEvent) GetSignBytes() []byte {
 func (msg *MsgHubGenesisEvent) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Address)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid address (%s)", err)
 	}
 
 	if msg.ChannelId == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "channel id cannot be empty")
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "channel id cannot be empty")
 	}
 
 	if msg.HubId == "" {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "hub id cannot be empty")
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "hub id cannot be empty")
 	}
 
 	return nil

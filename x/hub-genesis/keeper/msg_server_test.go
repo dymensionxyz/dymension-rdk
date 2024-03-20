@@ -10,6 +10,8 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/stretchr/testify/suite"
 
+	errorsmod "cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/ibctest"
@@ -135,7 +137,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			rollappBalanceAfter:       initialRollappBalance,
 			rollappEscrowBalanceAfter: sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
 			hubPersisted:              false,
-			expErr:                    sdkerrors.Wrapf(types.ErrInvalidGenesisChannelId, "failed to get client state for channel %s", "invalid-channel"),
+			expErr:                    errorsmod.Wrapf(types.ErrInvalidGenesisChannelId, "failed to get client state for channel %s", "invalid-channel"),
 		}, {
 			name: "invalid rollapp genesis event - invalid chain id",
 			genesisState: &types.GenesisState{
@@ -152,7 +154,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			rollappBalanceAfter:       initialRollappBalance,
 			rollappEscrowBalanceAfter: sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
 			hubPersisted:              false,
-			expErr:                    sdkerrors.Wrapf(types.ErrInvalidGenesisChainId, "channel %s is connected to chain ID %s, expected %s", path.EndpointA.ChannelID, "invalid-chain-id", path.EndpointB.Chain.ChainID),
+			expErr:                    errorsmod.Wrapf(types.ErrInvalidGenesisChainId, "channel %s is connected to chain ID %s, expected %s", path.EndpointA.ChannelID, "invalid-chain-id", path.EndpointB.Chain.ChainID),
 		}, {
 			name: "invalid rollapp genesis event - module account has no coins",
 			genesisState: &types.GenesisState{
@@ -174,7 +176,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				suite.Require().NoError(err)
 			},
 			hubPersisted: false,
-			expErr:       sdkerrors.Wrapf(types.ErrLockingGenesisTokens, "failed to lock tokens: %v", types.ErrGenesisNoCoinsOnModuleAcc),
+			expErr:       errorsmod.Wrapf(types.ErrLockingGenesisTokens, "failed to lock tokens: %v", types.ErrGenesisNoCoinsOnModuleAcc),
 		},
 	}
 

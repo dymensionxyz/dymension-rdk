@@ -3,6 +3,8 @@ package keeper
 import (
 	"context"
 
+	errorsmod "cosmossdk.io/errors"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	tenderminttypes "github.com/cosmos/ibc-go/v6/modules/light-clients/07-tendermint/types"
@@ -31,16 +33,16 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 
 	_, clientState, err := m.channelKeeper.GetChannelClientState(ctx, "transfer", msg.ChannelId)
 	if err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidGenesisChannelId, "failed to get client state for channel %s", msg.ChannelId)
+		return nil, errorsmod.Wrapf(types.ErrInvalidGenesisChannelId, "failed to get client state for channel %s", msg.ChannelId)
 	}
 
 	tmClientState, ok := clientState.(*tenderminttypes.ClientState)
 	if !ok {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidGenesisChannelId, "expected tendermint client state, got %T", clientState)
+		return nil, errorsmod.Wrapf(types.ErrInvalidGenesisChannelId, "expected tendermint client state, got %T", clientState)
 	}
 
 	if tmClientState.GetChainID() != msg.HubId {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidGenesisChainId, "channel %s is connected to chain ID %s, expected %s",
+		return nil, errorsmod.Wrapf(types.ErrInvalidGenesisChainId, "channel %s is connected to chain ID %s, expected %s",
 			msg.ChannelId, tmClientState.GetChainID(), msg.HubId)
 	}
 
@@ -53,7 +55,7 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 	hub := types.NewHub(msg.HubId, msg.ChannelId)
 
 	if err := m.lockRollappGenesisTokens(ctx, hub.ChannelId); err != nil {
-		return nil, sdkerrors.Wrapf(types.ErrLockingGenesisTokens, "failed to lock tokens: %v", err)
+		return nil, errorsmod.Wrapf(types.ErrLockingGenesisTokens, "failed to lock tokens: %v", err)
 	}
 
 	// we save the hub in order to prevent the genesis event from being triggered again
