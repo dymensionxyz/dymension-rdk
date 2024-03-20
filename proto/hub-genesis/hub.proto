@@ -1,0 +1,12 @@
+syntax = "proto3";
+package rollapp.hub_genesis;
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
+
+// Hub is a protobuf message that contains the genesis state of the rollapp
+message Hub {
+  string hub_id = 1;
+
+  // channel_id will be set to the canonical IBC channel connected to the hub.
+  string channel_id = 2;
+}

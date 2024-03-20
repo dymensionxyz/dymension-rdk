@@ -24,7 +24,7 @@ func TestGenesisState(t *testing.T) {
 			name: "missing epoch identifier",
 			params: func() types.Params {
 				p := types.DefaultParams()
-				p.InflationEpochIdentifier = ""
+				p.InflationChangeEpochIdentifier = ""
 				return p
 			},
 			minter:      types.InitialMinter,

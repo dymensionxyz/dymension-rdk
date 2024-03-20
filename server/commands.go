@@ -2,6 +2,8 @@ package server
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
@@ -12,6 +14,7 @@ import (
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
 	tmcmd "github.com/tendermint/tendermint/cmd/cometbft/commands"
+	cmtos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/p2p"
 )
 
@@ -28,7 +31,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		commands.InspectStateCmd(),
 		ResetAll(),
 		server.VersionCmd(),
-		tmcmd.ResetStateCmd,
+		ResetState(),
 	)
 
 	rootCmd.AddCommand(
@@ -57,6 +60,7 @@ func ShowNodeIDCmd() *cobra.Command {
 				return err
 			}
 			// convert nodeKey to libp2p key
+			// nolint: typecheck
 			host, err := libp2p.New(libp2p.Identity(signingKey))
 			if err != nil {
 				return err
@@ -81,4 +85,40 @@ func ResetAll() *cobra.Command {
 	resetAll.Short = "(unsafe) Remove all the data and WAL, reset this node's sequencer to genesis state"
 
 	return resetAll
+}
+
+// ResetState removes all the block state stored in dymint
+func ResetState() *cobra.Command {
+	return &cobra.Command{
+		Use:     "reset-state",
+		Aliases: []string{"reset_state"},
+		Short:   "Remove all the data and WAL",
+		RunE: func(cmd *cobra.Command, args []string) (err error) {
+
+			config := server.GetServerContextFromCmd(cmd).Config
+			var paths []string
+			appdb := filepath.Join(config.DBDir(), "application.db")
+			dymintdb := filepath.Join(config.DBDir(), "dymint")
+			settlementdb := filepath.Join(config.DBDir(), "settlement")
+			paths = append(paths, appdb, dymintdb, settlementdb)
+			for _, path := range paths {
+				err := removePath(path)
+				if err != nil {
+					fmt.Printf("error removing %s with error %s\n", path, err)
+				}
+			}
+			return nil
+		},
+	}
+}
+
+func removePath(path string) error {
+	if cmtos.FileExists(path) {
+		if err := os.RemoveAll(path); err == nil {
+			fmt.Println("Path removed", "path", path)
+		} else {
+			return err
+		}
+	}
+	return nil
 }

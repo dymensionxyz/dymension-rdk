@@ -108,7 +108,7 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 		return
 	}
 
-	_, ok = k.epochKeeper.GetEpochInfo(ctx, params.InflationEpochIdentifier)
+	_, ok = k.epochKeeper.GetEpochInfo(ctx, params.InflationChangeEpochIdentifier)
 	if !ok {
 		k.Logger(ctx).Error("inflation epoch identifier not found. aborting params change")
 		return

@@ -17,11 +17,13 @@ service Query {
   // CurrentEpoch provide current epoch of specified identifier
   rpc CurrentEpoch(QueryCurrentEpochRequest)
       returns (QueryCurrentEpochResponse) {
-    option (google.api.http).get = "/dymensionxyz/dymension-rdk/epochs/current_epoch";
+    option (google.api.http).get =
+        "/dymensionxyz/dymension-rdk/epochs/current_epoch";
   }
   // CurrentEpoch provide current epoch of specified identifier
   rpc EpochInfo(QueryEpochInfoRequest) returns (QueryEpochInfoResponse) {
-    option (google.api.http).get = "/dymensionxyz/dymension-rdk/epochs/epoch_info";
+    option (google.api.http).get =
+        "/dymensionxyz/dymension-rdk/epochs/epoch_info";
   }
 }
 

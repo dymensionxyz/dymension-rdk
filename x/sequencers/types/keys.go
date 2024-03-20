@@ -20,13 +20,14 @@ const (
 	// QuerierRoute defines the module's query routing key
 	QuerierRoute = ModuleName
 
-	GenesisOperatorAddrStub = "dymensionvaloper1"
+	// Stub variable to store the operator address from the InitChain request
+	InitChainStubAddr = "initchainstubaddr"
 )
 
 var (
 	// Keys for store prefixes
-	SequencersKey           = []byte{0x01} // prefix for each key to a sequencer
-	SequencersByConsAddrKey = []byte{0x02} // prefix for each key to a sequencer index, by pubkey
+	SequencersKey           = []byte{0x21} // prefix for each key to a sequencer
+	SequencersByConsAddrKey = []byte{0x22} // prefix for each key to a sequencer index, by pubkey
 
 	HistoricalInfoKey = []byte{0x50} // prefix for the historical info
 )

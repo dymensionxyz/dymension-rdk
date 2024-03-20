@@ -27,3 +27,10 @@ func (q Querier) Params(c context.Context, _ *types.QueryParamsRequest) (*types.
 
 	return &types.QueryParamsResponse{Params: params}, nil
 }
+
+func (q Querier) Inflation(c context.Context, _ *types.QueryInflationRequest) (*types.QueryInflationResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	inflation := q.Keeper.GetMinter(ctx).CurrentInflationRate
+
+	return &types.QueryInflationResponse{CurrentInflationRate: inflation}, nil
+}

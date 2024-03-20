@@ -28,7 +28,7 @@ func TestGetParams(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		app := utils.Setup(t, false)
-		k, ctx := testkeepers.NewTestSequencerKeeperFromApp(t, app)
+		k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
 
 		k.SetParams(ctx, tC.params)
 		t.Run(tC.desc, func(t *testing.T) {
