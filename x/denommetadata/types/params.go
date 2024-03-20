@@ -14,7 +14,7 @@ var (
 	DefaultAllowedAddresses = []string(nil) // no one allowed
 )
 
-// ParamTable for minting module.
+// ParamKeyTable for minting module.
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
@@ -39,7 +39,7 @@ func (p Params) Validate() error {
 	return assertValidAddresses(p.AllowedAddresses)
 }
 
-func assertValidAddresses(i interface{}) error {
+func assertValidAddresses(i any) error {
 	addrs, ok := i.([]string)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)

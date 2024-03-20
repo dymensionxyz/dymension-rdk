@@ -63,7 +63,7 @@ func (k Keeper) IsAddressPermissioned(ctx sdk.Context, address string) bool {
 	return false
 }
 
-// Set the denommetadata hooks
+// SetHooks set the denommetadata hooks
 func (k *Keeper) SetHooks(sh types.MultiDenomMetadataHooks) {
 	if k.hooks != nil {
 		panic("cannot set rollapp hooks twice")
@@ -71,7 +71,7 @@ func (k *Keeper) SetHooks(sh types.MultiDenomMetadataHooks) {
 	k.hooks = sh
 }
 
-// Get the denommetadata hooks
+// GetHooks get the denommetadata hooks
 func (k *Keeper) GetHooks() types.MultiDenomMetadataHooks {
 	return k.hooks
 }
