@@ -39,12 +39,11 @@ func TestCreateDenomMetadata(t *testing.T) {
 	initialParams.AllowedAddresses = []string{"cosmos1s77x8wr2gzdhq8gt8c085vate0s23xu9u80wtx", "cosmos1gusne8eh37myphx09hgdsy85zpl2t0kzdvu3en"}
 	k.SetParams(ctx, initialParams)
 
-	// TODO uncomment this after test setup is fixed
-	// // Test creating denom metadata successfully
-	// _, err = k.CreateDenomMetadata(sdk.WrapSDKContext(ctx), createMsg)
-	// require.NoError(t, err, "creating denom metadata with allowed address should not error")
+	// Test creating denom metadata successfully
+	_, err = k.CreateDenomMetadata(sdk.WrapSDKContext(ctx), createMsg)
+	require.NoError(t, err, "creating denom metadata with allowed address should not error")
 
-	// // Test creating duplicate denom metadata
-	// _, err = k.CreateDenomMetadata(sdk.WrapSDKContext(ctx), createMsg)
-	// require.ErrorIs(t, err, types.ErrDenomAlreadyExists, "creating duplicate denom metadata should fail")
+	// Test creating duplicate denom metadata
+	_, err = k.CreateDenomMetadata(sdk.WrapSDKContext(ctx), createMsg)
+	require.ErrorIs(t, err, types.ErrDenomAlreadyExists, "creating duplicate denom metadata should fail")
 }

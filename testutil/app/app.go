@@ -77,6 +77,10 @@ import (
 	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 	minttypes "github.com/dymensionxyz/dymension-rdk/x/mint/types"
 
+	"github.com/dymensionxyz/dymension-rdk/x/denommetadata"
+	denommetadatakeeper "github.com/dymensionxyz/dymension-rdk/x/denommetadata/keeper"
+	denommetadatatypes "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/epochs"
 	epochskeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
 	epochstypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
@@ -116,7 +120,7 @@ var (
 	kvstorekeys = []string{
 		authtypes.StoreKey, banktypes.StoreKey,
 		stakingtypes.StoreKey, seqtypes.StoreKey,
-		minttypes.StoreKey, distrtypes.StoreKey,
+		minttypes.StoreKey, denommetadatatypes.StoreKey, distrtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey,
 		ibchost.StoreKey, upgradetypes.StoreKey,
 		epochstypes.StoreKey, hubgentypes.StoreKey,
@@ -154,6 +158,7 @@ var (
 		staking.AppModuleBasic{},
 		sequencers.AppModuleBasic{},
 		mint.AppModuleBasic{},
+		denommetadata.AppModuleBasic{},
 		epochs.AppModuleBasic{},
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(getGovProposalHandlers()),
@@ -196,20 +201,21 @@ type App struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper    authkeeper.AccountKeeper
-	BankKeeper       bankkeeper.Keeper
-	CapabilityKeeper *capabilitykeeper.Keeper
-	StakingKeeper    stakingkeeper.Keeper
-	SequencersKeeper seqkeeper.Keeper
-	MintKeeper       mintkeeper.Keeper
-	EpochsKeeper     epochskeeper.Keeper
-	DistrKeeper      distrkeeper.Keeper
-	GovKeeper        govkeeper.Keeper
-	HubGenesisKeeper hubgenkeeper.Keeper
-	UpgradeKeeper    upgradekeeper.Keeper
-	ParamsKeeper     paramskeeper.Keeper
-	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	TransferKeeper   ibctransferkeeper.Keeper
+	AccountKeeper       authkeeper.AccountKeeper
+	BankKeeper          bankkeeper.Keeper
+	CapabilityKeeper    *capabilitykeeper.Keeper
+	StakingKeeper       stakingkeeper.Keeper
+	SequencersKeeper    seqkeeper.Keeper
+	MintKeeper          mintkeeper.Keeper
+	DenommetadataKeeper denommetadatakeeper.Keeper
+	EpochsKeeper        epochskeeper.Keeper
+	DistrKeeper         distrkeeper.Keeper
+	GovKeeper           govkeeper.Keeper
+	HubGenesisKeeper    hubgenkeeper.Keeper
+	UpgradeKeeper       upgradekeeper.Keeper
+	ParamsKeeper        paramskeeper.Keeper
+	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	TransferKeeper      ibctransferkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -338,6 +344,15 @@ func NewRollapp(
 		),
 	)
 
+	app.DenommetadataKeeper = denommetadatakeeper.NewKeeper(
+		appCodec,
+		keys[denommetadatatypes.StoreKey],
+		app.BankKeeper,
+		nil,
+		app.GetSubspace(denommetadatatypes.ModuleName),
+	)
+	// set hook for denom metadata keeper later
+
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec, keys[distrtypes.StoreKey], app.GetSubspace(distrtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
 		&stakingKeeper, &app.SequencersKeeper, authtypes.FeeCollectorName, app.ModuleAccountAddrs(),
@@ -436,6 +451,7 @@ func NewRollapp(
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, app.BankKeeper),
+		denommetadata.NewAppModule(appCodec, app.DenommetadataKeeper, app.BankKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		sequencers.NewAppModule(appCodec, app.SequencersKeeper, app.AccountKeeper, app.BankKeeper),
@@ -458,6 +474,7 @@ func NewRollapp(
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
 		minttypes.ModuleName,
+		denommetadatatypes.ModuleName,
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		seqtypes.ModuleName,
@@ -484,6 +501,7 @@ func NewRollapp(
 		distrtypes.ModuleName,
 		vestingtypes.ModuleName,
 		minttypes.ModuleName,
+		denommetadatatypes.ModuleName,
 		genutiltypes.ModuleName,
 		epochstypes.ModuleName,
 		paramstypes.ModuleName,
@@ -511,6 +529,7 @@ func NewRollapp(
 		epochstypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
+		denommetadatatypes.ModuleName,
 		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		paramstypes.ModuleName,
@@ -822,6 +841,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(stakingtypes.ModuleName)
 	paramsKeeper.Subspace(seqtypes.ModuleName)
 	paramsKeeper.Subspace(minttypes.ModuleName)
+	paramsKeeper.Subspace(denommetadatatypes.ModuleName)
 	paramsKeeper.Subspace(epochstypes.ModuleName)
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govv1.ParamKeyTable())

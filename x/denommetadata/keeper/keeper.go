@@ -21,11 +21,11 @@ type Keeper struct {
 
 // NewKeeper creates new instances of the Keeper
 func NewKeeper(
-	storeKey storetypes.StoreKey,
 	cdc codec.BinaryCodec,
+	storeKey storetypes.StoreKey,
 	bk types.BankKeeper,
-	paramSpace paramtypes.Subspace,
 	hooks types.MultiDenomMetadataHooks,
+	paramSpace paramtypes.Subspace,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
