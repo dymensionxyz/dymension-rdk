@@ -37,7 +37,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	}
 
 	// delete the genesis sequencer, which we hackly used to keep the data from the InitChain request
-	// we stored it only to have the operatorPubKey avaialble to return it in the ValidatorUpdate
+	// we stored it only to have the operatorPubKey available to return it in the ValidatorUpdate
 	val, ok := k.GetSequencer(ctx, sdk.ValAddress(types.InitChainStubAddr))
 	if !ok {
 		panic("genesis sequencer not found")
