@@ -6,6 +6,8 @@ import (
 	"time"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -13,6 +15,7 @@ import (
 
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 
+	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/stretchr/testify/require"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -20,18 +23,12 @@ import (
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 
-	seqcli "github.com/dymensionxyz/dymension-rdk/x/sequencers/client/cli"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
-
-	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 var DefaultConsensusParams = &abci.ConsensusParams{
@@ -59,6 +56,13 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 	return nil
 }
 
+var (
+	ProposerPK       = simapp.CreateTestPubKeys(1)[0]
+	ProposerConsAddr = sdk.ConsAddress(ProposerPK.Address())
+
+	OperatorPK = secp256k1.GenPrivKey().PubKey()
+)
+
 func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 
@@ -75,17 +79,14 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.Raw
 // Setup initializes a new Rollapp. A Nop logger is set in Rollapp.
 func Setup(t *testing.T, isCheckTx bool) *app.App {
 	t.Helper()
-	pks := CreateTestPubKeys(1)
-	pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
+
+	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
 	require.NoError(t, err)
-	seq, err := seqtypes.NewSequencer(sdk.ValAddress("dsadas"), pks[0], 1)
+
+	operatorPk, err := cryptocodec.ToTmProtoPublicKey(OperatorPK)
 	require.NoError(t, err)
 
 	app, genesisState := setup(true, 5)
-
-	//setting genesis sequencer as returned later from InitChain
-	genesisState, err = seqcli.AddSequencerToGenesis(app.AppCodec(), genesisState, seq)
-	require.NoError(t, err)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
@@ -95,9 +96,12 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 			Time:            time.Time{},
 			ChainId:         "test_100-1",
 			ConsensusParams: DefaultConsensusParams,
-			Validators:      []abci.ValidatorUpdate{{PubKey: pk, Power: 1}},
-			AppStateBytes:   stateBytes,
-			InitialHeight:   0,
+			Validators: []abci.ValidatorUpdate{
+				{PubKey: pk, Power: 1},
+				{PubKey: operatorPk, Power: 1},
+			},
+			AppStateBytes: stateBytes,
+			InitialHeight: 0,
 		},
 	)
 
@@ -161,10 +165,10 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 		Coins:   sdk.Coins{sdk.NewCoin(rollAppDenom, genModuleAmount)},
 	})
 
-	pks := CreateTestPubKeys(1)
-	pk, err := cryptocodec.ToTmProtoPublicKey(pks[0])
+	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
 	require.NoError(t, err)
-	seq, err := seqtypes.NewSequencer(sdk.ValAddress("dsadas"), pks[0], 1)
+
+	operatorPk, err := cryptocodec.ToTmProtoPublicKey(OperatorPK)
 	require.NoError(t, err)
 
 	// set validators and delegations
@@ -173,10 +177,6 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 
 	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, sdk.NewCoins(), []banktypes.Metadata{})
 	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
-
-	//setting genesis sequencer as returned later from InitChain
-	genesisState, err = seqcli.AddSequencerToGenesis(app.AppCodec(), genesisState, seq)
-	require.NoError(t, err)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
@@ -187,9 +187,12 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 			Time:            time.Time{},
 			ChainId:         chainID,
 			ConsensusParams: DefaultConsensusParams,
-			Validators:      []abci.ValidatorUpdate{{PubKey: pk, Power: 1}},
-			AppStateBytes:   stateBytes,
-			InitialHeight:   0,
+			Validators: []abci.ValidatorUpdate{
+				{PubKey: pk, Power: 1},
+				{PubKey: operatorPk, Power: 1},
+			},
+			AppStateBytes: stateBytes,
+			InitialHeight: 0,
 		},
 	)
 

@@ -24,12 +24,6 @@ func (k Keeper) UnbondingTime(ctx sdk.Context) (res time.Duration) {
 	return
 }
 
-// MaxSequencers - Maximum number of validators
-func (k Keeper) MaxSequencers(ctx sdk.Context) (res uint32) {
-	k.paramstore.Get(ctx, types.KeyMaxSequencers, &res)
-	return
-}
-
 // HistoricalEntries = number of historical info entries
 // to persist in store
 func (k Keeper) HistoricalEntries(ctx sdk.Context) (res uint32) {

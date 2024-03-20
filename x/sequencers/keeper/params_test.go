@@ -3,7 +3,8 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/dymensionxyz/dymension-rdk/x/sequencers/testutils"
+	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/require"
 )
@@ -21,13 +22,14 @@ func TestGetParams(t *testing.T) {
 			desc: "non-default params",
 			params: types.Params{
 				UnbondingTime:     100,
-				MaxSequencers:     5,
 				HistoricalEntries: 999,
 			},
 		},
 	}
 	for _, tC := range testCases {
-		k, ctx := testutils.NewTestSequencerKeeper(t)
+		app := utils.Setup(t, false)
+		k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
+
 		k.SetParams(ctx, tC.params)
 		t.Run(tC.desc, func(t *testing.T) {
 			require.EqualValues(t, tC.params, k.GetParams(ctx))

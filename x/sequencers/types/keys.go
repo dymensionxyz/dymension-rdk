@@ -19,34 +19,27 @@ const (
 
 	// QuerierRoute defines the module's query routing key
 	QuerierRoute = ModuleName
+
+	// Stub variable to store the operator address from the InitChain request
+	InitChainStubAddr = "initchainstubaddr"
 )
 
 var (
 	// Keys for store prefixes
-	ValidatorsKey           = []byte{0x21} // prefix for each key to a validator
-	ValidatorsByConsAddrKey = []byte{0x22} // prefix for each key to a validator index, by pubkey
-
-	DymintSeqKey = []byte{0x23} // prefix for each key sequencer registered on dymint, by pubkey
+	SequencersKey           = []byte{0x21} // prefix for each key to a sequencer
+	SequencersByConsAddrKey = []byte{0x22} // prefix for each key to a sequencer index, by pubkey
 
 	HistoricalInfoKey = []byte{0x50} // prefix for the historical info
 )
 
-// GetValidatorKey creates the key for the validator with address
-// VALUE: staking/Validator
-func GetValidatorKey(operatorAddr sdk.ValAddress) []byte {
-	return append(ValidatorsKey, address.MustLengthPrefix(operatorAddr)...)
+// GetSequencerKey creates the key for the sequencer with address
+func GetSequencerKey(operatorAddr sdk.ValAddress) []byte {
+	return append(SequencersKey, address.MustLengthPrefix(operatorAddr)...)
 }
 
-// GetValidatorByConsAddrKey creates the key for the validator with pubkey
-// VALUE: validator operator address ([]byte)
-func GetValidatorByConsAddrKey(addr sdk.ConsAddress) []byte {
-	return append(ValidatorsByConsAddrKey, address.MustLengthPrefix(addr)...)
-}
-
-// DymintSeqKey creates the key for the validator with address
-// VALUE: staking/Validator
-func GetDymintSeqKey(addr sdk.ConsAddress) []byte {
-	return append(DymintSeqKey, address.MustLengthPrefix(addr)...)
+// GetSequencerByConsAddrKey creates the key for the sequencer with pubkey
+func GetSequencerByConsAddrKey(addr sdk.ConsAddress) []byte {
+	return append(SequencersByConsAddrKey, address.MustLengthPrefix(addr)...)
 }
 
 // GetHistoricalInfoKey returns a key prefix for indexing HistoricalInfo objects.

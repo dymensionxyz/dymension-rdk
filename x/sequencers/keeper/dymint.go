@@ -1,10 +1,10 @@
 package keeper
 
 import (
-	"encoding/binary"
-
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
@@ -13,9 +13,27 @@ import (
 )
 
 // set dymint sequencers from InitChain
-func (k Keeper) SetDymintSequencers(ctx sdk.Context, validators []abci.ValidatorUpdate) {
-	for _, val := range validators {
-		tmkey, err := tmcrypto.PubKeyFromProto(val.PubKey)
+func (k Keeper) SetDymintSequencers(ctx sdk.Context, sequencers []abci.ValidatorUpdate) {
+	if len := len(sequencers); len != 2 {
+		switch len {
+		case 0:
+			panic(types.ErrNoSequencerOnInitChain)
+		case 1:
+			panic(types.ErrMissingOperatorAddrsOnInitChain)
+		default:
+			panic(types.ErrMultipleDymintSequencers)
+		}
+	}
+
+	var (
+		operatorAddr    sdk.ValAddress
+		power           int64
+		consensusPubKey cryptotypes.PubKey
+		operatorPubkey  cryptotypes.PubKey
+	)
+
+	for _, seq := range sequencers {
+		tmkey, err := tmcrypto.PubKeyFromProto(seq.PubKey)
 		if err != nil {
 			panic(err)
 		}
@@ -23,30 +41,35 @@ func (k Keeper) SetDymintSequencers(ctx sdk.Context, validators []abci.Validator
 		if err != nil {
 			panic(err)
 		}
-		err = k.SetDymintSequencerByAddr(ctx, sdk.ConsAddress(pubKey.Address()), uint64(val.Power))
-		if err != nil {
-			panic(err)
+
+		if pubKey.Type() == ed25519.KeyType {
+			consensusPubKey = pubKey
+			power = seq.Power
+		} else {
+			operatorPubkey = pubKey
+			operatorAddr = sdk.ValAddress(pubKey.Address())
 		}
 	}
-}
 
-// get a single sequencer registered on dymint by consensus address
-func (k Keeper) GetDymintSequencerByAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (power uint64, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	powerByte := store.Get(types.GetDymintSeqKey(consAddr))
-	if powerByte == nil {
-		return 0, false
+	if operatorAddr.Empty() || consensusPubKey == nil {
+		panic(types.ErrFailedInitChain)
 	}
 
-	return binary.LittleEndian.Uint64(powerByte), true
-}
+	sequencer, err := types.NewSequencer(operatorAddr, consensusPubKey, power)
+	if err != nil {
+		panic(err)
+	}
+	k.SetSequencer(ctx, sequencer)
+	err = k.SetSequencerByConsAddr(ctx, sequencer)
+	if err != nil {
+		panic(err)
+	}
 
-// set a single sequencer registered on dymint by consensus address
-func (k Keeper) SetDymintSequencerByAddr(ctx sdk.Context, consAddr sdk.ConsAddress, power uint64) error {
-	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(power))
-
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.GetDymintSeqKey(consAddr), b)
-	return nil
+	// Required code as the cosmos sdk validates that the InitChain request is equal to the result
+	// we pass this dummy sequencer to the InitGenesis function so it could be returned in the ValidatorUpdate response
+	dummySequencer, err := types.NewSequencer(sdk.ValAddress(types.InitChainStubAddr), operatorPubkey, power)
+	if err != nil {
+		panic(err)
+	}
+	k.SetSequencer(ctx, dummySequencer)
 }

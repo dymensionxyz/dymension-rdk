@@ -58,8 +58,8 @@ func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	// TODO this is Tendermint-dependent
 	// ref https://github.com/cosmos/cosmos-sdk/issues/3095
 	if ctx.BlockHeight() > 1 {
-		previousProposer := am.keeper.GetPreviousProposerConsAddr(ctx)
-		am.keeper.AllocateTokens(ctx, previousProposer)
+		proposerConsAddr := am.keeper.GetPreviousProposerConsAddr(ctx)
+		am.keeper.AllocateTokens(ctx, proposerConsAddr)
 	}
 
 	// record the proposer for when we payout on the next block

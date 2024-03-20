@@ -95,7 +95,7 @@ func (k Keeper) TrackHistoricalInfo(ctx sdk.Context) {
 	// Create HistoricalInfo struct
 	historicalEntry := stakingtypes.HistoricalInfo{
 		Header: ctx.BlockHeader(),
-		Valset: k.GetAllValidators(ctx),
+		Valset: k.GetAllSequencers(ctx),
 	}
 
 	// Set latest HistoricalInfo at current height

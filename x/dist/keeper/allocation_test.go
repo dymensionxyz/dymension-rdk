@@ -14,9 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
-	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
-
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -31,14 +28,14 @@ var (
 	valConsPk2 = PKS[1]
 	valConsPk3 = PKS[2]
 
-	valConsAddr2 = sdk.ConsAddress(valConsPk2.Address())
-
 	totalFees     = sdk.NewInt(100)
 	totalFeesCoin = sdk.NewCoin(sdk.DefaultBondDenom, totalFees)
 	totalFeesDec  = sdk.NewDecFromInt(totalFees)
 )
 
-//Test multiple sequencers, each propose a block
+//TODO: Test multiple sequencers, each propose a block
+
+//TODO: test staker which is the proposer as well
 
 /* -------------------------------------------------------------------------- */
 /*                                    utils                                   */
@@ -63,28 +60,6 @@ func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
 	utils.FundModuleAccount(app, ctx, feeCollector.GetName(), fees)
 	// require.NoError(t, simapp.FundModuleAccount(app.BankKeeper, ctx, feeCollector.GetName(), fees))
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
-}
-
-func createSeq(t *testing.T, ctx sdk.Context, app *app.App, valAddr sdk.ValAddress) {
-	// create sequencer for dymint
-	err := app.SequencersKeeper.SetDymintSequencerByAddr(ctx, sdk.GetConsAddress(valConsPk2), 0)
-	require.NoError(t, err)
-
-	// create sequencer
-	msgServ := seqkeeper.NewMsgServerImpl(app.SequencersKeeper)
-	description := stakingtypes.NewDescription(
-		"moniker",
-		"identity",
-		"website",
-		"security",
-		"details",
-	)
-
-	msg, _ := seqtypes.NewMsgCreateSequencer(
-		sdk.ValAddress(valAddr), valConsPk2, description,
-	)
-	_, err = msgServ.CreateSequencer(sdk.WrapSDKContext(ctx), msg)
-	require.NoError(t, err)
 }
 
 func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
@@ -117,8 +92,7 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	//TODO: test with different params
-	proposerReward := 0.4
+	proposerReward := 0.0
 	communityTax := 0.02
 	app.DistrKeeper.SetParams(ctx, disttypes.Params{
 		CommunityTax:        sdk.MustNewDecFromStr(fmt.Sprintf("%f", communityTax)),
@@ -136,7 +110,7 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// allocate tokens as if both had voted and second was proposer
-	app.DistrKeeper.AllocateTokens(ctx, valConsAddr2)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
 
 	/* ------------------------------ Test stakers ------------------------------ */
 	// outstanding rewards: 60% to val1 and 40% to val2
@@ -181,13 +155,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	addrs := utils.AddTestAddrs(app, ctx, 2, sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction))
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-
 	fundModules(t, ctx, app)
-
-	// create sequencer
-	createSeq(t, ctx, app, valAddrs[1])
 
 	proposerReward := 0.4
 	communityTax := 0.02
@@ -198,17 +166,13 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 		WithdrawAddrEnabled: false,
 	})
 	// allocate tokens as if both had voted and second was proposer
-	app.DistrKeeper.AllocateTokens(ctx, valConsAddr2)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
 
 	/* ------------------------- Test proposer rewards ------------------------ */
 	proposerFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", proposerReward)))
 
-	initialBalance := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
-	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(valAddrs[1]))
-	//expected = initial + proposer fees
-	expectedBalance := initialBalance.Add(proposerFees.RoundInt())
-	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, expectedBalance))
-
+	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(sdk.ValAddress(utils.OperatorPK.Address())))
+	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, proposerFees.RoundInt()))
 	require.Equal(t, expectedCoins, currentBalance)
 
 	/* ------------------------ Test community pool coins ----------------------- */
@@ -241,9 +205,6 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
-	// create sequencer
-	createSeq(t, ctx, app, valAddrs[1])
-
 	proposerReward := 0.4
 	communityTax := 0.02
 	app.DistrKeeper.SetParams(ctx, disttypes.Params{
@@ -253,17 +214,12 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 		WithdrawAddrEnabled: false,
 	})
 	// allocate tokens as if both had voted and second was proposer
-	app.DistrKeeper.AllocateTokens(ctx, valConsAddr2)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
 
 	/* ------------------------- Test proposer rewards ------------------------ */
 	proposerFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", proposerReward)))
-
-	initialBalance := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
-	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(valAddrs[1]))
-	//expected = initial + proposer fees - staked amount
-	expectedBalance := initialBalance.Add(proposerFees.RoundInt()).Sub(sdk.TokensFromConsensusPower(4, sdk.DefaultPowerReduction))
-	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, expectedBalance))
-
+	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(sdk.ValAddress(utils.OperatorPK.Address())))
+	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, proposerFees.RoundInt()))
 	require.Equal(t, expectedCoins, currentBalance)
 
 	/* ------------------------------ Test stakers ------------------------------ */
@@ -371,7 +327,7 @@ func TestAllocateTokensTruncation(t *testing.T) {
 			SignedLastBlock: true,
 		},
 	}
-	app.DistrKeeper.AllocateTokens(ctx, sdk.ConsAddress(valConsPk2.Address()))
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
 
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards.IsValid())
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards.IsValid())

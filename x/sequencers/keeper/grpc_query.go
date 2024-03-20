@@ -33,11 +33,11 @@ func (k Querier) Sequencers(c context.Context, req *types.QuerySequencersRequest
 	ctx := sdk.UnwrapSDKContext(c)
 
 	return &types.QuerySequencersResponse{
-		Sequencers: k.GetAllValidators(ctx),
+		Sequencers: k.GetAllSequencers(ctx),
 	}, nil
 }
 
-// Sequencer queries validator info for given validator address.
+// Sequencer queries sequencer info for given sequencer address.
 func (k Querier) Sequencer(c context.Context, req *types.QuerySequencerRequest) (*types.QuerySequencerResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
@@ -49,7 +49,7 @@ func (k Querier) Sequencer(c context.Context, req *types.QuerySequencerRequest) 
 		panic(err)
 	}
 
-	val, found := k.GetValidator(ctx, addr)
+	val, found := k.GetSequencer(ctx, addr)
 	if !found {
 		return nil, types.ErrSequencerNotFound
 	}
