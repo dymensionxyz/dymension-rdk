@@ -44,7 +44,7 @@ func NewKeeper(
 // GetParams returns the total set of denommetadata parameters.
 func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	k.paramSpace.GetParamSet(ctx, &params)
-	return params
+	return
 }
 
 // SetParams sets the total set of denommetadata parameters.

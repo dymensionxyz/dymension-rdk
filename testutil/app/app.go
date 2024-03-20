@@ -348,7 +348,7 @@ func NewRollapp(
 		appCodec,
 		keys[denommetadatatypes.StoreKey],
 		app.BankKeeper,
-		nil,
+		[]denommetadatatypes.DenomMetadataHooks{},
 		app.GetSubspace(denommetadatatypes.ModuleName),
 	)
 	// set hook for denom metadata keeper later
