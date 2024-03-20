@@ -16,12 +16,11 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 
 	// Required code as the cosmos sdk validates that the InitChain request is equal to the result
 	// so we need to retun here the same valUpdates as we received from the InitChain request
+	// reminder: dymint passes two objects, one with the operator address and one with the consensus pubkey
+	// the operator address object needs to be removed as
 	sequencers := k.GetAllSequencers(ctx)
-	if len(sequencers) > 2 {
-		panic(types.ErrMultipleDymintSequencers)
-	}
-	if len(sequencers) == 0 {
-		panic(types.ErrNoSequencerOnInitChain)
+	if len(sequencers) != 2 {
+		panic(types.ErrFailedInitGenesis)
 	}
 
 	for _, seq := range sequencers {
@@ -37,7 +36,9 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		updates = append(updates, updateConsPubkey)
 	}
 
-	val, ok := k.GetSequencer(ctx, sdk.ValAddress(types.GenesisOperatorAddrStub))
+	// delete the genesis sequencer, which we hackly used to keep the data from the InitChain request
+	// we stored it only to have the operatorPubKey avaialble to return it in the ValidatorUpdate
+	val, ok := k.GetSequencer(ctx, sdk.ValAddress(types.InitChainStubAddr))
 	if !ok {
 		panic("genesis sequencer not found")
 	}

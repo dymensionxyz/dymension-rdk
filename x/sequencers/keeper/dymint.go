@@ -14,12 +14,15 @@ import (
 
 // set dymint sequencers from InitChain
 func (k Keeper) SetDymintSequencers(ctx sdk.Context, sequencers []abci.ValidatorUpdate) {
-	if len(sequencers) == 0 {
-		panic(types.ErrNoSequencerOnInitChain)
-	}
-
-	if len(sequencers) > 2 {
-		panic(types.ErrMultipleDymintSequencers)
+	if len := len(sequencers); len != 2 {
+		switch len {
+		case 0:
+			panic(types.ErrNoSequencerOnInitChain)
+		case 1:
+			panic(types.ErrMissingOperatorAddrsOnInitChain)
+		default:
+			panic(types.ErrMultipleDymintSequencers)
+		}
 	}
 
 	var (
@@ -63,7 +66,8 @@ func (k Keeper) SetDymintSequencers(ctx sdk.Context, sequencers []abci.Validator
 	}
 
 	// Required code as the cosmos sdk validates that the InitChain request is equal to the result
-	dummySequencer, err := types.NewSequencer(sdk.ValAddress(types.GenesisOperatorAddrStub), operatorPubkey, power)
+	// we pass this dummy sequencer to the InitGenesis function so it could be returned in the ValidatorUpdate response
+	dummySequencer, err := types.NewSequencer(sdk.ValAddress(types.InitChainStubAddr), operatorPubkey, power)
 	if err != nil {
 		panic(err)
 	}

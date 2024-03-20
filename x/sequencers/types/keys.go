@@ -20,7 +20,8 @@ const (
 	// QuerierRoute defines the module's query routing key
 	QuerierRoute = ModuleName
 
-	GenesisOperatorAddrStub = "dymensionvaloper1"
+	// Stub variable to store the operator address from the InitChain request
+	InitChainStubAddr = "initchainstubaddr"
 )
 
 var (
