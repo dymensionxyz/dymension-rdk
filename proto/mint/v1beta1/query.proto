@@ -14,6 +14,11 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/mint/v1beta1/params";
   }
+
+  // Inflation returns the current minting inflation value.
+  rpc Inflation(QueryInflationRequest) returns (QueryInflationResponse) {
+    option (google.api.http).get = "/mint/v1beta1/inflation";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -23,4 +28,17 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params defines the parameters of the module.
   Params params = 1 [ (gogoproto.nullable) = false ];
+}
+
+// QueryInflationRequest is the request type for the Query/Inflation RPC method.
+message QueryInflationRequest {}
+
+// QueryInflationResponse is the response type for the Query/Inflation RPC method.
+message QueryInflationResponse {
+  // inflation defines the current minting inflation value.
+  string current_inflation_rate = 1 [
+    (gogoproto.moretags) = "yaml:\"current_inflation_rate\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
 }
