@@ -14,6 +14,10 @@ type DenomMetadataHooks interface {
 // MultiDenomMetadataHooks combine multiple DenomMetadata hooks, all hook functions are run in array sequence
 type MultiDenomMetadataHooks []DenomMetadataHooks
 
+func NewMultiDenommetadataHooks(hooks ...DenomMetadataHooks) MultiDenomMetadataHooks {
+	return hooks
+}
+
 func (h MultiDenomMetadataHooks) AfterDenomMetadataCreation(ctx sdk.Context, metadata banktypes.Metadata) error {
 	for i := range h {
 		err := h[i].AfterDenomMetadataCreation(ctx, metadata)

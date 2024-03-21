@@ -352,6 +352,11 @@ func NewRollapp(
 		app.GetSubspace(denommetadatatypes.ModuleName),
 	)
 	// set hook for denom metadata keeper later
+	app.DenommetadataKeeper.SetHooks(
+		denommetadatatypes.NewMultiDenommetadataHooks(
+		// insert denom metadata hooks receivers here
+		),
+	)
 
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec, keys[distrtypes.StoreKey], app.GetSubspace(distrtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
