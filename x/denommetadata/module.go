@@ -88,7 +88,6 @@ type AppModule struct {
 }
 
 func NewAppModule(
-	cdc codec.Codec,
 	keeper keeper.Keeper,
 	bankKeeper types.BankKeeper,
 ) AppModule {

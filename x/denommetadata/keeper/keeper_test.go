@@ -10,7 +10,8 @@ import (
 
 func TestParams(t *testing.T) {
 	// Setup the test environment
-	k, ctx := testutils.NewTestDenommetadataKeeper(t) // Assume you have a similar utility function for denommetadata keeper
+	app, ctx := testutils.NewTestDenommetadataKeeper(t) // Assume you have a similar utility function for denommetadata keeper
+	k := app.DenommetadataKeeper
 
 	// Set some initial parameters
 	initialParams := types.DefaultParams()
