@@ -1,0 +1,13 @@
+syntax = "proto3";
+package rollapp.denommetadata.types;
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types";
+
+// Params defines the parameters for the module.
+message Params {
+  // allowed_addresses defines the list of addresses authorized to use the
+  // module
+  repeated string allowed_addresses = 1
+      [ (gogoproto.moretags) = "yaml:\"allowed_addresses\"" ];
+}

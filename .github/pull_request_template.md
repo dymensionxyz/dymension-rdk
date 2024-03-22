@@ -4,6 +4,11 @@
 
 ---
 
+Closes #XXX
+
+**All** items are required. Please add a note to the item if the item is not applicable and
+please add links to any relevant follow-up issues.
+
 For Author:
 
 - [ ]  Targeted PR against correct branch
