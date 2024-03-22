@@ -9,7 +9,6 @@ import (
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	srvflags "github.com/evmos/evmos/v12/server/flags"
-	ethermint "github.com/evmos/evmos/v12/types"
 	"github.com/evmos/evmos/v12/x/claims"
 	claimskeeper "github.com/evmos/evmos/v12/x/claims/keeper"
 	claimstypes "github.com/evmos/evmos/v12/x/claims/types"
@@ -214,14 +213,6 @@ var (
 		denommetadatatypes.ModuleName:  {authtypes.Minter},
 	}
 )
-
-func init() {
-	// manually update the power reduction by replacing micro (u) -> atto (a) evmos
-	sdk.DefaultPowerReduction = ethermint.PowerReduction
-
-	// disable claims on genesis
-	claimstypes.DefaultEnableClaims = false
-}
 
 // App extends an ABCI application, but with most of its parameters exported.
 // They are exported for convenience in creating helper functions, as object
