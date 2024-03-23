@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	disttypes "github.com/dymensionxyz/dymension-rdk/x/dist/types"
 )
 
 // AllocateTokens handles distribution of the collected fees
@@ -28,21 +29,28 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 
 	/* ---------------------------- Pay the proposer ---------------------------- */
 	// calculate and pay proposer reward
-	proposerValidator, found := k.seqKeeper.GetSequencerByConsAddr(ctx, blockProposer)
+	proposer, found := k.seqKeeper.GetSequencerByConsAddr(ctx, blockProposer)
 	if !found {
 		logger.Error("failed to find the validator for this block. reward not allocated")
 	} else {
 		proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
 		proposerCoins, proposerRemainder := proposerReward.TruncateDecimal()
 		if !proposerCoins.IsZero() {
-			err := k.AllocateTokensToSequencer(ctx, proposerValidator, proposerCoins)
+			err := k.AllocateTokensToSequencer(ctx, proposer, proposerCoins)
 			if err != nil {
 				logger.Error("failed to reward the proposer")
 			}
 
 			remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
 
-			//TODO: emit event for sequencer reward
+			// update outstanding rewards
+			ctx.EventManager().EmitEvent(
+				sdk.NewEvent(
+					disttypes.EventTypeDistSequencerRewards,
+					sdk.NewAttribute(sdk.AttributeKeyAmount, proposerCoins.String()),
+					sdk.NewAttribute(disttypes.AttributeKeySequencer, proposer.GetOperator().String()),
+				),
+			)
 		}
 	}
 
