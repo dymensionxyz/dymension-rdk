@@ -34,8 +34,5 @@ jobs:
           languages: "go"
           queries: crypto-com/cosmos-sdk-codeql@main,security-and-quality
 
-      - name: Build
-        run: make build
-
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
