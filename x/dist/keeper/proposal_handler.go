@@ -15,7 +15,8 @@ func HandleCommunityPoolSpendProposal(ctx sdk.Context, k Keeper, p *types.Commun
 	}
 
 	if k.bankKeeper.BlockedAddr(recipient) {
-		return errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "%s is not allowed to receive external funds", p.Recipient)
+		return errorsmod.Wrapf(sdkerrors.ErrUnauthorized, "not allowed to receive external funds: recipient: %s", p.Recipient)
+
 	}
 
 	err := k.DistributeFromFeePool(ctx, p.Amount, recipient)
