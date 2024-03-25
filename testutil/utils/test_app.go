@@ -14,6 +14,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
+	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/stretchr/testify/require"
@@ -85,6 +86,12 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 
 	app, genesisState := setup(true, 5)
 
+	seqGenesis := seqtypes.GenesisState{
+		Params:                 seqtypes.DefaultParams(),
+		GenesisOperatorAddress: sdk.ValAddress(OperatorPK.Address()).String(),
+	}
+	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
+
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
 	// init chain will set the validator set and initialize the genesis accounts
@@ -110,6 +117,12 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 	t.Helper()
 
 	app, genesisState := setup(true, 5)
+
+	seqGenesis := seqtypes.GenesisState{
+		Params:                 seqtypes.DefaultParams(),
+		GenesisOperatorAddress: sdk.ValAddress(OperatorPK.Address()).String(),
+	}
+	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
 
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
 	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
