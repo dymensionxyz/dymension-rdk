@@ -14,11 +14,6 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	var updates []abci.ValidatorUpdate
 	k.SetParams(ctx, genState.Params)
 
-	// TODO: move to validateGenesis
-	if genState.GenesisOperatorAddress == "" {
-		panic("genesis operator address not set")
-	}
-
 	operatorAddr, err := sdk.ValAddressFromBech32(genState.GenesisOperatorAddress)
 	if err != nil {
 		panic(err)
