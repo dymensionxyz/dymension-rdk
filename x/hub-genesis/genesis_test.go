@@ -1,13 +1,14 @@
 package hub_genesis_test
 
 import (
+	"testing"
+
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/nullify"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	hub_genesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestGenesis(t *testing.T) {

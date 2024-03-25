@@ -9,7 +9,6 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/testutils"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -101,7 +100,7 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 					TokenMetadata: denomMetadata,
 				}
 				_, err := suite.msgServer.CreateDenomMetadata(suite.ctx, msg)
-				require.NoError(suite.T(), err, "CreateDenomMetadata() error")
+				suite.Require().NoError(err, "CreateDenomMetadata() error")
 			},
 			hooks:            &mockERC20Hook{},
 			expectHookCalled: false,
@@ -150,15 +149,15 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 
 			_, err := suite.msgServer.CreateDenomMetadata(suite.ctx, tc.msg)
 			if tc.expectErr != "" {
-				require.ErrorContains(suite.T(), err, tc.expectErr)
+				suite.Require().ErrorContains(err, tc.expectErr)
 				return
 			}
-			require.NoError(suite.T(), err, "CreateDenomMetadata() error")
+			suite.Require().NoError(err, "CreateDenomMetadata() error")
 
 			// check if the denom metadata was added
 			_, found := suite.app.BankKeeper.GetDenomMetaData(suite.ctx, ibcBase)
-			require.True(suite.T(), found, "denom metadata should exist")
-			require.Equal(suite.T(), tc.expectHookCalled, tc.hooks.createCalled, "after denom metadata creation hook should be called")
+			suite.Require().True(found, "denom metadata should exist")
+			suite.Require().Equal(tc.expectHookCalled, tc.hooks.createCalled, "after denom metadata creation hook should be called")
 		})
 	}
 }
