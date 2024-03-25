@@ -14,35 +14,49 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	var updates []abci.ValidatorUpdate
 	k.SetParams(ctx, genState.Params)
 
-	// Required code as the cosmos sdk validates that the InitChain request is equal to the result
-	// so we need to retun here the same valUpdates as we received from the InitChain request
-	// reminder: dymint passes two objects, one with the operator address and one with the consensus pubkey
-	// the operator address object needs to be removed as
-	sequencers := k.GetAllSequencers(ctx)
-	if len(sequencers) != 2 {
-		panic(types.ErrFailedInitGenesis)
+	// TODO: move to validateGenesis
+	if genState.GenesisOperatorAddress == "" {
+		panic("genesis operator address not set")
 	}
 
-	for _, seq := range sequencers {
-		pubkey, err := seq.TmConsPublicKey()
-		if err != nil {
-			panic(err)
-		}
-
-		updateConsPubkey := abci.ValidatorUpdate{
-			PubKey: pubkey,
-			Power:  seq.ConsensusPower(sdk.DefaultPowerReduction),
-		}
-		updates = append(updates, updateConsPubkey)
+	operatorAddr, err := sdk.ValAddressFromBech32(genState.GenesisOperatorAddress)
+	if err != nil {
+		panic(err)
 	}
 
-	// delete the genesis sequencer, which we hackly used to keep the data from the InitChain request
-	// we stored it only to have the operatorPubKey available to return it in the ValidatorUpdate
-	val, ok := k.GetSequencer(ctx, sdk.ValAddress(types.InitChainStubAddr))
+	// get the sequencer we set on InitChain. and delete it as it's not needed in store anymore
+	seq, ok := k.GetSequencer(ctx, sdk.ValAddress(types.InitChainStubAddr))
 	if !ok {
 		panic("genesis sequencer not found")
 	}
-	k.DeleteSequencer(ctx, val)
+	k.DeleteSequencer(ctx, seq)
+
+	pubkey, err := seq.ConsPubKey()
+	if err != nil {
+		panic(err)
+	}
+	power := seq.ConsensusPower(sdk.DefaultPowerReduction)
+
+	sequencer, err := types.NewSequencer(operatorAddr, pubkey, power)
+	if err != nil {
+		panic(err)
+	}
+
+	k.SetSequencer(ctx, sequencer)
+	err = k.SetSequencerByConsAddr(ctx, sequencer)
+	if err != nil {
+		panic(err)
+	}
+
+	tmPubkey, err := seq.TmConsPublicKey()
+	if err != nil {
+		panic(err)
+	}
+	updateConsPubkey := abci.ValidatorUpdate{
+		PubKey: tmPubkey,
+		Power:  power,
+	}
+	updates = append(updates, updateConsPubkey)
 
 	return updates
 }

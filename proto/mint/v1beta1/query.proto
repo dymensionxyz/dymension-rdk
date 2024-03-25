@@ -3,7 +3,6 @@ package rollapp.mint.v1beta1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "mint/v1beta1/mint.proto";
 import "mint/v1beta1/params.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/mint/types";

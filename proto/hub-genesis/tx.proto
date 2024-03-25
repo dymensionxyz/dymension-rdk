@@ -3,8 +3,6 @@ package rollapp.hub_genesis;
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
-import "gogoproto/gogo.proto";
-
 // Msg defines the Msg service.
 service Msg {
   rpc TriggerGenesisEvent(MsgHubGenesisEvent)

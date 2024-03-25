@@ -83,9 +83,6 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
 	require.NoError(t, err)
 
-	operatorPk, err := cryptocodec.ToTmProtoPublicKey(OperatorPK)
-	require.NoError(t, err)
-
 	app, genesisState := setup(true, 5)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
@@ -98,7 +95,6 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 			ConsensusParams: DefaultConsensusParams,
 			Validators: []abci.ValidatorUpdate{
 				{PubKey: pk, Power: 1},
-				{PubKey: operatorPk, Power: 1},
 			},
 			AppStateBytes: stateBytes,
 			InitialHeight: 0,
@@ -168,9 +164,6 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
 	require.NoError(t, err)
 
-	operatorPk, err := cryptocodec.ToTmProtoPublicKey(OperatorPK)
-	require.NoError(t, err)
-
 	// set validators and delegations
 	stakingGenesis = *stakingtypes.NewGenesisState(stakingGenesis.Params, validators, delegations)
 	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&stakingGenesis)
@@ -189,7 +182,6 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 			ConsensusParams: DefaultConsensusParams,
 			Validators: []abci.ValidatorUpdate{
 				{PubKey: pk, Power: 1},
-				{PubKey: operatorPk, Power: 1},
 			},
 			AppStateBytes: stateBytes,
 			InitialHeight: 0,
