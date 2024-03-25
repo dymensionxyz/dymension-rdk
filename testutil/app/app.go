@@ -8,18 +8,6 @@ import (
 	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	srvflags "github.com/evmos/evmos/v12/server/flags"
-	"github.com/evmos/evmos/v12/x/claims"
-	claimskeeper "github.com/evmos/evmos/v12/x/claims/keeper"
-	claimstypes "github.com/evmos/evmos/v12/x/claims/types"
-	"github.com/evmos/evmos/v12/x/erc20/client/cli"
-	evmkeeper "github.com/evmos/evmos/v12/x/evm/keeper"
-	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
-	"github.com/evmos/evmos/v12/x/feemarket"
-	feemarketkeeper "github.com/evmos/evmos/v12/x/feemarket/keeper"
-	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
-	"github.com/evmos/evmos/v12/x/ibc/transfer"
-	"github.com/spf13/cast"
 
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/gorilla/mux"
@@ -92,10 +80,6 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata"
 	denommetadatakeeper "github.com/dymensionxyz/dymension-rdk/x/denommetadata/keeper"
 	denommetadatatypes "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
-	"github.com/evmos/evmos/v12/x/erc20"
-	erc20keeper "github.com/evmos/evmos/v12/x/erc20/keeper"
-	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
-	"github.com/evmos/evmos/v12/x/evm"
 
 	"github.com/dymensionxyz/dymension-rdk/x/epochs"
 	epochskeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
@@ -137,10 +121,10 @@ var (
 		authtypes.StoreKey, banktypes.StoreKey,
 		stakingtypes.StoreKey, seqtypes.StoreKey,
 		minttypes.StoreKey, denommetadatatypes.StoreKey, distrtypes.StoreKey,
-		govtypes.StoreKey, paramstypes.StoreKey, erc20types.StoreKey,
-		ibchost.StoreKey, upgradetypes.StoreKey, evmtypes.StoreKey,
-		epochstypes.StoreKey, hubgentypes.StoreKey, claimstypes.StoreKey,
-		ibctransfertypes.StoreKey, capabilitytypes.StoreKey, feemarkettypes.StoreKey,
+		govtypes.StoreKey, paramstypes.StoreKey,
+		ibchost.StoreKey, upgradetypes.StoreKey,
+		epochstypes.StoreKey, hubgentypes.StoreKey,
+		ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
 	}
 )
 
@@ -154,9 +138,6 @@ func getGovProposalHandlers() []govclient.ProposalHandler {
 		upgradeclient.LegacyCancelProposalHandler,
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
-		govclient.NewProposalHandler(cli.NewRegisterCoinProposalCmd),
-		govclient.NewProposalHandler(cli.NewRegisterERC20ProposalCmd),
-		govclient.NewProposalHandler(cli.NewToggleTokenConversionProposalCmd),
 	)
 
 	return govProposalHandlers
@@ -188,13 +169,6 @@ var (
 		vesting.AppModuleBasic{},
 		hubgenesis.AppModuleBasic{},
 		denommetadata.AppModuleBasic{},
-
-		feemarket.AppModuleBasic{},
-		evm.AppModuleBasic{},
-		erc20.AppModuleBasic{},
-		transfer.AppModuleBasic{AppModuleBasic: &ibctransfer.AppModuleBasic{}},
-		claims.AppModuleBasic{},
-		denommetadata.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -207,9 +181,6 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		hubgentypes.ModuleName:         {authtypes.Burner},
-		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
-		erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
-		claimstypes.ModuleName:         nil,
 		denommetadatatypes.ModuleName:  {authtypes.Minter},
 	}
 )
@@ -238,10 +209,6 @@ type App struct {
 	StakingKeeper       stakingkeeper.Keeper
 	SequencersKeeper    seqkeeper.Keeper
 	MintKeeper          mintkeeper.Keeper
-	FeeMarketKeeper     feemarketkeeper.Keeper
-	EvmKeeper           *evmkeeper.Keeper
-	Erc20Keeper         erc20keeper.Keeper
-	ClaimsKeeper        *claimskeeper.Keeper
 	DenommetadataKeeper denommetadatakeeper.Keeper
 	EpochsKeeper        epochskeeper.Keeper
 	DistrKeeper         distrkeeper.Keeper
@@ -300,11 +267,7 @@ func NewRollapp(
 	keys := sdk.NewKVStoreKeys(
 		kvstorekeys...,
 	)
-	tkeys := sdk.NewTransientStoreKeys(
-		paramstypes.TStoreKey,
-		feemarkettypes.TransientKey,
-		evmtypes.TransientKey,
-	)
+	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
 
 	// load state streaming if enabled
@@ -383,6 +346,20 @@ func NewRollapp(
 		),
 	)
 
+	app.DenommetadataKeeper = denommetadatakeeper.NewKeeper(
+		appCodec,
+		keys[denommetadatatypes.StoreKey],
+		app.BankKeeper,
+		nil,
+		app.GetSubspace(denommetadatatypes.ModuleName),
+	)
+	// set hook for denom metadata keeper later
+	app.DenommetadataKeeper.SetHooks(
+		denommetadatatypes.NewMultiDenommetadataHooks(
+		// insert denom metadata hooks receivers here
+		),
+	)
+
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec, keys[distrtypes.StoreKey], app.GetSubspace(distrtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
 		&stakingKeeper, &app.SequencersKeeper, authtypes.FeeCollectorName, app.ModuleAccountAddrs(),
@@ -405,53 +382,8 @@ func NewRollapp(
 		appCodec, keys[seqtypes.StoreKey], app.GetSubspace(seqtypes.ModuleName),
 	)
 
-	tracer := cast.ToString(appOpts.Get(srvflags.EVMTracer))
-	// Create Ethermint keepers
-	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
-		appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
-		keys[feemarkettypes.StoreKey],
-		tkeys[feemarkettypes.TransientKey],
-		app.GetSubspace(feemarkettypes.ModuleName),
-	)
-
-	app.EvmKeeper = evmkeeper.NewKeeper(
-		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper, app.SequencersKeeper, app.FeeMarketKeeper,
-		tracer, app.GetSubspace(evmtypes.ModuleName),
-	)
-
 	app.IBCKeeper = ibckeeper.NewKeeper(
 		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
-	)
-
-	app.ClaimsKeeper = claimskeeper.NewKeeper(
-		appCodec, keys[claimstypes.StoreKey], authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper, &stakingKeeper, app.DistrKeeper, app.IBCKeeper.ChannelKeeper,
-	)
-
-	app.ClaimsKeeper.SetICS4Wrapper(app.IBCKeeper.ChannelKeeper)
-
-	app.Erc20Keeper = erc20keeper.NewKeeper(
-		keys[erc20types.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
-		app.AccountKeeper, app.BankKeeper, app.EvmKeeper, app.StakingKeeper,
-	)
-
-	app.EvmKeeper = app.EvmKeeper.SetHooks(
-		evmkeeper.NewMultiEvmHooks(
-			app.Erc20Keeper.Hooks(),
-		),
-	)
-
-	denomMetadataHooks := denommetadatatypes.NewMultiDenommetadataHooks(
-		erc20keeper.NewERC20ContractRegistrationHook(app.Erc20Keeper),
-	)
-
-	app.DenommetadataKeeper = denommetadatakeeper.NewKeeper(
-		appCodec,
-		keys[denommetadatatypes.StoreKey],
-		app.BankKeeper,
-		denomMetadataHooks,
-		app.GetSubspace(denommetadatatypes.ModuleName),
 	)
 
 	// Register the proposal types
@@ -536,10 +468,6 @@ func NewRollapp(
 		ibctransfer.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper, app.AccountKeeper),
-		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
-		feemarket.NewAppModule(app.FeeMarketKeeper, app.GetSubspace(feemarkettypes.ModuleName)),
-		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper, app.GetSubspace(erc20types.ModuleName)),
-		claims.NewAppModule(appCodec, *app.ClaimsKeeper, app.GetSubspace(claimstypes.ModuleName)),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -552,18 +480,14 @@ func NewRollapp(
 	beginBlockersList := []string{
 		upgradetypes.ModuleName,
 		capabilitytypes.ModuleName,
-		feemarkettypes.ModuleName,
-		evmtypes.ModuleName,
+		minttypes.ModuleName,
+		denommetadatatypes.ModuleName,
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		seqtypes.ModuleName,
 		vestingtypes.ModuleName,
-		minttypes.ModuleName,
-		erc20types.ModuleName,
-		claimstypes.ModuleName,
 		ibchost.ModuleName,
 		ibctransfertypes.ModuleName,
-		denommetadatatypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		govtypes.ModuleName,
@@ -577,17 +501,13 @@ func NewRollapp(
 	endBlockersList := []string{
 		govtypes.ModuleName,
 		stakingtypes.ModuleName,
-		evmtypes.ModuleName,
 		seqtypes.ModuleName,
-		feemarkettypes.ModuleName,
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		distrtypes.ModuleName,
 		vestingtypes.ModuleName,
 		minttypes.ModuleName,
-		erc20types.ModuleName,
-		claimstypes.ModuleName,
 		denommetadatatypes.ModuleName,
 		genutiltypes.ModuleName,
 		epochstypes.ModuleName,
@@ -609,10 +529,6 @@ func NewRollapp(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
 		banktypes.ModuleName,
-		evmtypes.ModuleName,
-		erc20types.ModuleName,
-		claimstypes.ModuleName,
-		feemarkettypes.ModuleName,
 		epochstypes.ModuleName,
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
@@ -929,17 +845,13 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(stakingtypes.ModuleName)
 	paramsKeeper.Subspace(seqtypes.ModuleName)
 	paramsKeeper.Subspace(minttypes.ModuleName)
+	paramsKeeper.Subspace(denommetadatatypes.ModuleName)
 	paramsKeeper.Subspace(epochstypes.ModuleName)
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govv1.ParamKeyTable())
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
 	paramsKeeper.Subspace(hubgentypes.ModuleName)
-	paramsKeeper.Subspace(evmtypes.ModuleName)
-	paramsKeeper.Subspace(feemarkettypes.ModuleName)
-	paramsKeeper.Subspace(erc20types.ModuleName)
-	paramsKeeper.Subspace(claimstypes.ModuleName)
-	paramsKeeper.Subspace(denommetadatatypes.ModuleName)
 
 	return paramsKeeper
 }

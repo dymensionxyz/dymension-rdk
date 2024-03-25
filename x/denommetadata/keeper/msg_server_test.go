@@ -1,27 +1,18 @@
 package keeper_test
 
 import (
-	"context"
 	"fmt"
+	"sync"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/keeper"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/vm"
-	erc20keeper "github.com/evmos/evmos/v12/x/erc20/keeper"
-	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
-	"github.com/evmos/evmos/v12/x/evm/statedb"
-	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
+	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/testutils"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/testutils"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
 
@@ -38,9 +29,10 @@ func TestDenomMetadataMsgServerTestSuite(t *testing.T) {
 	suite.Run(t, new(DenomMetadataMsgServerTestSuite))
 }
 
-func (suite *DenomMetadataMsgServerTestSuite) setupTest() {
-	suite.app, suite.ctx = setupAppWithMockEVMKeeper(suite.T())
+func (suite *DenomMetadataMsgServerTestSuite) setupTest(hooks types.DenomMetadataHooks) {
+	suite.app, suite.ctx = testutils.NewTestDenommetadataKeeper(suite.T())
 	suite.k = suite.app.DenommetadataKeeper
+	suite.k.SetHooks(types.NewMultiDenommetadataHooks(hooks))
 	suite.msgServer = keeper.NewMsgServerImpl(suite.k)
 	// Set allowed addresses
 	initialParams := types.DefaultParams()
@@ -67,13 +59,13 @@ var denomMetadata = banktypes.Metadata{
 }
 
 func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
-	suite.setupTest()
-
 	cases := []struct {
-		name      string
-		msg       *types.MsgCreateDenomMetadata
-		expectErr string
-		malleate  func()
+		name             string
+		msg              *types.MsgCreateDenomMetadata
+		hooks            *mockERC20Hook
+		expectErr        string
+		expectHookCalled bool
+		malleate         func()
 	}{
 		{
 			name: "success",
@@ -81,6 +73,8 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 				SenderAddress: senderAddress,
 				TokenMetadata: denomMetadata,
 			},
+			hooks:            &mockERC20Hook{},
+			expectHookCalled: true,
 		}, {
 			name: "permission error",
 			msg: &types.MsgCreateDenomMetadata{
@@ -92,7 +86,9 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 				initialParams.AllowedAddresses = []string{}
 				suite.k.SetParams(suite.ctx, initialParams)
 			},
-			expectErr: types.ErrNoPermission.Error(),
+			hooks:            &mockERC20Hook{},
+			expectHookCalled: false,
+			expectErr:        types.ErrNoPermission.Error(),
 		}, {
 			name: "denom already exists",
 			msg: &types.MsgCreateDenomMetadata{
@@ -107,7 +103,9 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 				_, err := suite.msgServer.CreateDenomMetadata(suite.ctx, msg)
 				require.NoError(suite.T(), err, "CreateDenomMetadata() error")
 			},
-			expectErr: types.ErrDenomAlreadyExists.Error(),
+			hooks:            &mockERC20Hook{},
+			expectHookCalled: false,
+			expectErr:        types.ErrDenomAlreadyExists.Error(),
 		}, {
 			name: "invalid denom units",
 			msg: &types.MsgCreateDenomMetadata{
@@ -124,28 +122,27 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 					Display: ibcBase,
 				},
 			},
-			expectErr: fmt.Sprintf("the exponent for base denomination unit %s must be 0", ibcBase),
+			hooks:            &mockERC20Hook{},
+			expectHookCalled: false,
+			expectErr:        fmt.Sprintf("the exponent for base denomination unit %s must be 0", ibcBase),
 		}, {
 			name: "failed to create erc20 contract",
 			msg: &types.MsgCreateDenomMetadata{
 				SenderAddress: senderAddress,
 				TokenMetadata: denomMetadata,
 			},
-			malleate: func() {
-				// disable erc20
-				params := suite.app.Erc20Keeper.GetParams(suite.ctx)
-				params.EnableErc20 = false
-				err := suite.app.Erc20Keeper.SetParams(suite.ctx, params)
-				require.NoError(suite.T(), err, "SetParams() error")
+			hooks: &mockERC20Hook{
+				err: fmt.Errorf("failed to deploy the erc20 contract for the IBC coin"),
 			},
-			expectErr: "error in after denom metadata creation hook: failed to deploy the erc20 contract for the IBC coin",
+			expectHookCalled: false,
+			expectErr:        "error in after denom metadata creation hook: failed to deploy the erc20 contract for the IBC coin",
 		},
 	}
 
 	for _, tc := range cases {
 		suite.Run(tc.name, func() {
 			// reset the test state
-			suite.setupTest()
+			suite.setupTest(tc.hooks)
 
 			if tc.malleate != nil {
 				tc.malleate()
@@ -158,62 +155,25 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 			}
 			require.NoError(suite.T(), err, "CreateDenomMetadata() error")
 
-			// check if the erc20 contract was created
-			token, found := suite.app.BankKeeper.GetDenomMetaData(suite.ctx, ibcBase)
+			// check if the denom metadata was added
+			_, found := suite.app.BankKeeper.GetDenomMetaData(suite.ctx, ibcBase)
 			require.True(suite.T(), found, "denom metadata should exist")
-
-			pairID := suite.app.Erc20Keeper.GetTokenPairID(suite.ctx, token.Base)
-			require.True(suite.T(), len(pairID) > 0, "token pair id should exist")
-
-			pair, found := suite.app.Erc20Keeper.GetTokenPair(suite.ctx, pairID)
-			require.True(suite.T(), found, "token pair should exist")
-
-			require.True(suite.T(), common.IsHexAddress(pair.Erc20Address), "erc20 address should be a valid hex address")
-			address := common.HexToAddress(pair.Erc20Address)
-
-			isERC20Registered := suite.app.Erc20Keeper.IsERC20Registered(suite.ctx, address)
-			require.True(suite.T(), isERC20Registered, "erc20 contract should be registered")
+			require.Equal(suite.T(), tc.expectHookCalled, tc.hooks.createCalled, "after denom metadata creation hook should be called")
 		})
 	}
 }
 
-func setupAppWithMockEVMKeeper(t *testing.T) (*app.App, sdk.Context) {
-	t.Helper()
-
-	tapp, ctx := testutils.NewTestDenommetadataKeeper(t)
-
-	// sneak in a mock EVM keeper
-	evmKeeper := &mockEVMKeeper{}
-
-	tapp.Erc20Keeper = erc20keeper.NewKeeper(
-		tapp.GetKey(erc20types.StoreKey), tapp.AppCodec(), authtypes.NewModuleAddress(govtypes.ModuleName),
-		tapp.AccountKeeper, tapp.BankKeeper, evmKeeper, tapp.StakingKeeper,
-	)
-
-	tapp.DenommetadataKeeper = keeper.NewKeeper(
-		tapp.AppCodec(),
-		tapp.GetKey(types.StoreKey),
-		tapp.BankKeeper,
-		types.NewMultiDenommetadataHooks(
-			erc20keeper.NewERC20ContractRegistrationHook(tapp.Erc20Keeper),
-		),
-		tapp.GetSubspace(types.ModuleName),
-	)
-	return tapp, ctx
+type mockERC20Hook struct {
+	createCalled bool
+	err          error
+	sync.Mutex
 }
 
-type mockEVMKeeper struct{}
-
-func (m *mockEVMKeeper) GetParams(sdk.Context) evmtypes.Params { return evmtypes.DefaultParams() }
-
-func (m *mockEVMKeeper) GetAccountWithoutBalance(sdk.Context, common.Address) *statedb.Account {
-	return &statedb.Account{Nonce: 0, CodeHash: []byte{}}
+func (m *mockERC20Hook) AfterDenomMetadataCreation(sdk.Context, banktypes.Metadata) error {
+	m.Lock()
+	defer m.Unlock()
+	m.createCalled = m.err == nil
+	return m.err
 }
 
-func (m *mockEVMKeeper) EstimateGas(context.Context, *evmtypes.EthCallRequest) (*evmtypes.EstimateGasResponse, error) {
-	return &evmtypes.EstimateGasResponse{Gas: 1000}, nil
-}
-
-func (m *mockEVMKeeper) ApplyMessage(sdk.Context, core.Message, vm.EVMLogger, bool) (*evmtypes.MsgEthereumTxResponse, error) {
-	return &evmtypes.MsgEthereumTxResponse{}, nil
-}
+func (m *mockERC20Hook) AfterDenomMetadataUpdate(sdk.Context, banktypes.Metadata) error { return nil }
