@@ -9,10 +9,20 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
 
-var _ types.MsgServer = &Keeper{}
+type msgServer struct {
+	Keeper
+}
+
+// NewMsgServerImpl returns an implementation of the MsgServer interface
+// for the provided Keeper.
+func NewMsgServerImpl(keeper Keeper) types.MsgServer {
+	return &msgServer{Keeper: keeper}
+}
+
+var _ types.MsgServer = msgServer{}
 
 // CreateDenomMetadata create the denom metadata in bank module
-func (k Keeper) CreateDenomMetadata(
+func (k msgServer) CreateDenomMetadata(
 	goCtx context.Context,
 	msg *types.MsgCreateDenomMetadata,
 ) (*types.MsgCreateDenomMetadataResponse, error) {
@@ -42,7 +52,7 @@ func (k Keeper) CreateDenomMetadata(
 }
 
 // UpdateDenomMetadata update the denom metadata in bank module
-func (k Keeper) UpdateDenomMetadata(
+func (k msgServer) UpdateDenomMetadata(
 	goCtx context.Context,
 	msg *types.MsgUpdateDenomMetadata,
 ) (*types.MsgUpdateDenomMetadataResponse, error) {
