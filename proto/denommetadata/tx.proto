@@ -4,8 +4,6 @@ package rollapp.denommetadata.types;
 import "gogoproto/gogo.proto";
 import "cosmos/bank/v1beta1/bank.proto";
 
-import "denommetadata/params.proto";
-
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types";
 
 // Msg defines the Msg service.

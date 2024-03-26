@@ -14,6 +14,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
+	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/stretchr/testify/require"
@@ -83,10 +84,13 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
 	require.NoError(t, err)
 
-	operatorPk, err := cryptocodec.ToTmProtoPublicKey(OperatorPK)
-	require.NoError(t, err)
-
 	app, genesisState := setup(true, 5)
+
+	seqGenesis := seqtypes.GenesisState{
+		Params:                 seqtypes.DefaultParams(),
+		GenesisOperatorAddress: sdk.ValAddress(OperatorPK.Address()).String(),
+	}
+	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
@@ -98,7 +102,6 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 			ConsensusParams: DefaultConsensusParams,
 			Validators: []abci.ValidatorUpdate{
 				{PubKey: pk, Power: 1},
-				{PubKey: operatorPk, Power: 1},
 			},
 			AppStateBytes: stateBytes,
 			InitialHeight: 0,
@@ -114,6 +117,12 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 	t.Helper()
 
 	app, genesisState := setup(true, 5)
+
+	seqGenesis := seqtypes.GenesisState{
+		Params:                 seqtypes.DefaultParams(),
+		GenesisOperatorAddress: sdk.ValAddress(OperatorPK.Address()).String(),
+	}
+	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
 
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
 	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
@@ -168,9 +177,6 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
 	require.NoError(t, err)
 
-	operatorPk, err := cryptocodec.ToTmProtoPublicKey(OperatorPK)
-	require.NoError(t, err)
-
 	// set validators and delegations
 	stakingGenesis = *stakingtypes.NewGenesisState(stakingGenesis.Params, validators, delegations)
 	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&stakingGenesis)
@@ -189,7 +195,6 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 			ConsensusParams: DefaultConsensusParams,
 			Validators: []abci.ValidatorUpdate{
 				{PubKey: pk, Power: 1},
-				{PubKey: operatorPk, Power: 1},
 			},
 			AppStateBytes: stateBytes,
 			InitialHeight: 0,
