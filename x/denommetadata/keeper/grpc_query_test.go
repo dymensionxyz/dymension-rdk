@@ -11,9 +11,9 @@ import (
 )
 
 func TestParamsQuery(t *testing.T) {
-	k, ctx := testutils.NewTestDenommetadataKeeper(t)
+	app, ctx := testutils.NewTestDenommetadataKeeper(t)
 
-	q := keeper.Querier{Keeper: *k}
+	q := keeper.Querier{Keeper: app.DenommetadataKeeper}
 
 	wctx := sdk.WrapSDKContext(ctx)
 

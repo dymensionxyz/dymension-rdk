@@ -168,6 +168,7 @@ var (
 		ibctransfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		hubgenesis.AppModuleBasic{},
+		denommetadata.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -180,6 +181,7 @@ var (
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		hubgentypes.ModuleName:         {authtypes.Burner},
+		denommetadatatypes.ModuleName:  {authtypes.Minter},
 	}
 )
 
@@ -456,7 +458,7 @@ func NewRollapp(
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, app.BankKeeper),
-		denommetadata.NewAppModule(appCodec, app.DenommetadataKeeper, app.BankKeeper),
+		denommetadata.NewAppModule(app.DenommetadataKeeper, app.BankKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		sequencers.NewAppModule(appCodec, app.SequencersKeeper),
