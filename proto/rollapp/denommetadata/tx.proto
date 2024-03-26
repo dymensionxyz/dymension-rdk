@@ -1,10 +1,10 @@
 syntax = "proto3";
-package rollapp.denommetadata.types;
+package rollapp.denommetadata;
 
 import "gogoproto/gogo.proto";
 import "cosmos/bank/v1beta1/bank.proto";
 
-import "denommetadata/params.proto";
+import "rollapp/denommetadata/params.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types";
 
