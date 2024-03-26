@@ -12,6 +12,7 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 // GenesisState defines the test module's genesis state.
 message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
-  // this line is used by starport scaffolding # genesis/proto/state
 
+  // genesis_operator_address defines the genesis operator address of the sequencer.
+  string genesis_operator_address = 2;
 }
