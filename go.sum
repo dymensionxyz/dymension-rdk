@@ -502,8 +502,8 @@ github.com/dymensionxyz/cosmosclient v0.4.2-beta h1:sokBefcN1tIOlUKmB8Q2E9XMJ93L
 github.com/dymensionxyz/cosmosclient v0.4.2-beta/go.mod h1:GQQu3ITEjWfi5ULR2B6X2i2YZNennY1yzcT5qdL4MGI=
 github.com/dymensionxyz/dymension/v3 v3.0.0-rc02.0.20240304125623-d447bab68709 h1:97pOWOKbFtyMOASZ6mqanqXmlBRzg/eIFa5SkBhewFc=
 github.com/dymensionxyz/dymension/v3 v3.0.0-rc02.0.20240304125623-d447bab68709/go.mod h1:4PY6Y8pSTRrTmwVue9avSm3hzCOrOcCNQFz79cdgg8s=
-github.com/dymensionxyz/dymint v1.0.0-alpha h1:JX7pM3+UiFCSIBnlRt+x7UDz/EmTh//AaVvQo4CRJug=
-github.com/dymensionxyz/dymint v1.0.0-alpha/go.mod h1:t35R4+GZ+jgDx3wr+xXEo4to38T27jLOXGm/d599Sss=
+github.com/dymensionxyz/dymint v1.0.1-alpha h1:WrSl6WnYm/zTxQkh35WcxuREozB6dAFz8q5jjd4/h38=
+github.com/dymensionxyz/dymint v1.0.1-alpha/go.mod h1:t35R4+GZ+jgDx3wr+xXEo4to38T27jLOXGm/d599Sss=
 github.com/dymensionxyz/evmos/v12 v12.1.6-dymension-v0.3 h1:vmAdUGUc4rTIiO3Phezr7vGq+0uPDVKSA4WAe8+yl6w=
 github.com/dymensionxyz/evmos/v12 v12.1.6-dymension-v0.3/go.mod h1:LfPv2O1HXMgETpka81Pg3nXy+U/7urq8dn85ZnSXK5Y=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
