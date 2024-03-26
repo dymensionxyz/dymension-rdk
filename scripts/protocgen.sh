@@ -15,9 +15,11 @@ done
 cp -r .gen/github.com/dymensionxyz/dymension-rdk/* ./proto
 rm -rf .gen/
 
-# move generated .go files from proto to their respective directories in x
+# move generated .go files from proto to their respective directories
 for file in $(find ./proto -name '*.go'); do
     dir=$(dirname "${file#./proto/}")
     mkdir -p "./${dir}"
     mv "$file" "./${dir}"
 done
+
+rm -rf proto/x
