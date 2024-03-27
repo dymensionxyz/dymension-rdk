@@ -40,13 +40,15 @@ containerProtoFmt=cosmos-sdk-proto-fmt-$(containerProtoVer)
 
 proto-gen: ## Generates protobuf files
 	@echo "Generating Protobuf files"
-	@if docker ps -a --format '{{.Names}}' | grep -Eq "^${containerProtoGen}$$"; then docker start -a $(containerProtoGen); else docker run --name $(containerProtoGen) -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) \
-		sh ./scripts/protocgen.sh; fi
+	@which protoc >/dev/null || (echo "protoc not found. Installing..." && \
+        (uname | grep -q Darwin && brew install protobuf || sudo apt install -y protobuf-compiler))
+	@sh ./scripts/protocgen.sh
 
 proto-format: ## Formats protobuf files
 	@echo "Formatting Protobuf files"
-	@if docker ps -a --format '{{.Names}}' | grep -Eq "^${containerProtoFmt}$$"; then docker start -a $(containerProtoFmt); else docker run --name $(containerProtoFmt) -v $(CURDIR):/workspace --workdir /workspace tendermintdev/docker-build-proto \
-		find ./ -not -path "./third_party/*" -name "*.proto" -exec clang-format -i {} \; ; fi
+	@which protoc >/dev/null || (echo "protoc not found. Installing..." && \
+        (uname | grep -q Darwin && brew install protobuf || sudo apt install -y protobuf-compiler))
+	@find ./ -not -path "./third_party/*" -name "*.proto" -exec clang-format -i {} \; ; fi
 
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
