@@ -33,21 +33,21 @@ test_evm: ## Run go test
 #                                   Protobuf                                   #
 # ---------------------------------------------------------------------------- #
 
-containerProtoVer=v0.2
-containerProtoImage=tendermintdev/sdk-proto-gen:$(containerProtoVer)
-containerProtoGen=cosmos-sdk-proto-gen-$(containerProtoVer)
-containerProtoFmt=cosmos-sdk-proto-fmt-$(containerProtoVer)
+install-protoc: ## Install protoc if not already installed
+	@which protoc >/dev/null || (echo "protoc not found. Installing..." && \
+        (uname | grep -q Darwin && brew install protobuf || sudo apt install -y protobuf-compiler))
 
-proto-gen: ## Generates protobuf files
+install-clang-format: ## Install clang-format if not already installed (NOTE: the version of clang-format on ubuntu is really old, follow this page https://stackoverflow.com/a/56879394 if you want newest version)
+	@which clang-format >/dev/null || (echo "clang-format not found. Installing..." && \
+        (uname | grep -q Darwin && brew install clang-format || sudo apt install -y clang-format))
+
+proto-gen: install-protoc ## Generates protobuf files
 	@echo "Generating Protobuf files"
-	@if docker ps -a --format '{{.Names}}' | grep -Eq "^${containerProtoGen}$$"; then docker start -a $(containerProtoGen); else docker run --name $(containerProtoGen) -v $(CURDIR):/workspace --workdir /workspace $(containerProtoImage) \
-		sh ./scripts/protocgen.sh; fi
+	@sh ./scripts/protocgen.sh
 
-proto-format: ## Formats protobuf files
+proto-format: install-clang-format ## Formats protobuf files
 	@echo "Formatting Protobuf files"
-	@if docker ps -a --format '{{.Names}}' | grep -Eq "^${containerProtoFmt}$$"; then docker start -a $(containerProtoFmt); else docker run --name $(containerProtoFmt) -v $(CURDIR):/workspace --workdir /workspace tendermintdev/docker-build-proto \
-		find ./ -not -path "./third_party/*" -name "*.proto" -exec clang-format -i {} \; ; fi
-
+	@find ./ -not -path "*third_party/*" -name "*.proto" -exec clang-format -i {} \;
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help
