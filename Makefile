@@ -48,7 +48,7 @@ proto-format: ## Formats protobuf files
 	@echo "Formatting Protobuf files"
 	@which protoc >/dev/null || (echo "protoc not found. Installing..." && \
         (uname | grep -q Darwin && brew install protobuf || sudo apt install -y protobuf-compiler))
-	@find ./ -not -path "./third_party/*" -name "*.proto" -exec clang-format -i {} \; ; fi
+	@find ./ -not -path "./third_party/*" -name "*.proto" -exec clang-format -i {} \;
 
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
