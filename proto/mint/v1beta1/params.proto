@@ -21,14 +21,13 @@ message Params {
       [ (gogoproto.moretags) =
             "yaml:\"minting_rewards_distribution_start_epoch\"" ];
 
-
   string inflation_change_epoch_identifier = 4
       [ (gogoproto.moretags) = "yaml:\"inflation_change_epoch_identifier\"" ];
 
   string inflation_rate_change = 5 [
     (gogoproto.moretags) = "yaml:\"inflation_rate_change\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable)   = false
+    (gogoproto.nullable) = false
   ];
 
   string target_inflation_rate = 6 [

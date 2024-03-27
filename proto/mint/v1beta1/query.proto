@@ -32,7 +32,8 @@ message QueryParamsResponse {
 // QueryInflationRequest is the request type for the Query/Inflation RPC method.
 message QueryInflationRequest {}
 
-// QueryInflationResponse is the response type for the Query/Inflation RPC method.
+// QueryInflationResponse is the response type for the Query/Inflation RPC
+// method.
 message QueryInflationResponse {
   // inflation defines the current minting inflation value.
   string current_inflation_rate = 1 [
