@@ -33,21 +33,16 @@ test_evm: ## Run go test
 #                                   Protobuf                                   #
 # ---------------------------------------------------------------------------- #
 
-containerProtoVer=v0.2
-containerProtoImage=tendermintdev/sdk-proto-gen:$(containerProtoVer)
-containerProtoGen=cosmos-sdk-proto-gen-$(containerProtoVer)
-containerProtoFmt=cosmos-sdk-proto-fmt-$(containerProtoVer)
-
-proto-gen: ## Generates protobuf files
-	@echo "Generating Protobuf files"
+install-protoc: ## Install protoc if not already installed
 	@which protoc >/dev/null || (echo "protoc not found. Installing..." && \
         (uname | grep -q Darwin && brew install protobuf || sudo apt install -y protobuf-compiler))
+
+proto-gen: install-protoc ## Generates protobuf files
+	@echo "Generating Protobuf files"
 	@sh ./scripts/protocgen.sh
 
-proto-format: ## Formats protobuf files
+proto-format: install-protoc ## Formats protobuf files
 	@echo "Formatting Protobuf files"
-	@which protoc >/dev/null || (echo "protoc not found. Installing..." && \
-        (uname | grep -q Darwin && brew install protobuf || sudo apt install -y protobuf-compiler))
 	@find ./ -not -path "./third_party/*" -name "*.proto" -exec clang-format -i {} \;
 
 
