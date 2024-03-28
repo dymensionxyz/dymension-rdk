@@ -33,7 +33,7 @@ func (k Keeper) AddEpochInfo(ctx sdk.Context, epoch types.EpochInfo) error {
 	}
 	// Check if identifier already exists
 	_, found := k.GetEpochInfo(ctx, epoch.Identifier)
-	if !found {
+	if found {
 		return fmt.Errorf("epoch with identifier %s already exists", epoch.Identifier)
 	}
 
