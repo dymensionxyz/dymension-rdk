@@ -93,10 +93,6 @@ func (epoch EpochInfo) Validate() error {
 	if epoch.Duration == 0 {
 		return errors.New("epoch duration should NOT be 0")
 	}
-	// enforce EpochCountingStarted is false for all epochs
-	if epoch.EpochCountingStarted {
-		return errors.New("epoch counting should NOT be started at genesis")
-	}
 	if epoch.CurrentEpoch < 0 {
 		return errors.New("epoch CurrentEpoch must be non-negative")
 	}
