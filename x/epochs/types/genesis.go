@@ -91,3 +91,20 @@ func (gs GenesisState) Validate() error {
 	}
 	return nil
 }
+
+// Validate also validates epoch info.
+func (epoch EpochInfo) Validate() error {
+	if epoch.Identifier == "" {
+		return errors.New("epoch identifier should NOT be empty")
+	}
+	if epoch.Duration == 0 {
+		return errors.New("epoch duration should NOT be 0")
+	}
+	if epoch.CurrentEpoch < 0 {
+		return errors.New("epoch CurrentEpoch must be non-negative")
+	}
+	if epoch.CurrentEpochStartHeight < 0 {
+		return errors.New("epoch CurrentEpochStartHeight must be non-negative")
+	}
+	return nil
+}
