@@ -86,11 +86,28 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 
 	app, genesisState := setup(true, 5)
 
+	// setup for sequencer
 	seqGenesis := seqtypes.GenesisState{
 		Params:                 seqtypes.DefaultParams(),
 		GenesisOperatorAddress: sdk.ValAddress(OperatorPK.Address()).String(),
 	}
 	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
+
+	// setup for bank (for it to work with mint module)
+	totalSupply := sdk.NewCoins()
+	totalSupply = totalSupply.Add(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000000)))
+	bankGenesis := banktypes.NewGenesisState(
+		banktypes.DefaultGenesisState().Params,
+		[]banktypes.Balance{
+			{
+				Address: app.AccountKeeper.GetModuleAddress("fee_collector").String(),
+				Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1000000000000))),
+			},
+		},
+		totalSupply,
+		[]banktypes.Metadata{},
+	)
+	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
@@ -177,11 +194,23 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
 	require.NoError(t, err)
 
+	// setup delegations
+	totalSupply := sdk.NewCoins()
+	for range delegations {
+		// add delegated tokens to total supply
+		totalSupply = totalSupply.Add(sdk.NewCoin(sdk.DefaultBondDenom, bondAmt))
+	}
+
+	for range delegations {
+		// add delegated tokens to total supply
+		totalSupply = totalSupply.Add(sdk.NewCoin(sdk.DefaultBondDenom, bondAmt))
+	}
+
 	// set validators and delegations
 	stakingGenesis = *stakingtypes.NewGenesisState(stakingGenesis.Params, validators, delegations)
 	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&stakingGenesis)
 
-	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, sdk.NewCoins(), []banktypes.Metadata{})
+	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{})
 	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
