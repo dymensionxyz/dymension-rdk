@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"time"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/epochs/types"
@@ -13,22 +11,10 @@ import (
 func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	// set epoch info from genesis
 	for _, epoch := range genState.Epochs {
-		// Initialize empty epoch values via Cosmos SDK
-		if epoch.StartTime.Equal(time.Time{}) {
-			epoch.StartTime = ctx.BlockTime()
+		err := k.AddEpochInfo(ctx, epoch)
+		if err != nil {
+			panic(err)
 		}
-
-		if epoch.CurrentEpoch < 0 {
-			panic("current epoch should NOT be negative")
-		}
-
-		if epoch.CurrentEpochStartHeight < 0 {
-			panic("current epoch start height should NOT be negative")
-		}
-
-		epoch.CurrentEpochStartHeight = ctx.BlockHeight()
-
-		k.SetEpochInfo(ctx, epoch)
 	}
 }
 
