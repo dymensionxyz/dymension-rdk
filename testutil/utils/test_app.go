@@ -86,11 +86,14 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 
 	app, genesisState := setup(true, 5)
 
+	// setup for sequencer
 	seqGenesis := seqtypes.GenesisState{
 		Params:                 seqtypes.DefaultParams(),
 		GenesisOperatorAddress: sdk.ValAddress(OperatorPK.Address()).String(),
 	}
 	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
+
+	// for now bank genesis won't be set here, funding accounts should be called with fund utils.FundModuleAccount
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
