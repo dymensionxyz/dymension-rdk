@@ -93,6 +93,8 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	}
 	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
 
+	// for now bank genesis won't be set here, funding accounts should be called with fund utils.FundModuleAccount
+
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
 	// init chain will set the validator set and initialize the genesis accounts
