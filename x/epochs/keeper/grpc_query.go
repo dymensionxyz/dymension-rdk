@@ -14,6 +14,17 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
+// Querier defines a wrapper around the x/epochs keeper providing gRPC method
+// handlers.
+type Querier struct {
+	Keeper
+}
+
+// NewQuerier initializes new querier.
+func NewQuerier(k Keeper) Querier {
+	return Querier{Keeper: k}
+}
+
 // EpochInfos provide running epochInfos
 func (k Keeper) EpochInfos(c context.Context, req *types.QueryEpochsInfoRequest) (*types.QueryEpochsInfoResponse, error) {
 	if req == nil {
