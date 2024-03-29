@@ -12,6 +12,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 )
 
 const (
@@ -23,6 +24,7 @@ const (
 	defaultMintingRewardsDistributionStartEpoch int64 = 1
 	defaultFeeCollectorName                           = "fee_collector"
 	defaultInflationRate                              = "1000.0"
+	defaultBalanceAmt                                 = int64(1000000000)
 )
 
 var (
@@ -37,19 +39,11 @@ type MintKeeperTestSuite struct {
 	ctx sdk.Context
 }
 
-type MintHooksMock struct {
-	hookCallCount int
-}
-
-func (m *MintHooksMock) AfterDistributeMintedCoin(ctx sdk.Context, coins sdk.Coins) {
-	// Increment the call count whenever this method is called
-	m.hookCallCount++
-}
-
 func TestHooksTestSuite(t *testing.T) {
 	suite.Run(t, new(MintKeeperTestSuite))
 }
 
+// TODO: Add tests for checking the minting amount, other cases when coin should not be minted, etc
 func TestAfterDistributeMintedCoin(t *testing.T) {
 	// Setup your test context and keeper
 	app := utils.Setup(t, false)
@@ -60,6 +54,8 @@ func TestAfterDistributeMintedCoin(t *testing.T) {
 	mintHook := mintKeeper.Hooks()
 	// Set InflationRate for coin minting
 	mintKeeper.GetMinter(ctx).CurrentInflationRate.AddMut(sdk.MustNewDecFromStr(defaultInflationRate))
+	// fund the fee collector account
+	utils.FundModuleAccount(app, ctx, app.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName).GetName(), sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(defaultBalanceAmt))))
 
 	// Get fee collector balance
 	feeCollectorBalance := app.BankKeeper.GetBalance(ctx, app.AccountKeeper.GetModuleAddress(defaultFeeCollectorName), sdk.DefaultBondDenom)
