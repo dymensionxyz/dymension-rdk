@@ -16,11 +16,7 @@ import (
 )
 
 const (
-	// Most values here are taken from mainnet genesis to mimic real-world behavior:
-	// https://github.com/osmosis-labs/networks/raw/main/osmosis-1/genesis.json
-	defaultGenesisEpochProvisions = "821917808219.178082191780821917"
-	defaultEpochIdentifier        = "minute"
-	// actual value taken from mainnet for sanity checking calculations.
+	defaultEpochIdentifier                            = "minute"
 	defaultMintingRewardsDistributionStartEpoch int64 = 1
 	defaultFeeCollectorName                           = "fee_collector"
 	defaultInflationRate                              = "1000.0"
@@ -43,10 +39,9 @@ func TestHooksTestSuite(t *testing.T) {
 	suite.Run(t, new(MintKeeperTestSuite))
 }
 
-// TODO: Add tests for checking the minting amount, other cases when coin should not be minted, etc
-func TestAfterDistributeMintedCoin(t *testing.T) {
+func (suite *MintKeeperTestSuite) TestAfterDistributeMintedCoin() {
 	// Setup your test context and keeper
-	app := utils.Setup(t, false)
+	app := utils.Setup(suite.T(), false)
 	mintKeeper, _ := testkeepers.NewTestMintKeeperFromApp(app)
 	epochKeeper, ctx := testkeepers.NewTestEpochKeeperFromApp(app)
 
@@ -61,15 +56,45 @@ func TestAfterDistributeMintedCoin(t *testing.T) {
 	feeCollectorBalance := app.BankKeeper.GetBalance(ctx, app.AccountKeeper.GetModuleAddress(defaultFeeCollectorName), sdk.DefaultBondDenom)
 
 	// For this hook to be called, identifier must be minute and epoch number must be > than 1
-	// Get the current epoch
-	epoch, found := epochKeeper.GetEpochInfo(ctx, defaultEpochIdentifier)
-	require.True(t, found)
-	epoch.CurrentEpoch = defaultMintingRewardsDistributionStartEpoch + 1
+	testCases := []struct {
+		name               string
+		epoch              int64
+		expectDistribution bool
+	}{
+		{
+			name:               "before start epoch - no distributions",
+			epoch:              defaultMintingRewardsDistributionStartEpoch - 1,
+			expectDistribution: false,
+		},
+		{
+			name:               "at start epoch - distributes",
+			epoch:              defaultMintingRewardsDistributionStartEpoch,
+			expectDistribution: true,
+		},
+		{
+			name:               "after start epoch - distributes",
+			epoch:              defaultMintingRewardsDistributionStartEpoch + 1,
+			expectDistribution: true,
+		},
+	}
 
-	// Mint coin and distribute
-	mintHook.AfterEpochEnd(ctx, epoch)
+	for _, tc := range testCases {
+		suite.Run(tc.name, func() {
+			// Get the current epoch
+			epoch, found := epochKeeper.GetEpochInfo(ctx, defaultEpochIdentifier)
+			suite.Require().True(found)
+			epoch.CurrentEpoch = tc.epoch
 
-	// Check that the hook was called (fee collector balance should be updated)
-	newFeeCollectorBalance := app.BankKeeper.GetBalance(ctx, app.AccountKeeper.GetModuleAddress(defaultFeeCollectorName), sdk.DefaultBondDenom)
-	require.True(t, newFeeCollectorBalance.Amount.GT(feeCollectorBalance.Amount))
+			// Mint coin and distribute
+			mintHook.AfterEpochEnd(ctx, epoch)
+
+			// Check that the hook was called correctly
+			newFeeCollectorBalance := app.BankKeeper.GetBalance(ctx, app.AccountKeeper.GetModuleAddress(defaultFeeCollectorName), sdk.DefaultBondDenom)
+			if tc.expectDistribution {
+				require.True(suite.T(), newFeeCollectorBalance.Amount.GT(feeCollectorBalance.Amount))
+			} else {
+				require.Equal(suite.T(), feeCollectorBalance.Amount, newFeeCollectorBalance.Amount)
+			}
+		})
+	}
 }
