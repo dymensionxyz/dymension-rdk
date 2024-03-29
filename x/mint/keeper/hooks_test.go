@@ -82,7 +82,7 @@ func (suite *MintKeeperTestSuite) TestAfterDistributeMintedCoin() {
 		suite.Run(tc.name, func() {
 			// Get the current epoch
 			epoch, found := epochKeeper.GetEpochInfo(ctx, defaultEpochIdentifier)
-			suite.Require().True(found)
+			require.True(suite.T(), found)
 			epoch.CurrentEpoch = tc.epoch
 
 			// Mint coin and distribute
