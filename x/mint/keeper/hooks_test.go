@@ -11,15 +11,17 @@ import (
 	utils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	minttypes "github.com/dymensionxyz/dymension-rdk/x/mint/types"
 )
 
 const (
 	defaultEpochIdentifier                            = "minute"
 	defaultMintingRewardsDistributionStartEpoch int64 = 1
 	defaultFeeCollectorName                           = "fee_collector"
-	defaultInflationRate                              = "1000.0"
+	defaultInflationRate                              = "0.15" // 15%
 	defaultBalanceAmt                                 = int64(1000000000)
 )
 
@@ -48,7 +50,10 @@ func (suite *MintKeeperTestSuite) TestAfterDistributeMintedCoin() {
 	// Get mint hook
 	mintHook := mintKeeper.Hooks()
 	// Set InflationRate for coin minting
-	mintKeeper.GetMinter(ctx).CurrentInflationRate.AddMut(sdk.MustNewDecFromStr(defaultInflationRate))
+	minter := minttypes.Minter{
+		CurrentInflationRate: sdk.NewDecWithPrec(15, 2), // 15%
+	}
+	mintKeeper.SetMinter(ctx, minter)
 	// fund the fee collector account
 	utils.FundModuleAccount(app, ctx, app.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName).GetName(), sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(defaultBalanceAmt))))
 
@@ -60,21 +65,19 @@ func (suite *MintKeeperTestSuite) TestAfterDistributeMintedCoin() {
 		name               string
 		epoch              int64
 		expectDistribution bool
+		expectedMintedAmt  math.Int
 	}{
 		{
 			name:               "before start epoch - no distributions",
 			epoch:              defaultMintingRewardsDistributionStartEpoch - 1,
 			expectDistribution: false,
+			expectedMintedAmt:  sdk.NewInt(0),
 		},
 		{
 			name:               "at start epoch - distributes",
 			epoch:              defaultMintingRewardsDistributionStartEpoch,
 			expectDistribution: true,
-		},
-		{
-			name:               "after start epoch - distributes",
-			epoch:              defaultMintingRewardsDistributionStartEpoch + 1,
-			expectDistribution: true,
+			expectedMintedAmt:  sdk.NewInt(285), // 285 (15% of 1000M / (365*24*60)) or (inflationRate * totalSupply / spreadFactor)
 		},
 	}
 
@@ -92,6 +95,9 @@ func (suite *MintKeeperTestSuite) TestAfterDistributeMintedCoin() {
 			newFeeCollectorBalance := app.BankKeeper.GetBalance(ctx, app.AccountKeeper.GetModuleAddress(defaultFeeCollectorName), sdk.DefaultBondDenom)
 			if tc.expectDistribution {
 				require.True(suite.T(), newFeeCollectorBalance.Amount.GT(feeCollectorBalance.Amount))
+				// Check the minting amount
+				actualMintedAmt := newFeeCollectorBalance.Amount.Sub(feeCollectorBalance.Amount)
+				require.Equal(suite.T(), tc.expectedMintedAmt, actualMintedAmt)
 			} else {
 				require.Equal(suite.T(), feeCollectorBalance.Amount, newFeeCollectorBalance.Amount)
 			}
