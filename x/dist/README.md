@@ -1,10 +1,10 @@
-# Token Allocation Logic
+# Dist
 
 This document outlines the token allocation logic implemented in the `AllocateTokens` function within the `keeper` package of a Cosmos SDK based blockchain module. The primary purpose of this function is to distribute collected fees among various participants in the blockchain network, including the block proposer (i.e sequencer), governors, and the community pool.
 
 ## Overview
 
-The `AllocateTokens` function is triggered at the beginning of each block and is responsible for distributing the fees collected from the previous block. The distribution process involves several key steps:
+The `AllocateTokens` function is triggered at the beginning of each block and is responsible for distributing the fees collected from the previous block by inflation and tx fees. The distribution process involves several key steps:
 
 1. **Fetching and Clearing Collected Fees**: The function first retrieves the total fees collected in the previous block and prepares them for distribution.
 
