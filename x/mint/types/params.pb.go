@@ -28,12 +28,15 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type Params struct {
 	// type of coin to mint
 	MintDenom string `protobuf:"bytes,1,opt,name=mint_denom,json=mintDenom,proto3" json:"mint_denom,omitempty"`
-	// mint epoch identifier
+	// mint epoch identifier - How often to mint rewards
 	MintEpochIdentifier string `protobuf:"bytes,2,opt,name=mint_epoch_identifier,json=mintEpochIdentifier,proto3" json:"mint_epoch_identifier,omitempty" yaml:"mint_epoch_identifier"`
 	// start epoch to start minting rewards from
 	MintStartEpoch                 int64                                  `protobuf:"varint,3,opt,name=mint_start_epoch,json=mintStartEpoch,proto3" json:"mint_start_epoch,omitempty" yaml:"minting_rewards_distribution_start_epoch"`
+	// inflation change epoch identifier - How often to change inflation rate
 	InflationChangeEpochIdentifier string                                 `protobuf:"bytes,4,opt,name=inflation_change_epoch_identifier,json=inflationChangeEpochIdentifier,proto3" json:"inflation_change_epoch_identifier,omitempty" yaml:"inflation_change_epoch_identifier"`
+	// inflation rate change - How much to change inflation rate
 	InflationRateChange            github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,5,opt,name=inflation_rate_change,json=inflationRateChange,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"inflation_rate_change" yaml:"inflation_rate_change"`
+	// target inflation rate
 	TargetInflationRate            github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,6,opt,name=target_inflation_rate,json=targetInflationRate,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"target_inflation_rate" yaml:"target_inflation_rate"`
 }
 
