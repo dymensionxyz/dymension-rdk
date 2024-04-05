@@ -35,12 +35,11 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	} else {
 		proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
 		proposerCoins, proposerRemainder := proposerReward.TruncateDecimal()
-		if !proposerCoins.IsZero() {
-			err := k.AllocateTokensToSequencer(ctx, proposer, proposerCoins)
-			if err != nil {
-				logger.Error("failed to reward the proposer")
-			}
 
+		err := k.AllocateTokensToSequencer(ctx, proposer, proposerCoins)
+		if err != nil {
+			logger.Error("failed to reward proposer", "error", err, "proposer", proposer.GetOperator())
+		} else {
 			remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
 
 			// update outstanding rewards
@@ -57,11 +56,11 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	/* ---------------------- reward the members/validators ---------------------- */
 	totalPreviousPower := k.stakingKeeper.GetLastTotalPower(ctx)
 
-	membersMultipler := sdk.OneDec().Sub(k.GetBaseProposerReward(ctx)).Sub(k.GetCommunityTax(ctx))
-	membersRewards := feesCollected.MulDecTruncate(membersMultipler)
+	membersMultiplier := sdk.OneDec().Sub(k.GetBaseProposerReward(ctx)).Sub(k.GetCommunityTax(ctx))
+	membersRewards := feesCollected.MulDecTruncate(membersMultiplier)
 
 	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingtypes.ValidatorI) (stop bool) {
-		//Staking module calculates power factored by sdk.DefaultPowerReduction. hardcoded.
+		// Staking module calculates power factored by sdk.DefaultPowerReduction. hardcoded.
 		valPower := validator.GetConsensusPower(sdk.DefaultPowerReduction)
 		powerFraction := sdk.NewDec(valPower).QuoTruncate(sdk.NewDecFromInt(totalPreviousPower))
 
