@@ -38,7 +38,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 
 		err := k.AllocateTokensToSequencer(ctx, proposer, proposerCoins)
 		if err != nil {
-			logger.Error("failed to reward the proposer")
+			logger.Error("failed to reward proposer", "error", err, "proposer", proposer.GetOperator())
 		} else {
 			remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
 
