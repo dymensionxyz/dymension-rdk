@@ -58,7 +58,7 @@ func GetCmdQueryParams() *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryParams implements a command to return the current minting
+// GetCmdQueryInflation implements a command to return the current minting
 // parameters.
 func GetCmdQueryInflation() *cobra.Command {
 	cmd := &cobra.Command{
