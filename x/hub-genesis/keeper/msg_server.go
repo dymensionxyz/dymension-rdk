@@ -26,8 +26,8 @@ var _ types.MsgServer = msgServer{}
 func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubGenesisEvent) (*types.MsgHubGenesisEventResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// Get the sender and validate they are in the whitelist
-	if !m.IsAddressInGenesisTriggererWhiteList(ctx, msg.Address) {
+	// Get the sender and validate they are in the Allowlist
+	if !m.IsAddressInGenesisTriggererAllowList(ctx, msg.Address) {
 		return nil, sdkerrors.ErrUnauthorized
 	}
 

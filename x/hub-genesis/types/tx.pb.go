@@ -33,7 +33,7 @@ type MsgHubGenesisEvent struct {
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 	// channel_id is the hub channel id on the rollapp
 	ChannelId string `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	// hub_id is the hub id
+	// hub_id is the hub's chainid
 	HubId string `protobuf:"bytes,3,opt,name=hub_id,json=hubId,proto3" json:"hub_id,omitempty"`
 }
 
