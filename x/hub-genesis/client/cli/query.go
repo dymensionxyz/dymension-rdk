@@ -23,6 +23,7 @@ func GetQueryCmd() *cobra.Command {
 
 	hubGenQueryCmd.AddCommand(
 		GetCmdQueryParams(),
+		//TODO: add locked query
 	)
 
 	return hubGenQueryCmd

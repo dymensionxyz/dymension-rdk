@@ -3,7 +3,7 @@ package rollapp.hub_genesis;
 
 import "gogoproto/gogo.proto";
 import "hub-genesis/params.proto";
-import "hub-genesis/hub.proto";
+import "hub-genesis/locked.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
@@ -11,5 +11,5 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 message GenesisState {
   // params defines all the parameters of the module.
   Params params = 1 [ (gogoproto.nullable) = false ];
-  Hub hub = 2 [ (gogoproto.nullable) = false ];
+  Locked locked = 2 [(gogoproto.nullable) = false];
 }

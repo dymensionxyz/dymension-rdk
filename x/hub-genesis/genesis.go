@@ -14,18 +14,14 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, ak types.AccountKeeper, 
 		ak.GetModuleAccount(ctx, types.ModuleName)
 	}
 
-	hub := genState.GetHub()
-	keeper.SetHub(ctx, hub)
+	// TODO: check genesis balance is enough for expected tokens!
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesisState()
 	genesis.Params = keeper.GetParams(ctx)
-
-	if hub, found := keeper.GetHub(ctx, genesis.Hub.HubId); found {
-		genesis.Hub = hub
-	}
+	genesis.Locked = keeper.GetLocked(ctx)
 
 	return genesis
 }
