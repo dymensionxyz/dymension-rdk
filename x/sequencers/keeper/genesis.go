@@ -60,5 +60,11 @@ func (k *Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetParams(ctx)
 
+	sequencers := k.GetAllSequencers(ctx)
+	// other cases are not supported. will be handled by the sequencer switch feature
+	if len(sequencers) == 1 {
+		genesis.GenesisOperatorAddress = sequencers[0].OperatorAddress
+	}
+
 	return genesis
 }
