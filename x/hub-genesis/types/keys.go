@@ -17,4 +17,4 @@ const (
 	QueryParameters = "parameters"
 )
 
-var LockedKey = []byte{0x01}
+var StateKey = []byte{0x01}

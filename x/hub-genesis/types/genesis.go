@@ -1,16 +1,16 @@
 package types
 
 // NewGenesisState creates a new GenesisState object.
-func NewGenesisState(params Params, locked Locked) *GenesisState {
+func NewGenesisState(params Params, state State) *GenesisState {
 	return &GenesisState{
 		Params: params,
-		Locked: locked,
+		State:  state,
 	}
 }
 
 // DefaultGenesisState creates a default GenesisState object.
 func DefaultGenesisState() *GenesisState {
-	return NewGenesisState(DefaultParams(), Locked{})
+	return NewGenesisState(DefaultParams(), State{})
 }
 
 // ValidateGenesis validates the provided genesis state to ensure the
@@ -20,7 +20,7 @@ func ValidateGenesis(data GenesisState) error {
 		return err
 	}
 
-	if err := data.Locked.Validate(); err != nil {
+	if err := data.State.Validate(); err != nil {
 		return err
 	}
 

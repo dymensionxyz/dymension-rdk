@@ -150,7 +150,8 @@ func (m *QueryInflationRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryInflationRequest proto.InternalMessageInfo
 
-// QueryInflationResponse is the response type for the Query/Inflation RPC method.
+// QueryInflationResponse is the response type for the Query/Inflation RPC
+// method.
 type QueryInflationResponse struct {
 	// inflation defines the current minting inflation value.
 	CurrentInflationRate github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,1,opt,name=current_inflation_rate,json=currentInflationRate,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"current_inflation_rate" yaml:"current_inflation_rate"`

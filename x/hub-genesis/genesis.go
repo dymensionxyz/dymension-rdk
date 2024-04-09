@@ -21,7 +21,7 @@ func InitGenesis(ctx sdk.Context, keeper keeper.Keeper, ak types.AccountKeeper, 
 func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) *types.GenesisState {
 	genesis := types.DefaultGenesisState()
 	genesis.Params = keeper.GetParams(ctx)
-	genesis.Locked = keeper.GetLocked(ctx)
+	genesis.State = keeper.GetState(ctx)
 
 	return genesis
 }

@@ -28,7 +28,7 @@ func (q Querier) Params(c context.Context, _ *types.QueryParamsRequest) (*types.
 	return &types.QueryParamsResponse{Params: params}, nil
 }
 
-func (q Querier) Locked(goCtx context.Context, request *types.QueryLockedRequest) (*types.QueryLockedResponse, error) {
+func (q Querier) State(goCtx context.Context, request *types.QueryStateRequest) (*types.QueryStateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	return &types.QueryLockedResponse{Locked: q.Keeper.GetLocked(ctx)}, nil
+	return &types.QueryStateResponse{State: q.Keeper.GetState(ctx)}, nil
 }

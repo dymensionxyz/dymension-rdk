@@ -61,11 +61,11 @@ func (k Keeper) lockRollappGenesisTokens(ctx sdk.Context, sourceChannel string) 
 	spendable := k.bankKeeper.SpendableCoins(ctx, account.GetAddress())
 
 	// validate it's enough for the required tokens
-	locked := k.GetLocked(ctx)
-	if !spendable.IsAllGTE(locked.Tokens) {
+	state := k.GetState(ctx)
+	if !spendable.IsAllGTE(state.GenesisTokens) {
 		return types.ErrGenesisInsufficientBalance
 	}
 
 	escrowAddress := ibctypes.GetEscrowAddress("transfer", sourceChannel)
-	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, escrowAddress, locked.Tokens)
+	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, escrowAddress, state.GenesisTokens)
 }

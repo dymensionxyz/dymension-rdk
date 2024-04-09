@@ -4,7 +4,7 @@ package rollapp.hub_genesis;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "hub-genesis/params.proto";
-import "hub-genesis/locked.proto";
+import "hub-genesis/state.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
@@ -16,10 +16,10 @@ service Query {
         "/dymensionxyz/dymension-rdk/hub-genesis/params";
   }
 
-   // Locked returns the locked state of the genesis event.
-   rpc Locked(QueryLockedRequest) returns (QueryLockedResponse) {
+   // State returns the state of the genesis event.
+   rpc State(QueryStateRequest) returns (QueryStateResponse) {
     option (google.api.http).get =
-        "/dymensionxyz/dymension-rdk/hub-genesis/locked";
+        "/dymensionxyz/dymension-rdk/hub-genesis/state";
   }
 }
 
@@ -32,11 +32,11 @@ message QueryParamsResponse {
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
-// QueryLockedRequest is the request type for the Query/Locked RPC method.
-message QueryLockedRequest {}
+// QueryStateRequest is the request type for the Query/State RPC method.
+message QueryStateRequest {}
 
-// QueryLockedResponse is the response type for the Query/Locked RPC method.
-message QueryLockedResponse {
-  // locked holds the state of the genesis event
-  Locked locked = 1 [(gogoproto.nullable) = false];
+// QueryStateResponse is the response type for the Query/State RPC method.
+message QueryStateResponse {
+  // state holds the state of the genesis event
+  State state = 1 [(gogoproto.nullable) = false];
 }

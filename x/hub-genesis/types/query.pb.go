@@ -112,22 +112,22 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
-// QueryLockedRequest is the request type for the Query/Locked RPC method.
-type QueryLockedRequest struct {
+// QueryStateRequest is the request type for the Query/State RPC method.
+type QueryStateRequest struct {
 }
 
-func (m *QueryLockedRequest) Reset()         { *m = QueryLockedRequest{} }
-func (m *QueryLockedRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryLockedRequest) ProtoMessage()    {}
-func (*QueryLockedRequest) Descriptor() ([]byte, []int) {
+func (m *QueryStateRequest) Reset()         { *m = QueryStateRequest{} }
+func (m *QueryStateRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryStateRequest) ProtoMessage()    {}
+func (*QueryStateRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_361b89f8abfb35e2, []int{2}
 }
-func (m *QueryLockedRequest) XXX_Unmarshal(b []byte) error {
+func (m *QueryStateRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryLockedRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryStateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryLockedRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryStateRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -137,36 +137,36 @@ func (m *QueryLockedRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *QueryLockedRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryLockedRequest.Merge(m, src)
+func (m *QueryStateRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStateRequest.Merge(m, src)
 }
-func (m *QueryLockedRequest) XXX_Size() int {
+func (m *QueryStateRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryLockedRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryLockedRequest.DiscardUnknown(m)
+func (m *QueryStateRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStateRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryLockedRequest proto.InternalMessageInfo
+var xxx_messageInfo_QueryStateRequest proto.InternalMessageInfo
 
-// QueryLockedResponse is the response type for the Query/Locked RPC method.
-type QueryLockedResponse struct {
-	// locked holds the state of the genesis event
-	Locked Locked `protobuf:"bytes,1,opt,name=locked,proto3" json:"locked"`
+// QueryStateResponse is the response type for the Query/State RPC method.
+type QueryStateResponse struct {
+	// state holds the state of the genesis event
+	State State `protobuf:"bytes,1,opt,name=state,proto3" json:"state"`
 }
 
-func (m *QueryLockedResponse) Reset()         { *m = QueryLockedResponse{} }
-func (m *QueryLockedResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryLockedResponse) ProtoMessage()    {}
-func (*QueryLockedResponse) Descriptor() ([]byte, []int) {
+func (m *QueryStateResponse) Reset()         { *m = QueryStateResponse{} }
+func (m *QueryStateResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryStateResponse) ProtoMessage()    {}
+func (*QueryStateResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_361b89f8abfb35e2, []int{3}
 }
-func (m *QueryLockedResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryStateResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryLockedResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryStateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryLockedResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryStateResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -176,58 +176,59 @@ func (m *QueryLockedResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *QueryLockedResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryLockedResponse.Merge(m, src)
+func (m *QueryStateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryStateResponse.Merge(m, src)
 }
-func (m *QueryLockedResponse) XXX_Size() int {
+func (m *QueryStateResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryLockedResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryLockedResponse.DiscardUnknown(m)
+func (m *QueryStateResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryStateResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryLockedResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryStateResponse proto.InternalMessageInfo
 
-func (m *QueryLockedResponse) GetLocked() Locked {
+func (m *QueryStateResponse) GetState() State {
 	if m != nil {
-		return m.Locked
+		return m.State
 	}
-	return Locked{}
+	return State{}
 }
 
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "rollapp.hub_genesis.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "rollapp.hub_genesis.QueryParamsResponse")
-	proto.RegisterType((*QueryLockedRequest)(nil), "rollapp.hub_genesis.QueryLockedRequest")
-	proto.RegisterType((*QueryLockedResponse)(nil), "rollapp.hub_genesis.QueryLockedResponse")
+	proto.RegisterType((*QueryStateRequest)(nil), "rollapp.hub_genesis.QueryStateRequest")
+	proto.RegisterType((*QueryStateResponse)(nil), "rollapp.hub_genesis.QueryStateResponse")
 }
 
 func init() { proto.RegisterFile("hub-genesis/query.proto", fileDescriptor_361b89f8abfb35e2) }
 
 var fileDescriptor_361b89f8abfb35e2 = []byte{
-	// 339 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xcf, 0x28, 0x4d, 0xd2,
-	0x4d, 0x4f, 0xcd, 0x4b, 0x2d, 0xce, 0x2c, 0xd6, 0x2f, 0x2c, 0x4d, 0x2d, 0xaa, 0xd4, 0x2b, 0x28,
-	0xca, 0x2f, 0xc9, 0x17, 0x12, 0x2e, 0xca, 0xcf, 0xc9, 0x49, 0x2c, 0x28, 0xd0, 0xcb, 0x28, 0x4d,
-	0x8a, 0x87, 0x2a, 0x90, 0x12, 0x49, 0xcf, 0x4f, 0xcf, 0x07, 0xcb, 0xeb, 0x83, 0x58, 0x10, 0xa5,
-	0x52, 0x32, 0xe9, 0xf9, 0xf9, 0xe9, 0x39, 0xa9, 0xfa, 0x89, 0x05, 0x99, 0xfa, 0x89, 0x79, 0x79,
-	0xf9, 0x25, 0x89, 0x25, 0x99, 0xf9, 0x79, 0xc5, 0x50, 0x59, 0x09, 0x64, 0x1b, 0x0a, 0x12, 0x8b,
-	0x12, 0x73, 0xb1, 0xca, 0xe4, 0xe4, 0x27, 0x67, 0xa7, 0xa6, 0x40, 0x64, 0x94, 0x44, 0xb8, 0x84,
-	0x02, 0x41, 0x6e, 0x09, 0x00, 0x2b, 0x0f, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x51, 0x0a, 0xe0,
-	0x12, 0x46, 0x11, 0x2d, 0x2e, 0xc8, 0xcf, 0x2b, 0x4e, 0x15, 0xb2, 0xe4, 0x62, 0x83, 0x18, 0x2b,
-	0xc1, 0xa8, 0xc0, 0xa8, 0xc1, 0x6d, 0x24, 0xad, 0x87, 0xc5, 0xe9, 0x7a, 0x10, 0x4d, 0x4e, 0x2c,
-	0x27, 0xee, 0xc9, 0x33, 0x04, 0x41, 0x35, 0xc0, 0xed, 0xf1, 0x01, 0x5b, 0x8e, 0x6e, 0x0f, 0x4c,
-	0x14, 0x61, 0x0f, 0xc4, 0x91, 0x78, 0xed, 0x81, 0x68, 0x82, 0xd9, 0x03, 0xd1, 0x60, 0xb4, 0x99,
-	0x89, 0x8b, 0x15, 0x6c, 0xa4, 0xd0, 0x64, 0x46, 0x2e, 0x36, 0x88, 0x53, 0x84, 0xd4, 0xb1, 0xea,
-	0xc7, 0xf4, 0xb7, 0x94, 0x06, 0x61, 0x85, 0x10, 0x27, 0x2a, 0x99, 0x35, 0x5d, 0x7e, 0x32, 0x99,
-	0xc9, 0x40, 0x48, 0x4f, 0x3f, 0xa5, 0x32, 0x37, 0x35, 0xaf, 0x38, 0x33, 0x3f, 0xaf, 0xa2, 0xb2,
-	0x0a, 0xc1, 0xd1, 0x2d, 0x4a, 0xc9, 0xd6, 0xc7, 0x8c, 0x0f, 0xb0, 0xab, 0x20, 0x0e, 0xc7, 0xe7,
-	0x2a, 0x94, 0x50, 0xc2, 0xe7, 0x2a, 0xd4, 0x80, 0x23, 0xdd, 0x55, 0x90, 0x50, 0x73, 0x0a, 0x3e,
-	0xf1, 0x48, 0x8e, 0xf1, 0xc2, 0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4, 0x18, 0x27, 0x3c, 0x96, 0x63,
-	0xb8, 0xf0, 0x58, 0x8e, 0xe1, 0xc6, 0x63, 0x39, 0x86, 0x28, 0xcb, 0xf4, 0xcc, 0x92, 0x8c, 0xd2,
-	0x24, 0xbd, 0xe4, 0xfc, 0x5c, 0x7c, 0x66, 0x56, 0xa0, 0x98, 0x5a, 0x52, 0x59, 0x90, 0x5a, 0x9c,
-	0xc4, 0x06, 0x4e, 0x61, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0xcc, 0x1c, 0x2d, 0xab, 0xf9,
-	0x02, 0x00, 0x00,
+	// 361 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xb1, 0x4e, 0x3a, 0x31,
+	0x1c, 0xc7, 0xaf, 0xe4, 0x0f, 0x43, 0xff, 0x93, 0x85, 0x44, 0x72, 0x9a, 0xd3, 0xdc, 0x20, 0x2c,
+	0x5c, 0x0d, 0x46, 0x12, 0x56, 0x66, 0x07, 0x84, 0xcd, 0xc5, 0xf4, 0xa4, 0x39, 0x2e, 0x42, 0x5b,
+	0xae, 0xbd, 0x84, 0x73, 0xf4, 0x05, 0x34, 0xe1, 0x41, 0x7c, 0x0d, 0x46, 0x12, 0x17, 0x27, 0x63,
+	0xc0, 0x07, 0x31, 0xb4, 0x25, 0x42, 0x40, 0x71, 0x83, 0xfe, 0xbe, 0xbf, 0xef, 0xe7, 0x73, 0xbd,
+	0x83, 0x87, 0xfd, 0x34, 0xac, 0x45, 0x94, 0x51, 0x19, 0x4b, 0x3c, 0x4a, 0x69, 0x92, 0x05, 0x22,
+	0xe1, 0x8a, 0xa3, 0x62, 0xc2, 0x07, 0x03, 0x22, 0x44, 0xd0, 0x4f, 0xc3, 0x5b, 0x1b, 0x70, 0x4b,
+	0x11, 0x8f, 0xb8, 0x9e, 0xe3, 0xe5, 0x2f, 0x13, 0x75, 0x8f, 0x23, 0xce, 0xa3, 0x01, 0xc5, 0x44,
+	0xc4, 0x98, 0x30, 0xc6, 0x15, 0x51, 0x31, 0x67, 0xd2, 0x4e, 0xcb, 0xeb, 0x04, 0x41, 0x12, 0x32,
+	0x5c, 0x4d, 0x36, 0xd8, 0x52, 0x11, 0x45, 0xcd, 0xc0, 0x2f, 0x41, 0x74, 0xbd, 0x54, 0x69, 0xeb,
+	0x74, 0x87, 0x8e, 0x52, 0x2a, 0x95, 0xdf, 0x86, 0xc5, 0x8d, 0x53, 0x29, 0x38, 0x93, 0x14, 0x35,
+	0x61, 0xc1, 0xb4, 0x96, 0xc1, 0x29, 0xa8, 0xfe, 0xaf, 0x1f, 0x05, 0x3b, 0xcc, 0x03, 0xb3, 0xd4,
+	0xfa, 0x37, 0x7d, 0x3f, 0x71, 0x3a, 0x76, 0xc1, 0x2f, 0xc2, 0x03, 0xdd, 0xd8, 0x5d, 0xb2, 0x57,
+	0x98, 0x2b, 0x0b, 0xb7, 0x87, 0x96, 0xd2, 0x80, 0x79, 0x6d, 0x68, 0x21, 0xee, 0x4e, 0x88, 0x5e,
+	0xb1, 0x0c, 0x13, 0xaf, 0xbf, 0xe4, 0x60, 0x5e, 0xd7, 0xa1, 0x09, 0x80, 0x05, 0x63, 0x81, 0x2a,
+	0x3b, 0xb7, 0xb7, 0x1f, 0xd9, 0xad, 0xee, 0x0f, 0x1a, 0x3f, 0xbf, 0xf1, 0xf8, 0xfa, 0x39, 0xc9,
+	0x9d, 0xa3, 0x00, 0xf7, 0xb2, 0x21, 0x65, 0x32, 0xe6, 0x6c, 0x9c, 0x3d, 0x7c, 0xff, 0xa9, 0x25,
+	0xbd, 0x7b, 0xbc, 0xfd, 0x26, 0xd0, 0x13, 0x80, 0x79, 0xad, 0x8d, 0xce, 0x7e, 0x66, 0xad, 0xdf,
+	0x8f, 0x5b, 0xd9, 0x9b, 0xb3, 0x4a, 0x97, 0x5a, 0x09, 0xa3, 0xda, 0x5f, 0x95, 0xf4, 0x8d, 0xb5,
+	0xba, 0xd3, 0xb9, 0x07, 0x66, 0x73, 0x0f, 0x7c, 0xcc, 0x3d, 0xf0, 0xbc, 0xf0, 0x9c, 0xd9, 0xc2,
+	0x73, 0xde, 0x16, 0x9e, 0x73, 0xd3, 0x8c, 0x62, 0xd5, 0x4f, 0xc3, 0xe0, 0x8e, 0x0f, 0x7f, 0xab,
+	0x1c, 0x6f, 0x94, 0xaa, 0x4c, 0x50, 0x19, 0x16, 0xf4, 0x87, 0x75, 0xf1, 0x15, 0x00, 0x00, 0xff,
+	0xff, 0x4a, 0x6a, 0xbc, 0x50, 0xef, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -244,8 +245,8 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	// Params returns the total set of hub-genesis parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// Locked returns the locked state of the genesis event.
-	Locked(ctx context.Context, in *QueryLockedRequest, opts ...grpc.CallOption) (*QueryLockedResponse, error)
+	// State returns the state of the genesis event.
+	State(ctx context.Context, in *QueryStateRequest, opts ...grpc.CallOption) (*QueryStateResponse, error)
 }
 
 type queryClient struct {
@@ -265,9 +266,9 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
-func (c *queryClient) Locked(ctx context.Context, in *QueryLockedRequest, opts ...grpc.CallOption) (*QueryLockedResponse, error) {
-	out := new(QueryLockedResponse)
-	err := c.cc.Invoke(ctx, "/rollapp.hub_genesis.Query/Locked", in, out, opts...)
+func (c *queryClient) State(ctx context.Context, in *QueryStateRequest, opts ...grpc.CallOption) (*QueryStateResponse, error) {
+	out := new(QueryStateResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.hub_genesis.Query/State", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -278,8 +279,8 @@ func (c *queryClient) Locked(ctx context.Context, in *QueryLockedRequest, opts .
 type QueryServer interface {
 	// Params returns the total set of hub-genesis parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// Locked returns the locked state of the genesis event.
-	Locked(context.Context, *QueryLockedRequest) (*QueryLockedResponse, error)
+	// State returns the state of the genesis event.
+	State(context.Context, *QueryStateRequest) (*QueryStateResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -289,8 +290,8 @@ type UnimplementedQueryServer struct {
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-func (*UnimplementedQueryServer) Locked(ctx context.Context, req *QueryLockedRequest) (*QueryLockedResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Locked not implemented")
+func (*UnimplementedQueryServer) State(ctx context.Context, req *QueryStateRequest) (*QueryStateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method State not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -315,20 +316,20 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_Locked_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryLockedRequest)
+func _Query_State_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryStateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).Locked(ctx, in)
+		return srv.(QueryServer).State(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rollapp.hub_genesis.Query/Locked",
+		FullMethod: "/rollapp.hub_genesis.Query/State",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).Locked(ctx, req.(*QueryLockedRequest))
+		return srv.(QueryServer).State(ctx, req.(*QueryStateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -342,8 +343,8 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Params_Handler,
 		},
 		{
-			MethodName: "Locked",
-			Handler:    _Query_Locked_Handler,
+			MethodName: "State",
+			Handler:    _Query_State_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -406,7 +407,7 @@ func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryLockedRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryStateRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -416,12 +417,12 @@ func (m *QueryLockedRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryLockedRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryStateRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryLockedRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryStateRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -429,7 +430,7 @@ func (m *QueryLockedRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryLockedResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryStateResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -439,18 +440,18 @@ func (m *QueryLockedResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryLockedResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryStateResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryLockedResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryStateResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
 	{
-		size, err := m.Locked.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.State.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -493,7 +494,7 @@ func (m *QueryParamsResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryLockedRequest) Size() (n int) {
+func (m *QueryStateRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -502,13 +503,13 @@ func (m *QueryLockedRequest) Size() (n int) {
 	return n
 }
 
-func (m *QueryLockedResponse) Size() (n int) {
+func (m *QueryStateResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = m.Locked.Size()
+	l = m.State.Size()
 	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
@@ -652,7 +653,7 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryLockedRequest) Unmarshal(dAtA []byte) error {
+func (m *QueryStateRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -675,10 +676,10 @@ func (m *QueryLockedRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryLockedRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryStateRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryLockedRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryStateRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -702,7 +703,7 @@ func (m *QueryLockedRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryLockedResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryStateResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -725,15 +726,15 @@ func (m *QueryLockedResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryLockedResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryStateResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryLockedResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryStateResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Locked", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field State", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -760,7 +761,7 @@ func (m *QueryLockedResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Locked.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.State.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

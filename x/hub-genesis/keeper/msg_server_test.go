@@ -68,7 +68,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				Params: types.Params{
 					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
-				Locked: types.Locked{Tokens: sdk.NewCoins(initialRollappBalance)},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
@@ -83,7 +83,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				Params: types.Params{
 					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
-				Locked: types.Locked{Locked: true, Tokens: sdk.NewCoins(initialRollappBalance)},
+				State: types.State{IsLocked: true, GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
@@ -98,7 +98,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				Params: types.Params{
 					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: utils.AccAddress().String()}},
 				},
-				Locked: types.Locked{Tokens: sdk.NewCoins(initialRollappBalance)},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
@@ -113,7 +113,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				Params: types.Params{
 					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
-				Locked: types.Locked{Tokens: sdk.NewCoins(initialRollappBalance)},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
@@ -128,7 +128,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				Params: types.Params{
 					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
-				Locked: types.Locked{Tokens: sdk.NewCoins(initialRollappBalance)},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
@@ -143,7 +143,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				Params: types.Params{
 					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
-				Locked: types.Locked{Tokens: sdk.NewCoins(initialRollappBalance)},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
@@ -174,7 +174,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				tc.runBefore()
 			}
 
-			suite.k.SetLocked(suite.ctx, tc.genesisState.Locked)
+			suite.k.SetState(suite.ctx, tc.genesisState.State)
 			suite.k.SetParams(suite.ctx, tc.genesisState.Params)
 			moduleAddr := suite.app.AccountKeeper.GetModuleAddress(types.ModuleName)
 
@@ -189,22 +189,22 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			var (
 				expectedBalance       sdk.Coin
 				expectedEscrowBalance sdk.Coin
-				expectedLocked        bool
+				expectedState         bool
 			)
 
 			if tc.expErr == nil {
 				expectedBalance = sdk.NewCoin(rollappDenom, sdk.NewInt(0))
 				expectedEscrowBalance = tc.rollappBalanceBefore
-				expectedLocked = true
+				expectedState = true
 			} else {
 				expectedBalance = tc.rollappBalanceBefore
 				expectedEscrowBalance = sdk.NewCoin(rollappDenom, sdk.NewInt(0))
-				expectedLocked = false || tc.genesisState.Locked.Locked
+				expectedState = false || tc.genesisState.State.IsLocked
 			}
 
 			// check the hub genesis state
-			lockedState := suite.k.GetLocked(suite.ctx)
-			suite.Require().Equal(expectedLocked, lockedState.Locked, tc.name)
+			stateState := suite.k.GetState(suite.ctx)
+			suite.Require().Equal(expectedState, stateState.IsLocked, tc.name)
 
 			// check the module balance after the genesis event
 			rollappBalanceAfter := suite.app.BankKeeper.GetBalance(suite.ctx, moduleAddr, rollappDenom)
