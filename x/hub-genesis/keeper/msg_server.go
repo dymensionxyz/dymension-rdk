@@ -47,17 +47,17 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 	}
 
 	// check if genesis event was already triggered
-	stateStatus := m.GetState(ctx)
-	if stateStatus.IsLocked {
+	state := m.GetState(ctx)
+	if state.IsLocked {
 		return nil, types.ErrGenesisEventAlreadyTriggered
 	}
 
-	if err := m.lockRollappGenesisTokens(ctx, msg.ChannelId); err != nil {
+	if err := m.lockRollappGenesisTokens(ctx, msg.ChannelId, state.GenesisTokens); err != nil {
 		return nil, errorsmod.Wrapf(types.ErrLockingGenesisTokens, "failed to lock tokens: %v", err)
 	}
 
-	stateStatus.IsLocked = true
-	m.SetState(ctx, stateStatus)
+	state.IsLocked = true
+	m.SetState(ctx, state)
 
 	return &types.MsgHubGenesisEventResponse{}, nil
 }
