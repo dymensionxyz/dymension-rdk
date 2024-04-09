@@ -23,7 +23,7 @@ func GetQueryCmd() *cobra.Command {
 
 	hubGenQueryCmd.AddCommand(
 		GetCmdQueryParams(),
-		//TODO: add state query
+		GetCmdQueryState(),
 	)
 
 	return hubGenQueryCmd
@@ -50,6 +50,35 @@ func GetCmdQueryParams() *cobra.Command {
 			}
 
 			return clientCtx.PrintProto(&res.Params)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+// GetCmdQueryState implements a command to return the current hub-genesis
+// state.
+func GetCmdQueryState() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "state",
+		Short: "Query the current hub-genesis state",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			state := &types.QueryStateRequest{}
+			res, err := queryClient.State(context.Background(), state)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(&res.State)
 		},
 	}
 
