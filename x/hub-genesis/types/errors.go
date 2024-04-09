@@ -9,4 +9,5 @@ var (
 	ErrGenesisEventAlreadyTriggered = errorsmod.Register(ModuleName, 1004, "genesis event already triggered")
 	ErrGenesisInsufficientBalance   = errorsmod.Register(ModuleName, 1005, "insufficient balance in module account to lock genesis tokens")
 	ErrLockingGenesisTokens         = errorsmod.Register(ModuleName, 1006, "failed to lock genesis tokens")
+	ErrWrongGenesisBalance          = errorsmod.Register(ModuleName, 1007, "genesis bank balance different than expected genesis tokens")
 )
