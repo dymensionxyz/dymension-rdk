@@ -14,7 +14,7 @@ import (
 
 // GetQueryCmd returns the cli query commands for this module
 func GetQueryCmd() *cobra.Command {
-	feesQueryCmd := &cobra.Command{
+	denommetadataQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      fmt.Sprintf("Querying commands for the %s module", types.ModuleName),
 		DisableFlagParsing:         true,
@@ -22,11 +22,12 @@ func GetQueryCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
-	feesQueryCmd.AddCommand(
+	denommetadataQueryCmd.AddCommand(
 		GetCmdQueryParams(),
+		GetCmdIBCDenomBaseOnDenomTrace(),
 	)
 
-	return feesQueryCmd
+	return denommetadataQueryCmd
 }
 
 // GetCmdQueryParams implements a command to return the current parameters.
@@ -50,6 +51,34 @@ func GetCmdQueryParams() *cobra.Command {
 			}
 
 			return clientCtx.PrintProto(&res.Params)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+// GetCmdIBCDenomBaseOnDenomTrace implements a command to return the IBC denom base on a denom trace.
+func GetCmdIBCDenomBaseOnDenomTrace() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "ibc-denom [port-id-1]/[channel-id-1]/.../[port-id-n]/[channel-id-n]/[denom]",
+		Short: "Get IBC denom base on a denom trace",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			denomTrace := args[0]
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			res, err := queryClient.IBCDenomByDenomTrace(context.Background(), &types.QueryGetIBCDenomByDenomTraceRequest{
+				DenomTrace: denomTrace,
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
 		},
 	}
 
