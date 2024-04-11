@@ -26,40 +26,38 @@ var _ types.MsgServer = msgServer{}
 func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubGenesisEvent) (*types.MsgHubGenesisEventResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// Get the sender and validate they are in the whitelist
-	if !m.IsAddressInGenesisTriggererWhiteList(ctx, msg.Address) {
+	// Get the sender and validate they are in the Allowlist
+	if !m.IsAddressInGenesisTriggererAllowList(ctx, msg.Address) {
 		return nil, sdkerrors.ErrUnauthorized
 	}
 
 	_, clientState, err := m.channelKeeper.GetChannelClientState(ctx, "transfer", msg.ChannelId)
 	if err != nil {
-		return nil, errorsmod.Wrapf(types.ErrInvalidGenesisChannelId, "failed to get client state for channel %s", msg.ChannelId)
+		return nil, errorsmod.Wrapf(types.ErrFailedGetClientState, "failed to get client state for channel %s: %v", msg.ChannelId, err)
 	}
 
 	tmClientState, ok := clientState.(*tenderminttypes.ClientState)
 	if !ok {
-		return nil, errorsmod.Wrapf(types.ErrInvalidGenesisChannelId, "expected tendermint client state, got %T", clientState)
+		return nil, errorsmod.Wrapf(types.ErrFailedGetClientState, "expected tendermint client state, got %T", clientState)
 	}
 
 	if tmClientState.GetChainID() != msg.HubId {
-		return nil, errorsmod.Wrapf(types.ErrInvalidGenesisChainId, "channel %s is connected to chain ID %s, expected %s",
-			msg.ChannelId, tmClientState.GetChainID(), msg.HubId)
+		return nil, errorsmod.Wrapf(types.ErrChainIDMismatch, "channel %s is connected to chain ID %s",
+			msg.ChannelId, tmClientState.GetChainID())
 	}
 
-	// if the hub is found, the genesis event was already triggered
-	_, found := m.GetHub(ctx, msg.HubId)
-	if found {
+	// check if genesis event was already triggered
+	state := m.GetState(ctx)
+	if state.IsLocked {
 		return nil, types.ErrGenesisEventAlreadyTriggered
 	}
 
-	hub := types.NewHub(msg.HubId, msg.ChannelId)
-
-	if err := m.lockRollappGenesisTokens(ctx, hub.ChannelId); err != nil {
+	if err := m.lockRollappGenesisTokens(ctx, msg.ChannelId, state.GenesisTokens); err != nil {
 		return nil, errorsmod.Wrapf(types.ErrLockingGenesisTokens, "failed to lock tokens: %v", err)
 	}
 
-	// we save the hub in order to prevent the genesis event from being triggered again
-	m.SetHub(ctx, hub)
+	state.IsLocked = true
+	m.SetState(ctx, state)
 
 	return &types.MsgHubGenesisEventResponse{}, nil
 }

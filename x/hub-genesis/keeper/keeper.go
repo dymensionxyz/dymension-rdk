@@ -55,22 +55,16 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 }
 
 // lock coins by sending them to an escrow address
-func (k Keeper) lockRollappGenesisTokens(ctx sdk.Context, sourceChannel string) error {
-	account := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-
+func (k Keeper) lockRollappGenesisTokens(ctx sdk.Context, sourceChannel string, tokens sdk.Coins) error {
 	// get spendable coins in the module account
+	account := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	spendable := k.bankKeeper.SpendableCoins(ctx, account.GetAddress())
 
-	// send coins to the escrow address
-	if spendable.Empty() {
-		return types.ErrGenesisNoCoinsOnModuleAcc
+	// validate it's enough for the required tokens
+	if !spendable.IsAllGTE(tokens) {
+		return types.ErrGenesisInsufficientBalance
 	}
 
 	escrowAddress := ibctypes.GetEscrowAddress("transfer", sourceChannel)
-
-	if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, escrowAddress, spendable); err != nil {
-		return fmt.Errorf("failed to lock coins: %w", err)
-	}
-
-	return nil
+	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, escrowAddress, tokens)
 }

@@ -28,12 +28,7 @@ func (q Querier) Params(c context.Context, _ *types.QueryParamsRequest) (*types.
 	return &types.QueryParamsResponse{Params: params}, nil
 }
 
-func (q Querier) Hub(goCtx context.Context, request *types.QueryGetHubRequest) (*types.QueryGetHubResponse, error) {
+func (q Querier) State(goCtx context.Context, request *types.QueryStateRequest) (*types.QueryStateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	hub, found := q.Keeper.GetHub(ctx, request.HubId)
-	if !found {
-		return nil, types.ErrUnknownHubID
-	}
-
-	return &types.QueryGetHubResponse{Hub: hub}, nil
+	return &types.QueryStateResponse{State: q.Keeper.GetState(ctx)}, nil
 }

@@ -10,8 +10,6 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/stretchr/testify/suite"
 
-	errorsmod "cosmossdk.io/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/ibctest"
@@ -57,127 +55,111 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 	suite.Coordinator.Setup(path)
 
 	cases := []struct {
-		name                      string
-		genesisState              *types.GenesisState
-		msg                       *types.MsgHubGenesisEvent
-		rollappBalanceBefore      sdk.Coin
-		rollappBalanceAfter       sdk.Coin
-		rollappEscrowBalanceAfter sdk.Coin
-		hubPersisted              bool
-		expErr                    error
-		runBefore                 func()
+		name                 string
+		genesisState         *types.GenesisState
+		msg                  *types.MsgHubGenesisEvent
+		rollappBalanceBefore sdk.Coin
+		expErr               error
+		runBefore            func()
 	}{
 		{
 			name: "successful hub genesis event",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
 				HubId:     path.EndpointB.Chain.ChainID,
 			},
-			rollappBalanceBefore:      initialRollappBalance,
-			rollappBalanceAfter:       sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
-			rollappEscrowBalanceAfter: initialRollappBalance,
-			hubPersisted:              true,
-			expErr:                    nil,
+			rollappBalanceBefore: initialRollappBalance,
+			expErr:               nil,
 		}, {
 			name: "invalid rollapp genesis event - genesis event already triggered",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
-				Hub: types.Hub{
-					HubId: path.EndpointB.Chain.ChainID,
-				},
+				State: types.State{IsLocked: true, GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
 				HubId:     path.EndpointB.Chain.ChainID,
 			},
-			rollappBalanceBefore:      initialRollappBalance,
-			rollappBalanceAfter:       initialRollappBalance,
-			rollappEscrowBalanceAfter: sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
-			hubPersisted:              true,
-			expErr:                    types.ErrGenesisEventAlreadyTriggered,
+			rollappBalanceBefore: initialRollappBalance,
+			expErr:               types.ErrGenesisEventAlreadyTriggered,
 		}, {
-			name: "invalid rollapp genesis event - address not in whitelist",
+			name: "invalid rollapp genesis event - address not in Allowlist",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: utils.AccAddress().String()}},
+					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: utils.AccAddress().String()}},
 				},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
 				HubId:     path.EndpointB.Chain.ChainID,
 			},
-			rollappBalanceBefore:      initialRollappBalance,
-			rollappBalanceAfter:       initialRollappBalance,
-			rollappEscrowBalanceAfter: sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
-			hubPersisted:              false,
-			expErr:                    sdkerrors.ErrUnauthorized,
+			rollappBalanceBefore: initialRollappBalance,
+			expErr:               sdkerrors.ErrUnauthorized,
 		}, {
 			name: "invalid rollapp genesis event - invalid channel id",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: "invalid-channel",
 				HubId:     path.EndpointB.Chain.ChainID,
 			},
-			rollappBalanceBefore:      initialRollappBalance,
-			rollappBalanceAfter:       initialRollappBalance,
-			rollappEscrowBalanceAfter: sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
-			hubPersisted:              false,
-			expErr:                    errorsmod.Wrapf(types.ErrInvalidGenesisChannelId, "failed to get client state for channel %s", "invalid-channel"),
+			rollappBalanceBefore: initialRollappBalance,
+			expErr:               types.ErrFailedGetClientState,
 		}, {
 			name: "invalid rollapp genesis event - invalid chain id",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
 				HubId:     "invalid-chain-id",
 			},
-			rollappBalanceBefore:      initialRollappBalance,
-			rollappBalanceAfter:       initialRollappBalance,
-			rollappEscrowBalanceAfter: sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
-			hubPersisted:              false,
-			expErr:                    errorsmod.Wrapf(types.ErrInvalidGenesisChainId, "channel %s is connected to chain ID %s, expected %s", path.EndpointA.ChannelID, "invalid-chain-id", path.EndpointB.Chain.ChainID),
+			rollappBalanceBefore: initialRollappBalance,
+			expErr:               types.ErrChainIDMismatch,
 		}, {
 			name: "invalid rollapp genesis event - module account has no coins",
 			genesisState: &types.GenesisState{
 				Params: types.Params{
-					GenesisTriggererWhitelist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
+					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
 				},
+				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
 				HubId:     path.EndpointB.Chain.ChainID,
 			},
-			rollappBalanceBefore:      sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
-			rollappBalanceAfter:       sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
-			rollappEscrowBalanceAfter: sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
+			rollappBalanceBefore: sdk.NewCoin(rollappDenom, sdk.NewInt(0)),
 			runBefore: func() {
 				// remove all coins from the module account
 				err := suite.app.BankKeeper.BurnCoins(suite.ctx, types.ModuleName, sdk.Coins{initialRollappBalance})
 				suite.Require().NoError(err)
 			},
-			hubPersisted: false,
-			expErr:       errorsmod.Wrapf(types.ErrLockingGenesisTokens, "failed to lock tokens: %v", types.ErrGenesisNoCoinsOnModuleAcc),
+			expErr: types.ErrLockingGenesisTokens,
 		},
+
+		//TODO: add test of not enough tokens
 	}
 
 	for _, tc := range cases {
@@ -192,31 +174,47 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				tc.runBefore()
 			}
 
-			suite.k.SetHub(suite.ctx, tc.genesisState.Hub)
+			suite.k.SetState(suite.ctx, tc.genesisState.State)
 			suite.k.SetParams(suite.ctx, tc.genesisState.Params)
 			moduleAddr := suite.app.AccountKeeper.GetModuleAddress(types.ModuleName)
 
 			// check the initial module balance
 			rollappBalanceBefore := suite.app.BankKeeper.GetBalance(suite.ctx, moduleAddr, rollappDenom)
-			suite.Require().Equal(tc.rollappBalanceBefore, rollappBalanceBefore)
+			suite.Require().Equal(tc.rollappBalanceBefore, rollappBalanceBefore, tc.name)
 
 			// trigger the genesis event
 			_, err := suite.msgServer.TriggerGenesisEvent(suite.ctx, tc.msg)
-			suite.Require().ErrorIs(err, tc.expErr)
+			suite.Require().ErrorIs(err, tc.expErr, tc.name)
+
+			var (
+				expectedBalance       sdk.Coin
+				expectedEscrowBalance sdk.Coin
+				expectedState         bool
+			)
+
+			if tc.expErr == nil {
+				expectedBalance = sdk.NewCoin(rollappDenom, sdk.NewInt(0))
+				expectedEscrowBalance = tc.rollappBalanceBefore
+				expectedState = true
+			} else {
+				expectedBalance = tc.rollappBalanceBefore
+				expectedEscrowBalance = sdk.NewCoin(rollappDenom, sdk.NewInt(0))
+				expectedState = false || tc.genesisState.State.IsLocked
+			}
+
+			// check the hub genesis state
+			stateState := suite.k.GetState(suite.ctx)
+			suite.Require().Equal(expectedState, stateState.IsLocked, tc.name)
 
 			// check the module balance after the genesis event
 			rollappBalanceAfter := suite.app.BankKeeper.GetBalance(suite.ctx, moduleAddr, rollappDenom)
-			suite.Require().Equal(tc.rollappBalanceAfter, rollappBalanceAfter)
+			suite.Require().True(expectedBalance.IsEqual(rollappBalanceAfter), tc.name)
 
 			// check the escrow balance after the genesis event
 			sourceChannel := path.EndpointA.ChannelID
 			escrowAddress := ibctypes.GetEscrowAddress("transfer", sourceChannel)
 			escrowBalance := suite.app.BankKeeper.GetBalance(suite.ctx, escrowAddress, rollappDenom)
-			suite.Require().Equal(tc.rollappEscrowBalanceAfter, escrowBalance)
-
-			// check the hub genesis state
-			_, found := suite.k.GetHub(suite.ctx, tc.msg.HubId)
-			suite.Require().Equal(tc.hubPersisted, found)
+			suite.Require().True(expectedEscrowBalance.IsEqual(escrowBalance), tc.name)
 		})
 	}
 }
