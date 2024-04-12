@@ -45,20 +45,20 @@ func (q Querier) IBCDenomByDenomTrace(
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	traces := strings.Split(req.DenomTrace, "/")
-	if len(traces) < 3 {
-		return nil, status.Error(codes.InvalidArgument, "input denom traces invalid, need to have at least 3 elements")
+	paths := strings.Split(req.Path, "/")
+	if len(paths) < 2 {
+		return nil, status.Error(codes.InvalidArgument, "input denom traces invalid, need to have at least 2 elements")
 	}
 
-	if len(traces)%2 == 0 {
-		return nil, status.Error(codes.InvalidArgument, "denom traces must follow this format [port-id-1]/[channel-id-1]/.../[port-id-n]/[channel-id-n]/[denom]")
+	if len(paths)%2 != 0 {
+		return nil, status.Error(codes.InvalidArgument, "denom traces must follow this format [port-id-1]/[channel-id-1]/.../[port-id-n]/[channel-id-n]")
 	}
 
-	denom := traces[len(traces)-1]
+	denom := req.Denom
 
-	for i := 0; i < len(traces)-1; i += 2 {
-		portID := traces[i]
-		channelID := traces[i+1]
+	for i := 0; i < len(paths); i += 2 {
+		portID := paths[i]
+		channelID := paths[i+1]
 		if !strings.Contains(channelID, "channel-") {
 			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("channel %s must contain channel-", channelID))
 		}

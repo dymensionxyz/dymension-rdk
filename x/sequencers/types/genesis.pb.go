@@ -26,7 +26,8 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 // GenesisState defines the test module's genesis state.
 type GenesisState struct {
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
-	// genesis_operator_address defines the genesis operator address of the sequencer.
+	// genesis_operator_address defines the genesis operator address of the
+	// sequencer.
 	GenesisOperatorAddress string `protobuf:"bytes,2,opt,name=genesis_operator_address,json=genesisOperatorAddress,proto3" json:"genesis_operator_address,omitempty"`
 }
 

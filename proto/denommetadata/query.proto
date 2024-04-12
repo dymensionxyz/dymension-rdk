@@ -16,7 +16,7 @@ service Query {
   }
   // Queries an IBC denom base on denom trace
 	rpc IBCDenomByDenomTrace(QueryGetIBCDenomByDenomTraceRequest) returns (QueryIBCDenomByDenomTraceResponse) {
-		option (google.api.http).get = "/dymensionxyz/dymension-rdk/denommetadata/ibc_denom/{denom_trace}";
+		option (google.api.http).get = "/dymensionxyz/dymension-rdk/denommetadata/ibc_denom/{path}/{denom}";
 	}
 }
 
@@ -32,8 +32,8 @@ message QueryParamsResponse {
 
 // QueryGetIBCDenomByDenomTraceRequest is the request type for the Query/IBCDenomByDenomTrace RPC method.
 message QueryGetIBCDenomByDenomTraceRequest {
-  // denom trace of a denom
-  string denom_trace = 1;
+  string path = 1;
+  string denom = 2;
 }
 
 // QueryIBCDenomByDenomTraceResponse is the response type for the Query/IBCDenomByDenomTrace RPC method.
