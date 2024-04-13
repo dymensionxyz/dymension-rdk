@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -54,18 +53,9 @@ func (q Querier) IBCDenomByDenomTrace(
 		return nil, status.Error(codes.InvalidArgument, "denom traces must follow this format [port-id-1]/[channel-id-1]/.../[port-id-n]/[channel-id-n]/[denom]")
 	}
 
-	denom := traces[len(traces)-1]
+	denomTrace := transfertypes.ParseDenomTrace(req.DenomTrace)
+	voucherDenom := denomTrace.IBCDenom()
 
-	for i := 0; i < len(traces)-1; i += 2 {
-		portID := traces[i]
-		channelID := traces[i+1]
-		if !strings.Contains(channelID, "channel-") {
-			return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("channel %s must contain channel-", channelID))
-		}
-		tokenDenom := transfertypes.GetPrefixedDenom(portID, channelID, denom)
-		denom = transfertypes.ParseDenomTrace(tokenDenom).IBCDenom()
-	}
-
-	ibcDenomResponse := &types.QueryIBCDenomByDenomTraceResponse{IbcDenom: denom}
+	ibcDenomResponse := &types.QueryIBCDenomByDenomTraceResponse{IbcDenom: voucherDenom}
 	return ibcDenomResponse, nil
 }
