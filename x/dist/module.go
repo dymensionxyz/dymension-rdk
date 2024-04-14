@@ -1,6 +1,7 @@
 package dist
 
 import (
+	"encoding/json"
 	"time"
 
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -65,4 +66,15 @@ func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	// record the proposer for when we payout on the next block
 	consAddr := sdk.ConsAddress(req.Header.ProposerAddress)
 	am.keeper.SetPreviousProposerConsAddr(ctx, consAddr)
+}
+
+func (am AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
+	defGenesis := types.DefaultGenesisState()
+
+	// by default, all rewards goes to the governers
+	defGenesis.Params.CommunityTax = sdk.ZeroDec()
+	defGenesis.Params.BaseProposerReward = sdk.ZeroDec()
+	defGenesis.Params.BonusProposerReward = sdk.ZeroDec()
+
+	return cdc.MustMarshalJSON(defGenesis)
 }
