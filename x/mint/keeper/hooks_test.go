@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	defaultEpochIdentifier                            = "minute"
+	defaultEpochIdentifier                            = "hour"
 	defaultMintingRewardsDistributionStartEpoch int64 = 1
 	defaultFeeCollectorName                           = "fee_collector"
 	defaultInflationRate                              = "0.15" // 15%
@@ -77,7 +77,7 @@ func (suite *MintKeeperTestSuite) TestAfterDistributeMintedCoin() {
 			name:               "at start epoch - distributes",
 			epoch:              defaultMintingRewardsDistributionStartEpoch,
 			expectDistribution: true,
-			expectedMintedAmt:  sdk.NewInt(285), // 285 (15% of 1000M / (365*24*60)) or (inflationRate * totalSupply / spreadFactor)
+			expectedMintedAmt:  sdk.NewInt(17123), // 17123 (15% of 1000M / (365*24)) or (inflationRate * totalSupply / spreadFactor)
 		},
 	}
 

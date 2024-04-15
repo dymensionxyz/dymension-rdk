@@ -31,7 +31,7 @@ func TestMinting(t *testing.T) {
 	// set expectations
 	totalSupplyAmt := sdk.NewInt(100000000) // 100M
 	totalSupplyCoin := sdk.NewCoin(params.MintDenom, totalSupplyAmt)
-	expectedMintedAmt := sdk.NewInt(28) // 28 (15% of 100M / (365*24*60))
+	expectedMintedAmt := sdk.NewInt(1712) // 1712 (15% of 100M / (365*24))
 
 	/* ---------------------------------- test ---------------------------------- */
 	//assert initial state
@@ -76,13 +76,13 @@ func TestCalcMintedCoins(t *testing.T) {
 			name:                 "Test Default Params",
 			totalSupply:          sdk.NewInt(100000000),
 			currentInflationRate: sdk.NewDecWithPrec(15, 2), // 15%
-			expectedAmount:       sdk.NewInt(28),
+			expectedAmount:       sdk.NewInt(1712),
 		},
 		{
 			name:                 "Test dymension decimals",
 			totalSupply:          sdk.NewInt(100000000).Mul(DymDecimals),
 			currentInflationRate: sdk.NewDecWithPrec(15, 2), // 15%
-			expectedAmount:       sdk.NewInt(15000000).Mul(DymDecimals).QuoRaw(365 * 24 * 60),
+			expectedAmount:       sdk.NewInt(15000000).Mul(DymDecimals).QuoRaw(365 * 24),
 		},
 	}
 
@@ -115,9 +115,9 @@ func TestDifferentMintEpochs(t *testing.T) {
 		expectedAmount math.Int
 	}{
 		{
-			name:           "Test Minute Mint Epoch",
-			mintEpoch:      "minute",
-			expectedAmount: sdk.NewInt(10000000).QuoRaw(365 * 24 * 60),
+			name:           "Test Hour Mint Epoch",
+			mintEpoch:      "hour",
+			expectedAmount: sdk.NewInt(10000000).QuoRaw(365 * 24),
 		},
 		{
 			name:           "Test Day Mint Epoch",
