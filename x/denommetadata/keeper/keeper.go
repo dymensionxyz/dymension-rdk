@@ -15,8 +15,9 @@ type Keeper struct {
 	cdc        codec.BinaryCodec
 	paramSpace paramtypes.Subspace
 
-	bankKeeper types.BankKeeper
-	hooks      types.MultiDenomMetadataHooks
+	bankKeeper     types.BankKeeper
+	transferKeeper types.TransferKeeper
+	hooks          types.MultiDenomMetadataHooks
 }
 
 // NewKeeper creates new instances of the Keeper
@@ -24,6 +25,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	bk types.BankKeeper,
+	tk types.TransferKeeper,
 	hooks types.MultiDenomMetadataHooks,
 	paramSpace paramtypes.Subspace,
 ) Keeper {
@@ -33,11 +35,12 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		storeKey:   storeKey,
-		cdc:        cdc,
-		paramSpace: paramSpace,
-		bankKeeper: bk,
-		hooks:      hooks,
+		storeKey:       storeKey,
+		cdc:            cdc,
+		paramSpace:     paramSpace,
+		bankKeeper:     bk,
+		transferKeeper: tk,
+		hooks:          hooks,
 	}
 }
 

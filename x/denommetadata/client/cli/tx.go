@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -10,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
@@ -63,9 +65,23 @@ func NewCmdCreateDenomMetadata() *cobra.Command {
 				return err
 			}
 
+			// Parse denom trace
+			trace, err := cmd.Flags().GetString(FlagDenomTrace)
+			if err != nil {
+				return fmt.Errorf("denom trace must be string: %v", err)
+			}
+			if trace != "" {
+				denomTrace := transfertypes.ParseDenomTrace(trace)
+				denom := denomTrace.IBCDenom()
+				if denom != metadata.Base {
+					return fmt.Errorf("denom %s parse from denom trace does not match metadata base denom %s", denom, metadata.Base)
+				}
+			}
+
 			msg := &types.MsgCreateDenomMetadata{
 				SenderAddress: sender.String(),
 				TokenMetadata: metadata,
+				DenomTrace:    trace,
 			}
 
 			if err := msg.ValidateBasic(); err != nil {
@@ -76,6 +92,7 @@ func NewCmdCreateDenomMetadata() *cobra.Command {
 		},
 	}
 
+	cmd.Flags().AddFlagSet(FlagSetCreateDenomMetadata())
 	flags.AddTxFlagsToCmd(cmd)
 	return cmd
 }

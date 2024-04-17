@@ -21,6 +21,7 @@ message MsgCreateDenomMetadata {
   string sender_address = 1;
   cosmos.bank.v1beta1.Metadata token_metadata = 2
       [ (gogoproto.nullable) = false ];
+  string denom_trace = 3;
 }
 
 // MsgCreateDenomMetadataResponse defines the MsgCreateDenomMetadata response

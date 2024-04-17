@@ -346,20 +346,6 @@ func NewRollapp(
 		),
 	)
 
-	app.DenommetadataKeeper = denommetadatakeeper.NewKeeper(
-		appCodec,
-		keys[denommetadatatypes.StoreKey],
-		app.BankKeeper,
-		nil,
-		app.GetSubspace(denommetadatatypes.ModuleName),
-	)
-	// set hook for denom metadata keeper later
-	app.DenommetadataKeeper.SetHooks(
-		denommetadatatypes.NewMultiDenommetadataHooks(
-		// insert denom metadata hooks receivers here
-		),
-	)
-
 	app.DistrKeeper = distrkeeper.NewKeeper(
 		appCodec, keys[distrtypes.StoreKey], app.GetSubspace(distrtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
 		&stakingKeeper, &app.SequencersKeeper, authtypes.FeeCollectorName, app.ModuleAccountAddrs(),
@@ -427,6 +413,21 @@ func NewRollapp(
 		scopedTransferKeeper,
 	)
 	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
+
+	app.DenommetadataKeeper = denommetadatakeeper.NewKeeper(
+		appCodec,
+		keys[denommetadatatypes.StoreKey],
+		app.BankKeeper,
+		app.TransferKeeper,
+		nil,
+		app.GetSubspace(denommetadatatypes.ModuleName),
+	)
+	// set hook for denom metadata keeper later
+	app.DenommetadataKeeper.SetHooks(
+		denommetadatatypes.NewMultiDenommetadataHooks(
+		// insert denom metadata hooks receivers here
+		),
+	)
 
 	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
 		appCodec,
@@ -536,12 +537,12 @@ func NewRollapp(
 		vestingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
-		denommetadatatypes.ModuleName,
 		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		ibctransfertypes.ModuleName,
+		denommetadatatypes.ModuleName,
 		hubgentypes.ModuleName,
 	}
 	app.mm.SetOrderInitGenesis(initGenesisList...)
