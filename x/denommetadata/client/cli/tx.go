@@ -70,8 +70,10 @@ func NewCmdCreateDenomMetadata() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("denom trace must be string: %v", err)
 			}
-			if trace != "" {
-				denomTrace := transfertypes.ParseDenomTrace(trace)
+			denomTrace := transfertypes.ParseDenomTrace(trace)
+
+			// If path is empty, then the denom is not ibc denom
+			if denomTrace.Path != "" {
 				denom := denomTrace.IBCDenom()
 				if denom != metadata.Base {
 					return fmt.Errorf("denom %s parse from denom trace does not match metadata base denom %s", denom, metadata.Base)
