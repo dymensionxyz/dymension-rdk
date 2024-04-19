@@ -37,26 +37,27 @@ func (k msgServer) CreateDenomMetadata(
 		return nil, types.ErrNoPermission
 	}
 
-	found := k.bankKeeper.HasDenomMetaData(ctx, msg.TokenMetadata.Base)
-	if found {
-		return nil, types.ErrDenomAlreadyExists
+	for _, metadata := range msg.Metadatas {
+		found := k.bankKeeper.HasDenomMetaData(ctx, metadata.TokenMetadata.Base)
+		if found {
+			return nil, types.ErrDenomAlreadyExists
+		}
+
+		k.bankKeeper.SetDenomMetaData(ctx, metadata.TokenMetadata)
+		// set hook after denom metadata creation
+		err := k.hooks.AfterDenomMetadataCreation(ctx, metadata.TokenMetadata)
+		if err != nil {
+			return nil, fmt.Errorf("error in after denom metadata creation hook: %w", err)
+		}
+
+		// construct the denomination trace from the full raw denomination
+		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
+
+		traceHash := denomTrace.Hash()
+		if !k.transferKeeper.HasDenomTrace(ctx, traceHash) {
+			k.transferKeeper.SetDenomTrace(ctx, denomTrace)
+		}
 	}
-
-	k.bankKeeper.SetDenomMetaData(ctx, msg.TokenMetadata)
-	// set hook after denom metadata creation
-	err := k.hooks.AfterDenomMetadataCreation(ctx, msg.TokenMetadata)
-	if err != nil {
-		return nil, fmt.Errorf("error in after denom metadata creation hook: %w", err)
-	}
-
-	// construct the denomination trace from the full raw denomination
-	denomTrace := transfertypes.ParseDenomTrace(msg.DenomTrace)
-
-	traceHash := denomTrace.Hash()
-	if !k.transferKeeper.HasDenomTrace(ctx, traceHash) {
-		k.transferKeeper.SetDenomTrace(ctx, denomTrace)
-	}
-
 	return &types.MsgCreateDenomMetadataResponse{}, nil
 }
 
@@ -75,18 +76,29 @@ func (k msgServer) UpdateDenomMetadata(
 		return nil, types.ErrNoPermission
 	}
 
-	found := k.bankKeeper.HasDenomMetaData(ctx, msg.TokenMetadata.Base)
-	if !found {
-		return nil, types.ErrDenomDoesNotExist
+	for _, metadata := range msg.Metadatas {
+		found := k.bankKeeper.HasDenomMetaData(ctx, metadata.TokenMetadata.Base)
+		if !found {
+			return nil, types.ErrDenomDoesNotExist
+		}
+	
+		k.bankKeeper.SetDenomMetaData(ctx, metadata.TokenMetadata)
+	
+		// set hook after denom metadata update
+		err := k.hooks.AfterDenomMetadataUpdate(ctx, metadata.TokenMetadata)
+		if err != nil {
+			return nil, fmt.Errorf("error in after denom metadata update hook: %w", err)
+		}
+
+		// construct the denomination trace from the full raw denomination
+		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
+
+		traceHash := denomTrace.Hash()
+		if k.transferKeeper.HasDenomTrace(ctx, traceHash) {
+			k.transferKeeper.SetDenomTrace(ctx, denomTrace)
+		}
 	}
 
-	k.bankKeeper.SetDenomMetaData(ctx, msg.TokenMetadata)
-
-	// set hook after denom metadata update
-	err := k.hooks.AfterDenomMetadataUpdate(ctx, msg.TokenMetadata)
-	if err != nil {
-		return nil, fmt.Errorf("error in after denom metadata update hook: %w", err)
-	}
 
 	return &types.MsgUpdateDenomMetadataResponse{}, nil
 }

@@ -1,0 +1,14 @@
+syntax = "proto3";
+package rollapp.denommetadata.types;
+
+import "gogoproto/gogo.proto";
+import "cosmos/bank/v1beta1/bank.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types";
+
+// DenomMetdata defines the metadata and the denom trace for the denom.
+message DenomMetadata {
+  cosmos.bank.v1beta1.Metadata token_metadata = 1
+      [ (gogoproto.nullable) = false ];
+  string denom_trace = 2;
+}

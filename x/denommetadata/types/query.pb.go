@@ -112,7 +112,8 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
-// QueryGetIBCDenomByDenomTraceRequest is the request type for the Query/IBCDenomByDenomTrace RPC method.
+// QueryGetIBCDenomByDenomTraceRequest is the request type for the
+// Query/IBCDenomByDenomTrace RPC method.
 type QueryGetIBCDenomByDenomTraceRequest struct {
 	// denom trace of a denom
 	DenomTrace string `protobuf:"bytes,1,opt,name=denom_trace,json=denomTrace,proto3" json:"denom_trace,omitempty"`
@@ -158,7 +159,8 @@ func (m *QueryGetIBCDenomByDenomTraceRequest) GetDenomTrace() string {
 	return ""
 }
 
-// QueryIBCDenomByDenomTraceResponse is the response type for the Query/IBCDenomByDenomTrace RPC method.
+// QueryIBCDenomByDenomTraceResponse is the response type for the
+// Query/IBCDenomByDenomTrace RPC method.
 type QueryIBCDenomByDenomTraceResponse struct {
 	// ibc denom base on denom trace
 	IbcDenom string `protobuf:"bytes,1,opt,name=ibc_denom,json=ibcDenom,proto3" json:"ibc_denom,omitempty"`
