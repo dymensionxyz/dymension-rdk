@@ -25,7 +25,7 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(CmdQuerySequencers())
 	cmd.AddCommand(CmdQuerySequencer())
 
-	//TODO:
+	// TODO:
 	// cmd.AddCommand(CmdQueryHistoricalInfo())
 	// Add queries for specific sequencer (num of blocks, rewards, etc..)
 

@@ -116,17 +116,15 @@ const (
 	Name                 = "rollapp"
 )
 
-var (
-	kvstorekeys = []string{
-		authtypes.StoreKey, banktypes.StoreKey,
-		stakingtypes.StoreKey, seqtypes.StoreKey,
-		minttypes.StoreKey, denommetadatatypes.StoreKey, distrtypes.StoreKey,
-		govtypes.StoreKey, paramstypes.StoreKey,
-		ibchost.StoreKey, upgradetypes.StoreKey,
-		epochstypes.StoreKey, hubgentypes.StoreKey,
-		ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
-	}
-)
+var kvstorekeys = []string{
+	authtypes.StoreKey, banktypes.StoreKey,
+	stakingtypes.StoreKey, seqtypes.StoreKey,
+	minttypes.StoreKey, denommetadatatypes.StoreKey, distrtypes.StoreKey,
+	govtypes.StoreKey, paramstypes.StoreKey,
+	ibchost.StoreKey, upgradetypes.StoreKey,
+	epochstypes.StoreKey, hubgentypes.StoreKey,
+	ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
+}
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	var govProposalHandlers []govclient.ProposalHandler
@@ -248,7 +246,6 @@ func NewRollapp(
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
-
 	appCodec := encodingConfig.Codec
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -312,7 +309,7 @@ func NewRollapp(
 		app.GetSubspace(authtypes.ModuleName),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
-		sdk.Bech32PrefixAccAddr, //Bech32MainPrefix
+		sdk.Bech32PrefixAccAddr, // Bech32MainPrefix
 	)
 
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
@@ -343,20 +340,6 @@ func NewRollapp(
 	app.MintKeeper.SetHooks(
 		minttypes.NewMultiMintHooks(
 		// insert mint hooks receivers here
-		),
-	)
-
-	app.DenommetadataKeeper = denommetadatakeeper.NewKeeper(
-		appCodec,
-		keys[denommetadatatypes.StoreKey],
-		app.BankKeeper,
-		nil,
-		app.GetSubspace(denommetadatatypes.ModuleName),
-	)
-	// set hook for denom metadata keeper later
-	app.DenommetadataKeeper.SetHooks(
-		denommetadatatypes.NewMultiDenommetadataHooks(
-		// insert denom metadata hooks receivers here
 		),
 	)
 
@@ -427,6 +410,21 @@ func NewRollapp(
 		scopedTransferKeeper,
 	)
 	transferIBCModule := ibctransfer.NewIBCModule(app.TransferKeeper)
+
+	app.DenommetadataKeeper = denommetadatakeeper.NewKeeper(
+		appCodec,
+		keys[denommetadatatypes.StoreKey],
+		app.BankKeeper,
+		app.TransferKeeper,
+		nil,
+		app.GetSubspace(denommetadatatypes.ModuleName),
+	)
+	// set hook for denom metadata keeper later
+	app.DenommetadataKeeper.SetHooks(
+		denommetadatatypes.NewMultiDenommetadataHooks(
+		// insert denom metadata hooks receivers here
+		),
+	)
 
 	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
 		appCodec,
@@ -536,12 +534,12 @@ func NewRollapp(
 		vestingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
-		denommetadatatypes.ModuleName,
 		ibchost.ModuleName,
 		genutiltypes.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		ibctransfertypes.ModuleName,
+		denommetadatatypes.ModuleName,
 		hubgentypes.ModuleName,
 	}
 	app.mm.SetOrderInitGenesis(initGenesisList...)
@@ -656,7 +654,7 @@ func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.Res
 		panic(err)
 	}
 
-	//Passing the dymint sequencers to the sequencer module from RequestInitChain
+	// Passing the dymint sequencers to the sequencer module from RequestInitChain
 	app.SequencersKeeper.SetDymintSequencers(ctx, req.Validators)
 
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())

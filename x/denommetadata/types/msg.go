@@ -1,9 +1,11 @@
 package types
 
 import (
+	fmt "fmt"
+
 	errorsmod "cosmossdk.io/errors"
 
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -21,11 +23,11 @@ const (
 // NewMsgCreateDenomMetadata creates new instance of MsgCreateDenomMetadata
 func NewMsgCreateDenomMetadata(
 	sender sdk.Address,
-	tokenMetadata banktypes.Metadata,
+	metadatas []DenomMetadata,
 ) *MsgCreateDenomMetadata {
 	return &MsgCreateDenomMetadata{
 		SenderAddress: sender.String(),
-		TokenMetadata: tokenMetadata,
+		Metadatas:     metadatas,
 	}
 }
 
@@ -37,15 +39,25 @@ func (msg MsgCreateDenomMetadata) Type() string { return TypeMsgCreateDenomMetad
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgCreateDenomMetadata) ValidateBasic() error {
-
 	// this also checks for empty addresses
 	if _, err := sdk.AccAddressFromBech32(msg.SenderAddress); err != nil {
 		return errorsmod.Wrapf(err, "invalid sender address: %s", err.Error())
 	}
 
-	err := msg.TokenMetadata.Validate()
-	if err != nil {
-		return err
+	for _, metadata := range msg.Metadatas {
+		err := metadata.TokenMetadata.Validate()
+		if err != nil {
+			return err
+		}
+
+		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
+		// If path is empty, then the denom is not ibc denom
+		if denomTrace.Path != "" {
+			denom := denomTrace.IBCDenom()
+			if denom != metadata.TokenMetadata.Base {
+				return fmt.Errorf("denom parse from denom trace does not match metadata base denom. base denom: %s, expected: %s", metadata.TokenMetadata.Base, denom)
+			}
+		}
 	}
 
 	return nil
@@ -65,11 +77,11 @@ func (msg MsgCreateDenomMetadata) GetSigners() []sdk.AccAddress {
 // NewMsgCreateDenomMetadata creates new instance of MsgCreateDenomMetadata
 func NewMsgUpdateDenomMetadata(
 	sender sdk.Address,
-	tokenMetadata banktypes.Metadata,
+	metadatas []DenomMetadata,
 ) *MsgUpdateDenomMetadata {
 	return &MsgUpdateDenomMetadata{
 		SenderAddress: sender.String(),
-		TokenMetadata: tokenMetadata,
+		Metadatas:     metadatas,
 	}
 }
 
@@ -81,15 +93,25 @@ func (msg MsgUpdateDenomMetadata) Type() string { return TypeMsgUpdateDenomMetad
 
 // ValidateBasic runs stateless checks on the message
 func (msg MsgUpdateDenomMetadata) ValidateBasic() error {
-
 	// this also checks for empty addresses
 	if _, err := sdk.AccAddressFromBech32(msg.SenderAddress); err != nil {
 		return errorsmod.Wrapf(err, "invalid sender address: %s", err.Error())
 	}
 
-	err := msg.TokenMetadata.Validate()
-	if err != nil {
-		return err
+	for _, metadata := range msg.Metadatas {
+		err := metadata.TokenMetadata.Validate()
+		if err != nil {
+			return err
+		}
+
+		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
+		// If path is empty, then the denom is not ibc denom
+		if denomTrace.Path != "" {
+			denom := denomTrace.IBCDenom()
+			if denom != metadata.TokenMetadata.Base {
+				return fmt.Errorf("denom parse from denom trace does not match metadata base denom. base denom: %s, expected: %s", metadata.TokenMetadata.Base, denom)
+			}
+		}
 	}
 
 	return nil

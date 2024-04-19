@@ -1,16 +1,13 @@
 package cli
 
 import (
-	"encoding/json"
-	"os"
-
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
 
@@ -46,26 +43,14 @@ func NewCmdCreateDenomMetadata() *cobra.Command {
 
 			path := args[0]
 
-			//nolint:gosec
-			fileContent, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-
-			metadata := banktypes.Metadata{}
-			err = json.Unmarshal([]byte(fileContent), &metadata)
-			if err != nil {
-				return err
-			}
-
-			err = metadata.Validate()
+			metadatas, err := utils.ParseJsonFromFile[types.DenomMetadata](path)
 			if err != nil {
 				return err
 			}
 
 			msg := &types.MsgCreateDenomMetadata{
 				SenderAddress: sender.String(),
-				TokenMetadata: metadata,
+				Metadatas:     metadatas,
 			}
 
 			if err := msg.ValidateBasic(); err != nil {
@@ -95,26 +80,14 @@ func NewCmdUpdateDenomMetadata() *cobra.Command {
 
 			path := args[0]
 
-			//nolint:gosec
-			fileContent, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-
-			metadata := banktypes.Metadata{}
-			err = json.Unmarshal([]byte(fileContent), &metadata)
-			if err != nil {
-				return err
-			}
-
-			err = metadata.Validate()
+			metadatas, err := utils.ParseJsonFromFile[types.DenomMetadata](path)
 			if err != nil {
 				return err
 			}
 
 			msg := &types.MsgUpdateDenomMetadata{
 				SenderAddress: sender.String(),
-				TokenMetadata: metadata,
+				Metadatas:     metadatas,
 			}
 
 			if err := msg.ValidateBasic(); err != nil {

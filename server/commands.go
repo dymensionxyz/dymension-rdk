@@ -94,7 +94,6 @@ func ResetState() *cobra.Command {
 		Aliases: []string{"reset_state"},
 		Short:   "Remove all the data and WAL",
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-
 			config := server.GetServerContextFromCmd(cmd).Config
 			var paths []string
 			appdb := filepath.Join(config.DBDir(), "application.db")

@@ -2,7 +2,7 @@ syntax = "proto3";
 package rollapp.denommetadata.types;
 
 import "gogoproto/gogo.proto";
-import "cosmos/bank/v1beta1/bank.proto";
+import "denommetadata/denommetadata.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types";
 
@@ -19,8 +19,7 @@ service Msg {
 message MsgCreateDenomMetadata {
   // sender_address is the bech32 address of message sender.
   string sender_address = 1;
-  cosmos.bank.v1beta1.Metadata token_metadata = 2
-      [ (gogoproto.nullable) = false ];
+  repeated DenomMetadata metadatas = 2 [ (gogoproto.nullable) = false ];
 }
 
 // MsgCreateDenomMetadataResponse defines the MsgCreateDenomMetadata response
@@ -31,8 +30,7 @@ message MsgCreateDenomMetadataResponse {}
 message MsgUpdateDenomMetadata {
   // sender_address is the bech32 address of message sender.
   string sender_address = 1;
-  cosmos.bank.v1beta1.Metadata token_metadata = 2
-      [ (gogoproto.nullable) = false ];
+  repeated DenomMetadata metadatas = 2 [ (gogoproto.nullable) = false ];
 }
 
 // MsgUpdateDenomMetadataResponse defines the MsgUpdateDenomMetadata response

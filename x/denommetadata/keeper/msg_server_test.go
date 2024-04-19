@@ -40,8 +40,9 @@ func (suite *DenomMetadataMsgServerTestSuite) setupTest(hooks types.DenomMetadat
 }
 
 const (
-	ibcBase       = "ibc/7B2A4F6E798182988D77B6B884919AF617A73503FDAC27C916CD7A69A69013CF"
+	ibcBase       = "ibc/896F0081794734A2DBDF219B7575C569698F872619C43D18CC63C03CFB997257"
 	senderAddress = "cosmos1s77x8wr2gzdhq8gt8c085vate0s23xu9u80wtx"
+	denomTrace    = "transfer/channel-0/atom"
 )
 
 var denomMetadata = banktypes.Metadata{
@@ -70,7 +71,12 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 			name: "success",
 			msg: &types.MsgCreateDenomMetadata{
 				SenderAddress: senderAddress,
-				TokenMetadata: denomMetadata,
+				Metadatas: []types.DenomMetadata{
+					{
+						TokenMetadata: denomMetadata,
+						DenomTrace:    denomTrace,
+					},
+				},
 			},
 			hooks:            &mockERC20Hook{},
 			expectHookCalled: true,
@@ -78,7 +84,12 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 			name: "permission error",
 			msg: &types.MsgCreateDenomMetadata{
 				SenderAddress: senderAddress,
-				TokenMetadata: denomMetadata,
+				Metadatas: []types.DenomMetadata{
+					{
+						TokenMetadata: denomMetadata,
+						DenomTrace:    denomTrace,
+					},
+				},
 			},
 			malleate: func() {
 				initialParams := types.DefaultParams()
@@ -89,15 +100,39 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 			expectHookCalled: false,
 			expectErr:        types.ErrNoPermission.Error(),
 		}, {
+			name: "ibc denom does not match",
+			msg: &types.MsgCreateDenomMetadata{
+				SenderAddress: senderAddress,
+				Metadatas: []types.DenomMetadata{
+					{
+						TokenMetadata: denomMetadata,
+						DenomTrace:    "transfer/channel-0/uatom",
+					},
+				},
+			},
+			hooks:            &mockERC20Hook{},
+			expectHookCalled: false,
+			expectErr:        "denom parse from denom trace does not match metadata base denom",
+		}, {
 			name: "denom already exists",
 			msg: &types.MsgCreateDenomMetadata{
 				SenderAddress: senderAddress,
-				TokenMetadata: denomMetadata,
+				Metadatas: []types.DenomMetadata{
+					{
+						TokenMetadata: denomMetadata,
+						DenomTrace:    denomTrace,
+					},
+				},
 			},
 			malleate: func() {
 				msg := &types.MsgCreateDenomMetadata{
 					SenderAddress: senderAddress,
-					TokenMetadata: denomMetadata,
+					Metadatas: []types.DenomMetadata{
+						{
+							TokenMetadata: denomMetadata,
+							DenomTrace:    denomTrace,
+						},
+					},
 				}
 				_, err := suite.msgServer.CreateDenomMetadata(suite.ctx, msg)
 				suite.Require().NoError(err, "CreateDenomMetadata() error")
@@ -109,16 +144,21 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 			name: "invalid denom units",
 			msg: &types.MsgCreateDenomMetadata{
 				SenderAddress: senderAddress,
-				TokenMetadata: banktypes.Metadata{
-					Description: "ATOM IBC",
-					Base:        ibcBase,
-					DenomUnits: []*banktypes.DenomUnit{
-						{Denom: ibcBase, Exponent: 18},
-						{Denom: "ATOM", Exponent: 0},
+				Metadatas: []types.DenomMetadata{
+					{
+						TokenMetadata: banktypes.Metadata{
+							Description: "ATOM IBC",
+							Base:        ibcBase,
+							DenomUnits: []*banktypes.DenomUnit{
+								{Denom: ibcBase, Exponent: 18},
+								{Denom: "ATOM", Exponent: 0},
+							},
+							Name:    "ATOM channel-0",
+							Symbol:  "ibcATOM-0",
+							Display: ibcBase,
+						},
+						DenomTrace: denomTrace,
 					},
-					Name:    "ATOM channel-0",
-					Symbol:  "ibcATOM-0",
-					Display: ibcBase,
 				},
 			},
 			hooks:            &mockERC20Hook{},
@@ -128,7 +168,12 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 			name: "failed to create erc20 contract",
 			msg: &types.MsgCreateDenomMetadata{
 				SenderAddress: senderAddress,
-				TokenMetadata: denomMetadata,
+				Metadatas: []types.DenomMetadata{
+					{
+						TokenMetadata: denomMetadata,
+						DenomTrace:    denomTrace,
+					},
+				},
 			},
 			hooks: &mockERC20Hook{
 				err: fmt.Errorf("failed to deploy the erc20 contract for the IBC coin"),

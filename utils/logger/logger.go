@@ -24,7 +24,7 @@ type Logger struct {
 
 // NewLog creates a new Log struct with the given persistent fields
 func NewLogger(path string, maxSize int, level string, moduleOverrideLevel ...map[string]string) Logger {
-	var logger = Logger{
+	logger := Logger{
 		Fields:              map[string]interface{}{},
 		moduleOverrideLevel: map[string]string{},
 	}
@@ -44,7 +44,7 @@ func (l Logger) setupLogger(path string, maxSize int, level string) *log.Logger 
 			Filename:   path,
 			MaxSize:    maxSize, // megabytes
 			MaxBackups: defaultMaxBackups,
-			MaxAge:     defaultMaxAgeDays, //days
+			MaxAge:     defaultMaxAgeDays, // days
 			Compress:   true,              // disabled by default
 		})
 	} else {
@@ -73,6 +73,7 @@ func (l Logger) Info(msg string, keyvals ...interface{}) {
 	}
 	l.Logger.WithFields(l.Fields).Info(msg, keyvals)
 }
+
 func (l Logger) Error(msg string, keyvals ...interface{}) {
 	if l.customLogLevel < log.ErrorLevel {
 		return
@@ -81,7 +82,7 @@ func (l Logger) Error(msg string, keyvals ...interface{}) {
 }
 
 func (l Logger) With(keyvals ...interface{}) tmlog.Logger {
-	//Make deep copy of the current fields
+	// Make deep copy of the current fields
 	fields := map[string]interface{}{}
 	for k, v := range l.Fields {
 		fields[k] = v

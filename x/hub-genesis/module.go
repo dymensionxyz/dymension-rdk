@@ -73,7 +73,6 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingCo
 
 // RegisterRESTRoutes registers the REST routes for the hub-genesis module.
 func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
-
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the hub-genesis module.

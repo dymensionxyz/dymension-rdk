@@ -33,9 +33,9 @@ var (
 	totalFeesDec  = sdk.NewDecFromInt(totalFees)
 )
 
-//TODO: Test multiple sequencers, each propose a block
+// TODO: Test multiple sequencers, each propose a block
 
-//TODO: test staker which is the proposer as well
+// TODO: test staker which is the proposer as well
 
 /* -------------------------------------------------------------------------- */
 /*                                    utils                                   */
@@ -122,13 +122,13 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Coins}}, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards)
 
 	// Check commissions and delegator rewards val1
-	//val1 has 50% commission
+	// val1 has 50% commission
 	val1Commission := val1Coins.Mul(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.5)))
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val1Commission}}, app.DistrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[0]).Commission)
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val1Coins.Sub(val1Commission)}}, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[0]).Rewards)
 
 	// Check commissions and delegator rewards val2
-	//val2 has 10% commission
+	// val2 has 10% commission
 	val2Commission := val2Coins.Mul(sdk.MustNewDecFromStr(fmt.Sprintf("%f", 0.1)))
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Commission}}, app.DistrKeeper.GetValidatorAccumulatedCommission(ctx, valAddrs[1]).Commission)
 	require.Equal(t, sdk.DecCoins{{Denom: sdk.DefaultBondDenom, Amount: val2Coins.Sub(val2Commission)}}, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards)

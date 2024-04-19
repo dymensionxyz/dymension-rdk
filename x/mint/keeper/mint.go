@@ -10,7 +10,7 @@ func (k Keeper) HandleMintingEpoch(ctx sdk.Context) (sdk.Coins, error) {
 	var mintedCoins sdk.Coins
 	params := k.GetParams(ctx)
 
-	//calculate coins
+	// calculate coins
 	total := k.bankKeeper.GetSupply(ctx, params.MintDenom)
 	mintAmount := k.CalcMintedCoins(ctx, total.Amount)
 	if mintAmount.IsZero() {

@@ -159,7 +159,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			expErr: types.ErrLockingGenesisTokens,
 		},
 
-		//TODO: add test of not enough tokens
+		// TODO: add test of not enough tokens
 	}
 
 	for _, tc := range cases {
