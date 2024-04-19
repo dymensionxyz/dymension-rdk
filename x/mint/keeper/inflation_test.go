@@ -36,7 +36,7 @@ func TestInflationChangeTCs(t *testing.T) {
 		{
 			name:                 "Test Decrease - Max",
 			currentInflationRate: sdk.NewDecWithPrec(6, 2),  // 6%
-			inflationRateChange:  sdk.NewDecWithPrec(15, 2), //1.5%
+			inflationRateChange:  sdk.NewDecWithPrec(15, 2), // 1.5%
 			expectedInflation:    targetInflationRate,       // 5%
 		},
 		{

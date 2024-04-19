@@ -60,7 +60,7 @@ func TestMultipleWithCalls(t *testing.T) {
 	logger.SetOutput(&buf)
 
 	logger1 := logger.With("module", "module1")
-	logger2 := logger1.With("arg", "custom_arg") //on top logger1
+	logger2 := logger1.With("arg", "custom_arg") // on top logger1
 
 	logger1.Info("testing")
 	msg := strings.TrimSpace(buf.String())
@@ -111,7 +111,7 @@ func TestMaxFileSize(t *testing.T) {
 	logFileName := fmt.Sprintf("test-log-%s.log", seed)
 
 	logDir := filepath.Join("/tmp", seed)
-	err := os.Mkdir(logDir, 0700)
+	err := os.Mkdir(logDir, 0o700)
 	assert.NoError(t, err)
 
 	logPath := filepath.Join(logDir, logFileName)

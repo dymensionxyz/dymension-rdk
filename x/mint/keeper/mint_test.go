@@ -39,7 +39,7 @@ func TestMinting(t *testing.T) {
 	initialBalance := app.BankKeeper.GetBalance(ctx, recipientAcc, params.MintDenom)
 	require.True(t, initialBalance.IsZero())
 
-	//mint supply
+	// mint supply
 	err := app.BankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(totalSupplyCoin))
 	require.NoError(t, err)
 
@@ -61,10 +61,9 @@ func TestMinting(t *testing.T) {
 	assert.True(t, newSupply.IsEqual(totalSupplyCoin.Add(mintedCoin)))
 }
 
-//TODO: test start time
-
+// TODO: test start time
 func TestCalcMintedCoins(t *testing.T) {
-	var DymDecimals = sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
+	DymDecimals := sdk.NewIntFromBigInt(new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil))
 
 	testCases := []struct {
 		name                 string
@@ -101,7 +100,6 @@ func TestCalcMintedCoins(t *testing.T) {
 			require.False(t, mintedCoins.IsZero())
 			assert.Equal(t, tc.expectedAmount, mintedCoins.TruncateInt())
 		})
-
 	}
 }
 
@@ -146,6 +144,5 @@ func TestDifferentMintEpochs(t *testing.T) {
 			require.False(t, mintedCoins.IsZero())
 			assert.Equal(t, tc.expectedAmount, mintedCoins.TruncateInt())
 		})
-
 	}
 }

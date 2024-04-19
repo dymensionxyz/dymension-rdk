@@ -10,10 +10,8 @@ import (
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
-var (
-	// GenesisTriggererAllowlist is store's key for GenesisTriggererAllowlist Params
-	KeyGenesisTriggererAllowlist = []byte("GenesisTriggererAllowlist")
-)
+// GenesisTriggererAllowlist is store's key for GenesisTriggererAllowlist Params
+var KeyGenesisTriggererAllowlist = []byte("GenesisTriggererAllowlist")
 
 // ParamTable for hub_genesis module.
 func ParamKeyTable() paramtypes.KeyTable {

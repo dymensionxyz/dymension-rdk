@@ -116,17 +116,15 @@ const (
 	Name                 = "rollapp"
 )
 
-var (
-	kvstorekeys = []string{
-		authtypes.StoreKey, banktypes.StoreKey,
-		stakingtypes.StoreKey, seqtypes.StoreKey,
-		minttypes.StoreKey, denommetadatatypes.StoreKey, distrtypes.StoreKey,
-		govtypes.StoreKey, paramstypes.StoreKey,
-		ibchost.StoreKey, upgradetypes.StoreKey,
-		epochstypes.StoreKey, hubgentypes.StoreKey,
-		ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
-	}
-)
+var kvstorekeys = []string{
+	authtypes.StoreKey, banktypes.StoreKey,
+	stakingtypes.StoreKey, seqtypes.StoreKey,
+	minttypes.StoreKey, denommetadatatypes.StoreKey, distrtypes.StoreKey,
+	govtypes.StoreKey, paramstypes.StoreKey,
+	ibchost.StoreKey, upgradetypes.StoreKey,
+	epochstypes.StoreKey, hubgentypes.StoreKey,
+	ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
+}
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	var govProposalHandlers []govclient.ProposalHandler
@@ -248,7 +246,6 @@ func NewRollapp(
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
 ) *App {
-
 	appCodec := encodingConfig.Codec
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -312,7 +309,7 @@ func NewRollapp(
 		app.GetSubspace(authtypes.ModuleName),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
-		sdk.Bech32PrefixAccAddr, //Bech32MainPrefix
+		sdk.Bech32PrefixAccAddr, // Bech32MainPrefix
 	)
 
 	app.BankKeeper = bankkeeper.NewBaseKeeper(
@@ -657,7 +654,7 @@ func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.Res
 		panic(err)
 	}
 
-	//Passing the dymint sequencers to the sequencer module from RequestInitChain
+	// Passing the dymint sequencers to the sequencer module from RequestInitChain
 	app.SequencersKeeper.SetDymintSequencers(ctx, req.Validators)
 
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())

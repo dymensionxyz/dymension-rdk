@@ -20,5 +20,4 @@ func TestEpochsInitAndExportGenesis(t *testing.T) {
 	require.Len(t, genesis.Epochs, 5)
 	nullify.Fill(&genesis)
 	nullify.Fill(genesis)
-
 }

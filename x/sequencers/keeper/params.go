@@ -1,10 +1,10 @@
 package keeper
 
 import (
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
-
-	"time"
 )
 
 // GetParams returns the total set of sequencers parameters.

@@ -25,9 +25,7 @@ const (
 	defaultBalanceAmt                                 = int64(1000000000)
 )
 
-var (
-	defaultReductionFactor = sdk.NewDec(2).Quo(sdk.NewDec(3))
-)
+var defaultReductionFactor = sdk.NewDec(2).Quo(sdk.NewDec(3))
 
 type MintKeeperTestSuite struct {
 	suite.Suite
