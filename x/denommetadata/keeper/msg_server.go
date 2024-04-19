@@ -81,9 +81,9 @@ func (k msgServer) UpdateDenomMetadata(
 		if !found {
 			return nil, types.ErrDenomDoesNotExist
 		}
-	
+
 		k.bankKeeper.SetDenomMetaData(ctx, metadata.TokenMetadata)
-	
+
 		// set hook after denom metadata update
 		err := k.hooks.AfterDenomMetadataUpdate(ctx, metadata.TokenMetadata)
 		if err != nil {
@@ -98,7 +98,6 @@ func (k msgServer) UpdateDenomMetadata(
 			k.transferKeeper.SetDenomTrace(ctx, denomTrace)
 		}
 	}
-
 
 	return &types.MsgUpdateDenomMetadataResponse{}, nil
 }
