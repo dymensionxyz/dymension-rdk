@@ -150,7 +150,10 @@ func CollectTxs(cdc codec.JSONCodec, txJSONDecoder sdk.TxDecoder, moniker, genTx
 		msgs := genTx.GetMsgs()
 
 		// TODO abstract out staking message validation back to staking
-		msg := msgs[0].(*stakingtypes.MsgCreateValidator)
+		msg, ok := msgs[0].(*stakingtypes.MsgCreateValidator)
+		if !ok {
+			return appGenTxs, persistentPeers, fmt.Errorf("expected msg should be stakingtypes.MsgCreateValidator, got %T", msgs[0])
+		}
 
 		// validate delegator and validator addresses and funds against the accounts in the state
 		delAddr := msg.DelegatorAddress
