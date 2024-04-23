@@ -15,17 +15,12 @@ import (
 type Keeper struct {
 	cdc codec.BinaryCodec
 	ps  paramtypes.Subspace
-
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
 }
 
 // NewKeeper creates new instances of the vesting Keeper
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	ps paramtypes.Subspace,
-	ak types.AccountKeeper,
-	bk types.BankKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -33,10 +28,8 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		cdc:           cdc,
-		ps:            ps,
-		accountKeeper: ak,
-		bankKeeper:    bk,
+		cdc: cdc,
+		ps:  ps,
 	}
 }
 

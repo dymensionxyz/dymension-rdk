@@ -13,8 +13,10 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	sdkvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	"github.com/dymensionxyz/dymension-rdk/x/vesting/client/cli"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	sdkvesting "github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	sdkvestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/client/cli"
 	"github.com/dymensionxyz/dymension-rdk/x/vesting/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/vesting/types"
 )
@@ -36,13 +38,13 @@ func (AppModuleBasic) Name() string {
 
 // RegisterCodec registers the module's types with the given codec.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	sdkvesting.RegisterLegacyAminoCodec(cdc)
+	sdkvestingtypes.RegisterLegacyAminoCodec(cdc)
 }
 
 // RegisterInterfaces registers the module's interfaces and implementations with
 // the given interface registry.
 func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	sdkvesting.RegisterInterfaces(registry)
+	sdkvestingtypes.RegisterInterfaces(registry)
 }
 
 // DefaultGenesis returns the module's default genesis state as raw bytes.
@@ -79,11 +81,11 @@ type AppModule struct {
 	AppModuleBasic
 
 	keeper        keeper.Keeper
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	accountKeeper authkeeper.AccountKeeper
+	bankKeeper    sdkvestingtypes.BankKeeper
 }
 
-func NewAppModule(keeper keeper.Keeper, ak types.AccountKeeper, bk types.BankKeeper) AppModule {
+func NewAppModule(keeper keeper.Keeper, ak authkeeper.AccountKeeper, bk sdkvestingtypes.BankKeeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{},
 		keeper:         keeper,
@@ -106,7 +108,7 @@ func (AppModule) QuerierRoute() string { return "" }
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	sdkvesting.RegisterMsgServer(cfg.MsgServer(), am.keeper)
+	sdkvestingtypes.RegisterMsgServer(cfg.MsgServer(), sdkvesting.NewMsgServerImpl(am.accountKeeper, am.bankKeeper))
 }
 
 // LegacyQuerierHandler performs a no-op.
