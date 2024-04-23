@@ -1,0 +1,13 @@
+syntax = "proto3";
+package rollapp.vesting.types;
+
+import "gogoproto/gogo.proto";
+import "vesting/params.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/vesting/types";
+
+// GenesisState defines the test module's genesis state.
+message GenesisState {
+  // params are all parameters for the module
+  Params params = 1 [ (gogoproto.nullable) = false ];
+}
