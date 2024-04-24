@@ -7,17 +7,17 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
+	governors "github.com/dymensionxyz/dymension-rdk/x/governors"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/teststaking"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
 func TestValidateGenesis(t *testing.T) {
-	genValidators1 := make([]types.Validator, 1, 5)
+	genGovernors1 := make([]types.Governor, 1, 5)
 	pk := ed25519.GenPrivKey().PubKey()
-	genValidators1[0] = teststaking.NewValidator(t, sdk.ValAddress(pk.Address()), pk)
-	genValidators1[0].Tokens = sdk.OneInt()
-	genValidators1[0].DelegatorShares = sdk.OneDec()
+	genGovernors1[0] = teststaking.NewGovernor(t, sdk.ValAddress(pk.Address()))
+	genGovernors1[0].Tokens = sdk.OneInt()
+	genGovernors1[0].DelegatorShares = sdk.OneDec()
 
 	tests := []struct {
 		name    string
@@ -25,19 +25,18 @@ func TestValidateGenesis(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", func(*types.GenesisState) {}, false},
-		// validate genesis validators
-		{"duplicate validator", func(data *types.GenesisState) {
-			data.Validators = genValidators1
-			data.Validators = append(data.Validators, genValidators1[0])
+		// validate genesis governors
+		{"duplicate governor", func(data *types.GenesisState) {
+			data.Governors = genGovernors1
+			data.Governors = append(data.Governors, genGovernors1[0])
 		}, true},
 		{"no delegator shares", func(data *types.GenesisState) {
-			data.Validators = genValidators1
-			data.Validators[0].DelegatorShares = sdk.ZeroDec()
+			data.Governors = genGovernors1
+			data.Governors[0].DelegatorShares = sdk.ZeroDec()
 		}, true},
-		{"jailed and bonded validator", func(data *types.GenesisState) {
-			data.Validators = genValidators1
-			data.Validators[0].Jailed = true
-			data.Validators[0].Status = types.Bonded
+		{"jailed and bonded governor", func(data *types.GenesisState) {
+			data.Governors = genGovernors1
+			data.Governors[0].Status = types.Bonded
 		}, true},
 	}
 
@@ -49,9 +48,9 @@ func TestValidateGenesis(t *testing.T) {
 			tt.mutate(genesisState)
 
 			if tt.wantErr {
-				assert.Error(t, staking.ValidateGenesis(genesisState))
+				assert.Error(t, governors.ValidateGenesis(genesisState))
 			} else {
-				assert.NoError(t, staking.ValidateGenesis(genesisState))
+				assert.NoError(t, governors.ValidateGenesis(genesisState))
 			}
 		})
 	}

@@ -13,22 +13,24 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
+
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 )
 
-func checkValidator(t *testing.T, app *app.App, addr sdk.ValAddress, expFound bool) types.Validator {
+func checkGovernor(t *testing.T, app *app.App, addr sdk.ValAddress, expFound bool) types.Governor {
 	ctxCheck := app.BaseApp.NewContext(true, tmproto.Header{})
-	validator, found := app.StakingKeeper.GetValidator(ctxCheck, addr)
+	governor, found := app.StakingKeeper.GetGovernor(ctxCheck, addr)
 
 	require.Equal(t, expFound, found)
-	return validator
+	return governor
 }
 
 func checkDelegation(
 	t *testing.T, app *app.App, delegatorAddr sdk.AccAddress,
-	validatorAddr sdk.ValAddress, expFound bool, expShares sdk.Dec,
+	governorAddr sdk.ValAddress, expFound bool, expShares sdk.Dec,
 ) {
 	ctxCheck := app.BaseApp.NewContext(true, tmproto.Header{})
-	delegation, found := app.StakingKeeper.GetDelegation(ctxCheck, delegatorAddr, validatorAddr)
+	delegation, found := app.StakingKeeper.GetDelegation(ctxCheck, delegatorAddr, governorAddr)
 	if expFound {
 		require.True(t, found)
 		require.True(sdk.DecEq(t, expShares, delegation.Shares))
@@ -63,40 +65,40 @@ func TestStakingMsgs(t *testing.T) {
 	simapp.CheckBalance(t, app, addr1, sdk.Coins{genCoin})
 	simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin})
 
-	// create validator
+	// create governor
 	description := types.NewDescription("foo_moniker", "", "", "", "")
-	createValidatorMsg, err := types.NewMsgCreateValidator(
+	createGovernorMsg, err := types.NewMsgCreateGovernor(
 		sdk.ValAddress(addr1), valKey.PubKey(), bondCoin, description, commissionRates, sdk.OneInt(),
 	)
 	require.NoError(t, err)
 
 	header := tmproto.Header{Height: app.LastBlockHeight() + 1}
 	txGen := simapp.MakeTestEncodingConfig().TxConfig
-	_, _, err = simapp.SignCheckDeliver(t, txGen, app.BaseApp, header, []sdk.Msg{createValidatorMsg}, "", []uint64{0}, []uint64{0}, true, true, priv1)
+	_, _, err = simapp.SignCheckDeliver(t, txGen, app.BaseApp, header, []sdk.Msg{createGovernorMsg}, "", []uint64{0}, []uint64{0}, true, true, priv1)
 	require.NoError(t, err)
 	simapp.CheckBalance(t, app, addr1, sdk.Coins{genCoin.Sub(bondCoin)})
 
 	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
 
-	validator := checkValidator(t, app, sdk.ValAddress(addr1), true)
-	require.Equal(t, sdk.ValAddress(addr1).String(), validator.OperatorAddress)
-	require.Equal(t, types.Bonded, validator.Status)
-	require.True(sdk.IntEq(t, bondTokens, validator.BondedTokens()))
+	governor := checkGovernor(t, app, sdk.ValAddress(addr1), true)
+	require.Equal(t, sdk.ValAddress(addr1).String(), governor.OperatorAddress)
+	require.Equal(t, types.Bonded, governor.Status)
+	require.True(sdk.IntEq(t, bondTokens, governor.BondedTokens()))
 
 	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
 
-	// edit the validator
+	// edit the governor
 	description = types.NewDescription("bar_moniker", "", "", "", "")
-	editValidatorMsg := types.NewMsgEditValidator(sdk.ValAddress(addr1), description, nil, nil)
+	editGovernorMsg := types.NewMsgEditGovernor(sdk.ValAddress(addr1), description, nil, nil)
 
 	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
-	_, _, err = simapp.SignCheckDeliver(t, txGen, app.BaseApp, header, []sdk.Msg{editValidatorMsg}, "", []uint64{0}, []uint64{1}, true, true, priv1)
+	_, _, err = simapp.SignCheckDeliver(t, txGen, app.BaseApp, header, []sdk.Msg{editGovernorMsg}, "", []uint64{0}, []uint64{1}, true, true, priv1)
 	require.NoError(t, err)
 
-	validator = checkValidator(t, app, sdk.ValAddress(addr1), true)
-	require.Equal(t, description, validator.Description)
+	governor = checkGovernor(t, app, sdk.ValAddress(addr1), true)
+	require.Equal(t, description, governor.Description)
 
 	// delegate
 	simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin})

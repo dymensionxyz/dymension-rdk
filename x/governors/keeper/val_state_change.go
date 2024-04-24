@@ -98,6 +98,8 @@ func (k Keeper) BlockGovernorUpdates(ctx sdk.Context) {
 // at the previous block height or were removed from the governor set entirely
 // are returned to Tendermint.
 func (k Keeper) ApplyGovernorSetUpdates(ctx sdk.Context) (err error) {
+
+	// FIXME: keep updates
 	params := k.GetParams(ctx)
 	maxGovernors := params.MaxValidators
 	powerReduction := k.PowerReduction(ctx)

@@ -32,24 +32,24 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 
 	// accounts
 	delAddrs := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(10000))
-	validators := app.StakingKeeper.GetValidators(ctx, 10)
-	require.Equal(t, len(validators), 1)
+	governors := app.StakingKeeper.GetGovernors(ctx, 10)
+	require.Equal(t, len(governors), 1)
 
-	validatorAddr, err := sdk.ValAddressFromBech32(validators[0].OperatorAddress)
+	governorAddr, err := sdk.ValAddressFromBech32(governors[0].OperatorAddress)
 	require.NoError(t, err)
 	delegatorAddr := delAddrs[0]
 
 	// setting the ubd entry
 	unbondingAmount := sdk.NewInt64Coin(app.StakingKeeper.BondDenom(ctx), 5)
 	ubd := types.NewUnbondingDelegation(
-		delegatorAddr, validatorAddr, 10,
+		delegatorAddr, governorAddr, 10,
 		ctx.BlockTime().Add(time.Minute*10),
 		unbondingAmount.Amount,
 	)
 
 	// set and retrieve a record
 	app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
-	resUnbond, found := app.StakingKeeper.GetUnbondingDelegation(ctx, delegatorAddr, validatorAddr)
+	resUnbond, found := app.StakingKeeper.GetUnbondingDelegation(ctx, delegatorAddr, governorAddr)
 	require.True(t, found)
 	require.Equal(t, ubd, resUnbond)
 
@@ -63,7 +63,7 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 			ExceptErr: true,
 			req: types.MsgCancelUnbondingDelegation{
 				DelegatorAddress: resUnbond.DelegatorAddress,
-				ValidatorAddress: resUnbond.ValidatorAddress,
+				GovernorAddress:  resUnbond.ValidatorAddress,
 				Amount:           sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), sdk.NewInt(4)),
 				CreationHeight:   0,
 			},
@@ -73,17 +73,17 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 			ExceptErr: true,
 			req: types.MsgCancelUnbondingDelegation{
 				DelegatorAddress: resUnbond.DelegatorAddress,
-				ValidatorAddress: resUnbond.ValidatorAddress,
+				GovernorAddress:  resUnbond.ValidatorAddress,
 				Amount:           sdk.NewCoin("dump_coin", sdk.NewInt(4)),
 				CreationHeight:   0,
 			},
 		},
 		{
-			Name:      "validator not exists",
+			Name:      "governor not exists",
 			ExceptErr: true,
 			req: types.MsgCancelUnbondingDelegation{
 				DelegatorAddress: resUnbond.DelegatorAddress,
-				ValidatorAddress: sdk.ValAddress(sdk.AccAddress("asdsad")).String(),
+				GovernorAddress:  sdk.ValAddress(sdk.AccAddress("asdsad")).String(),
 				Amount:           unbondingAmount,
 				CreationHeight:   0,
 			},
@@ -93,7 +93,7 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 			ExceptErr: true,
 			req: types.MsgCancelUnbondingDelegation{
 				DelegatorAddress: "invalid_delegator_addrtess",
-				ValidatorAddress: resUnbond.ValidatorAddress,
+				GovernorAddress:  resUnbond.ValidatorAddress,
 				Amount:           unbondingAmount,
 				CreationHeight:   0,
 			},
@@ -103,7 +103,7 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 			ExceptErr: true,
 			req: types.MsgCancelUnbondingDelegation{
 				DelegatorAddress: resUnbond.DelegatorAddress,
-				ValidatorAddress: resUnbond.ValidatorAddress,
+				GovernorAddress:  resUnbond.ValidatorAddress,
 				Amount:           unbondingAmount.Add(sdk.NewInt64Coin(bondDenom, 10)),
 				CreationHeight:   10,
 			},
@@ -113,7 +113,7 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 			ExceptErr: false,
 			req: types.MsgCancelUnbondingDelegation{
 				DelegatorAddress: resUnbond.DelegatorAddress,
-				ValidatorAddress: resUnbond.ValidatorAddress,
+				GovernorAddress:  resUnbond.ValidatorAddress,
 				Amount:           unbondingAmount.Sub(sdk.NewInt64Coin(bondDenom, 1)),
 				CreationHeight:   10,
 			},
@@ -123,7 +123,7 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 			ExceptErr: false,
 			req: types.MsgCancelUnbondingDelegation{
 				DelegatorAddress: resUnbond.DelegatorAddress,
-				ValidatorAddress: resUnbond.ValidatorAddress,
+				GovernorAddress:  resUnbond.ValidatorAddress,
 				Amount:           unbondingAmount.Sub(unbondingAmount.Sub(sdk.NewInt64Coin(bondDenom, 1))),
 				CreationHeight:   10,
 			},

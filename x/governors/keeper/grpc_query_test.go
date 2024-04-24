@@ -17,9 +17,9 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
-func (suite *KeeperTestSuite) TestGRPCQueryValidators() {
+func (suite *KeeperTestSuite) TestGRPCQueryGovernors() {
 	queryClient, vals := suite.queryClient, suite.vals
-	var req *types.QueryValidatorsRequest
+	var req *types.QueryGovernorsRequest
 	testCases := []struct {
 		msg      string
 		malleate func()
@@ -30,26 +30,26 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidators() {
 		{
 			"empty request",
 			func() {
-				req = &types.QueryValidatorsRequest{}
+				req = &types.QueryGovernorsRequest{}
 			},
 			true,
 
-			len(vals) + 1, // +1 validator from genesis state
+			len(vals) + 1, // +1 governor from genesis state
 			false,
 		},
 		{
-			"empty status returns all the validators",
+			"empty status returns all the governors",
 			func() {
-				req = &types.QueryValidatorsRequest{Status: ""}
+				req = &types.QueryGovernorsRequest{Status: ""}
 			},
 			true,
-			len(vals) + 1, // +1 validator from genesis state
+			len(vals) + 1, // +1 governor from genesis state
 			false,
 		},
 		{
 			"invalid request",
 			func() {
-				req = &types.QueryValidatorsRequest{Status: "test"}
+				req = &types.QueryGovernorsRequest{Status: "test"}
 			},
 			false,
 			0,
@@ -58,7 +58,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidators() {
 		{
 			"valid request",
 			func() {
-				req = &types.QueryValidatorsRequest{
+				req = &types.QueryGovernorsRequest{
 					Status:     types.Bonded.String(),
 					Pagination: &query.PageRequest{Limit: 1, CountTotal: true},
 				}
@@ -71,12 +71,12 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidators() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			tc.malleate()
-			valsResp, err := queryClient.Validators(gocontext.Background(), req)
+			valsResp, err := queryClient.Governors(gocontext.Background(), req)
 			if tc.expPass {
 				suite.NoError(err)
 				suite.NotNil(valsResp)
-				suite.Equal(tc.numVals, len(valsResp.Validators))
-				suite.Equal(uint64(len(vals))+1, valsResp.Pagination.Total) // +1 validator from genesis state
+				suite.Equal(tc.numVals, len(valsResp.Governors))
+				suite.Equal(uint64(len(vals))+1, valsResp.Pagination.Total) // +1 governor from genesis state
 
 				if tc.hasNext {
 					suite.NotNil(valsResp.Pagination.NextKey)
@@ -90,11 +90,11 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidators() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestGRPCQueryValidator() {
+func (suite *KeeperTestSuite) TestGRPCQueryGovernor() {
 	app, ctx, queryClient, vals := suite.app, suite.ctx, suite.queryClient, suite.vals
-	validator, found := app.StakingKeeper.GetValidator(ctx, vals[0].GetOperator())
+	governor, found := app.StakingKeeper.GetGovernor(ctx, vals[0].GetOperator())
 	suite.True(found)
-	var req *types.QueryValidatorRequest
+	var req *types.QueryGovernorRequest
 	testCases := []struct {
 		msg      string
 		malleate func()
@@ -103,14 +103,14 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidator() {
 		{
 			"empty request",
 			func() {
-				req = &types.QueryValidatorRequest{}
+				req = &types.QueryGovernorRequest{}
 			},
 			false,
 		},
 		{
 			"valid request",
 			func() {
-				req = &types.QueryValidatorRequest{ValidatorAddr: vals[0].OperatorAddress}
+				req = &types.QueryGovernorRequest{GovernorAddr: vals[0].OperatorAddress}
 			},
 			true,
 		},
@@ -119,10 +119,10 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidator() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			tc.malleate()
-			res, err := queryClient.Validator(gocontext.Background(), req)
+			res, err := queryClient.Governor(gocontext.Background(), req)
 			if tc.expPass {
 				suite.NoError(err)
-				suite.True(validator.Equal(&res.Validator))
+				suite.True(governor.Equal(&res.Governor))
 			} else {
 				suite.Error(err)
 				suite.Nil(res)
@@ -131,11 +131,11 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidator() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestGRPCQueryDelegatorValidators() {
+func (suite *KeeperTestSuite) TestGRPCQueryDelegatorGovernors() {
 	app, ctx, queryClient, addrs := suite.app, suite.ctx, suite.queryClient, suite.addrs
 	params := app.StakingKeeper.GetParams(ctx)
-	delValidators := app.StakingKeeper.GetDelegatorValidators(ctx, addrs[0], params.MaxValidators)
-	var req *types.QueryDelegatorValidatorsRequest
+	delGovernors := app.StakingKeeper.GetDelegatorGovernors(ctx, addrs[0], params.MaxValidators)
+	var req *types.QueryDelegatorGovernorsRequest
 	testCases := []struct {
 		msg      string
 		malleate func()
@@ -144,14 +144,14 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorValidators() {
 		{
 			"empty request",
 			func() {
-				req = &types.QueryDelegatorValidatorsRequest{}
+				req = &types.QueryDelegatorGovernorsRequest{}
 			},
 			false,
 		},
 		{
 			"valid request",
 			func() {
-				req = &types.QueryDelegatorValidatorsRequest{
+				req = &types.QueryDelegatorGovernorsRequest{
 					DelegatorAddr: addrs[0].String(),
 					Pagination:    &query.PageRequest{Limit: 1, CountTotal: true},
 				}
@@ -163,12 +163,12 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorValidators() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			tc.malleate()
-			res, err := queryClient.DelegatorValidators(gocontext.Background(), req)
+			res, err := queryClient.DelegatorGovernors(gocontext.Background(), req)
 			if tc.expPass {
 				suite.NoError(err)
-				suite.Equal(1, len(res.Validators))
+				suite.Equal(1, len(res.Governors))
 				suite.NotNil(res.Pagination.NextKey)
-				suite.Equal(uint64(len(delValidators)), res.Pagination.Total)
+				suite.Equal(uint64(len(delGovernors)), res.Pagination.Total)
 			} else {
 				suite.Error(err)
 				suite.Nil(res)
@@ -177,11 +177,11 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorValidators() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestGRPCQueryDelegatorValidator() {
+func (suite *KeeperTestSuite) TestGRPCQueryDelegatorGovernor() {
 	queryClient, addrs, vals := suite.queryClient, suite.addrs, suite.vals
 	addr := addrs[1]
 	addrVal, addrVal1 := vals[0].OperatorAddress, vals[1].OperatorAddress
-	var req *types.QueryDelegatorValidatorRequest
+	var req *types.QueryDelegatorGovernorRequest
 	testCases := []struct {
 		msg      string
 		malleate func()
@@ -190,16 +190,16 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorValidator() {
 		{
 			"empty request",
 			func() {
-				req = &types.QueryDelegatorValidatorRequest{}
+				req = &types.QueryDelegatorGovernorRequest{}
 			},
 			false,
 		},
 		{
-			"invalid delegator, validator pair",
+			"invalid delegator, governor pair",
 			func() {
-				req = &types.QueryDelegatorValidatorRequest{
+				req = &types.QueryDelegatorGovernorRequest{
 					DelegatorAddr: addr.String(),
-					ValidatorAddr: addrVal,
+					GovernorAddr:  addrVal,
 				}
 			},
 			false,
@@ -207,9 +207,9 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorValidator() {
 		{
 			"valid request",
 			func() {
-				req = &types.QueryDelegatorValidatorRequest{
+				req = &types.QueryDelegatorGovernorRequest{
 					DelegatorAddr: addr.String(),
-					ValidatorAddr: addrVal1,
+					GovernorAddr:  addrVal1,
 				}
 			},
 			true,
@@ -219,10 +219,10 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorValidator() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			tc.malleate()
-			res, err := queryClient.DelegatorValidator(gocontext.Background(), req)
+			res, err := queryClient.DelegatorGovernor(gocontext.Background(), req)
 			if tc.expPass {
 				suite.NoError(err)
-				suite.Equal(addrVal1, res.Validator.OperatorAddress)
+				suite.Equal(addrVal1, res.Governor.OperatorAddress)
 			} else {
 				suite.Error(err)
 				suite.Nil(res)
@@ -254,11 +254,11 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegation() {
 			false,
 		},
 		{
-			"invalid validator, delegator pair",
+			"invalid governor, delegator pair",
 			func() {
 				req = &types.QueryDelegationRequest{
 					DelegatorAddr: addrAcc1.String(),
-					ValidatorAddr: addrVal,
+					GovernorAddr:  addrVal,
 				}
 			},
 			false,
@@ -266,7 +266,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegation() {
 		{
 			"valid request",
 			func() {
-				req = &types.QueryDelegationRequest{DelegatorAddr: addrAcc.String(), ValidatorAddr: addrVal}
+				req = &types.QueryDelegationRequest{DelegatorAddr: addrAcc.String(), GovernorAddr: addrVal}
 			},
 			true,
 		},
@@ -354,7 +354,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryDelegatorDelegations() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestGRPCQueryValidatorDelegations() {
+func (suite *KeeperTestSuite) TestGRPCQueryGovernorDelegations() {
 	app, ctx, queryClient, addrs, vals := suite.app, suite.ctx, suite.queryClient, suite.addrs, suite.vals
 	addrAcc := addrs[0]
 	addrVal1 := vals[1].OperatorAddress
@@ -365,7 +365,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorDelegations() {
 	delegation, found := app.StakingKeeper.GetDelegation(ctx, addrAcc, valAddr)
 	suite.True(found)
 
-	var req *types.QueryValidatorDelegationsRequest
+	var req *types.QueryGovernorDelegationsRequest
 	testCases := []struct {
 		msg      string
 		malleate func()
@@ -375,15 +375,15 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorDelegations() {
 		{
 			"empty request",
 			func() {
-				req = &types.QueryValidatorDelegationsRequest{}
+				req = &types.QueryGovernorDelegationsRequest{}
 			},
 			false,
 			true,
 		},
 		{
-			"invalid validator delegator pair",
+			"invalid governor delegator pair",
 			func() {
-				req = &types.QueryValidatorDelegationsRequest{ValidatorAddr: addrVal2.String()}
+				req = &types.QueryGovernorDelegationsRequest{GovernorAddr: addrVal2.String()}
 			},
 			false,
 			false,
@@ -391,9 +391,9 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorDelegations() {
 		{
 			"valid request",
 			func() {
-				req = &types.QueryValidatorDelegationsRequest{
-					ValidatorAddr: addrVal1,
-					Pagination:    &query.PageRequest{Limit: 1, CountTotal: true},
+				req = &types.QueryGovernorDelegationsRequest{
+					GovernorAddr: addrVal1,
+					Pagination:   &query.PageRequest{Limit: 1, CountTotal: true},
 				}
 			},
 			true,
@@ -404,7 +404,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorDelegations() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			tc.malleate()
-			res, err := queryClient.ValidatorDelegations(gocontext.Background(), req)
+			res, err := queryClient.GovernorDelegations(gocontext.Background(), req)
 			if tc.expPass && !tc.expErr {
 				suite.NoError(err)
 				suite.Len(res.DelegationResponses, 1)
@@ -460,7 +460,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryUnbondingDelegation() {
 			"valid request",
 			func() {
 				req = &types.QueryUnbondingDelegationRequest{
-					DelegatorAddr: addrAcc2.String(), ValidatorAddr: addrVal2,
+					DelegatorAddr: addrAcc2.String(), GovernorAddr: addrVal2,
 				}
 			},
 			true,
@@ -574,64 +574,6 @@ func (suite *KeeperTestSuite) TestGRPCQueryPoolParameters() {
 	suite.Equal(app.StakingKeeper.GetParams(ctx), resp.Params)
 }
 
-func (suite *KeeperTestSuite) TestGRPCQueryHistoricalInfo() {
-	app, ctx, queryClient := suite.app, suite.ctx, suite.queryClient
-
-	hi, found := app.StakingKeeper.GetHistoricalInfo(ctx, 5)
-	suite.True(found)
-
-	var req *types.QueryHistoricalInfoRequest
-	testCases := []struct {
-		msg      string
-		malleate func()
-		expPass  bool
-	}{
-		{
-			"empty request",
-			func() {
-				req = &types.QueryHistoricalInfoRequest{}
-			},
-			false,
-		},
-		{
-			"invalid request with negative height",
-			func() {
-				req = &types.QueryHistoricalInfoRequest{Height: -1}
-			},
-			false,
-		},
-		{
-			"valid request with old height",
-			func() {
-				req = &types.QueryHistoricalInfoRequest{Height: 4}
-			},
-			false,
-		},
-		{
-			"valid request with current height",
-			func() {
-				req = &types.QueryHistoricalInfoRequest{Height: 5}
-			},
-			true,
-		},
-	}
-
-	for _, tc := range testCases {
-		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
-			tc.malleate()
-			res, err := queryClient.HistoricalInfo(gocontext.Background(), req)
-			if tc.expPass {
-				suite.NoError(err)
-				suite.NotNil(res)
-				suite.True(hi.Equal(res.Hist))
-			} else {
-				suite.Error(err)
-				suite.Nil(res)
-			}
-		})
-	}
-}
-
 func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 	app, ctx, queryClient, addrs, vals := suite.app, suite.ctx, suite.queryClient, suite.addrs, suite.vals
 
@@ -670,8 +612,8 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 			"request redelegations with non existent pairs",
 			func() {
 				req = &types.QueryRedelegationsRequest{
-					DelegatorAddr: addrAcc.String(), SrcValidatorAddr: val3.String(),
-					DstValidatorAddr: val4.String(),
+					DelegatorAddr: addrAcc.String(), SrcGovernorAddr: val3.String(),
+					DstGovernorAddr: val4.String(),
 				}
 			},
 			false,
@@ -681,8 +623,8 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 			"request redelegations with delegatoraddr, sourceValAddr, destValAddr",
 			func() {
 				req = &types.QueryRedelegationsRequest{
-					DelegatorAddr: addrAcc1.String(), SrcValidatorAddr: val1.OperatorAddress,
-					DstValidatorAddr: val2.OperatorAddress, Pagination: &query.PageRequest{},
+					DelegatorAddr: addrAcc1.String(), SrcGovernorAddr: val1.OperatorAddress,
+					DstGovernorAddr: val2.OperatorAddress, Pagination: &query.PageRequest{},
 				}
 			},
 			true,
@@ -692,7 +634,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 			"request redelegations with delegatoraddr and sourceValAddr",
 			func() {
 				req = &types.QueryRedelegationsRequest{
-					DelegatorAddr: addrAcc1.String(), SrcValidatorAddr: val1.OperatorAddress,
+					DelegatorAddr: addrAcc1.String(), SrcGovernorAddr: val1.OperatorAddress,
 					Pagination: &query.PageRequest{},
 				}
 			},
@@ -703,8 +645,8 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 			"query redelegations with sourceValAddr only",
 			func() {
 				req = &types.QueryRedelegationsRequest{
-					SrcValidatorAddr: val1.GetOperator().String(),
-					Pagination:       &query.PageRequest{Limit: 1, CountTotal: true},
+					SrcGovernorAddr: val1.GetOperator().String(),
+					Pagination:      &query.PageRequest{Limit: 1, CountTotal: true},
 				}
 			},
 			true,
@@ -734,7 +676,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 	}
 }
 
-func (suite *KeeperTestSuite) TestGRPCQueryValidatorUnbondingDelegations() {
+func (suite *KeeperTestSuite) TestGRPCQueryGovernorUnbondingDelegations() {
 	app, ctx, queryClient, addrs, vals := suite.app, suite.ctx, suite.queryClient, suite.addrs, suite.vals
 	addrAcc1, _ := addrs[0], addrs[1]
 	val1 := vals[0]
@@ -745,7 +687,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorUnbondingDelegations() {
 	suite.NoError(err)
 	applyGovernorsSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
 
-	var req *types.QueryValidatorUnbondingDelegationsRequest
+	var req *types.QueryGovernorUnbondingDelegationsRequest
 	testCases := []struct {
 		msg      string
 		malleate func()
@@ -754,16 +696,16 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorUnbondingDelegations() {
 		{
 			"empty request",
 			func() {
-				req = &types.QueryValidatorUnbondingDelegationsRequest{}
+				req = &types.QueryGovernorUnbondingDelegationsRequest{}
 			},
 			false,
 		},
 		{
 			"valid request",
 			func() {
-				req = &types.QueryValidatorUnbondingDelegationsRequest{
-					ValidatorAddr: val1.GetOperator().String(),
-					Pagination:    &query.PageRequest{Limit: 1, CountTotal: true},
+				req = &types.QueryGovernorUnbondingDelegationsRequest{
+					GovernorAddr: val1.GetOperator().String(),
+					Pagination:   &query.PageRequest{Limit: 1, CountTotal: true},
 				}
 			},
 			true,
@@ -773,7 +715,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorUnbondingDelegations() {
 	for _, tc := range testCases {
 		suite.Run(fmt.Sprintf("Case %s", tc.msg), func() {
 			tc.malleate()
-			res, err := queryClient.ValidatorUnbondingDelegations(gocontext.Background(), req)
+			res, err := queryClient.GovernorUnbondingDelegations(gocontext.Background(), req)
 			if tc.expPass {
 				suite.NoError(err)
 				suite.Equal(uint64(1), res.Pagination.Total)
@@ -787,10 +729,9 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorUnbondingDelegations() {
 	}
 }
 
-func createValidators(t *testing.T, ctx sdk.Context, app *app.App, powers []int64) ([]sdk.AccAddress, []sdk.ValAddress, []types.Validator) {
+func createGovernors(t *testing.T, ctx sdk.Context, app *app.App, powers []int64) ([]sdk.AccAddress, []sdk.ValAddress, []types.Governor) {
 	addrs := utils.AddTestAddrs(app, ctx, 5, app.StakingKeeper.TokensFromConsensusPower(ctx, 300))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-	pks := simapp.CreateTestPubKeys(5)
 	cdc := simapp.MakeTestEncodingConfig().Codec
 	app.StakingKeeper = keeper.NewKeeper(
 		cdc,
@@ -800,16 +741,14 @@ func createValidators(t *testing.T, ctx sdk.Context, app *app.App, powers []int6
 		app.GetSubspace(types.ModuleName),
 	)
 
-	val1 := teststaking.NewValidator(t, valAddrs[0], pks[0])
-	val2 := teststaking.NewValidator(t, valAddrs[1], pks[1])
-	vals := []types.Validator{val1, val2}
+	val1 := teststaking.NewGovernor(t, valAddrs[0])
+	val2 := teststaking.NewGovernor(t, valAddrs[1])
+	vals := []types.Governor{val1, val2}
 
-	app.StakingKeeper.SetValidator(ctx, val1)
-	app.StakingKeeper.SetValidator(ctx, val2)
-	app.StakingKeeper.SetValidatorByConsAddr(ctx, val1)
-	app.StakingKeeper.SetValidatorByConsAddr(ctx, val2)
-	app.StakingKeeper.SetNewValidatorByPowerIndex(ctx, val1)
-	app.StakingKeeper.SetNewValidatorByPowerIndex(ctx, val2)
+	app.StakingKeeper.SetGovernor(ctx, val1)
+	app.StakingKeeper.SetGovernor(ctx, val2)
+	app.StakingKeeper.SetNewGovernorByPowerIndex(ctx, val1)
+	app.StakingKeeper.SetNewGovernorByPowerIndex(ctx, val2)
 
 	_, err := app.StakingKeeper.Delegate(ctx, addrs[0], app.StakingKeeper.TokensFromConsensusPower(ctx, powers[0]), types.Unbonded, val1, true)
 	require.NoError(t, err)

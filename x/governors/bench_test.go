@@ -5,42 +5,42 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/staking"
+	gov "github.com/dymensionxyz/dymension-rdk/x/governors"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/teststaking"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
-func BenchmarkValidateGenesis10Validators(b *testing.B) {
+func BenchmarkValidateGenesis10Governors(b *testing.B) {
 	benchmarkValidateGenesis(b, 10)
 }
 
-func BenchmarkValidateGenesis100Validators(b *testing.B) {
+func BenchmarkValidateGenesis100Governors(b *testing.B) {
 	benchmarkValidateGenesis(b, 100)
 }
 
-func BenchmarkValidateGenesis400Validators(b *testing.B) {
+func BenchmarkValidateGenesis400Governors(b *testing.B) {
 	benchmarkValidateGenesis(b, 400)
 }
 
 func benchmarkValidateGenesis(b *testing.B, n int) {
 	b.ReportAllocs()
 
-	validators := make([]types.Validator, 0, n)
-	addressL, pubKeyL := makeRandomAddressesAndPublicKeys(n)
+	governors := make([]types.Governor, 0, n)
+	addressL, _ := makeRandomAddressesAndPublicKeys(n)
 	for i := 0; i < n; i++ {
-		addr, pubKey := addressL[i], pubKeyL[i]
-		validator := teststaking.NewValidator(b, addr, pubKey)
+		addr := addressL[i]
+		governor := teststaking.NewGovernor(b, addr)
 		ni := int64(i + 1)
-		validator.Tokens = sdk.NewInt(ni)
-		validator.DelegatorShares = sdk.NewDec(ni)
-		validators = append(validators, validator)
+		governor.Tokens = sdk.NewInt(ni)
+		governor.DelegatorShares = sdk.NewDec(ni)
+		governors = append(governors, governor)
 	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		genesisState := types.DefaultGenesisState()
-		genesisState.Validators = validators
-		if err := staking.ValidateGenesis(genesisState); err != nil {
+		genesisState.Governors = governors
+		if err := gov.ValidateGenesis(genesisState); err != nil {
 			b.Fatal(err)
 		}
 	}

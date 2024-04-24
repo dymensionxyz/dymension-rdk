@@ -339,7 +339,6 @@ func TestUndelegateSelfDelegationBelowMinSelfDelegation(t *testing.T) {
 	app.AccountKeeper.SetModuleAccount(ctx, notBondedPool)
 
 	governor = keeper.TestingUpdateGovernor(app.StakingKeeper, ctx, governor, true)
-	app.StakingKeeper.SetGovernorByConsAddr(ctx, governor)
 	require.True(t, governor.IsBonded())
 
 	selfDelegation := types.NewDelegation(sdk.AccAddress(addrVals[0].Bytes()), addrVals[0], issuedShares)
@@ -387,7 +386,6 @@ func TestUndelegateFromUnbondingGovernor(t *testing.T) {
 
 	// create a governor with a self-delegation
 	governor := teststaking.NewGovernor(t, addrVals[0])
-	app.StakingKeeper.SetGovernorByConsAddr(ctx, governor)
 
 	governor, issuedShares := governor.AddTokensFromDel(delTokens)
 	require.Equal(t, delTokens, issuedShares.RoundInt())
@@ -478,7 +476,6 @@ func TestUndelegateFromUnbondedGovernor(t *testing.T) {
 
 	// create a governor with a self-delegation
 	governor := teststaking.NewGovernor(t, addrVals[0])
-	app.StakingKeeper.SetGovernorByConsAddr(ctx, governor)
 
 	valTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	governor, issuedShares := governor.AddTokensFromDel(valTokens)
@@ -559,7 +556,6 @@ func TestUnbondingAllDelegationFromGovernor(t *testing.T) {
 
 	// create a governor with a self-delegation
 	governor := teststaking.NewGovernor(t, addrVals[0])
-	app.StakingKeeper.SetGovernorByConsAddr(ctx, governor)
 
 	valTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	governor, issuedShares := governor.AddTokensFromDel(valTokens)
@@ -808,7 +804,6 @@ func TestRedelegateSelfDelegation(t *testing.T) {
 
 	// create a governor with a self-delegation
 	governor := teststaking.NewGovernor(t, addrVals[0])
-	app.StakingKeeper.SetGovernorByConsAddr(ctx, governor)
 
 	valTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	governor, issuedShares := governor.AddTokensFromDel(valTokens)
@@ -864,7 +859,6 @@ func TestRedelegateFromUnbondingGovernor(t *testing.T) {
 
 	// create a governor with a self-delegation
 	governor := teststaking.NewGovernor(t, addrVals[0])
-	app.StakingKeeper.SetGovernorByConsAddr(ctx, governor)
 
 	valTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	governor, issuedShares := governor.AddTokensFromDel(valTokens)
@@ -946,7 +940,6 @@ func TestRedelegateFromUnbondedGovernor(t *testing.T) {
 
 	// create a governor with a self-delegation
 	governor := teststaking.NewGovernor(t, addrVals[0])
-	app.StakingKeeper.SetGovernorByConsAddr(ctx, governor)
 
 	valTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	governor, issuedShares := governor.AddTokensFromDel(valTokens)

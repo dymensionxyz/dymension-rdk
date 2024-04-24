@@ -114,6 +114,24 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	return app
 }
 
+/*
+// SetupWithGenesisAccounts initializes a new SimApp with the provided genesis
+// accounts and possible balances.
+func SetupWithGenesisAccounts(t *testing.T, genAccs []authtypes.GenesisAccount, balances ...banktypes.Balance) *SimApp {
+	t.Helper()
+
+	privVal := mock.NewPV()
+	pubKey, err := privVal.GetPubKey()
+	require.NoError(t, err)
+
+	// create validator set with single validator
+	validator := tmtypes.NewValidator(pubKey, 1)
+	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
+
+	return SetupWithGenesisValSet(t, valSet, genAccs, balances...)
+}
+*/
+
 // TODO: tech debt - this is almost the same as in github.com/cosmos/ibc-go/v6/testing/app.go
 // but unlike the other one, this one adds the sequencer to the genesis state on InitChain
 func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {

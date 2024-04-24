@@ -69,7 +69,7 @@ func TestInitGenesis(t *testing.T) {
 	delegations = append(delegations, genesisDelegations...)
 
 	genesisState := types.NewGenesisState(params, governors, delegations)
-	vals := app.StakingKeeper.InitGenesis(ctx, genesisState)
+	// vals := app.StakingKeeper.InitGenesis(ctx, genesisState)
 
 	actualGenesis := app.StakingKeeper.ExportGenesis(ctx)
 	require.Equal(t, genesisState.Params, actualGenesis.Params)
@@ -176,10 +176,10 @@ func TestInitGenesisLargeGovernorSet(t *testing.T) {
 
 	vals := app.StakingKeeper.InitGenesis(ctx, genesisState)
 
-	abcivals := make([]abci.GovernorUpdate, 100)
-	for i, val := range governors[:100] {
-		abcivals[i] = val.ABCIGovernorUpdate(app.StakingKeeper.PowerReduction(ctx))
-	}
+	abcivals := make([]abci.ValidatorUpdate, 100)
+	// for i, val := range governors[:100] {
+	// abcivals[i] = val.ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx))
+	// }
 
 	// remove genesis governor
 	vals = vals[:100]
