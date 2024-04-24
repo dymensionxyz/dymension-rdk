@@ -9,10 +9,12 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
+
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // GetDelegation returns a specific delegation.
-func (k Keeper) GetDelegation(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (delegation types.Delegation, found bool) {
+func (k Keeper) GetDelegation(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (delegation stakingtypes.Delegation, found bool) {
 	store := ctx.KVStore(k.storeKey)
 	key := types.GetDelegationKey(delAddr, valAddr)
 
@@ -21,20 +23,20 @@ func (k Keeper) GetDelegation(ctx sdk.Context, delAddr sdk.AccAddress, valAddr s
 		return delegation, false
 	}
 
-	delegation = types.MustUnmarshalDelegation(k.cdc, value)
+	delegation = stakingtypes.MustUnmarshalDelegation(k.cdc, value)
 
 	return delegation, true
 }
 
 // IterateAllDelegations iterates through all of the delegations.
-func (k Keeper) IterateAllDelegations(ctx sdk.Context, cb func(delegation types.Delegation) (stop bool)) {
+func (k Keeper) IterateAllDelegations(ctx sdk.Context, cb func(delegation stakingtypes.Delegation) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.DelegationKey)
+	iterator := sdk.KVStorePrefixIterator(store, stakingtypes.DelegationKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		delegation := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())
 		if cb(delegation) {
 			break
 		}
@@ -42,8 +44,8 @@ func (k Keeper) IterateAllDelegations(ctx sdk.Context, cb func(delegation types.
 }
 
 // GetAllDelegations returns all delegations used during genesis dump.
-func (k Keeper) GetAllDelegations(ctx sdk.Context) (delegations []types.Delegation) {
-	k.IterateAllDelegations(ctx, func(delegation types.Delegation) bool {
+func (k Keeper) GetAllDelegations(ctx sdk.Context) (delegations []stakingtypes.Delegation) {
+	k.IterateAllDelegations(ctx, func(delegation stakingtypes.Delegation) bool {
 		delegations = append(delegations, delegation)
 		return false
 	})
@@ -53,15 +55,15 @@ func (k Keeper) GetAllDelegations(ctx sdk.Context) (delegations []types.Delegati
 
 // GetGovernorDelegations returns all delegations to a specific governor.
 // Useful for querier.
-func (k Keeper) GetGovernorDelegations(ctx sdk.Context, valAddr sdk.ValAddress) (delegations []types.Delegation) { //nolint:interfacer
+func (k Keeper) GetGovernorDelegations(ctx sdk.Context, valAddr sdk.ValAddress) (delegations []stakingtypes.Delegation) { //nolint:interfacer
 	store := ctx.KVStore(k.storeKey)
 
-	iterator := sdk.KVStorePrefixIterator(store, types.DelegationKey)
+	iterator := sdk.KVStorePrefixIterator(store, stakingtypes.DelegationKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
-		if delegation.GetGovernorAddr().Equals(valAddr) {
+		delegation := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		if delegation.GetValidatorAddr().Equals(valAddr) {
 			delegations = append(delegations, delegation)
 		}
 	}
@@ -71,8 +73,8 @@ func (k Keeper) GetGovernorDelegations(ctx sdk.Context, valAddr sdk.ValAddress) 
 
 // GetDelegatorDelegations returns a given amount of all the delegations from a
 // delegator.
-func (k Keeper) GetDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddress, maxRetrieve uint16) (delegations []types.Delegation) {
-	delegations = make([]types.Delegation, maxRetrieve)
+func (k Keeper) GetDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddress, maxRetrieve uint16) (delegations []stakingtypes.Delegation) {
+	delegations = make([]stakingtypes.Delegation, maxRetrieve)
 	store := ctx.KVStore(k.storeKey)
 	delegatorPrefixKey := types.GetDelegationsKey(delegator)
 
@@ -81,7 +83,7 @@ func (k Keeper) GetDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddres
 
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
-		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		delegation := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())
 		delegations[i] = delegation
 		i++
 	}
@@ -90,25 +92,25 @@ func (k Keeper) GetDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddres
 }
 
 // SetDelegation sets a delegation.
-func (k Keeper) SetDelegation(ctx sdk.Context, delegation types.Delegation) {
+func (k Keeper) SetDelegation(ctx sdk.Context, delegation stakingtypes.Delegation) {
 	delegatorAddress := sdk.MustAccAddressFromBech32(delegation.DelegatorAddress)
 
 	store := ctx.KVStore(k.storeKey)
-	b := types.MustMarshalDelegation(k.cdc, delegation)
-	store.Set(types.GetDelegationKey(delegatorAddress, delegation.GetGovernorAddr()), b)
+	b := stakingtypes.MustMarshalDelegation(k.cdc, delegation)
+	store.Set(types.GetDelegationKey(delegatorAddress, delegation.GetValidatorAddr()), b)
 }
 
 // RemoveDelegation removes a delegation
-func (k Keeper) RemoveDelegation(ctx sdk.Context, delegation types.Delegation) error {
+func (k Keeper) RemoveDelegation(ctx sdk.Context, delegation stakingtypes.Delegation) error {
 	delegatorAddress := sdk.MustAccAddressFromBech32(delegation.DelegatorAddress)
 
 	// TODO: Consider calling hooks outside of the store wrapper functions, it's unobvious.
-	if err := k.BeforeDelegationRemoved(ctx, delegatorAddress, delegation.GetGovernorAddr()); err != nil {
+	if err := k.BeforeDelegationRemoved(ctx, delegatorAddress, delegation.GetValidatorAddr()); err != nil {
 		return err
 	}
 
 	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetDelegationKey(delegatorAddress, delegation.GetGovernorAddr()))
+	store.Delete(types.GetDelegationKey(delegatorAddress, delegation.GetValidatorAddr()))
 	return nil
 }
 
@@ -212,7 +214,7 @@ func (k Keeper) IterateDelegatorUnbondingDelegations(ctx sdk.Context, delegator 
 func (k Keeper) GetDelegatorBonded(ctx sdk.Context, delegator sdk.AccAddress) math.Int {
 	bonded := sdk.ZeroDec()
 
-	k.IterateDelegatorDelegations(ctx, delegator, func(delegation types.Delegation) bool {
+	k.IterateDelegatorDelegations(ctx, delegator, func(delegation stakingtypes.Delegation) bool {
 		governorAddr, err := sdk.ValAddressFromBech32(delegation.ValidatorAddress)
 		if err != nil {
 			panic(err) // shouldn't happen
@@ -229,14 +231,14 @@ func (k Keeper) GetDelegatorBonded(ctx sdk.Context, delegator sdk.AccAddress) ma
 }
 
 // IterateDelegatorDelegations iterates through one delegator's delegations.
-func (k Keeper) IterateDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddress, cb func(delegation types.Delegation) (stop bool)) {
+func (k Keeper) IterateDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddress, cb func(delegation stakingtypes.Delegation) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 	delegatorPrefixKey := types.GetDelegationsKey(delegator)
 	iterator := sdk.KVStorePrefixIterator(store, delegatorPrefixKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		delegation := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())
 		if cb(delegation) {
 			break
 		}
@@ -625,7 +627,7 @@ func (k Keeper) Delegate(
 	// Get or create the delegation object
 	delegation, found := k.GetDelegation(ctx, delAddr, governor.GetOperator())
 	if !found {
-		delegation = types.NewDelegation(delAddr, governor.GetOperator(), sdk.ZeroDec())
+		delegation = stakingtypes.NewDelegation(delAddr, governor.GetOperator(), sdk.ZeroDec())
 	}
 
 	// call the appropriate hook if present
@@ -689,7 +691,7 @@ func (k Keeper) Delegate(
 	k.SetDelegation(ctx, delegation)
 
 	// Call the after-modification hook
-	if err := k.AfterDelegationModified(ctx, delegatorAddress, delegation.GetGovernorAddr()); err != nil {
+	if err := k.AfterDelegationModified(ctx, delegatorAddress, delegation.GetValidatorAddr()); err != nil {
 		return newShares, err
 	}
 
@@ -746,7 +748,7 @@ func (k Keeper) Unbond(
 	} else {
 		k.SetDelegation(ctx, delegation)
 		// call the after delegation modification hook
-		err = k.AfterDelegationModified(ctx, delegatorAddress, delegation.GetGovernorAddr())
+		err = k.AfterDelegationModified(ctx, delegatorAddress, delegation.GetValidatorAddr())
 	}
 
 	if err != nil {

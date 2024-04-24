@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
@@ -88,7 +89,7 @@ func (k Keeper) Governor(ctx sdk.Context, address sdk.ValAddress) types.Governor
 // Delegation Set
 
 // Delegation get the delegation interface for a particular set of delegator and governor addresses
-func (k Keeper) Delegation(ctx sdk.Context, addrDel sdk.AccAddress, addrVal sdk.ValAddress) types.DelegationI {
+func (k Keeper) Delegation(ctx sdk.Context, addrDel sdk.AccAddress, addrVal sdk.ValAddress) stakingtypes.DelegationI {
 	bond, ok := k.GetDelegation(ctx, addrDel, addrVal)
 	if !ok {
 		return nil
@@ -99,7 +100,7 @@ func (k Keeper) Delegation(ctx sdk.Context, addrDel sdk.AccAddress, addrVal sdk.
 
 // iterate through all of the delegations from a delegator
 func (k Keeper) IterateDelegations(ctx sdk.Context, delAddr sdk.AccAddress,
-	fn func(index int64, del types.DelegationI) (stop bool),
+	fn func(index int64, del stakingtypes.DelegationI) (stop bool),
 ) {
 	store := ctx.KVStore(k.storeKey)
 	delegatorPrefixKey := types.GetDelegationsKey(delAddr)
@@ -108,7 +109,7 @@ func (k Keeper) IterateDelegations(ctx sdk.Context, delAddr sdk.AccAddress,
 	defer iterator.Close()
 
 	for i := int64(0); iterator.Valid(); iterator.Next() {
-		del := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		del := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())
 
 		stop := fn(i, del)
 		if stop {
@@ -120,14 +121,14 @@ func (k Keeper) IterateDelegations(ctx sdk.Context, delAddr sdk.AccAddress,
 
 // return all delegations used during genesis dump
 // TODO: remove this func, change all usage for iterate functionality
-func (k Keeper) GetAllSDKDelegations(ctx sdk.Context) (delegations []types.Delegation) {
+func (k Keeper) GetAllSDKDelegations(ctx sdk.Context) (delegations []stakingtypes.Delegation) {
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.DelegationKey)
 	defer iterator.Close()
 
 	for ; iterator.Valid(); iterator.Next() {
-		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		delegation := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())
 		delegations = append(delegations, delegation)
 	}
 
