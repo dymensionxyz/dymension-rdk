@@ -1,0 +1,135 @@
+package keeper
+
+import (
+	"fmt"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
+)
+
+// Governor Set
+
+// iterate through the governor set and perform the provided function
+func (k Keeper) IterateGovernors(ctx sdk.Context, fn func(index int64, governor types.GovernorI) (stop bool)) {
+	store := ctx.KVStore(k.storeKey)
+
+	iterator := sdk.KVStorePrefixIterator(store, types.GovernorsKey)
+	defer iterator.Close()
+
+	i := int64(0)
+
+	for ; iterator.Valid(); iterator.Next() {
+		governor := types.MustUnmarshalGovernor(k.cdc, iterator.Value())
+		stop := fn(i, governor) // XXX is this safe will the governor unexposed fields be able to get written to?
+
+		if stop {
+			break
+		}
+		i++
+	}
+}
+
+// iterate through the bonded governor set and perform the provided function
+func (k Keeper) IterateBondedGovernorsByPower(ctx sdk.Context, fn func(index int64, governor types.GovernorI) (stop bool)) {
+	store := ctx.KVStore(k.storeKey)
+	maxGovernors := k.MaxGovernors(ctx)
+
+	iterator := sdk.KVStoreReversePrefixIterator(store, types.GovernorsByPowerIndexKey)
+	defer iterator.Close()
+
+	i := int64(0)
+	for ; iterator.Valid() && i < int64(maxGovernors); iterator.Next() {
+		address := iterator.Value()
+		governor := k.mustGetGovernor(ctx, address)
+
+		if governor.IsBonded() {
+			stop := fn(i, governor) // XXX is this safe will the governor unexposed fields be able to get written to?
+			if stop {
+				break
+			}
+			i++
+		}
+	}
+}
+
+// iterate through the active governor set and perform the provided function
+func (k Keeper) IterateLastGovernors(ctx sdk.Context, fn func(index int64, governor types.GovernorI) (stop bool)) {
+	iterator := k.LastGovernorsIterator(ctx)
+	defer iterator.Close()
+
+	i := int64(0)
+
+	for ; iterator.Valid(); iterator.Next() {
+		address := types.AddressFromLastGovernorPowerKey(iterator.Key())
+
+		governor, found := k.GetGovernor(ctx, address)
+		if !found {
+			panic(fmt.Sprintf("governor record not found for address: %v\n", address))
+		}
+
+		stop := fn(i, governor) // XXX is this safe will the governor unexposed fields be able to get written to?
+		if stop {
+			break
+		}
+		i++
+	}
+}
+
+// Governor gets the Governor interface for a particular address
+func (k Keeper) Governor(ctx sdk.Context, address sdk.ValAddress) types.GovernorI {
+	val, found := k.GetGovernor(ctx, address)
+	if !found {
+		return nil
+	}
+
+	return val
+}
+
+// Delegation Set
+
+// Delegation get the delegation interface for a particular set of delegator and governor addresses
+func (k Keeper) Delegation(ctx sdk.Context, addrDel sdk.AccAddress, addrVal sdk.ValAddress) types.DelegationI {
+	bond, ok := k.GetDelegation(ctx, addrDel, addrVal)
+	if !ok {
+		return nil
+	}
+
+	return bond
+}
+
+// iterate through all of the delegations from a delegator
+func (k Keeper) IterateDelegations(ctx sdk.Context, delAddr sdk.AccAddress,
+	fn func(index int64, del types.DelegationI) (stop bool),
+) {
+	store := ctx.KVStore(k.storeKey)
+	delegatorPrefixKey := types.GetDelegationsKey(delAddr)
+
+	iterator := sdk.KVStorePrefixIterator(store, delegatorPrefixKey) // smallest to largest
+	defer iterator.Close()
+
+	for i := int64(0); iterator.Valid(); iterator.Next() {
+		del := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+
+		stop := fn(i, del)
+		if stop {
+			break
+		}
+		i++
+	}
+}
+
+// return all delegations used during genesis dump
+// TODO: remove this func, change all usage for iterate functionality
+func (k Keeper) GetAllSDKDelegations(ctx sdk.Context) (delegations []types.Delegation) {
+	store := ctx.KVStore(k.storeKey)
+
+	iterator := sdk.KVStorePrefixIterator(store, types.DelegationKey)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		delegations = append(delegations, delegation)
+	}
+
+	return
+}
