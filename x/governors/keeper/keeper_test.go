@@ -9,8 +9,9 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/dymension-rdk/testutil/app"
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
@@ -18,16 +19,16 @@ import (
 type KeeperTestSuite struct {
 	suite.Suite
 
-	app         *simapp.SimApp
+	app         *app.App
 	ctx         sdk.Context
 	addrs       []sdk.AccAddress
-	vals        []types.Validator
+	vals        []types.Governor
 	queryClient types.QueryClient
 	msgServer   types.MsgServer
 }
 
 func (suite *KeeperTestSuite) SetupTest() {
-	app := simapp.Setup(suite.T(), false)
+	app := utils.Setup(suite.T(), false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	querier := keeper.Querier{Keeper: app.StakingKeeper}
@@ -38,24 +39,18 @@ func (suite *KeeperTestSuite) SetupTest() {
 
 	suite.msgServer = keeper.NewMsgServerImpl(app.StakingKeeper)
 
-	addrs, _, validators := createValidators(suite.T(), ctx, app, []int64{9, 8, 7})
-	header := tmproto.Header{
-		ChainID: "HelloChain",
-		Height:  5,
-	}
+	addrs, _, governors := createGovernors(suite.T(), ctx, app, []int64{9, 8, 7})
 
-	// sort a copy of the validators, so that original validators does not
+	// sort a copy of the governors, so that original governors does not
 	// have its order changed
-	sortedVals := make([]types.Validator, len(validators))
-	copy(sortedVals, validators)
-	hi := types.NewHistoricalInfo(header, sortedVals, app.StakingKeeper.PowerReduction(ctx))
-	app.StakingKeeper.SetHistoricalInfo(ctx, 5, &hi)
+	sortedVals := make([]types.Governor, len(governors))
+	copy(sortedVals, governors)
 
-	suite.app, suite.ctx, suite.queryClient, suite.addrs, suite.vals = app, ctx, queryClient, addrs, validators
+	suite.app, suite.ctx, suite.queryClient, suite.addrs, suite.vals = app, ctx, queryClient, addrs, governors
 }
 
 func TestParams(t *testing.T) {
-	app := simapp.Setup(t, false)
+	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	expParams := types.DefaultParams()

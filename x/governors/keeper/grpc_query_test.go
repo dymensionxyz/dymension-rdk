@@ -10,6 +10,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+	"github.com/dymensionxyz/dymension-rdk/testutil/app"
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/teststaking"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
@@ -639,12 +641,12 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegations() {
 	delAmount := app.StakingKeeper.TokensFromConsensusPower(ctx, 1)
 	_, err := app.StakingKeeper.Delegate(ctx, addrAcc1, delAmount, types.Unbonded, val1, true)
 	suite.NoError(err)
-	applyValidatorSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
+	applyGovernorsSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
 
 	rdAmount := app.StakingKeeper.TokensFromConsensusPower(ctx, 1)
 	_, err = app.StakingKeeper.BeginRedelegation(ctx, addrAcc1, val1.GetOperator(), val2.GetOperator(), sdk.NewDecFromInt(rdAmount))
 	suite.NoError(err)
-	applyValidatorSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
+	applyGovernorsSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
 
 	redel, found := app.StakingKeeper.GetRedelegation(ctx, addrAcc1, val1.GetOperator(), val2.GetOperator())
 	suite.True(found)
@@ -741,7 +743,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorUnbondingDelegations() {
 	undelAmount := app.StakingKeeper.TokensFromConsensusPower(ctx, 2)
 	_, err := app.StakingKeeper.Undelegate(ctx, addrAcc1, val1.GetOperator(), sdk.NewDecFromInt(undelAmount))
 	suite.NoError(err)
-	applyValidatorSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
+	applyGovernorsSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
 
 	var req *types.QueryValidatorUnbondingDelegationsRequest
 	testCases := []struct {
@@ -785,8 +787,8 @@ func (suite *KeeperTestSuite) TestGRPCQueryValidatorUnbondingDelegations() {
 	}
 }
 
-func createValidators(t *testing.T, ctx sdk.Context, app *simapp.SimApp, powers []int64) ([]sdk.AccAddress, []sdk.ValAddress, []types.Validator) {
-	addrs := simapp.AddTestAddrsIncremental(app, ctx, 5, app.StakingKeeper.TokensFromConsensusPower(ctx, 300))
+func createValidators(t *testing.T, ctx sdk.Context, app *app.App, powers []int64) ([]sdk.AccAddress, []sdk.ValAddress, []types.Validator) {
+	addrs := utils.AddTestAddrs(app, ctx, 5, app.StakingKeeper.TokensFromConsensusPower(ctx, 300))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
 	pks := simapp.CreateTestPubKeys(5)
 	cdc := simapp.MakeTestEncodingConfig().Codec
@@ -815,7 +817,7 @@ func createValidators(t *testing.T, ctx sdk.Context, app *simapp.SimApp, powers 
 	require.NoError(t, err)
 	_, err = app.StakingKeeper.Delegate(ctx, addrs[0], app.StakingKeeper.TokensFromConsensusPower(ctx, powers[2]), types.Unbonded, val2, true)
 	require.NoError(t, err)
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, -1)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, -1)
 
 	return addrs, valAddrs, vals
 }

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -31,12 +30,11 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryUnbondingDelegations(),
 		GetCmdQueryRedelegation(),
 		GetCmdQueryRedelegations(),
-		GetCmdQueryValidator(),
-		GetCmdQueryValidators(),
-		GetCmdQueryValidatorDelegations(),
-		GetCmdQueryValidatorUnbondingDelegations(),
-		GetCmdQueryValidatorRedelegations(),
-		GetCmdQueryHistoricalInfo(),
+		GetCmdQueryGovernor(),
+		GetCmdQueryGovernors(),
+		GetCmdQueryGovernorDelegations(),
+		GetCmdQueryGovernorUnbondingDelegations(),
+		GetCmdQueryGovernorRedelegations(),
 		GetCmdQueryParams(),
 		GetCmdQueryPool(),
 	)
@@ -44,18 +42,18 @@ func GetQueryCmd() *cobra.Command {
 	return stakingQueryCmd
 }
 
-// GetCmdQueryValidator implements the validator query command.
-func GetCmdQueryValidator() *cobra.Command {
+// GetCmdQueryGovernor implements the governor query command.
+func GetCmdQueryGovernor() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "validator [validator-addr]",
-		Short: "Query a validator",
+		Use:   "governor [governor-addr]",
+		Short: "Query a governor",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query details about an individual validator.
+			fmt.Sprintf(`Query details about an individual governor.
 
 Example:
-$ %s query staking validator %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
+$ %s query staking governor %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 `,
 				version.AppName, bech32PrefixValAddr,
 			),
@@ -73,13 +71,13 @@ $ %s query staking validator %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 				return err
 			}
 
-			params := &types.QueryValidatorRequest{ValidatorAddr: addr.String()}
-			res, err := queryClient.Validator(cmd.Context(), params)
+			params := &types.QueryGovernorRequest{GovernorAddr: addr.String()}
+			res, err := queryClient.Governor(cmd.Context(), params)
 			if err != nil {
 				return err
 			}
 
-			return clientCtx.PrintProto(&res.Validator)
+			return clientCtx.PrintProto(&res.Governor)
 		},
 	}
 
@@ -88,17 +86,17 @@ $ %s query staking validator %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 	return cmd
 }
 
-// GetCmdQueryValidators implements the query all validators command.
-func GetCmdQueryValidators() *cobra.Command {
+// GetCmdQueryGovernors implements the query all governors command.
+func GetCmdQueryGovernors() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "validators",
-		Short: "Query for all validators",
+		Use:   "governors",
+		Short: "Query for all governors",
 		Args:  cobra.NoArgs,
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query details about all validators on a network.
+			fmt.Sprintf(`Query details about all governors on a network.
 
 Example:
-$ %s query staking validators
+$ %s query staking governors
 `,
 				version.AppName,
 			),
@@ -114,8 +112,8 @@ $ %s query staking validators
 				return err
 			}
 
-			result, err := queryClient.Validators(cmd.Context(), &types.QueryValidatorsRequest{
-				// Leaving status empty on purpose to query all validators.
+			result, err := queryClient.Governors(cmd.Context(), &types.QueryGovernorsRequest{
+				// Leaving status empty on purpose to query all governors.
 				Pagination: pageReq,
 			})
 			if err != nil {
@@ -127,20 +125,20 @@ $ %s query staking validators
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
-	flags.AddPaginationFlagsToCmd(cmd, "validators")
+	flags.AddPaginationFlagsToCmd(cmd, "governors")
 
 	return cmd
 }
 
-// GetCmdQueryValidatorUnbondingDelegations implements the query all unbonding delegatations from a validator command.
-func GetCmdQueryValidatorUnbondingDelegations() *cobra.Command {
+// GetCmdQueryGovernorUnbondingDelegations implements the query all unbonding delegatations from a governor command.
+func GetCmdQueryGovernorUnbondingDelegations() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "unbonding-delegations-from [validator-addr]",
-		Short: "Query all unbonding delegatations from a validator",
+		Use:   "unbonding-delegations-from [governor-addr]",
+		Short: "Query all unbonding delegatations from a governor",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query delegations that are unbonding _from_ a validator.
+			fmt.Sprintf(`Query delegations that are unbonding _from_ a governor.
 
 Example:
 $ %s query staking unbonding-delegations-from %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
@@ -166,12 +164,12 @@ $ %s query staking unbonding-delegations-from %s1gghjut3ccd8ay0zduzj64hwre2fxs9l
 				return err
 			}
 
-			params := &types.QueryValidatorUnbondingDelegationsRequest{
-				ValidatorAddr: valAddr.String(),
-				Pagination:    pageReq,
+			params := &types.QueryGovernorUnbondingDelegationsRequest{
+				GovernorAddr: valAddr.String(),
+				Pagination:   pageReq,
 			}
 
-			res, err := queryClient.ValidatorUnbondingDelegations(cmd.Context(), params)
+			res, err := queryClient.GovernorUnbondingDelegations(cmd.Context(), params)
 			if err != nil {
 				return err
 			}
@@ -186,16 +184,16 @@ $ %s query staking unbonding-delegations-from %s1gghjut3ccd8ay0zduzj64hwre2fxs9l
 	return cmd
 }
 
-// GetCmdQueryValidatorRedelegations implements the query all redelegatations
-// from a validator command.
-func GetCmdQueryValidatorRedelegations() *cobra.Command {
+// GetCmdQueryGovernorRedelegations implements the query all redelegatations
+// from a governor command.
+func GetCmdQueryGovernorRedelegations() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "redelegations-from [validator-addr]",
-		Short: "Query all outgoing redelegatations from a validator",
+		Use:   "redelegations-from [governor-addr]",
+		Short: "Query all outgoing redelegatations from a governor",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query delegations that are redelegating _from_ a validator.
+			fmt.Sprintf(`Query delegations that are redelegating _from_ a governor.
 
 Example:
 $ %s query staking redelegations-from %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
@@ -222,8 +220,8 @@ $ %s query staking redelegations-from %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 			}
 
 			params := &types.QueryRedelegationsRequest{
-				SrcValidatorAddr: valSrcAddr.String(),
-				Pagination:       pageReq,
+				SrcGovernorAddr: valSrcAddr.String(),
+				Pagination:      pageReq,
 			}
 
 			res, err := queryClient.Redelegations(cmd.Context(), params)
@@ -236,7 +234,7 @@ $ %s query staking redelegations-from %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
-	flags.AddPaginationFlagsToCmd(cmd, "validator redelegations")
+	flags.AddPaginationFlagsToCmd(cmd, "governor redelegations")
 
 	return cmd
 }
@@ -247,10 +245,10 @@ func GetCmdQueryDelegation() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "delegation [delegator-addr] [validator-addr]",
-		Short: "Query a delegation based on address and validator address",
+		Use:   "delegation [delegator-addr] [governor-addr]",
+		Short: "Query a delegation based on address and governor address",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query delegations for an individual delegator on an individual validator.
+			fmt.Sprintf(`Query delegations for an individual delegator on an individual governor.
 
 Example:
 $ %s query staking delegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
@@ -278,7 +276,7 @@ $ %s query staking delegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p %s1gghju
 
 			params := &types.QueryDelegationRequest{
 				DelegatorAddr: delAddr.String(),
-				ValidatorAddr: valAddr.String(),
+				GovernorAddr:  valAddr.String(),
 			}
 
 			res, err := queryClient.Delegation(cmd.Context(), params)
@@ -304,7 +302,7 @@ func GetCmdQueryDelegations() *cobra.Command {
 		Use:   "delegations [delegator-addr]",
 		Short: "Query all delegations made by one delegator",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query delegations for an individual delegator on all validators.
+			fmt.Sprintf(`Query delegations for an individual delegator on all governors.
 
 Example:
 $ %s query staking delegations %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p
@@ -350,16 +348,16 @@ $ %s query staking delegations %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p
 	return cmd
 }
 
-// GetCmdQueryValidatorDelegations implements the command to query all the
-// delegations to a specific validator.
-func GetCmdQueryValidatorDelegations() *cobra.Command {
+// GetCmdQueryGovernorDelegations implements the command to query all the
+// delegations to a specific governor.
+func GetCmdQueryGovernorDelegations() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "delegations-to [validator-addr]",
-		Short: "Query all delegations made to one validator",
+		Use:   "delegations-to [governor-addr]",
+		Short: "Query all delegations made to one governor",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query delegations on an individual validator.
+			fmt.Sprintf(`Query delegations on an individual governor.
 
 Example:
 $ %s query staking delegations-to %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
@@ -385,12 +383,12 @@ $ %s query staking delegations-to %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 				return err
 			}
 
-			params := &types.QueryValidatorDelegationsRequest{
-				ValidatorAddr: valAddr.String(),
-				Pagination:    pageReq,
+			params := &types.QueryGovernorDelegationsRequest{
+				GovernorAddr: valAddr.String(),
+				Pagination:   pageReq,
 			}
 
-			res, err := queryClient.ValidatorDelegations(cmd.Context(), params)
+			res, err := queryClient.GovernorDelegations(cmd.Context(), params)
 			if err != nil {
 				return err
 			}
@@ -400,7 +398,7 @@ $ %s query staking delegations-to %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
 	}
 
 	flags.AddQueryFlagsToCmd(cmd)
-	flags.AddPaginationFlagsToCmd(cmd, "validator delegations")
+	flags.AddPaginationFlagsToCmd(cmd, "governor delegations")
 
 	return cmd
 }
@@ -412,10 +410,10 @@ func GetCmdQueryUnbondingDelegation() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "unbonding-delegation [delegator-addr] [validator-addr]",
-		Short: "Query an unbonding-delegation record based on delegator and validator address",
+		Use:   "unbonding-delegation [delegator-addr] [governor-addr]",
+		Short: "Query an unbonding-delegation record based on delegator and governor address",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query unbonding delegations for an individual delegator on an individual validator.
+			fmt.Sprintf(`Query unbonding delegations for an individual delegator on an individual governor.
 
 Example:
 $ %s query staking unbonding-delegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
@@ -443,7 +441,7 @@ $ %s query staking unbonding-delegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9
 
 			params := &types.QueryUnbondingDelegationRequest{
 				DelegatorAddr: delAddr.String(),
-				ValidatorAddr: valAddr.String(),
+				GovernorAddr:  valAddr.String(),
 			}
 
 			res, err := queryClient.UnbondingDelegation(cmd.Context(), params)
@@ -522,10 +520,10 @@ func GetCmdQueryRedelegation() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "redelegation [delegator-addr] [src-validator-addr] [dst-validator-addr]",
-		Short: "Query a redelegation record based on delegator and a source and destination validator address",
+		Use:   "redelegation [delegator-addr] [src-governor-addr] [dst-governor-addr]",
+		Short: "Query a redelegation record based on delegator and a source and destination governor address",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query a redelegation record for an individual delegator between a source and destination validator.
+			fmt.Sprintf(`Query a redelegation record for an individual delegator between a source and destination governor.
 
 Example:
 $ %s query staking redelegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p %s1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj
@@ -557,9 +555,9 @@ $ %s query staking redelegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p %s1l2r
 			}
 
 			params := &types.QueryRedelegationsRequest{
-				DelegatorAddr:    delAddr.String(),
-				DstValidatorAddr: valDstAddr.String(),
-				SrcValidatorAddr: valSrcAddr.String(),
+				DelegatorAddr:   delAddr.String(),
+				DstGovernorAddr: valDstAddr.String(),
+				SrcGovernorAddr: valSrcAddr.String(),
 			}
 
 			res, err := queryClient.Redelegations(cmd.Context(), params)
@@ -627,48 +625,6 @@ $ %s query staking redelegation %s1gghjut3ccd8ay0zduzj64hwre2fxs9ld75ru9p
 
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "delegator redelegations")
-
-	return cmd
-}
-
-// GetCmdQueryHistoricalInfo implements the historical info query command
-func GetCmdQueryHistoricalInfo() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "historical-info [height]",
-		Args:  cobra.ExactArgs(1),
-		Short: "Query historical info at given height",
-		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query historical info at given height.
-
-Example:
-$ %s query staking historical-info 5
-`,
-				version.AppName,
-			),
-		),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			height, err := strconv.ParseInt(args[0], 10, 64)
-			if err != nil || height < 0 {
-				return fmt.Errorf("height argument provided must be a non-negative-integer: %v", err)
-			}
-
-			params := &types.QueryHistoricalInfoRequest{Height: height}
-			res, err := queryClient.HistoricalInfo(cmd.Context(), params)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(res.Hist)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
 
 	return cmd
 }

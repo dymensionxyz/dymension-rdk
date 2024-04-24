@@ -41,8 +41,8 @@ func NewTxCmd() *cobra.Command {
 	}
 
 	stakingTxCmd.AddCommand(
-		NewCreateValidatorCmd(),
-		NewEditValidatorCmd(),
+		NewCreateGovernorCmd(),
+		NewEditGovernorCmd(),
 		NewDelegateCmd(),
 		NewRedelegateCmd(),
 		NewUnbondCmd(),
@@ -52,11 +52,11 @@ func NewTxCmd() *cobra.Command {
 	return stakingTxCmd
 }
 
-// NewCreateValidatorCmd returns a CLI command handler for creating a MsgCreateValidator transaction.
-func NewCreateValidatorCmd() *cobra.Command {
+// NewCreateGovernorCmd returns a CLI command handler for creating a MsgCreateGovernor transaction.
+func NewCreateGovernorCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create-validator",
-		Short: "create new validator initialized with a self-delegation to it",
+		Use:   "create-governor",
+		Short: "create new governor initialized with a self-delegation to it",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -65,7 +65,7 @@ func NewCreateValidatorCmd() *cobra.Command {
 
 			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags()).
 				WithTxConfig(clientCtx.TxConfig).WithAccountRetriever(clientCtx.AccountRetriever)
-			txf, msg, err := newBuildCreateValidatorMsg(clientCtx, txf, cmd.Flags())
+			txf, msg, err := newBuildCreateGovernorMsg(clientCtx, txf, cmd.Flags())
 			if err != nil {
 				return err
 			}
@@ -74,7 +74,6 @@ func NewCreateValidatorCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().AddFlagSet(FlagSetPublicKey())
 	cmd.Flags().AddFlagSet(FlagSetAmount())
 	cmd.Flags().AddFlagSet(flagSetDescriptionCreate())
 	cmd.Flags().AddFlagSet(FlagSetCommissionCreate())
@@ -86,17 +85,16 @@ func NewCreateValidatorCmd() *cobra.Command {
 
 	_ = cmd.MarkFlagRequired(flags.FlagFrom)
 	_ = cmd.MarkFlagRequired(FlagAmount)
-	_ = cmd.MarkFlagRequired(FlagPubKey)
 	_ = cmd.MarkFlagRequired(FlagMoniker)
 
 	return cmd
 }
 
-// NewEditValidatorCmd returns a CLI command handler for creating a MsgEditValidator transaction.
-func NewEditValidatorCmd() *cobra.Command {
+// NewEditGovernorCmd returns a CLI command handler for creating a MsgEditGovernor transaction.
+func NewEditGovernorCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "edit-validator",
-		Short: "edit an existing validator account",
+		Use:   "edit-governor",
+		Short: "edit an existing governor account",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -134,7 +132,7 @@ func NewEditValidatorCmd() *cobra.Command {
 				newMinSelfDelegation = &msb
 			}
 
-			msg := types.NewMsgEditValidator(sdk.ValAddress(valAddr), description, newRate, newMinSelfDelegation)
+			msg := types.NewMsgEditGovernor(sdk.ValAddress(valAddr), description, newRate, newMinSelfDelegation)
 
 			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
 		},
@@ -153,11 +151,11 @@ func NewDelegateCmd() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "delegate [validator-addr] [amount]",
+		Use:   "delegate [governor-addr] [amount]",
 		Args:  cobra.ExactArgs(2),
-		Short: "Delegate liquid tokens to a validator",
+		Short: "Delegate liquid tokens to a governor",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Delegate an amount of liquid coins to a validator from your wallet.
+			fmt.Sprintf(`Delegate an amount of liquid coins to a governor from your wallet.
 
 Example:
 $ %s tx staking delegate %s1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 1000stake --from mykey
@@ -197,11 +195,11 @@ func NewRedelegateCmd() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "redelegate [src-validator-addr] [dst-validator-addr] [amount]",
-		Short: "Redelegate illiquid tokens from one validator to another",
+		Use:   "redelegate [src-governor-addr] [dst-governor-addr] [amount]",
+		Short: "Redelegate illiquid tokens from one governor to another",
 		Args:  cobra.ExactArgs(3),
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Redelegate an amount of illiquid staking tokens from one validator to another.
+			fmt.Sprintf(`Redelegate an amount of illiquid staking tokens from one governor to another.
 
 Example:
 $ %s tx staking redelegate %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj %s1l2rsakp388kuv9k8qzq6lrm9taddae7fpx59wm 100stake --from mykey
@@ -246,11 +244,11 @@ func NewUnbondCmd() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "unbond [validator-addr] [amount]",
-		Short: "Unbond shares from a validator",
+		Use:   "unbond [governor-addr] [amount]",
+		Short: "Unbond shares from a governor",
 		Args:  cobra.ExactArgs(2),
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Unbond an amount of bonded shares from a validator.
+			fmt.Sprintf(`Unbond an amount of bonded shares from a governor.
 
 Example:
 $ %s tx staking unbond %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100stake --from mykey
@@ -290,11 +288,11 @@ func NewCancelUnbondingDelegation() *cobra.Command {
 	bech32PrefixValAddr := sdk.GetConfig().GetBech32ValidatorAddrPrefix()
 
 	cmd := &cobra.Command{
-		Use:   "cancel-unbond [validator-addr] [amount] [creation-height]",
-		Short: "Cancel unbonding delegation and delegate back to the validator",
+		Use:   "cancel-unbond [governor-addr] [amount] [creation-height]",
+		Short: "Cancel unbonding delegation and delegate back to the governor",
 		Args:  cobra.ExactArgs(3),
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Cancel Unbonding Delegation and delegate back to the validator.
+			fmt.Sprintf(`Cancel Unbonding Delegation and delegate back to the governor.
 
 Example:
 $ %s tx staking cancel-unbond %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100stake 2 --from mykey
@@ -336,7 +334,7 @@ $ %s tx staking cancel-unbond %s1gghjut3ccd8ay0zduzj64hwre2fxs9ldmqhffj 100stake
 	return cmd
 }
 
-func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *flag.FlagSet) (tx.Factory, *types.MsgCreateValidator, error) {
+func newBuildCreateGovernorMsg(clientCtx client.Context, txf tx.Factory, fs *flag.FlagSet) (tx.Factory, *types.MsgCreateGovernor, error) {
 	fAmount, _ := fs.GetString(FlagAmount)
 	amount, err := sdk.ParseCoinNormalized(fAmount)
 	if err != nil {
@@ -344,15 +342,6 @@ func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *fl
 	}
 
 	valAddr := clientCtx.GetFromAddress()
-	pkStr, err := fs.GetString(FlagPubKey)
-	if err != nil {
-		return txf, nil, err
-	}
-
-	var pk cryptotypes.PubKey
-	if err := clientCtx.Codec.UnmarshalInterfaceJSON([]byte(pkStr), &pk); err != nil {
-		return txf, nil, err
-	}
 
 	moniker, _ := fs.GetString(FlagMoniker)
 	identity, _ := fs.GetString(FlagIdentity)
@@ -367,7 +356,7 @@ func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *fl
 		details,
 	)
 
-	// get the initial validator commission parameters
+	// get the initial governor commission parameters
 	rateStr, _ := fs.GetString(FlagCommissionRate)
 	maxRateStr, _ := fs.GetString(FlagCommissionMaxRate)
 	maxChangeRateStr, _ := fs.GetString(FlagCommissionMaxChangeRate)
@@ -377,7 +366,7 @@ func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *fl
 		return txf, nil, err
 	}
 
-	// get the initial validator min self delegation
+	// get the initial governor min self delegation
 	msbStr, _ := fs.GetString(FlagMinSelfDelegation)
 
 	minSelfDelegation, ok := sdk.NewIntFromString(msbStr)
@@ -385,8 +374,8 @@ func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *fl
 		return txf, nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "minimum self delegation must be a positive integer")
 	}
 
-	msg, err := types.NewMsgCreateValidator(
-		sdk.ValAddress(valAddr), pk, amount, description, commissionRates, minSelfDelegation,
+	msg, err := types.NewMsgCreateGovernor(
+		sdk.ValAddress(valAddr), amount, description, commissionRates, minSelfDelegation,
 	)
 	if err != nil {
 		return txf, nil, err
@@ -410,19 +399,18 @@ func newBuildCreateValidatorMsg(clientCtx client.Context, txf tx.Factory, fs *fl
 
 // Return the flagset, particular flags, and a description of defaults
 // this is anticipated to be used with the gen-tx
-func CreateValidatorMsgFlagSet(ipDefault string) (fs *flag.FlagSet, defaultsDesc string) {
-	fsCreateValidator := flag.NewFlagSet("", flag.ContinueOnError)
-	fsCreateValidator.String(FlagIP, ipDefault, "The node's public IP")
-	fsCreateValidator.String(FlagNodeID, "", "The node's NodeID")
-	fsCreateValidator.String(FlagMoniker, "", "The validator's (optional) moniker")
-	fsCreateValidator.String(FlagWebsite, "", "The validator's (optional) website")
-	fsCreateValidator.String(FlagSecurityContact, "", "The validator's (optional) security contact email")
-	fsCreateValidator.String(FlagDetails, "", "The validator's (optional) details")
-	fsCreateValidator.String(FlagIdentity, "", "The (optional) identity signature (ex. UPort or Keybase)")
-	fsCreateValidator.AddFlagSet(FlagSetCommissionCreate())
-	fsCreateValidator.AddFlagSet(FlagSetMinSelfDelegation())
-	fsCreateValidator.AddFlagSet(FlagSetAmount())
-	fsCreateValidator.AddFlagSet(FlagSetPublicKey())
+func CreateGovernorMsgFlagSet(ipDefault string) (fs *flag.FlagSet, defaultsDesc string) {
+	fsCreateGovernor := flag.NewFlagSet("", flag.ContinueOnError)
+	fsCreateGovernor.String(FlagIP, ipDefault, "The node's public IP")
+	fsCreateGovernor.String(FlagNodeID, "", "The node's NodeID")
+	fsCreateGovernor.String(FlagMoniker, "", "The governor's (optional) moniker")
+	fsCreateGovernor.String(FlagWebsite, "", "The governor's (optional) website")
+	fsCreateGovernor.String(FlagSecurityContact, "", "The governor's (optional) security contact email")
+	fsCreateGovernor.String(FlagDetails, "", "The governor's (optional) details")
+	fsCreateGovernor.String(FlagIdentity, "", "The (optional) identity signature (ex. UPort or Keybase)")
+	fsCreateGovernor.AddFlagSet(FlagSetCommissionCreate())
+	fsCreateGovernor.AddFlagSet(FlagSetMinSelfDelegation())
+	fsCreateGovernor.AddFlagSet(FlagSetAmount())
 
 	defaultsDesc = fmt.Sprintf(`
 	delegation amount:           %s
@@ -434,10 +422,10 @@ func CreateValidatorMsgFlagSet(ipDefault string) (fs *flag.FlagSet, defaultsDesc
 		defaultCommissionMaxRate, defaultCommissionMaxChangeRate,
 		defaultMinSelfDelegation)
 
-	return fsCreateValidator, defaultsDesc
+	return fsCreateGovernor, defaultsDesc
 }
 
-type TxCreateValidatorConfig struct {
+type TxCreateGovernorConfig struct {
 	ChainID string
 	NodeID  string
 	Moniker string
@@ -458,8 +446,8 @@ type TxCreateValidatorConfig struct {
 	Identity        string
 }
 
-func PrepareConfigForTxCreateValidator(flagSet *flag.FlagSet, moniker, nodeID, chainID string, valPubKey cryptotypes.PubKey) (TxCreateValidatorConfig, error) {
-	c := TxCreateValidatorConfig{}
+func PrepareConfigForTxCreateGovernor(flagSet *flag.FlagSet, moniker, nodeID, chainID string, valPubKey cryptotypes.PubKey) (TxCreateGovernorConfig, error) {
+	c := TxCreateGovernorConfig{}
 
 	ip, err := flagSet.GetString(FlagIP)
 	if err != nil {
@@ -552,8 +540,8 @@ func PrepareConfigForTxCreateValidator(flagSet *flag.FlagSet, moniker, nodeID, c
 	return c, nil
 }
 
-// BuildCreateValidatorMsg makes a new MsgCreateValidator.
-func BuildCreateValidatorMsg(clientCtx client.Context, config TxCreateValidatorConfig, txBldr tx.Factory, generateOnly bool) (tx.Factory, sdk.Msg, error) {
+// BuildCreateGovernorMsg makes a new MsgCreateGovernor.
+func BuildCreateGovernorMsg(clientCtx client.Context, config TxCreateGovernorConfig, txBldr tx.Factory, generateOnly bool) (tx.Factory, sdk.Msg, error) {
 	amounstStr := config.Amount
 	amount, err := sdk.ParseCoinNormalized(amounstStr)
 	if err != nil {
@@ -569,7 +557,7 @@ func BuildCreateValidatorMsg(clientCtx client.Context, config TxCreateValidatorC
 		config.Details,
 	)
 
-	// get the initial validator commission parameters
+	// get the initial governor commission parameters
 	rateStr := config.CommissionRate
 	maxRateStr := config.CommissionMaxRate
 	maxChangeRateStr := config.CommissionMaxChangeRate
@@ -578,7 +566,7 @@ func BuildCreateValidatorMsg(clientCtx client.Context, config TxCreateValidatorC
 		return txBldr, nil, err
 	}
 
-	// get the initial validator min self delegation
+	// get the initial governor min self delegation
 	msbStr := config.MinSelfDelegation
 	minSelfDelegation, ok := sdk.NewIntFromString(msbStr)
 
@@ -586,8 +574,8 @@ func BuildCreateValidatorMsg(clientCtx client.Context, config TxCreateValidatorC
 		return txBldr, nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "minimum self delegation must be a positive integer")
 	}
 
-	msg, err := types.NewMsgCreateValidator(
-		sdk.ValAddress(valAddr), config.PubKey, amount, description, commissionRates, minSelfDelegation,
+	msg, err := types.NewMsgCreateGovernor(
+		sdk.ValAddress(valAddr), amount, description, commissionRates, minSelfDelegation,
 	)
 	if err != nil {
 		return txBldr, msg, err

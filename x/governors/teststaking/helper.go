@@ -8,7 +8,6 @@ import (
 	"cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
 
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	staking "github.com/dymensionxyz/dymension-rdk/x/governors"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
@@ -34,24 +33,24 @@ func NewHelper(t *testing.T, ctx sdk.Context, k keeper.Keeper) *Helper {
 }
 
 // CreateGovernor calls staking module `MsgServer/CreateGovernor` to create a new governor
-func (sh *Helper) CreateGovernor(addr sdk.ValAddress, pk cryptotypes.PubKey, stakeAmount math.Int, ok bool) {
+func (sh *Helper) CreateGovernor(addr sdk.ValAddress, stakeAmount math.Int, ok bool) {
 	coin := sdk.NewCoin(sh.Denom, stakeAmount)
-	sh.createGovernor(addr, pk, coin, ok)
+	sh.createGovernor(addr, coin, ok)
 }
 
 // CreateGovernorWithValPower calls staking module `MsgServer/CreateGovernor` to create a new governor with zero
 // commission
-func (sh *Helper) CreateGovernorWithValPower(addr sdk.ValAddress, pk cryptotypes.PubKey, valPower int64, ok bool) math.Int {
+func (sh *Helper) CreateGovernorWithValPower(addr sdk.ValAddress, valPower int64, ok bool) math.Int {
 	amount := sh.k.TokensFromConsensusPower(sh.Ctx, valPower)
 	coin := sdk.NewCoin(sh.Denom, amount)
-	sh.createGovernor(addr, pk, coin, ok)
+	sh.createGovernor(addr, coin, ok)
 	return amount
 }
 
 // CreateGovernorMsg returns a message used to create governor in this service.
-func (sh *Helper) CreateGovernorMsg(addr sdk.ValAddress, pk cryptotypes.PubKey, stakeAmount math.Int) *stakingtypes.MsgCreateGovernor {
+func (sh *Helper) CreateGovernorMsg(addr sdk.ValAddress, stakeAmount math.Int) *stakingtypes.MsgCreateGovernor {
 	coin := sdk.NewCoin(sh.Denom, stakeAmount)
-	msg, err := stakingtypes.NewMsgCreateGovernor(addr, pk, coin, stakingtypes.Description{}, sh.Commission, sdk.OneInt())
+	msg, err := stakingtypes.NewMsgCreateGovernor(addr, coin, stakingtypes.Description{}, sh.Commission, sdk.OneInt())
 	require.NoError(sh.t, err)
 	return msg
 }
@@ -61,8 +60,8 @@ func (sh *Helper) CreateGovernorWithMsg(ctx context.Context, msg *stakingtypes.M
 	return sh.msgSrvr.CreateGovernor(ctx, msg)
 }
 
-func (sh *Helper) createGovernor(addr sdk.ValAddress, pk cryptotypes.PubKey, coin sdk.Coin, ok bool) {
-	msg, err := stakingtypes.NewMsgCreateGovernor(addr, pk, coin, stakingtypes.Description{}, sh.Commission, sdk.OneInt())
+func (sh *Helper) createGovernor(addr sdk.ValAddress, coin sdk.Coin, ok bool) {
+	msg, err := stakingtypes.NewMsgCreateGovernor(addr, coin, stakingtypes.Description{}, sh.Commission, sdk.OneInt())
 	require.NoError(sh.t, err)
 	res, err := sh.msgSrvr.CreateGovernor(sdk.WrapSDKContext(sh.Ctx), msg)
 	if ok {

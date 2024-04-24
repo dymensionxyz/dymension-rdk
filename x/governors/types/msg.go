@@ -2,7 +2,6 @@ package types
 
 import (
 	"cosmossdk.io/math"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -30,7 +29,7 @@ var (
 // NewMsgCreateGovernor creates a new MsgCreateGovernor instance.
 // Delegator address and governor address are the same.
 func NewMsgCreateGovernor(
-	valAddr sdk.ValAddress, pubKey cryptotypes.PubKey, //nolint:interfacer
+	valAddr sdk.ValAddress,
 	selfDelegation sdk.Coin, description Description, commission CommissionRates, minSelfDelegation math.Int,
 ) (*MsgCreateGovernor, error) {
 	return &MsgCreateGovernor{

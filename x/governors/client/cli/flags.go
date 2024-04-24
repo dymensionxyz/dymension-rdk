@@ -7,13 +7,12 @@ import (
 )
 
 const (
-	FlagAddressValidator    = "validator"
-	FlagAddressValidatorSrc = "addr-validator-source"
-	FlagAddressValidatorDst = "addr-validator-dest"
-	FlagPubKey              = "pubkey"
-	FlagAmount              = "amount"
-	FlagSharesAmount        = "shares-amount"
-	FlagSharesFraction      = "shares-fraction"
+	FlagAddressGovernor    = "governor"
+	FlagAddressGovernorSrc = "addr-governor-source"
+	FlagAddressGovernorDst = "addr-governor-dest"
+	FlagAmount             = "amount"
+	FlagSharesAmount       = "shares-amount"
+	FlagSharesFraction     = "shares-fraction"
 
 	FlagMoniker         = "moniker"
 	FlagEditMoniker     = "new-moniker"
@@ -36,16 +35,16 @@ const (
 // common flagsets to add to various functions
 var (
 	fsShares       = flag.NewFlagSet("", flag.ContinueOnError)
-	fsValidator    = flag.NewFlagSet("", flag.ContinueOnError)
+	fsGovernor     = flag.NewFlagSet("", flag.ContinueOnError)
 	fsRedelegation = flag.NewFlagSet("", flag.ContinueOnError)
 )
 
 func init() {
 	fsShares.String(FlagSharesAmount, "", "Amount of source-shares to either unbond or redelegate as a positive integer or decimal")
 	fsShares.String(FlagSharesFraction, "", "Fraction of source-shares to either unbond or redelegate as a positive integer or decimal >0 and <=1")
-	fsValidator.String(FlagAddressValidator, "", "The Bech32 address of the validator")
-	fsRedelegation.String(FlagAddressValidatorSrc, "", "The Bech32 address of the source validator")
-	fsRedelegation.String(FlagAddressValidatorDst, "", "The Bech32 address of the destination validator")
+	fsGovernor.String(FlagAddressGovernor, "", "The Bech32 address of the governor")
+	fsRedelegation.String(FlagAddressGovernorSrc, "", "The Bech32 address of the source governor")
+	fsRedelegation.String(FlagAddressGovernorDst, "", "The Bech32 address of the destination governor")
 }
 
 // FlagSetCommissionCreate Returns the FlagSet used for commission create.
@@ -62,7 +61,7 @@ func FlagSetCommissionCreate() *flag.FlagSet {
 // FlagSetMinSelfDelegation Returns the FlagSet used for minimum set delegation.
 func FlagSetMinSelfDelegation() *flag.FlagSet {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fs.String(FlagMinSelfDelegation, "", "The minimum self delegation required on the validator")
+	fs.String(FlagMinSelfDelegation, "", "The minimum self delegation required on the governor")
 	return fs
 }
 
@@ -73,21 +72,14 @@ func FlagSetAmount() *flag.FlagSet {
 	return fs
 }
 
-// FlagSetPublicKey Returns the flagset for Public Key related operations.
-func FlagSetPublicKey() *flag.FlagSet {
-	fs := flag.NewFlagSet("", flag.ContinueOnError)
-	fs.String(FlagPubKey, "", "The validator's Protobuf JSON encoded public key")
-	return fs
-}
-
 func flagSetDescriptionEdit() *flag.FlagSet {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 
-	fs.String(FlagEditMoniker, types.DoNotModifyDesc, "The validator's name")
+	fs.String(FlagEditMoniker, types.DoNotModifyDesc, "The governor's name")
 	fs.String(FlagIdentity, types.DoNotModifyDesc, "The (optional) identity signature (ex. UPort or Keybase)")
-	fs.String(FlagWebsite, types.DoNotModifyDesc, "The validator's (optional) website")
-	fs.String(FlagSecurityContact, types.DoNotModifyDesc, "The validator's (optional) security contact email")
-	fs.String(FlagDetails, types.DoNotModifyDesc, "The validator's (optional) details")
+	fs.String(FlagWebsite, types.DoNotModifyDesc, "The governor's (optional) website")
+	fs.String(FlagSecurityContact, types.DoNotModifyDesc, "The governor's (optional) security contact email")
+	fs.String(FlagDetails, types.DoNotModifyDesc, "The governor's (optional) details")
 
 	return fs
 }
@@ -103,11 +95,11 @@ func flagSetCommissionUpdate() *flag.FlagSet {
 func flagSetDescriptionCreate() *flag.FlagSet {
 	fs := flag.NewFlagSet("", flag.ContinueOnError)
 
-	fs.String(FlagMoniker, "", "The validator's name")
+	fs.String(FlagMoniker, "", "The governor's name")
 	fs.String(FlagIdentity, "", "The optional identity signature (ex. UPort or Keybase)")
-	fs.String(FlagWebsite, "", "The validator's (optional) website")
-	fs.String(FlagSecurityContact, "", "The validator's (optional) security contact email")
-	fs.String(FlagDetails, "", "The validator's (optional) details")
+	fs.String(FlagWebsite, "", "The governor's (optional) website")
+	fs.String(FlagSecurityContact, "", "The governor's (optional) security contact email")
+	fs.String(FlagDetails, "", "The governor's (optional) details")
 
 	return fs
 }

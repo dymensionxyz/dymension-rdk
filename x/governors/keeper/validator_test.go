@@ -7,13 +7,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/testutil"
+	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	staking "github.com/dymensionxyz/dymension-rdk/x/governors"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/teststaking"
@@ -26,7 +26,7 @@ func newMonikerValidator(t testing.TB, operator sdk.ValAddress, pubKey cryptotyp
 	return v
 }
 
-func bootstrapValidatorTest(t testing.TB, power int64, numAddrs int) (*simapp.SimApp, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
+func bootstrapValidatorTest(t testing.TB, power int64, numAddrs int) (*app.App, sdk.Context, []sdk.AccAddress, []sdk.ValAddress) {
 	_, app, ctx := createTestInput(&testing.T{})
 
 	addrDels, addrVals := generateAddresses(app, ctx, numAddrs)
@@ -54,7 +54,7 @@ func bootstrapValidatorTest(t testing.TB, power int64, numAddrs int) (*simapp.Si
 	return app, ctx, addrDels, addrVals
 }
 
-func initValidators(t testing.TB, power int64, numAddrs int, powers []int64) (*simapp.SimApp, sdk.Context, []sdk.AccAddress, []sdk.ValAddress, []types.Validator) {
+func initValidators(t testing.TB, power int64, numAddrs int, powers []int64) (*app.App, sdk.Context, []sdk.AccAddress, []sdk.ValAddress, []types.Validator) {
 	app, ctx, addrs, valAddrs := bootstrapValidatorTest(t, power, numAddrs)
 	pks := simapp.CreateTestPubKeys(numAddrs)
 
@@ -84,7 +84,7 @@ func TestSetValidator(t *testing.T) {
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validator)
 
 	// ensure update
-	updates := applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 1)
+	updates := applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 1)
 	validator, found := app.StakingKeeper.GetValidator(ctx, valAddr)
 	require.True(t, found)
 	require.Equal(t, validator.ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
@@ -242,7 +242,7 @@ func TestSlashToZeroPowerRemoved(t *testing.T) {
 	// slash the validator by 100%
 	app.StakingKeeper.Slash(ctx, sdk.ConsAddress(PKs[0].Address()), 0, 100, sdk.OneDec())
 	// apply TM updates
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, -1)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, -1)
 	// validator should be unbonding
 	validator, _ = app.StakingKeeper.GetValidator(ctx, addrVals[0])
 	require.Equal(t, validator.GetStatus(), types.Unbonding)
@@ -707,13 +707,13 @@ func TestApplyAndReturnValidatorSetUpdatesAllNone(t *testing.T) {
 
 	// test from nothing to something
 	//  tendermintUpdate set: {} -> {c1, c3}
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 0)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 0)
 	app.StakingKeeper.SetValidator(ctx, validators[0])
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validators[0])
 	app.StakingKeeper.SetValidator(ctx, validators[1])
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validators[1])
 
-	updates := applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	updates := applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 	validators[0], _ = app.StakingKeeper.GetValidator(ctx, validators[0].GetOperator())
 	validators[1], _ = app.StakingKeeper.GetValidator(ctx, validators[1].GetOperator())
 	assert.Equal(t, validators[0].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[1])
@@ -734,13 +734,13 @@ func TestApplyAndReturnValidatorSetUpdatesIdentical(t *testing.T) {
 	}
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], false)
 	validators[1] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[1], false)
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 
 	// test identical,
 	//  tendermintUpdate set: {} -> {}
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], false)
 	validators[1] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[1], false)
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 0)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 0)
 }
 
 func TestApplyAndReturnValidatorSetUpdatesSingleValueChange(t *testing.T) {
@@ -757,7 +757,7 @@ func TestApplyAndReturnValidatorSetUpdatesSingleValueChange(t *testing.T) {
 	}
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], false)
 	validators[1] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[1], false)
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 
 	// test single value change
 	//  tendermintUpdate set: {} -> {c1'}
@@ -765,7 +765,7 @@ func TestApplyAndReturnValidatorSetUpdatesSingleValueChange(t *testing.T) {
 	validators[0].Tokens = app.StakingKeeper.TokensFromConsensusPower(ctx, 600)
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], false)
 
-	updates := applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 1)
+	updates := applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 1)
 	require.Equal(t, validators[0].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
 }
 
@@ -776,7 +776,7 @@ func TestApplyAndReturnValidatorSetUpdatesMultipleValueChange(t *testing.T) {
 
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], false)
 	validators[1] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[1], false)
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 
 	// test multiple value change
 	//  tendermintUpdate set: {c1, c3} -> {c1', c3'}
@@ -787,7 +787,7 @@ func TestApplyAndReturnValidatorSetUpdatesMultipleValueChange(t *testing.T) {
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], false)
 	validators[1] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[1], false)
 
-	updates := applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	updates := applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 	require.Equal(t, validators[0].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
 	require.Equal(t, validators[1].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[1])
 }
@@ -798,13 +798,13 @@ func TestApplyAndReturnValidatorSetUpdatesInserted(t *testing.T) {
 
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], false)
 	validators[1] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[1], false)
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 
 	// test validtor added at the beginning
 	//  tendermintUpdate set: {} -> {c0}
 	app.StakingKeeper.SetValidator(ctx, validators[2])
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validators[2])
-	updates := applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 1)
+	updates := applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 1)
 	validators[2], _ = app.StakingKeeper.GetValidator(ctx, validators[2].GetOperator())
 	require.Equal(t, validators[2].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
 
@@ -812,7 +812,7 @@ func TestApplyAndReturnValidatorSetUpdatesInserted(t *testing.T) {
 	//  tendermintUpdate set: {} -> {c0}
 	app.StakingKeeper.SetValidator(ctx, validators[3])
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validators[3])
-	updates = applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 1)
+	updates = applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 1)
 	validators[3], _ = app.StakingKeeper.GetValidator(ctx, validators[3].GetOperator())
 	require.Equal(t, validators[3].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
 
@@ -820,7 +820,7 @@ func TestApplyAndReturnValidatorSetUpdatesInserted(t *testing.T) {
 	//  tendermintUpdate set: {} -> {c0}
 	app.StakingKeeper.SetValidator(ctx, validators[4])
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validators[4])
-	updates = applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 1)
+	updates = applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 1)
 	validators[4], _ = app.StakingKeeper.GetValidator(ctx, validators[4].GetOperator())
 	require.Equal(t, validators[4].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
 }
@@ -840,22 +840,22 @@ func TestApplyAndReturnValidatorSetUpdatesWithCliffValidator(t *testing.T) {
 	}
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], false)
 	validators[1] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[1], false)
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 
 	// test validator added at the end but not inserted in the valset
 	//  tendermintUpdate set: {} -> {}
 	keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[2], false)
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 0)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 0)
 
 	// test validator change its power and become a gotValidator (pushing out an existing)
 	//  tendermintUpdate set: {}     -> {c0, c4}
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 0)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 0)
 
 	tokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	validators[2], _ = validators[2].AddTokensFromDel(tokens)
 	app.StakingKeeper.SetValidator(ctx, validators[2])
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validators[2])
-	updates := applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	updates := applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 	validators[2], _ = app.StakingKeeper.GetValidator(ctx, validators[2].GetOperator())
 	require.Equal(t, validators[0].ABCIValidatorUpdateZero(), updates[1])
 	require.Equal(t, validators[2].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
@@ -873,7 +873,7 @@ func TestApplyAndReturnValidatorSetUpdatesPowerDecrease(t *testing.T) {
 	}
 	validators[0] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[0], false)
 	validators[1] = keeper.TestingUpdateValidator(app.StakingKeeper, ctx, validators[1], false)
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 
 	// check initial power
 	require.Equal(t, int64(100), validators[0].GetConsensusPower(app.StakingKeeper.PowerReduction(ctx)))
@@ -893,7 +893,7 @@ func TestApplyAndReturnValidatorSetUpdatesPowerDecrease(t *testing.T) {
 	require.Equal(t, int64(70), validators[1].GetConsensusPower(app.StakingKeeper.PowerReduction(ctx)))
 
 	// Tendermint updates should reflect power change
-	updates := applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	updates := applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 	require.Equal(t, validators[0].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
 	require.Equal(t, validators[1].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[1])
 }
@@ -922,13 +922,13 @@ func TestApplyAndReturnValidatorSetUpdatesNewValidator(t *testing.T) {
 	}
 
 	// verify initial Tendermint updates are correct
-	updates := applyValidatorSetUpdates(t, ctx, app.StakingKeeper, len(validators))
+	updates := applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, len(validators))
 	validators[0], _ = app.StakingKeeper.GetValidator(ctx, validators[0].GetOperator())
 	validators[1], _ = app.StakingKeeper.GetValidator(ctx, validators[1].GetOperator())
 	require.Equal(t, validators[0].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
 	require.Equal(t, validators[1].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[1])
 
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 0)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 0)
 
 	// update initial validator set
 	for i, power := range powers {
@@ -967,7 +967,7 @@ func TestApplyAndReturnValidatorSetUpdatesNewValidator(t *testing.T) {
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validator)
 
 	// verify initial Tendermint updates are correct
-	updates = applyValidatorSetUpdates(t, ctx, app.StakingKeeper, len(validators)+1)
+	updates = applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, len(validators)+1)
 	validator, _ = app.StakingKeeper.GetValidator(ctx, validator.GetOperator())
 	validators[0], _ = app.StakingKeeper.GetValidator(ctx, validators[0].GetOperator())
 	validators[1], _ = app.StakingKeeper.GetValidator(ctx, validators[1].GetOperator())
@@ -1000,13 +1000,13 @@ func TestApplyAndReturnValidatorSetUpdatesBondTransition(t *testing.T) {
 	}
 
 	// verify initial Tendermint updates are correct
-	updates := applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 2)
+	updates := applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 2)
 	validators[2], _ = app.StakingKeeper.GetValidator(ctx, validators[2].GetOperator())
 	validators[1], _ = app.StakingKeeper.GetValidator(ctx, validators[1].GetOperator())
 	require.Equal(t, validators[2].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
 	require.Equal(t, validators[1].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[1])
 
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 0)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 0)
 
 	// delegate to validator with lowest power but not enough to bond
 	ctx = ctx.WithBlockHeight(1)
@@ -1022,7 +1022,7 @@ func TestApplyAndReturnValidatorSetUpdatesBondTransition(t *testing.T) {
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validators[0])
 
 	// verify initial Tendermint updates are correct
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 0)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 0)
 
 	// create a series of events that will bond and unbond the validator with
 	// lowest power in a single block context (height)
@@ -1035,7 +1035,7 @@ func TestApplyAndReturnValidatorSetUpdatesBondTransition(t *testing.T) {
 	validators[0], _ = validators[0].RemoveDelShares(validators[0].DelegatorShares)
 	app.StakingKeeper.SetValidator(ctx, validators[0])
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validators[0])
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 0)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 0)
 
 	app.StakingKeeper.DeleteValidatorByPowerIndex(ctx, validators[1])
 	tokens = app.StakingKeeper.TokensFromConsensusPower(ctx, 250)
@@ -1044,10 +1044,10 @@ func TestApplyAndReturnValidatorSetUpdatesBondTransition(t *testing.T) {
 	app.StakingKeeper.SetValidatorByPowerIndex(ctx, validators[1])
 
 	// verify initial Tendermint updates are correct
-	updates = applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 1)
+	updates = applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 1)
 	require.Equal(t, validators[1].ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx)), updates[0])
 
-	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, 0)
+	applyGovernorsSetUpdates(t, ctx, app.StakingKeeper, 0)
 }
 
 func TestUpdateValidatorCommission(t *testing.T) {
@@ -1113,11 +1113,7 @@ func TestUpdateValidatorCommission(t *testing.T) {
 	}
 }
 
-func applyValidatorSetUpdates(t *testing.T, ctx sdk.Context, k keeper.Keeper, expectedUpdatesLen int) []abci.ValidatorUpdate {
-	updates, err := k.ApplyAndReturnValidatorSetUpdates(ctx)
+func applyGovernorsSetUpdates(t *testing.T, ctx sdk.Context, k keeper.Keeper, expectedUpdatesLen int) {
+	err := k.ApplyGovernorSetUpdates(ctx)
 	require.NoError(t, err)
-	if expectedUpdatesLen >= 0 {
-		require.Equal(t, expectedUpdatesLen, len(updates), "%v", updates)
-	}
-	return updates
 }

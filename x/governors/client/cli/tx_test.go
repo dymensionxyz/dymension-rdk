@@ -10,15 +10,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 )
 
-func TestPrepareConfigForTxCreateValidator(t *testing.T) {
+func TestPrepareConfigForTxCreateGovernor(t *testing.T) {
 	chainID := "chainID"
 	ip := "1.1.1.1"
 	nodeID := "nodeID"
 	privKey := ed25519.GenPrivKey()
 	valPubKey := privKey.PubKey()
 	moniker := "DefaultMoniker"
-	mkTxValCfg := func(amount, commission, commissionMax, commissionMaxChange, minSelfDelegation string) TxCreateValidatorConfig {
-		return TxCreateValidatorConfig{
+	mkTxValCfg := func(amount, commission, commissionMax, commissionMaxChange, minSelfDelegation string) TxCreateGovernorConfig {
+		return TxCreateGovernorConfig{
 			IP:                      ip,
 			ChainID:                 chainID,
 			NodeID:                  nodeID,
@@ -35,7 +35,7 @@ func TestPrepareConfigForTxCreateValidator(t *testing.T) {
 	tests := []struct {
 		name        string
 		fsModify    func(fs *pflag.FlagSet)
-		expectedCfg TxCreateValidatorConfig
+		expectedCfg TxCreateGovernorConfig
 	}{
 		{
 			name: "all defaults",
@@ -84,12 +84,12 @@ func TestPrepareConfigForTxCreateValidator(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			fs, _ := CreateValidatorMsgFlagSet(ip)
+			fs, _ := CreateGovernorMsgFlagSet(ip)
 			fs.String(flags.FlagName, "", "name of private key with which to sign the gentx")
 
 			tc.fsModify(fs)
 
-			cvCfg, err := PrepareConfigForTxCreateValidator(fs, moniker, nodeID, chainID, valPubKey)
+			cvCfg, err := PrepareConfigForTxCreateGovernor(fs, moniker, nodeID, chainID, valPubKey)
 			require.NoError(t, err)
 
 			require.Equal(t, tc.expectedCfg, cvCfg)
