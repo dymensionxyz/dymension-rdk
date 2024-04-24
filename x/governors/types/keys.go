@@ -15,10 +15,10 @@ import (
 
 const (
 	// ModuleName is the name of the staking module
-	ModuleName = "members"
+	ModuleName = "governors"
 
 	// StoreKey is the string store representation
-	StoreKey = ModuleName
+	StoreKey = "rdkgovernors"
 
 	// QuerierRoute is the querier route for the staking module
 	QuerierRoute = ModuleName
