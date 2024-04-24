@@ -12,6 +12,12 @@ const gasCostPerIteration = uint64(10)
 
 var _ authz.Authorization = &StakeAuthorization{}
 
+func (s *StakeAuthorization_AllowList) isStakeAuthorization_Governors() {}
+func (s *StakeAuthorization_DenyList) isStakeAuthorization_Governors()  {}
+
+var _ isStakeAuthorization_Governors = &StakeAuthorization_AllowList{}
+var _ isStakeAuthorization_Governors = &StakeAuthorization_DenyList{}
+
 // NewStakeAuthorization creates a new StakeAuthorization object.
 func NewStakeAuthorization(allowed []sdk.ValAddress, denied []sdk.ValAddress, authzType AuthorizationType, amount *sdk.Coin) (*StakeAuthorization, error) {
 	allowedGovernors, deniedGovernors, err := validateAllowAndDenyGovernors(allowed, denied)
@@ -21,9 +27,13 @@ func NewStakeAuthorization(allowed []sdk.ValAddress, denied []sdk.ValAddress, au
 
 	a := StakeAuthorization{}
 	if allowedGovernors != nil {
-		a.Governors = &StakeAuthorization_AllowList{AllowList: &StakeAuthorization_Governors{Address: allowedGovernors}}
+		a.Governors = &StakeAuthorization_AllowList{
+			Address: allowedGovernors,
+		}
 	} else {
-		a.Governors = &StakeAuthorization_DenyList{DenyList: &StakeAuthorization_Governors{Address: deniedGovernors}}
+		a.Governors = &StakeAuthorization_DenyList{
+			Address: deniedGovernors,
+		}
 	}
 
 	if amount != nil {

@@ -16,9 +16,9 @@ var (
 	coin150 = sdk.NewInt64Coin("steak", 150)
 	coin50  = sdk.NewInt64Coin("steak", 50)
 	delAddr = sdk.AccAddress("_____delegator _____")
-	val1    = sdk.ValAddress("_____validator1_____")
-	val2    = sdk.ValAddress("_____validator2_____")
-	val3    = sdk.ValAddress("_____validator3_____")
+	val1    = sdk.ValAddress("_____governor1_____")
+	val2    = sdk.ValAddress("_____governor2_____")
+	val3    = sdk.ValAddress("_____governor3_____")
 )
 
 func TestAuthzAuthorizations(t *testing.T) {
@@ -92,13 +92,11 @@ func TestAuthzAuthorizations(t *testing.T) {
 			false,
 			false,
 			&stakingtypes.StakeAuthorization{
-				Validators: &stakingtypes.StakeAuthorization_AllowList{
-					AllowList: &stakingtypes.StakeAuthorization_Validators{Address: validators1_2},
-				}, MaxTokens: &coin50, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
+				Governors: &stakingtypes.StakeAuthorization_AllowList{validators1_2}, MaxTokens: &coin50, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
 			},
 		},
 		{
-			"delegate: testing with invalid validator",
+			"delegate: testing with invalid governor",
 			[]sdk.ValAddress{val1, val2},
 			[]sdk.ValAddress{},
 			stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
@@ -118,13 +116,12 @@ func TestAuthzAuthorizations(t *testing.T) {
 			false,
 			false,
 			&stakingtypes.StakeAuthorization{
-				Validators: &stakingtypes.StakeAuthorization_AllowList{
-					AllowList: &stakingtypes.StakeAuthorization_Validators{Address: validators1_2},
-				}, MaxTokens: nil, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
+				Governors: &stakingtypes.StakeAuthorization_AllowList{validators1_2},
+				MaxTokens: nil, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
 			},
 		},
 		{
-			"delegate: fail validator denied",
+			"delegate: fail governor denied",
 			[]sdk.ValAddress{},
 			[]sdk.ValAddress{val1},
 			stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
@@ -135,7 +132,7 @@ func TestAuthzAuthorizations(t *testing.T) {
 			nil,
 		},
 		{
-			"delegate: testing with a validator out of denylist",
+			"delegate: testing with a governor out of denylist",
 			[]sdk.ValAddress{},
 			[]sdk.ValAddress{val1},
 			stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
@@ -144,9 +141,8 @@ func TestAuthzAuthorizations(t *testing.T) {
 			false,
 			false,
 			&stakingtypes.StakeAuthorization{
-				Validators: &stakingtypes.StakeAuthorization_DenyList{
-					DenyList: &stakingtypes.StakeAuthorization_Validators{Address: []string{val1.String()}},
-				}, MaxTokens: nil, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
+				Governors: &stakingtypes.StakeAuthorization_DenyList{[]string{val1.String()}},
+				MaxTokens: nil, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE,
 			},
 		},
 		{
@@ -170,13 +166,12 @@ func TestAuthzAuthorizations(t *testing.T) {
 			false,
 			false,
 			&stakingtypes.StakeAuthorization{
-				Validators: &stakingtypes.StakeAuthorization_AllowList{
-					AllowList: &stakingtypes.StakeAuthorization_Validators{Address: validators1_2},
-				}, MaxTokens: &coin50, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_UNDELEGATE,
+				Governors: &stakingtypes.StakeAuthorization_AllowList{validators1_2},
+				MaxTokens: &coin50, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_UNDELEGATE,
 			},
 		},
 		{
-			"undelegate: testing with invalid validator",
+			"undelegate: testing with invalid governor",
 			[]sdk.ValAddress{val1, val2},
 			[]sdk.ValAddress{},
 			stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_UNDELEGATE,
@@ -196,9 +191,8 @@ func TestAuthzAuthorizations(t *testing.T) {
 			false,
 			false,
 			&stakingtypes.StakeAuthorization{
-				Validators: &stakingtypes.StakeAuthorization_AllowList{
-					AllowList: &stakingtypes.StakeAuthorization_Validators{Address: validators1_2},
-				}, MaxTokens: nil, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_UNDELEGATE,
+				Governors: &stakingtypes.StakeAuthorization_AllowList{validators1_2},
+				MaxTokens: nil, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_UNDELEGATE,
 			},
 		},
 		{
@@ -234,13 +228,12 @@ func TestAuthzAuthorizations(t *testing.T) {
 			false,
 			false,
 			&stakingtypes.StakeAuthorization{
-				Validators: &stakingtypes.StakeAuthorization_AllowList{
-					AllowList: &stakingtypes.StakeAuthorization_Validators{Address: validators1_2},
-				}, MaxTokens: &coin50, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_REDELEGATE,
+				Governors: &stakingtypes.StakeAuthorization_AllowList{validators1_2},
+				MaxTokens: &coin50, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_REDELEGATE,
 			},
 		},
 		{
-			"redelegate: testing with invalid validator",
+			"redelegate: testing with invalid governor",
 			[]sdk.ValAddress{val1, val2},
 			[]sdk.ValAddress{},
 			stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_REDELEGATE,
@@ -260,9 +253,8 @@ func TestAuthzAuthorizations(t *testing.T) {
 			false,
 			false,
 			&stakingtypes.StakeAuthorization{
-				Validators: &stakingtypes.StakeAuthorization_AllowList{
-					AllowList: &stakingtypes.StakeAuthorization_Validators{Address: validators1_2},
-				}, MaxTokens: nil, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_REDELEGATE,
+				Governors: &stakingtypes.StakeAuthorization_AllowList{validators1_2},
+				MaxTokens: nil, AuthorizationType: stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_REDELEGATE,
 			},
 		},
 		{
