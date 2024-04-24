@@ -10,6 +10,7 @@ import (
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	vestingkeeper "github.com/dymensionxyz/dymension-rdk/x/vesting/keeper"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
@@ -41,6 +42,12 @@ func NewTestDenommetadataKeeperFromApp(app *app.App) (*denommetadatakeeper.Keepe
 
 func NewTestHubGenesisKeeperFromApp(app *app.App) (*hubgenkeeper.Keeper, sdk.Context) {
 	k := &app.HubGenesisKeeper
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
+	return k, ctx
+}
+
+func NewTestVestingKeeperFromApp(app *app.App) (*vestingkeeper.Keeper, sdk.Context) {
+	k := &app.VestingKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
 	return k, ctx
 }
