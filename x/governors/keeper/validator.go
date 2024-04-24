@@ -8,6 +8,7 @@ import (
 	gogotypes "github.com/gogo/protobuf/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
@@ -302,7 +303,7 @@ func (k Keeper) GetUnbondingGovernors(ctx sdk.Context, endTime time.Time, endHei
 		return []string{}
 	}
 
-	addrs := types.ValAddresses{}
+	addrs := stakingtypes.ValAddresses{}
 	k.cdc.MustUnmarshal(bz, &addrs)
 
 	return addrs.Addresses
@@ -312,7 +313,7 @@ func (k Keeper) GetUnbondingGovernors(ctx sdk.Context, endTime time.Time, endHei
 // the unbonding governor queue by a given height and time.
 func (k Keeper) SetUnbondingGovernorsQueue(ctx sdk.Context, endTime time.Time, endHeight int64, addrs []string) {
 	store := ctx.KVStore(k.storeKey)
-	bz := k.cdc.MustMarshal(&types.ValAddresses{Addresses: addrs})
+	bz := k.cdc.MustMarshal(&stakingtypes.ValAddresses{Addresses: addrs})
 	store.Set(types.GetGovernorQueueKey(endTime, endHeight), bz)
 }
 
@@ -384,7 +385,7 @@ func (k Keeper) UnbondAllMatureGovernors(ctx sdk.Context) {
 		// We only unbond if the height and time are less than the current height
 		// and time.
 		if keyHeight <= blockHeight && (keyTime.Before(blockTime) || keyTime.Equal(blockTime)) {
-			addrs := types.ValAddresses{}
+			addrs := stakingtypes.ValAddresses{}
 			k.cdc.MustUnmarshal(unbondingValIterator.Value(), &addrs)
 
 			for _, valAddr := range addrs.Addresses {

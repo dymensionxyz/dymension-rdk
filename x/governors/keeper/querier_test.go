@@ -9,6 +9,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/teststaking"
@@ -274,7 +275,7 @@ func TestQueryDelegation(t *testing.T) {
 	res, err = querier(ctx, []string{types.QueryDelegation}, query)
 	require.NoError(t, err)
 
-	var delegationRes types.DelegationResponse
+	var delegationRes stakingtypes.DelegationResponse
 	errRes = cdc.UnmarshalJSON(res, &delegationRes)
 	require.NoError(t, errRes)
 
@@ -294,7 +295,7 @@ func TestQueryDelegation(t *testing.T) {
 	res, err = querier(ctx, []string{types.QueryDelegatorDelegations}, query)
 	require.NoError(t, err)
 
-	var delegatorDelegations types.DelegationResponses
+	var delegatorDelegations stakingtypes.DelegationResponses
 	errRes = cdc.UnmarshalJSON(res, &delegatorDelegations)
 	require.NoError(t, errRes)
 	require.Len(t, delegatorDelegations, 1)
@@ -320,7 +321,7 @@ func TestQueryDelegation(t *testing.T) {
 	res, err = querier(ctx, []string{types.QueryGovernorDelegations}, query)
 	require.NoError(t, err)
 
-	var delegationsRes types.DelegationResponses
+	var delegationsRes stakingtypes.DelegationResponses
 	errRes = cdc.UnmarshalJSON(res, &delegationsRes)
 	require.NoError(t, errRes)
 	require.Len(t, delegatorDelegations, 1)
@@ -348,7 +349,7 @@ func TestQueryDelegation(t *testing.T) {
 	res, err = querier(ctx, []string{types.QueryUnbondingDelegation}, query)
 	require.NoError(t, err)
 
-	var unbondRes types.UnbondingDelegation
+	var unbondRes stakingtypes.UnbondingDelegation
 	errRes = cdc.UnmarshalJSON(res, &unbondRes)
 	require.NoError(t, errRes)
 
@@ -370,7 +371,7 @@ func TestQueryDelegation(t *testing.T) {
 	res, err = querier(ctx, []string{types.QueryDelegatorUnbondingDelegations}, query)
 	require.NoError(t, err)
 
-	var delegatorUbds []types.UnbondingDelegation
+	var delegatorUbds []stakingtypes.UnbondingDelegation
 	errRes = cdc.UnmarshalJSON(res, &delegatorUbds)
 	require.NoError(t, errRes)
 	require.Equal(t, unbond, delegatorUbds[0])
@@ -399,7 +400,7 @@ func TestQueryDelegation(t *testing.T) {
 	res, err = querier(ctx, []string{types.QueryRedelegations}, query)
 	require.NoError(t, err)
 
-	var redelRes types.RedelegationResponses
+	var redelRes stakingtypes.RedelegationResponses
 	errRes = cdc.UnmarshalJSON(res, &redelRes)
 	require.NoError(t, errRes)
 	require.Len(t, redelRes, 1)
@@ -476,7 +477,7 @@ func TestQueryGovernorDelegations_Pagination(t *testing.T) {
 		res, err := querier(ctx, []string{types.QueryGovernorDelegations}, query)
 		require.NoError(t, err)
 
-		var delegationsRes types.DelegationResponses
+		var delegationsRes stakingtypes.DelegationResponses
 		errRes = cdc.UnmarshalJSON(res, &delegationsRes)
 		require.NoError(t, errRes)
 		require.Len(t, delegationsRes, c.expectedResults)
@@ -504,7 +505,7 @@ func TestQueryGovernorDelegations_Pagination(t *testing.T) {
 			Data: bz,
 		}
 
-		unbondingDelegations := types.UnbondingDelegations{}
+		unbondingDelegations := stakingtypes.UnbondingDelegations{}
 		res, err := querier(ctx, []string{types.QueryGovernorUnbondingDelegations}, query)
 		require.NoError(t, err)
 
@@ -555,7 +556,7 @@ func TestQueryRedelegations(t *testing.T) {
 	res, err := querier(ctx, []string{types.QueryRedelegations}, query)
 	require.NoError(t, err)
 
-	var redelRes types.RedelegationResponses
+	var redelRes stakingtypes.RedelegationResponses
 	errRes = cdc.UnmarshalJSON(res, &redelRes)
 	require.NoError(t, errRes)
 	require.Len(t, redelRes, 1)
@@ -627,7 +628,7 @@ func TestQueryUnbondingDelegation(t *testing.T) {
 	res, err := querier(ctx, []string{types.QueryUnbondingDelegation}, query)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	var ubDel types.UnbondingDelegation
+	var ubDel stakingtypes.UnbondingDelegation
 	require.NoError(t, cdc.UnmarshalJSON(res, &ubDel))
 	require.Equal(t, addrAcc1.String(), ubDel.DelegatorAddress)
 	require.Equal(t, val1.OperatorAddress, ubDel.ValidatorAddress)
@@ -659,7 +660,7 @@ func TestQueryUnbondingDelegation(t *testing.T) {
 	res, err = querier(ctx, []string{types.QueryDelegatorUnbondingDelegations}, query)
 	require.NoError(t, err)
 	require.NotNil(t, res)
-	var ubDels []types.UnbondingDelegation
+	var ubDels []stakingtypes.UnbondingDelegation
 	require.NoError(t, cdc.UnmarshalJSON(res, &ubDels))
 	require.Equal(t, 1, len(ubDels))
 	require.Equal(t, addrAcc1.String(), ubDels[0].DelegatorAddress)

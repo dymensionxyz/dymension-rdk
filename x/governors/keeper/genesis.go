@@ -6,6 +6,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
@@ -56,7 +57,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) []abci.Va
 
 		// Call the before-creation hook if not exported
 		if !data.Exported {
-			if err := k.BeforeDelegationCreated(ctx, delegatorAddress, delegation.GetGovernorAddr()); err != nil {
+			if err := k.BeforeDelegationCreated(ctx, delegatorAddress, delegation.GetValidatorAddr()); err != nil {
 				panic(err)
 			}
 		}
@@ -65,7 +66,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) []abci.Va
 
 		// Call the after-modification hook if not exported
 		if !data.Exported {
-			if err := k.AfterDelegationModified(ctx, delegatorAddress, delegation.GetGovernorAddr()); err != nil {
+			if err := k.AfterDelegationModified(ctx, delegatorAddress, delegation.GetValidatorAddr()); err != nil {
 				panic(err)
 			}
 		}
@@ -136,16 +137,16 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *types.GenesisState) []abci.Va
 // GenesisState will contain the pool, params, governors, and bonds found in
 // the keeper.
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
-	var unbondingDelegations []types.UnbondingDelegation
+	var unbondingDelegations []stakingtypes.UnbondingDelegation
 
-	k.IterateUnbondingDelegations(ctx, func(_ int64, ubd types.UnbondingDelegation) (stop bool) {
+	k.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
 		unbondingDelegations = append(unbondingDelegations, ubd)
 		return false
 	})
 
-	var redelegations []types.Redelegation
+	var redelegations []stakingtypes.Redelegation
 
-	k.IterateRedelegations(ctx, func(_ int64, red types.Redelegation) (stop bool) {
+	k.IterateRedelegations(ctx, func(_ int64, red stakingtypes.Redelegation) (stop bool) {
 		redelegations = append(redelegations, red)
 		return false
 	})

@@ -6,6 +6,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "governors/staking.proto";
 import "cosmos_proto/cosmos.proto";
+import "cosmos/staking/v1beta1/staking.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/governors/types";
 
@@ -131,8 +132,7 @@ message QueryGovernorDelegationsRequest {
 // QueryGovernorDelegationsResponse is response type for the
 // Query/GovernorDelegations RPC method
 message QueryGovernorDelegationsResponse {
-  repeated DelegationResponse delegation_responses = 1
-      [(gogoproto.nullable) = false, (gogoproto.castrepeated) = "DelegationResponses"];
+  repeated  cosmos.staking.v1beta1.DelegationResponse delegation_responses = 1 [(gogoproto.nullable) = false];
 
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -151,7 +151,7 @@ message QueryGovernorUnbondingDelegationsRequest {
 // QueryGovernorUnbondingDelegationsResponse is response type for the
 // Query/GovernorUnbondingDelegations RPC method.
 message QueryGovernorUnbondingDelegationsResponse {
-  repeated UnbondingDelegation unbonding_responses = 1 [(gogoproto.nullable) = false];
+  repeated cosmos.staking.v1beta1.UnbondingDelegation unbonding_responses = 1 [(gogoproto.nullable) = false];
 
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -172,7 +172,7 @@ message QueryDelegationRequest {
 // QueryDelegationResponse is response type for the Query/Delegation RPC method.
 message QueryDelegationResponse {
   // delegation_responses defines the delegation info of a delegation.
-  DelegationResponse delegation_response = 1;
+  cosmos.staking.v1beta1.DelegationResponse delegation_response = 1;
 }
 
 // QueryUnbondingDelegationRequest is request type for the
@@ -192,7 +192,7 @@ message QueryUnbondingDelegationRequest {
 // RPC method.
 message QueryUnbondingDelegationResponse {
   // unbond defines the unbonding information of a delegation.
-  UnbondingDelegation unbond = 1 [(gogoproto.nullable) = false];
+  cosmos.staking.v1beta1.UnbondingDelegation unbond = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryDelegatorDelegationsRequest is request type for the
@@ -212,7 +212,7 @@ message QueryDelegatorDelegationsRequest {
 // Query/DelegatorDelegations RPC method.
 message QueryDelegatorDelegationsResponse {
   // delegation_responses defines all the delegations' info of a delegator.
-  repeated DelegationResponse delegation_responses = 1 [(gogoproto.nullable) = false];
+  repeated cosmos.staking.v1beta1.DelegationResponse delegation_responses = 1 [(gogoproto.nullable) = false];
 
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -234,7 +234,7 @@ message QueryDelegatorUnbondingDelegationsRequest {
 // QueryUnbondingDelegatorDelegationsResponse is response type for the
 // Query/UnbondingDelegatorDelegations RPC method.
 message QueryDelegatorUnbondingDelegationsResponse {
-  repeated UnbondingDelegation unbonding_responses = 1 [(gogoproto.nullable) = false];
+  repeated cosmos.staking.v1beta1.UnbondingDelegation unbonding_responses = 1 [(gogoproto.nullable) = false];
 
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -262,7 +262,7 @@ message QueryRedelegationsRequest {
 // QueryRedelegationsResponse is response type for the Query/Redelegations RPC
 // method.
 message QueryRedelegationsResponse {
-  repeated RedelegationResponse redelegation_responses = 1 [(gogoproto.nullable) = false];
+  repeated cosmos.staking.v1beta1.RedelegationResponse redelegation_responses = 1 [(gogoproto.nullable) = false];
 
   // pagination defines the pagination in the response.
   cosmos.base.query.v1beta1.PageResponse pagination = 2;

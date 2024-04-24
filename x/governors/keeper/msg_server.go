@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
@@ -408,7 +409,7 @@ func (k msgServer) CancelUnbondingDelegation(goCtx context.Context, msg *types.M
 	}
 
 	var (
-		unbondEntry      types.UnbondingDelegationEntry
+		unbondEntry      stakingtypes.UnbondingDelegationEntry
 		unbondEntryIndex int64 = -1
 	)
 

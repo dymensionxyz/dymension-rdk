@@ -6,6 +6,7 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/governors/types";
 
 import "gogoproto/gogo.proto";
 import "governors/staking.proto";
+import "cosmos/staking/v1beta1/staking.proto";
 
 // GenesisState defines the staking module's genesis state.
 message GenesisState {
@@ -21,13 +22,13 @@ message GenesisState {
   repeated Governor governors = 4 [(gogoproto.nullable) = false];
 
   // delegations defines the delegations active at genesis.
-  repeated Delegation delegations = 5 [(gogoproto.nullable) = false];
+  repeated cosmos.staking.v1beta1.Delegation delegations = 5 [(gogoproto.nullable) = false];
 
   // unbonding_delegations defines the unbonding delegations active at genesis.
-  repeated UnbondingDelegation unbonding_delegations = 6 [(gogoproto.nullable) = false];
+  repeated cosmos.staking.v1beta1.UnbondingDelegation unbonding_delegations = 6 [(gogoproto.nullable) = false];
 
   // redelegations defines the redelegations active at genesis.
-  repeated Redelegation redelegations = 7 [(gogoproto.nullable) = false];
+  repeated cosmos.staking.v1beta1.Redelegation redelegations = 7 [(gogoproto.nullable) = false];
 
   bool exported = 8;
 }

@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // NewGenesisState creates a new GenesisState instanc e
-func NewGenesisState(params Params, Governors []Governor, delegations []Delegation) *GenesisState {
+func NewGenesisState(params Params, Governors []Governor, delegations []stakingtypes.Delegation) *GenesisState {
 	return &GenesisState{
 		Params:      params,
 		Governors:   Governors,

@@ -6,6 +6,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/testutil"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
@@ -41,7 +42,7 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 
 	// setting the ubd entry
 	unbondingAmount := sdk.NewInt64Coin(app.StakingKeeper.BondDenom(ctx), 5)
-	ubd := types.NewUnbondingDelegation(
+	ubd := stakingtypes.NewUnbondingDelegation(
 		delegatorAddr, governorAddr, 10,
 		ctx.BlockTime().Add(time.Minute*10),
 		unbondingAmount.Amount,

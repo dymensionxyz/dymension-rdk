@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
@@ -19,9 +20,9 @@ func (k Keeper) GetDelegatorGovernors(
 
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
-		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		delegation := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())
 
-		governor, found := k.GetGovernor(ctx, delegation.GetGovernorAddr())
+		governor, found := k.GetGovernor(ctx, delegation.GetValidatorAddr())
 		if !found {
 			panic(types.ErrNoGovernorFound)
 		}
@@ -42,7 +43,7 @@ func (k Keeper) GetDelegatorGovernor(
 		return governor, types.ErrNoDelegation
 	}
 
-	governor, found = k.GetGovernor(ctx, delegation.GetGovernorAddr())
+	governor, found = k.GetGovernor(ctx, delegation.GetValidatorAddr())
 	if !found {
 		panic(types.ErrNoGovernorFound)
 	}
@@ -51,8 +52,8 @@ func (k Keeper) GetDelegatorGovernor(
 }
 
 // return all delegations for a delegator
-func (k Keeper) GetAllDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddress) []types.Delegation {
-	delegations := make([]types.Delegation, 0)
+func (k Keeper) GetAllDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAddress) []stakingtypes.Delegation {
+	delegations := make([]stakingtypes.Delegation, 0)
 
 	store := ctx.KVStore(k.storeKey)
 	delegatorPrefixKey := types.GetDelegationsKey(delegator)
@@ -63,7 +64,7 @@ func (k Keeper) GetAllDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAdd
 	i := 0
 
 	for ; iterator.Valid(); iterator.Next() {
-		delegation := types.MustUnmarshalDelegation(k.cdc, iterator.Value())
+		delegation := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())
 		delegations = append(delegations, delegation)
 		i++
 	}
@@ -72,8 +73,8 @@ func (k Keeper) GetAllDelegatorDelegations(ctx sdk.Context, delegator sdk.AccAdd
 }
 
 // return all unbonding-delegations for a delegator
-func (k Keeper) GetAllUnbondingDelegations(ctx sdk.Context, delegator sdk.AccAddress) []types.UnbondingDelegation {
-	unbondingDelegations := make([]types.UnbondingDelegation, 0)
+func (k Keeper) GetAllUnbondingDelegations(ctx sdk.Context, delegator sdk.AccAddress) []stakingtypes.UnbondingDelegation {
+	unbondingDelegations := make([]stakingtypes.UnbondingDelegation, 0)
 
 	store := ctx.KVStore(k.storeKey)
 	delegatorPrefixKey := types.GetUBDsKey(delegator)
@@ -82,7 +83,7 @@ func (k Keeper) GetAllUnbondingDelegations(ctx sdk.Context, delegator sdk.AccAdd
 	defer iterator.Close()
 
 	for i := 0; iterator.Valid(); iterator.Next() {
-		unbondingDelegation := types.MustUnmarshalUBD(k.cdc, iterator.Value())
+		unbondingDelegation := stakingtypes.MustUnmarshalUBD(k.cdc, iterator.Value())
 		unbondingDelegations = append(unbondingDelegations, unbondingDelegation)
 		i++
 	}
@@ -93,7 +94,7 @@ func (k Keeper) GetAllUnbondingDelegations(ctx sdk.Context, delegator sdk.AccAdd
 // return all redelegations for a delegator
 func (k Keeper) GetAllRedelegations(
 	ctx sdk.Context, delegator sdk.AccAddress, srcValAddress, dstValAddress sdk.ValAddress,
-) []types.Redelegation {
+) []stakingtypes.Redelegation {
 	store := ctx.KVStore(k.storeKey)
 	delegatorPrefixKey := types.GetREDsKey(delegator)
 
@@ -103,10 +104,10 @@ func (k Keeper) GetAllRedelegations(
 	srcValFilter := !(srcValAddress.Empty())
 	dstValFilter := !(dstValAddress.Empty())
 
-	redelegations := []types.Redelegation{}
+	redelegations := []stakingtypes.Redelegation{}
 
 	for ; iterator.Valid(); iterator.Next() {
-		redelegation := types.MustUnmarshalRED(k.cdc, iterator.Value())
+		redelegation := stakingtypes.MustUnmarshalRED(k.cdc, iterator.Value())
 		valSrcAddr, err := sdk.ValAddressFromBech32(redelegation.ValidatorSrcAddress)
 		if err != nil {
 			panic(err)

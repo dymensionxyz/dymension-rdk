@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
@@ -63,7 +64,7 @@ func ModuleAccountInvariants(k Keeper) sdk.Invariant {
 			return false
 		})
 
-		k.IterateUnbondingDelegations(ctx, func(_ int64, ubd types.UnbondingDelegation) bool {
+		k.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) bool {
 			for _, entry := range ubd.Entries {
 				notBonded = notBonded.Add(entry.Balance)
 			}
@@ -173,7 +174,7 @@ func DelegatorSharesInvariant(k Keeper) sdk.Invariant {
 		// iterate through all the delegations to calculate the total delegation shares for each governor
 		delegations := k.GetAllDelegations(ctx)
 		for _, delegation := range delegations {
-			delegationGovernorAddr := delegation.GetGovernorAddr().String()
+			delegationGovernorAddr := delegation.GetValidatorAddr().String()
 			governorDelegationShares := governorsDelegationShares[delegationGovernorAddr]
 			governorsDelegationShares[delegationGovernorAddr] = governorDelegationShares.Add(delegation.Shares)
 		}

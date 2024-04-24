@@ -43,7 +43,7 @@ func bootstrapGovernorTest(t testing.TB, power int64, numAddrs int) (*app.App, s
 	require.Len(t, delegations, 1)
 	delegation := delegations[0]
 
-	_, err := app.StakingKeeper.Undelegate(ctx, delegation.GetDelegatorAddr(), delegation.GetGovernorAddr(), delegation.Shares)
+	_, err := app.StakingKeeper.Undelegate(ctx, delegation.GetDelegatorAddr(), delegation.GetValidatorAddr(), delegation.Shares)
 	require.NoError(t, err)
 
 	// end block to unbond genesis governor

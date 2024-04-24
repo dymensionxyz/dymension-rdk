@@ -10,6 +10,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/bank/testutil"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
@@ -31,7 +32,7 @@ func TestInitGenesis(t *testing.T) {
 	params := app.StakingKeeper.GetParams(ctx)
 	governors := app.StakingKeeper.GetAllGovernors(ctx)
 	require.Len(t, governors, 1)
-	var delegations []types.Delegation
+	var delegations []stakingtypes.Delegation
 
 	// initialize the governors
 	bondedVal1 := types.Governor{
@@ -135,7 +136,7 @@ func TestInitGenesisLargeGovernorSet(t *testing.T) {
 	genesisGovernors := app.StakingKeeper.GetAllGovernors(ctx)
 
 	params := app.StakingKeeper.GetParams(ctx)
-	delegations := []types.Delegation{}
+	delegations := []stakingtypes.Delegation{}
 	governors := make([]types.Governor, size)
 
 	var err error

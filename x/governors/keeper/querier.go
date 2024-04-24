@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
@@ -127,7 +128,7 @@ func queryGovernorDelegations(ctx sdk.Context, req abci.RequestQuery, k Keeper, 
 
 	start, end := client.Paginate(len(delegations), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
 	if start < 0 || end < 0 {
-		delegations = []types.Delegation{}
+		delegations = []stakingtypes.Delegation{}
 	} else {
 		delegations = delegations[start:end]
 	}
@@ -138,7 +139,7 @@ func queryGovernorDelegations(ctx sdk.Context, req abci.RequestQuery, k Keeper, 
 	}
 
 	if delegationResps == nil {
-		delegationResps = types.DelegationResponses{}
+		delegationResps = stakingtypes.DelegationResponses{}
 	}
 
 	res, err := codec.MarshalJSONIndent(legacyQuerierCdc, delegationResps)
@@ -159,12 +160,12 @@ func queryGovernorUnbondingDelegations(ctx sdk.Context, req abci.RequestQuery, k
 
 	unbonds := k.GetUnbondingDelegationsFromGovernor(ctx, params.GovernorAddr)
 	if unbonds == nil {
-		unbonds = types.UnbondingDelegations{}
+		unbonds = stakingtypes.UnbondingDelegations{}
 	}
 
 	start, end := client.Paginate(len(unbonds), params.Page, params.Limit, int(k.GetParams(ctx).MaxValidators))
 	if start < 0 || end < 0 {
-		unbonds = types.UnbondingDelegations{}
+		unbonds = stakingtypes.UnbondingDelegations{}
 	} else {
 		unbonds = unbonds[start:end]
 	}
@@ -192,7 +193,7 @@ func queryDelegatorDelegations(ctx sdk.Context, req abci.RequestQuery, k Keeper,
 	}
 
 	if delegationResps == nil {
-		delegationResps = types.DelegationResponses{}
+		delegationResps = stakingtypes.DelegationResponses{}
 	}
 
 	res, err := codec.MarshalJSONIndent(legacyQuerierCdc, delegationResps)
@@ -213,7 +214,7 @@ func queryDelegatorUnbondingDelegations(ctx sdk.Context, req abci.RequestQuery, 
 
 	unbondingDelegations := k.GetAllUnbondingDelegations(ctx, params.DelegatorAddr)
 	if unbondingDelegations == nil {
-		unbondingDelegations = types.UnbondingDelegations{}
+		unbondingDelegations = stakingtypes.UnbondingDelegations{}
 	}
 
 	res, err := codec.MarshalJSONIndent(legacyQuerierCdc, unbondingDelegations)
@@ -353,7 +354,7 @@ func queryRedelegations(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacy
 		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
 	}
 
-	var redels []types.Redelegation
+	var redels []stakingtypes.Redelegation
 
 	switch {
 	case !params.DelegatorAddr.Empty() && !params.SrcGovernorAddr.Empty() && !params.DstGovernorAddr.Empty():
@@ -362,7 +363,7 @@ func queryRedelegations(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacy
 			return nil, types.ErrNoRedelegation
 		}
 
-		redels = []types.Redelegation{redel}
+		redels = []stakingtypes.Redelegation{redel}
 	case params.DelegatorAddr.Empty() && !params.SrcGovernorAddr.Empty() && params.DstGovernorAddr.Empty():
 		redels = k.GetRedelegationsFromSrcGovernor(ctx, params.SrcGovernorAddr)
 	default:
@@ -375,7 +376,7 @@ func queryRedelegations(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacy
 	}
 
 	if redelResponses == nil {
-		redelResponses = types.RedelegationResponses{}
+		redelResponses = stakingtypes.RedelegationResponses{}
 	}
 
 	res, err := codec.MarshalJSONIndent(legacyQuerierCdc, redelResponses)
@@ -420,29 +421,29 @@ func queryParameters(ctx sdk.Context, k Keeper, legacyQuerierCdc *codec.LegacyAm
 
 // util
 
-func DelegationToDelegationResponse(ctx sdk.Context, k Keeper, del types.Delegation) (types.DelegationResponse, error) {
-	val, found := k.GetGovernor(ctx, del.GetGovernorAddr())
+func DelegationToDelegationResponse(ctx sdk.Context, k Keeper, del stakingtypes.Delegation) (stakingtypes.DelegationResponse, error) {
+	val, found := k.GetGovernor(ctx, del.GetValidatorAddr())
 	if !found {
-		return types.DelegationResponse{}, types.ErrNoGovernorFound
+		return stakingtypes.DelegationResponse{}, types.ErrNoGovernorFound
 	}
 
 	delegatorAddress, err := sdk.AccAddressFromBech32(del.DelegatorAddress)
 	if err != nil {
-		return types.DelegationResponse{}, err
+		return stakingtypes.DelegationResponse{}, err
 	}
 
-	return types.NewDelegationResp(
+	return stakingtypes.NewDelegationResp(
 		delegatorAddress,
-		del.GetGovernorAddr(),
+		del.GetValidatorAddr(),
 		del.Shares,
 		sdk.NewCoin(k.BondDenom(ctx), val.TokensFromShares(del.Shares).TruncateInt()),
 	), nil
 }
 
 func DelegationsToDelegationResponses(
-	ctx sdk.Context, k Keeper, delegations types.Delegations,
-) (types.DelegationResponses, error) {
-	resp := make(types.DelegationResponses, len(delegations))
+	ctx sdk.Context, k Keeper, delegations stakingtypes.Delegations,
+) (stakingtypes.DelegationResponses, error) {
+	resp := make(stakingtypes.DelegationResponses, len(delegations))
 
 	for i, del := range delegations {
 		delResp, err := DelegationToDelegationResponse(ctx, k, del)
@@ -457,9 +458,9 @@ func DelegationsToDelegationResponses(
 }
 
 func RedelegationsToRedelegationResponses(
-	ctx sdk.Context, k Keeper, redels types.Redelegations,
-) (types.RedelegationResponses, error) {
-	resp := make(types.RedelegationResponses, len(redels))
+	ctx sdk.Context, k Keeper, redels stakingtypes.Redelegations,
+) (stakingtypes.RedelegationResponses, error) {
+	resp := make(stakingtypes.RedelegationResponses, len(redels))
 
 	for i, redel := range redels {
 		valSrcAddr, err := sdk.ValAddressFromBech32(redel.ValidatorSrcAddress)
@@ -478,9 +479,9 @@ func RedelegationsToRedelegationResponses(
 			return nil, types.ErrNoGovernorFound
 		}
 
-		entryResponses := make([]types.RedelegationEntryResponse, len(redel.Entries))
+		entryResponses := make([]stakingtypes.RedelegationEntryResponse, len(redel.Entries))
 		for j, entry := range redel.Entries {
-			entryResponses[j] = types.NewRedelegationEntryResponse(
+			entryResponses[j] = stakingtypes.NewRedelegationEntryResponse(
 				entry.CreationHeight,
 				entry.CompletionTime,
 				entry.SharesDst,
@@ -489,7 +490,7 @@ func RedelegationsToRedelegationResponses(
 			)
 		}
 
-		resp[i] = types.NewRedelegationResponse(
+		resp[i] = stakingtypes.NewRedelegationResponse(
 			delegatorAddress,
 			valSrcAddr,
 			valDstAddr,
