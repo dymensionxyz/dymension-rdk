@@ -51,8 +51,6 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	"github.com/cosmos/cosmos-sdk/x/genutil"
-	genutiltypes "github.com/cosmos/cosmos-sdk/x/genutil/types"
 
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
@@ -67,7 +65,6 @@ import (
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	paramproposal "github.com/cosmos/cosmos-sdk/x/params/types/proposal"
 
-	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
 	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
@@ -102,6 +99,7 @@ import (
 
 	staking "github.com/dymensionxyz/dymension-rdk/x/governors"
 	stakingkeeper "github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
+	stakingtypes "github.com/dymensionxyz/dymension-rdk/x/governors/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
@@ -150,7 +148,6 @@ var (
 	// and genesis verification.
 	ModuleBasics = module.NewBasicManager(
 		auth.AppModuleBasic{},
-		genutil.AppModuleBasic{},
 		bank.AppModuleBasic{},
 		capability.AppModuleBasic{},
 		staking.AppModuleBasic{},
@@ -485,7 +482,6 @@ func NewRollapp(
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		govtypes.ModuleName,
-		genutiltypes.ModuleName,
 		epochstypes.ModuleName,
 		paramstypes.ModuleName,
 		hubgentypes.ModuleName,
@@ -503,7 +499,6 @@ func NewRollapp(
 		vestingtypes.ModuleName,
 		minttypes.ModuleName,
 		denommetadatatypes.ModuleName,
-		genutiltypes.ModuleName,
 		epochstypes.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
@@ -531,7 +526,6 @@ func NewRollapp(
 		govtypes.ModuleName,
 		minttypes.ModuleName,
 		ibchost.ModuleName,
-		genutiltypes.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
 		ibctransfertypes.ModuleName,

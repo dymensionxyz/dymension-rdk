@@ -32,24 +32,3 @@ type BankKeeper interface {
 
 	BurnCoins(ctx sdk.Context, name string, amt sdk.Coins) error
 }
-
-// Event Hooks
-// These can be utilized to communicate between a staking keeper and another
-// keeper which must take particular actions when governors/delegators change
-// state. The second keeper must implement this interface, which then the
-// staking keeper can call.
-
-// StakingHooks event hooks for staking governor object (noalias)
-type StakingHooks interface {
-	AfterGovernorCreated(ctx sdk.Context, valAddr sdk.ValAddress) error   // Must be called when a governor is created
-	BeforeGovernorModified(ctx sdk.Context, valAddr sdk.ValAddress) error // Must be called when a governor's state changes
-	AfterGovernorRemoved(ctx sdk.Context, valAddr sdk.ValAddress) error   // Must be called when a governor is deleted
-
-	AfterGovernorBonded(ctx sdk.Context, valAddr sdk.ValAddress) error         // Must be called when a governor is bonded
-	AfterGovernorBeginUnbonding(ctx sdk.Context, valAddr sdk.ValAddress) error // Must be called when a governor begins unbonding
-
-	BeforeDelegationCreated(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error        // Must be called when a delegation is created
-	BeforeDelegationSharesModified(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error // Must be called when a delegation's shares are modified
-	BeforeDelegationRemoved(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error        // Must be called when a delegation is removed
-	AfterDelegationModified(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error
-}

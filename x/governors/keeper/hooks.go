@@ -2,16 +2,12 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
-
-// Implements StakingHooks interface
-var _ types.StakingHooks = Keeper{}
 
 // AfterGovernorCreated - call hook if registered
 func (k Keeper) AfterGovernorCreated(ctx sdk.Context, valAddr sdk.ValAddress) error {
 	if k.hooks != nil {
-		return k.hooks.AfterGovernorCreated(ctx, valAddr)
+		return k.hooks.AfterValidatorCreated(ctx, valAddr)
 	}
 	return nil
 }
@@ -19,7 +15,7 @@ func (k Keeper) AfterGovernorCreated(ctx sdk.Context, valAddr sdk.ValAddress) er
 // BeforeGovernorModified - call hook if registered
 func (k Keeper) BeforeGovernorModified(ctx sdk.Context, valAddr sdk.ValAddress) error {
 	if k.hooks != nil {
-		return k.hooks.BeforeGovernorModified(ctx, valAddr)
+		return k.hooks.BeforeValidatorModified(ctx, valAddr)
 	}
 	return nil
 }
@@ -27,7 +23,7 @@ func (k Keeper) BeforeGovernorModified(ctx sdk.Context, valAddr sdk.ValAddress) 
 // AfterGovernorRemoved - call hook if registered
 func (k Keeper) AfterGovernorRemoved(ctx sdk.Context, valAddr sdk.ValAddress) error {
 	if k.hooks != nil {
-		return k.hooks.AfterGovernorRemoved(ctx, valAddr)
+		return k.hooks.AfterValidatorRemoved(ctx, nil, valAddr)
 	}
 	return nil
 }
@@ -35,7 +31,7 @@ func (k Keeper) AfterGovernorRemoved(ctx sdk.Context, valAddr sdk.ValAddress) er
 // AfterGovernorBonded - call hook if registered
 func (k Keeper) AfterGovernorBonded(ctx sdk.Context, valAddr sdk.ValAddress) error {
 	if k.hooks != nil {
-		return k.hooks.AfterGovernorBonded(ctx, valAddr)
+		return k.hooks.AfterValidatorBonded(ctx, nil, valAddr)
 	}
 	return nil
 }
@@ -43,7 +39,7 @@ func (k Keeper) AfterGovernorBonded(ctx sdk.Context, valAddr sdk.ValAddress) err
 // AfterGovernorBeginUnbonding - call hook if registered
 func (k Keeper) AfterGovernorBeginUnbonding(ctx sdk.Context, valAddr sdk.ValAddress) error {
 	if k.hooks != nil {
-		return k.hooks.AfterGovernorBeginUnbonding(ctx, valAddr)
+		return k.hooks.AfterValidatorBeginUnbonding(ctx, nil, valAddr)
 	}
 	return nil
 }

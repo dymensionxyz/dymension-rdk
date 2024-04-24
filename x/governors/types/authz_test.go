@@ -8,6 +8,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 	stakingtypes "github.com/dymensionxyz/dymension-rdk/x/governors/types"
 )
 
@@ -33,7 +34,7 @@ func TestAuthzAuthorizations(t *testing.T) {
 	// verify MethodName
 	delAuth, err = stakingtypes.NewStakeAuthorization([]sdk.ValAddress{val1, val2}, []sdk.ValAddress{}, stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE, &coin100)
 	require.NoError(t, err)
-	require.Equal(t, delAuth.MsgTypeURL(), sdk.MsgTypeURL(&stakingtypes.MsgDelegate{}))
+	require.Equal(t, delAuth.MsgTypeURL(), sdk.MsgTypeURL(&types.MsgDelegate{}))
 
 	// error both allow & deny list
 	_, err = stakingtypes.NewStakeAuthorization([]sdk.ValAddress{val1, val2}, []sdk.ValAddress{val1}, stakingtypes.AuthorizationType_AUTHORIZATION_TYPE_DELEGATE, &coin100)
