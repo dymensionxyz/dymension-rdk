@@ -13,6 +13,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 const (
@@ -65,6 +66,23 @@ func (v Governor) String() string {
 	return string(out)
 }
 
+// ToSDKGovernors -  convenience function convert []Governor to []sdk.GovernorI
+func (v Governor) ToValidator() (validator stakingtypes.ValidatorI) {
+	return stakingtypes.Validator{
+		OperatorAddress:   v.GetOperator().String(),
+		ConsensusPubkey:   nil,
+		Jailed:            false,
+		Status:            stakingtypes.BondStatus(v.Status),
+		Tokens:            v.Tokens,
+		DelegatorShares:   v.DelegatorShares,
+		Description:       stakingtypes.NewDescription(v.Description.Moniker, v.Description.Identity, v.Description.Website, v.Description.SecurityContact, v.Description.Details),
+		UnbondingHeight:   v.UnbondingHeight,
+		UnbondingTime:     v.UnbondingTime,
+		Commission:        stakingtypes.NewCommission(v.Commission.Rate, v.Commission.MaxRate, v.Commission.MaxChangeRate),
+		MinSelfDelegation: v.MinSelfDelegation,
+	}
+}
+
 // Governors is a collection of Governor
 type Governors []Governor
 
@@ -74,15 +92,6 @@ func (v Governors) String() (out string) {
 	}
 
 	return strings.TrimSpace(out)
-}
-
-// ToSDKGovernors -  convenience function convert []Governor to []sdk.GovernorI
-func (v Governors) ToSDKGovernors() (governors []GovernorI) {
-	for _, val := range v {
-		governors = append(governors, val)
-	}
-
-	return governors
 }
 
 // Sort Governors sorts governor array in ascending operator address order

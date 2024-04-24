@@ -19,7 +19,7 @@ var _ types.GovernorSet = Keeper{}
 // Implements DelegationSet interface
 var _ types.DelegationSet = Keeper{}
 
-// var _ types.StakingComptability = Keeper{}
+var _ types.StakingComptability = Keeper{}
 
 // keeper of the staking store
 type Keeper struct {

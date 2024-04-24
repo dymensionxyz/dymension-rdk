@@ -317,7 +317,7 @@ func TestAllocateTokensToGovernorWithCommission(t *testing.T) {
 	// create governor with 50% commission
 	tstaking.Commission = govtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
 	tstaking.CreateGovernor(sdk.ValAddress(addrs[0]), sdk.NewInt(100), true)
-	val := app.StakingKeeper.Governor(ctx, valAddrs[0])
+	val := app.StakingKeeper.Validator(ctx, valAddrs[0])
 
 	// allocate tokens
 	tokens := sdk.DecCoins{
