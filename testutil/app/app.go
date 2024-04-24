@@ -100,8 +100,8 @@ import (
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
 
-	staking "github.com/dymensionxyz/dymension-rdk/x/staking"
-	stakingkeeper "github.com/dymensionxyz/dymension-rdk/x/staking/keeper"
+	staking "github.com/dymensionxyz/dymension-rdk/x/governors"
+	stakingkeeper "github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
 
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
@@ -366,7 +366,7 @@ func NewRollapp(
 	)
 
 	app.IBCKeeper = ibckeeper.NewKeeper(
-		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.StakingKeeper, app.UpgradeKeeper, scopedIBCKeeper,
+		appCodec, keys[ibchost.StoreKey], app.GetSubspace(ibchost.ModuleName), app.SequencersKeeper, app.UpgradeKeeper, scopedIBCKeeper,
 	)
 
 	// Register the proposal types
@@ -446,10 +446,6 @@ func NewRollapp(
 	// must be passed by reference here.
 
 	modules := []module.AppModule{
-		genutil.NewAppModule(
-			app.AccountKeeper, app.StakingKeeper, app.BaseApp.DeliverTx,
-			encodingConfig.TxConfig,
-		),
 		auth.NewAppModule(appCodec, app.AccountKeeper, nil),
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
@@ -790,7 +786,7 @@ func (app *App) GetBaseApp() *baseapp.BaseApp {
 
 // GetStakingKeeper implements the TestingApp interface.
 func (app *App) GetStakingKeeper() ibctestingtypes.StakingKeeper {
-	return app.StakingKeeper
+	return app.SequencersKeeper
 }
 
 // GetStakingKeeper implements the TestingApp interface.
