@@ -1,0 +1,31 @@
+syntax = "proto3";
+package rollapp.sequencers.types;
+
+import "gogoproto/gogo.proto";
+import "sequencers/permission.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
+
+message GrantPermissionsProposal {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  string title = 1;
+  string description = 2;
+
+  repeated AddressPermissions address_permissions = 3
+      [ (gogoproto.nullable) = false ];
+}
+
+message RevokePermissionsProposal {
+  option (gogoproto.equal) = true;
+  option (gogoproto.goproto_getters) = false;
+  option (gogoproto.goproto_stringer) = false;
+
+  string title = 1;
+  string description = 2;
+
+  repeated AddressPermissions address_permissions = 3
+      [ (gogoproto.nullable) = false ];
+}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 
 	"google.golang.org/grpc/codes"
@@ -23,16 +22,6 @@ type Querier struct {
 
 func NewQuerier(k Keeper) Querier {
 	return Querier{Keeper: k}
-}
-
-// Params returns denommetadata module params
-func (q Querier) Params(
-	c context.Context,
-	_ *types.QueryParamsRequest,
-) (*types.QueryParamsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	params := q.GetParams(ctx)
-	return &types.QueryParamsResponse{Params: params}, nil
 }
 
 // IBCDenomByDenomTrace returns IBC denom base on denom trace

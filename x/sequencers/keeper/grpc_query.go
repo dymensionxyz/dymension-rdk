@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
@@ -23,6 +24,24 @@ func (k Querier) Params(c context.Context, req *types.QueryParamsRequest) (*type
 	ctx := sdk.UnwrapSDKContext(c)
 
 	return &types.QueryParamsResponse{Params: k.GetParams(ctx)}, nil
+}
+
+// Permissions queries all the permissions for the given address.
+func (k Querier) Permissions(c context.Context, req *types.QueryPermissionsRequest) (*types.QueryPermissionsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	ctx := sdk.UnwrapSDKContext(c)
+
+	accAddress, err := sdk.AccAddressFromBech32(req.Address)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	permissionList := k.GetPermissionList(ctx, accAddress)
+	return &types.QueryPermissionsResponse{
+		Permissions: strings.Join(permissionList.Permissions, "\n"),
+	}, nil
 }
 
 // Sequencers queries all sequencers that match the given status.

@@ -9,27 +9,10 @@ import (
 
 // DefaultGenesis returns the default Capability genesis state
 func DefaultGenesis() *types.GenesisState {
-	return &types.GenesisState{
-		Params: types.DefaultParams(),
-	}
-}
-
-// InitGenesis import module genesis
-func InitGenesis(
-	ctx sdk.Context,
-	k keeper.Keeper,
-	data types.GenesisState,
-) {
-	k.SetParams(ctx, data.Params)
+	return &types.GenesisState{}
 }
 
 // ExportGenesis export module state
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
-	return &types.GenesisState{
-		Params: k.GetParams(ctx),
-	}
-}
-
-func ValidateGenesis(gs types.GenesisState) error {
-	return gs.Params.Validate()
+	return &types.GenesisState{}
 }

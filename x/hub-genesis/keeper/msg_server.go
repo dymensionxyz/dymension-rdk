@@ -27,7 +27,12 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Get the sender and validate they are in the Allowlist
-	if !m.IsAddressInGenesisTriggererAllowList(ctx, msg.Address) {
+	accAddr, err := sdk.AccAddressFromBech32(msg.Address)
+	if err != nil {
+		return nil, err
+	}
+
+	if !m.sequencerKeeper.HasPermission(ctx, accAddr, types.ModuleName) {
 		return nil, sdkerrors.ErrUnauthorized
 	}
 

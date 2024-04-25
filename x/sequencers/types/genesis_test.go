@@ -12,6 +12,7 @@ import (
 
 func TestGenesisState_Validate(t *testing.T) {
 	pk := ed25519.GenPrivKey().PubKey()
+	accAddr := sdk.AccAddress(pk.Address())
 
 	for _, tc := range []struct {
 		desc     string
@@ -22,6 +23,7 @@ func TestGenesisState_Validate(t *testing.T) {
 			desc: "valid",
 			genState: types.GenesisState{
 				Params:                 types.DefaultParams(),
+				AddressPermissions:     types.DefaultAddressPermissions,
 				GenesisOperatorAddress: sdk.ValAddress(pk.Address()).String(),
 			},
 			valid: true,
@@ -35,7 +37,43 @@ func TestGenesisState_Validate(t *testing.T) {
 			desc: "not a val address",
 			genState: types.GenesisState{
 				Params:                 types.DefaultParams(),
-				GenesisOperatorAddress: sdk.AccAddress(pk.Address()).String(),
+				GenesisOperatorAddress: accAddr.String(),
+			},
+			valid: false,
+		},
+		{
+			desc: "empty operator address",
+			genState: types.GenesisState{
+				Params:                 types.DefaultParams(),
+				GenesisOperatorAddress: "",
+			},
+			valid: false,
+		},
+		{
+			desc: "empty address in address permissions",
+			genState: types.GenesisState{
+				Params: types.DefaultParams(),
+				AddressPermissions: []types.AddressPermissions{
+					{
+						Address: "",
+						PermissionList: types.PermissionList{
+							Permissions: []string{"test"},
+						},
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "invalid permission list",
+			genState: types.GenesisState{
+				Params: types.DefaultParams(),
+				AddressPermissions: []types.AddressPermissions{
+					{
+						Address:        sdk.MustBech32ifyAddressBytes(sdk.Bech32PrefixAccAddr, accAddr),
+						PermissionList: types.EmptyPermissionList(),
+					},
+				},
 			},
 			valid: false,
 		},

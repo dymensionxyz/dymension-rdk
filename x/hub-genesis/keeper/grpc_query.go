@@ -20,14 +20,6 @@ func NewQuerier(k Keeper) Querier {
 	return Querier{Keeper: k}
 }
 
-// Params returns params of the hub-genesis module.
-func (q Querier) Params(c context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
-	params := q.Keeper.GetParams(ctx)
-
-	return &types.QueryParamsResponse{Params: params}, nil
-}
-
 func (q Querier) State(goCtx context.Context, request *types.QueryStateRequest) (*types.QueryStateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	return &types.QueryStateResponse{State: q.Keeper.GetState(ctx)}, nil
