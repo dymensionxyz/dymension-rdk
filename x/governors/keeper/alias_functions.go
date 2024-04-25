@@ -14,7 +14,7 @@ The following functions are aliases for the staking module functions that are re
 These functions are required to implement the StakingComptability interface.
 */
 
-// IterateValidators implements types.StakingComptability.
+// IterateValidators implements types.StakingCompatibility.
 func (k Keeper) IterateValidators(ctx sdk.Context, fn func(index int64, validator stakingtypes.ValidatorI) (stop bool)) {
 	store := ctx.KVStore(k.storeKey)
 
