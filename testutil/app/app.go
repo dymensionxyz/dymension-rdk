@@ -5,10 +5,6 @@ import (
 	"io"
 	"net/http"
 
-	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
-	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
-	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/gorilla/mux"
 	"github.com/rakyll/statik/fs"
@@ -43,6 +39,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	authzkeeper "github.com/cosmos/cosmos-sdk/x/authz/keeper"
+	authzmodule "github.com/cosmos/cosmos-sdk/x/authz/module"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -51,6 +50,10 @@ import (
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	"github.com/cosmos/cosmos-sdk/x/feegrant"
+
+	feegrantkeeper "github.com/cosmos/cosmos-sdk/x/feegrant/keeper"
+	feegrantmodule "github.com/cosmos/cosmos-sdk/x/feegrant/module"
 
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	govclient "github.com/cosmos/cosmos-sdk/x/gov/client"
@@ -81,6 +84,10 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/epochs"
 	epochskeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
 	epochstypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
+
+	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
+	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
+	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 
 	ibctransfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
@@ -115,7 +122,7 @@ const (
 )
 
 var kvstorekeys = []string{
-	authtypes.StoreKey, banktypes.StoreKey,
+	authtypes.StoreKey, authzkeeper.StoreKey, banktypes.StoreKey,
 	stakingtypes.StoreKey, seqtypes.StoreKey,
 	minttypes.StoreKey, denommetadatatypes.StoreKey, distrtypes.StoreKey,
 	govtypes.StoreKey, paramstypes.StoreKey,
@@ -158,9 +165,13 @@ var (
 		distr.AppModuleBasic{},
 		gov.NewAppModuleBasic(getGovProposalHandlers()),
 		params.AppModuleBasic{},
+		feegrantmodule.AppModuleBasic{},
+
 		upgrade.AppModuleBasic{},
 		ibc.AppModuleBasic{},
 		ibctransfer.AppModuleBasic{},
+		authzmodule.AppModuleBasic{},
+
 		vesting.AppModuleBasic{},
 		hubgenesis.AppModuleBasic{},
 		denommetadata.AppModuleBasic{},
@@ -208,11 +219,15 @@ type App struct {
 	EpochsKeeper        epochskeeper.Keeper
 	DistrKeeper         distrkeeper.Keeper
 	GovKeeper           govkeeper.Keeper
-	HubGenesisKeeper    hubgenkeeper.Keeper
-	UpgradeKeeper       upgradekeeper.Keeper
-	ParamsKeeper        paramskeeper.Keeper
-	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	TransferKeeper      ibctransferkeeper.Keeper
+	AuthzKeeper         authzkeeper.Keeper
+
+	FeeGrantKeeper feegrantkeeper.Keeper
+
+	HubGenesisKeeper hubgenkeeper.Keeper
+	UpgradeKeeper    upgradekeeper.Keeper
+	ParamsKeeper     paramskeeper.Keeper
+	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	TransferKeeper   ibctransferkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -346,6 +361,8 @@ func NewRollapp(
 	)
 
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp, authtypes.NewModuleAddress(govtypes.ModuleName).String())
+	app.FeeGrantKeeper = feegrantkeeper.NewKeeper(appCodec, keys[feegrant.StoreKey], app.AccountKeeper)
+	app.AuthzKeeper = authzkeeper.NewKeeper(keys[authzkeeper.StoreKey], appCodec, app.MsgServiceRouter(), app.AccountKeeper)
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
@@ -447,6 +464,7 @@ func NewRollapp(
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
+		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, app.BankKeeper),
 		denommetadata.NewAppModule(app.DenommetadataKeeper, app.BankKeeper),
@@ -459,6 +477,7 @@ func NewRollapp(
 		ibctransfer.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper, app.AccountKeeper),
+		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -482,6 +501,8 @@ func NewRollapp(
 		authtypes.ModuleName,
 		banktypes.ModuleName,
 		govtypes.ModuleName,
+		authz.ModuleName,
+		feegrant.ModuleName,
 		epochstypes.ModuleName,
 		paramstypes.ModuleName,
 		hubgentypes.ModuleName,
@@ -498,6 +519,7 @@ func NewRollapp(
 		distrtypes.ModuleName,
 		vestingtypes.ModuleName,
 		minttypes.ModuleName,
+		authz.ModuleName, feegrant.ModuleName,
 		denommetadatatypes.ModuleName,
 		epochstypes.ModuleName,
 		paramstypes.ModuleName,
@@ -525,6 +547,7 @@ func NewRollapp(
 		vestingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
+		authz.ModuleName, feegrant.ModuleName,
 		ibchost.ModuleName,
 		paramstypes.ModuleName,
 		upgradetypes.ModuleName,
