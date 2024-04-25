@@ -45,10 +45,10 @@ func TestGrantRevokePermissions(t *testing.T) {
 	// Revoke all permissions and check if the store delete account address
     k.RevokePermissions(ctx, accAddr2, types.NewPermissionsList([]string{"diff-test"}))
 	permissions = k.GetPermissionList(ctx, accAddr2)
-	assert.Equal(t, permissions, types.DefaultPermissionList())
+	assert.Equal(t, permissions, types.EmptyPermissionList())
 
 	// Revoke permissions from non-permissions account
 	k.RevokePermissions(ctx, accAddr2, types.NewPermissionsList([]string{"diff-test"}))
 	permissions = k.GetPermissionList(ctx, accAddr2)
-	assert.Equal(t, permissions, types.DefaultPermissionList())
+	assert.Equal(t, permissions, types.EmptyPermissionList())
 }

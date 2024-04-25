@@ -12,7 +12,7 @@ func (k Keeper) GetPermissionList(ctx sdk.Context, accAddr sdk.AccAddress) types
 	keys := types.GetAddressPermissionsKey(accAddr)
 	bz := store.Get(keys)
 	if bz == nil {
-		return types.DefaultPermissionList()
+		return types.EmptyPermissionList()
 	}
 
 	var perms types.PermissionList

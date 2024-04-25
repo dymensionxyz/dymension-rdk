@@ -3,6 +3,7 @@ package types
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -23,29 +24,31 @@ func (p *PermissionList) Validate() error {
 	if len(p.Permissions) == 0 {
 		return errors.New("permissions field cannot be empty")
 	}
+	perms := p.Permissions
+	slices.Sort(perms)
+	perms = slices.Compact(perms)
 
-	// Check for duplicated permissions
-	permissionIndexMap := make(map[string]struct{})
+	// Check if duplicates
+	if len(perms) != len(p.Permissions) {
+		return fmt.Errorf("duplicated permission in AddressPermissions")
+	}
 
-	for _, perm := range p.Permissions {
-		// check duplicate
-		if _, ok := permissionIndexMap[perm]; ok {
-			return fmt.Errorf("duplicated permission in AddressPermissions")
-		}
-		permissionIndexMap[perm] = struct{}{}
+	// Check if permissions list is sorted
+	if !p.Equal(NewPermissionsList(perms)) {
+		return fmt.Errorf("PermissionList is not sorted yet")
 	}
 	return nil
 }
 
-func DefaultPermissionList() PermissionList {
+func EmptyPermissionList() PermissionList {
 	return PermissionList{
 		Permissions: []string{},
 	}
 }
 
 func NewPermissionsList(permission []string) PermissionList {
-	if len(permission) == 0 || permission == nil{
-		return DefaultPermissionList()
+	if len(permission) == 0 || permission == nil {
+		return EmptyPermissionList()
 	}
 	return PermissionList{
 		Permissions: permission,
