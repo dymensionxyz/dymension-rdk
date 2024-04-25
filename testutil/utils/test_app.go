@@ -5,18 +5,19 @@ import (
 	"testing"
 	"time"
 
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/testutil/mock"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	hubgenesistypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
+	govtypes "github.com/dymensionxyz/dymension-rdk/x/governors/types"
 	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/stretchr/testify/require"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -58,7 +59,8 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 }
 
 var (
-	ProposerPK       = simapp.CreateTestPubKeys(1)[0]
+	ProposerPriv     = mock.NewPV()
+	ProposerPK, _    = ProposerPriv.GetPubKey()
 	ProposerConsAddr = sdk.ConsAddress(ProposerPK.Address())
 
 	OperatorPK = secp256k1.GenPrivKey().PubKey()
@@ -79,9 +81,11 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.Raw
 
 // Setup initializes a new Rollapp. A Nop logger is set in Rollapp.
 func Setup(t *testing.T, isCheckTx bool) *app.App {
+
+	//fixme: call setupWithGenesisAccounts
 	t.Helper()
 
-	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
+	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPriv.PrivKey.PubKey())
 	require.NoError(t, err)
 
 	app, genesisState := setup(true, 5)
@@ -114,87 +118,134 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	return app
 }
 
-// TODO: tech debt - this is almost the same as in github.com/cosmos/ibc-go/v6/testing/app.go
-// but unlike the other one, this one adds the sequencer to the genesis state on InitChain
-func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
+func SetupWithSingleGovernor(t *testing.T, isCheckTx bool) *app.App {
+	// generate genesis account
+	senderPrivKey := secp256k1.GenPrivKey()
+	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+	balance := banktypes.Balance{
+		Address: acc.GetAddress().String(),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
+	}
+
+	return SetupWithGenesisAccounts(t, []authtypes.GenesisAccount{acc}, []banktypes.Balance{balance})
+}
+
+func SetupWithGovernors(t *testing.T, governors []sdk.ValAddress, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
 	t.Helper()
+
+	govSet := make([]sdk.ValAddress, 0, len(governors))
+	for _, gov := range governors {
+		governor, err := govtypes.NewGovernor(gov, govtypes.NewDescription("test", "test", "test", "test", "test"))
+		require.NoError(t, err)
+		govSet = append(govSet, governor.GetOperator())
+	}
+
+	return genesisStateWithValSet(t, "test_100-1", govSet, genAccs, balances)
+}
+
+func SetupWithGenesisAccountsNoGovernors(t *testing.T, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
+	app := genesisStateWithValSet(t, "test_100-1", []sdk.ValAddress{}, genAccs, balances)
+
+	// commit genesis changes
+	app.Commit()
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
+		Height:  app.LastBlockHeight() + 1,
+		AppHash: app.LastCommitID().Hash,
+	}})
+	return app
+}
+
+func SetupWithGenesisAccounts(t *testing.T, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
+	t.Helper()
+
+	privVal := mock.NewPV()
+	pubKey, err := privVal.GetPubKey()
+	require.NoError(t, err)
+
+	// create validator set with single validator
+	govSet, err := govtypes.NewGovernor(sdk.ValAddress(pubKey.Address()), govtypes.NewDescription("test", "test", "test", "test", "test"))
+	require.NoError(t, err)
+
+	return genesisStateWithValSet(t, "test_100-1", []sdk.ValAddress{sdk.ValAddress(govSet.GetOperator())}, genAccs, balances)
+}
+
+// SetupWithGenesisAccounts initializes a new Rollapp with the provided governors, genesis accounts and balances.
+func genesisStateWithValSet(t *testing.T, chainId string, governors []sdk.ValAddress, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
+	t.Helper()
+	if len(governors) > 0 {
+		require.GreaterOrEqual(t, len(genAccs), 1)
+	}
+
+	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPriv.PrivKey.PubKey())
+	require.NoError(t, err)
 
 	app, genesisState := setup(true, 5)
 
+	// set genesis accounts
+	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
+	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
+
+	// setup for sequencer
 	seqGenesis := seqtypes.GenesisState{
 		Params:                 seqtypes.DefaultParams(),
 		GenesisOperatorAddress: sdk.ValAddress(OperatorPK.Address()).String(),
 	}
 	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
 
-	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
-	genesisState[authtypes.ModuleName] = app.AppCodec().MustMarshalJSON(authGenesis)
+	// set governors
+	var governorsGenesis govtypes.GenesisState
+	bondAmt := sdk.DefaultPowerReduction
 
-	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
-	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
+	govSet := make([]govtypes.Governor, 0, len(governors))
+	delegations := make([]stakingtypes.Delegation, 0, len(governors))
 
-	bondAmt := sdk.TokensFromConsensusPower(1, sdk.DefaultPowerReduction)
-	for _, val := range valSet.Validators {
-		pk, err := cryptocodec.FromTmPubKeyInterface(val.PubKey)
+	for _, gov := range governors {
+		governor, err := govtypes.NewGovernor(gov, govtypes.NewDescription("test", "test", "test", "test", "test"))
 		require.NoError(t, err)
-		pkAny, err := codectypes.NewAnyWithValue(pk)
-		require.NoError(t, err)
-		validator := stakingtypes.Validator{
-			OperatorAddress:   sdk.ValAddress(val.Address).String(),
-			ConsensusPubkey:   pkAny,
-			Jailed:            false,
-			Status:            stakingtypes.Bonded,
-			Tokens:            bondAmt,
-			DelegatorShares:   sdk.OneDec(),
-			Description:       stakingtypes.Description{},
-			UnbondingHeight:   int64(0),
-			UnbondingTime:     time.Unix(0, 0).UTC(),
-			Commission:        stakingtypes.NewCommission(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
-			MinSelfDelegation: sdk.ZeroInt(),
-		}
 
-		validators = append(validators, validator)
-		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec()))
+		governor.Tokens = bondAmt
+		governor.Status = govtypes.Bonded
+		governor.DelegatorShares = sdk.OneDec()
+
+		govSet = append(govSet, governor)
+		delegations = append(delegations, stakingtypes.NewDelegation(genAccs[0].GetAddress(), gov, sdk.OneDec()))
 	}
 
-	// set validators and delegations
-	var stakingGenesis stakingtypes.GenesisState
-	app.AppCodec().MustUnmarshalJSON(genesisState[stakingtypes.ModuleName], &stakingGenesis)
+	app.AppCodec().MustUnmarshalJSON(genesisState[govtypes.ModuleName], &governorsGenesis)
+	governorsGenesis = *govtypes.NewGenesisState(governorsGenesis.Params, govSet, delegations)
+	genesisState[govtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&governorsGenesis)
 
-	bondDenom := stakingGenesis.Params.BondDenom
+	// set bank accounts
+	totalSupply := sdk.NewCoins()
+	for _, b := range balances {
+		// add genesis acc tokens to total supply
+		totalSupply = totalSupply.Add(b.Coins...)
+	}
+
+	totalBond := sdk.NewInt(0)
+	for range delegations {
+		// add delegated tokens to total supply
+		totalBond = totalBond.Add(bondAmt)
+	}
+	totalSupply = totalSupply.Add(sdk.NewCoin(sdk.DefaultBondDenom, totalBond))
 
 	// add bonded amount to bonded pool module account
 	balances = append(balances, banktypes.Balance{
 		Address: authtypes.NewModuleAddress(stakingtypes.BondedPoolName).String(),
-		Coins:   sdk.Coins{sdk.NewCoin(bondDenom, bondAmt.Mul(sdk.NewInt(int64(len(valSet.Validators)))))},
+		Coins:   sdk.Coins{sdk.NewCoin(sdk.DefaultBondDenom, totalBond)},
 	})
 
-	genModuleAmount, ok := sdk.NewIntFromString("100000000000000000000")
-	require.True(t, ok)
-
-	balances = append(balances, banktypes.Balance{
-		Address: authtypes.NewModuleAddress(types.ModuleName).String(),
-		Coins:   sdk.Coins{sdk.NewCoin(rollAppDenom, genModuleAmount)},
-	})
-
-	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
-	require.NoError(t, err)
-
-	// set validators and delegations
-	stakingGenesis = *stakingtypes.NewGenesisState(stakingGenesis.Params, validators, delegations)
-	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&stakingGenesis)
-
-	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, sdk.NewCoins(), []banktypes.Metadata{})
+	// update total supply
+	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, totalSupply, []banktypes.Metadata{})
 	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)
-
 	// init chain will set the validator set and initialize the genesis accounts
 	app.InitChain(
 		abci.RequestInitChain{
 			Time:            time.Time{},
-			ChainId:         chainID,
+			ChainId:         chainId,
 			ConsensusParams: DefaultConsensusParams,
 			Validators: []abci.ValidatorUpdate{
 				{PubKey: pk, Power: 1},
@@ -205,4 +256,26 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 	)
 
 	return app
+}
+
+// TODO: tech debt - this is almost the same as in github.com/cosmos/ibc-go/v6/testing/app.go
+// but unlike the other one, this one adds the sequencer to the genesis state on InitChain
+func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *tmtypes.ValidatorSet, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
+	t.Helper()
+
+	govSet := make([]sdk.ValAddress, 0, valSet.Size())
+	for i := 0; i < valSet.Size(); i++ {
+		val := valSet.Validators[i]
+		govSet = append(govSet, sdk.ValAddress(val.Address))
+	}
+
+	genModuleAmount, ok := sdk.NewIntFromString("100000000000000000000")
+	require.True(t, ok)
+
+	balances = append(balances, banktypes.Balance{
+		Address: authtypes.NewModuleAddress(hubgenesistypes.ModuleName).String(),
+		Coins:   sdk.Coins{sdk.NewCoin(rollAppDenom, genModuleAmount)},
+	})
+
+	return genesisStateWithValSet(t, chainID, govSet, genAccs, balances)
 }

@@ -1,0 +1,34 @@
+syntax = "proto3";
+package rollapp.governors.types;
+
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/governors/types";
+
+import "gogoproto/gogo.proto";
+import "governors/staking.proto";
+import "cosmos/staking/v1beta1/staking.proto";
+
+// GenesisState defines the staking module's genesis state.
+message GenesisState {
+  // params defines all the paramaters of related to deposit.
+  Params params = 1 [(gogoproto.nullable) = false];
+
+  // last_total_power tracks the total amounts of bonded tokens recorded during
+  // the previous end block.
+  bytes last_total_power = 2
+      [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+
+  // governors defines the governor set at genesis.
+  repeated Governor governors = 4 [(gogoproto.nullable) = false];
+
+  // delegations defines the delegations active at genesis.
+  repeated cosmos.staking.v1beta1.Delegation delegations = 5 [(gogoproto.nullable) = false];
+
+  // unbonding_delegations defines the unbonding delegations active at genesis.
+  repeated cosmos.staking.v1beta1.UnbondingDelegation unbonding_delegations = 6 [(gogoproto.nullable) = false];
+
+  // redelegations defines the redelegations active at genesis.
+  repeated cosmos.staking.v1beta1.Redelegation redelegations = 7 [(gogoproto.nullable) = false];
+
+  bool exported = 8;
+}
