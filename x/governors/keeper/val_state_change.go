@@ -81,8 +81,6 @@ func (k Keeper) BlockGovernorUpdates(ctx sdk.Context) {
 			),
 		)
 	}
-
-	return
 }
 
 // ApplyGovernorSetUpdates applies accumulated updates to the bonded governor set. Also,
@@ -116,7 +114,7 @@ func (k Keeper) ApplyGovernorSetUpdates(ctx sdk.Context) (err error) {
 
 	// Iterate over governors, highest power to lowest.
 	iterator := k.GovernorsPowerStoreIterator(ctx)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	for count := 0; iterator.Valid() && count < int(maxGovernors); iterator.Next() {
 		// everything that is iterated in this loop is becoming or already a
@@ -293,7 +291,9 @@ func (k Keeper) beginUnbondingGovernor(ctx sdk.Context, governor types.Governor)
 	k.InsertUnbondingGovernorQueue(ctx, governor)
 
 	// trigger hook
-	k.AfterGovernorBeginUnbonding(ctx, governor.GetOperator())
+	if err := k.AfterGovernorBeginUnbonding(ctx, governor.GetOperator()); err != nil {
+		return governor, err
+	}
 
 	return governor, nil
 }
@@ -315,7 +315,7 @@ func (k Keeper) getLastGovernorsByAddr(ctx sdk.Context) (governorsByAddr, error)
 	last := make(governorsByAddr)
 
 	iterator := k.LastGovernorsIterator(ctx)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		// extract the governor address from the key (prefix is 1-byte, addrLen is 1-byte)

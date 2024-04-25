@@ -23,7 +23,7 @@ func TestingUpdateGovernor(keeper Keeper, ctx sdk.Context, governor types.Govern
 	deleted := false
 
 	iterator := sdk.KVStorePrefixIterator(store, types.GovernorsByPowerIndexKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		valAddr := types.ParseGovernorPowerRankKey(iterator.Key())

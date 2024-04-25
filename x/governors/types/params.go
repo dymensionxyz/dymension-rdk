@@ -170,15 +170,6 @@ func validateMaxEntries(i interface{}) error {
 	return nil
 }
 
-func validateHistoricalEntries(i interface{}) error {
-	_, ok := i.(uint32)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	return nil
-}
-
 func validateBondDenom(i interface{}) error {
 	v, ok := i.(string)
 	if !ok {

@@ -145,7 +145,9 @@ func (k Keeper) RemoveGovernor(ctx sdk.Context, address sdk.ValAddress) {
 	store.Delete(types.GetGovernorsByPowerIndexKey(governor, k.PowerReduction(ctx)))
 
 	// call hooks
-	k.AfterGovernorRemoved(ctx, governor.GetOperator())
+	if err := k.AfterGovernorRemoved(ctx, governor.GetOperator()); err != nil {
+		panic(err)
+	}
 }
 
 // get groups of governors
@@ -155,7 +157,7 @@ func (k Keeper) GetAllGovernors(ctx sdk.Context) (governors []types.Governor) {
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.GovernorsKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		governor := types.MustUnmarshalGovernor(k.cdc, iterator.Value())
@@ -171,7 +173,7 @@ func (k Keeper) GetGovernors(ctx sdk.Context, maxRetrieve uint32) (governors []t
 	governors = make([]types.Governor, maxRetrieve)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.GovernorsKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	i := 0
 	for ; iterator.Valid() && i < int(maxRetrieve); iterator.Next() {
@@ -189,7 +191,7 @@ func (k Keeper) GetBondedGovernorsByPower(ctx sdk.Context) []types.Governor {
 	governors := make([]types.Governor, maxGovernors)
 
 	iterator := k.GovernorsPowerStoreIterator(ctx)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	i := 0
 	for ; iterator.Valid() && i < int(maxGovernors); iterator.Next() {
@@ -278,7 +280,7 @@ func (k Keeper) GetLastGovernors(ctx sdk.Context) (governors []types.Governor) {
 	governors = make([]types.Governor, maxGovernors)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.LastGovernorPowerKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	i := 0
 	for ; iterator.Valid(); iterator.Next() {
@@ -376,7 +378,7 @@ func (k Keeper) UnbondAllMatureGovernors(ctx sdk.Context) {
 	// so it may be possible that certain governor addresses that are iterated
 	// over are not ready to unbond, so an explicit check is required.
 	unbondingValIterator := k.GovernorQueueIterator(ctx, blockTime, blockHeight)
-	defer unbondingValIterator.Close()
+	defer unbondingValIterator.Close() // nolint: errcheck
 
 	for ; unbondingValIterator.Valid(); unbondingValIterator.Next() {
 		key := unbondingValIterator.Key()

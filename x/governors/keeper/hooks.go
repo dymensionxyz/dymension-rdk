@@ -63,7 +63,7 @@ func (k Keeper) BeforeDelegationSharesModified(ctx sdk.Context, delAddr sdk.AccA
 // BeforeDelegationRemoved - call hook if registered
 func (k Keeper) BeforeDelegationRemoved(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	if k.hooks != nil {
-		k.hooks.BeforeDelegationRemoved(ctx, delAddr, valAddr)
+		return k.hooks.BeforeDelegationRemoved(ctx, delAddr, valAddr)
 	}
 	return nil
 }
