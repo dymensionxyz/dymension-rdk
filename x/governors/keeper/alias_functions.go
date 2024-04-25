@@ -59,7 +59,7 @@ func (k Keeper) IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index in
 	}
 }
 
-// Validator implements types.StakingComptability.
+// Validator implements types.StakingCompatibility.
 func (k Keeper) Validator(ctx sdk.Context, address sdk.ValAddress) stakingtypes.ValidatorI {
 	governor := k.Governor(ctx, address)
 	if governor == nil {
