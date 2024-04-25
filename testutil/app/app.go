@@ -122,7 +122,7 @@ const (
 )
 
 var kvstorekeys = []string{
-	authtypes.StoreKey, authzkeeper.StoreKey, banktypes.StoreKey,
+	authtypes.StoreKey, authzkeeper.StoreKey, feegrant.StoreKey, banktypes.StoreKey,
 	stakingtypes.StoreKey, seqtypes.StoreKey,
 	minttypes.StoreKey, denommetadatatypes.StoreKey, distrtypes.StoreKey,
 	govtypes.StoreKey, paramstypes.StoreKey,
