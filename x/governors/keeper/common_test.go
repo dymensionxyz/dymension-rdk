@@ -4,6 +4,8 @@ import (
 	"math/big"
 	"testing"
 
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
@@ -65,6 +67,13 @@ func createTestInput(t *testing.T) (*codec.LegacyAmino, *app.App, sdk.Context) {
 	}
 
 	app := utils.SetupWithGenesisAccounts(t, []authtypes.GenesisAccount{acc}, []banktypes.Balance{balance})
+
+	// commit genesis changes
+	app.Commit()
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
+		Height:  app.LastBlockHeight() + 1,
+		AppHash: app.LastCommitID().Hash,
+	}})
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	app.StakingKeeper = keeper.NewKeeper(
@@ -84,7 +93,7 @@ func ValEq(t *testing.T, exp, got types.Governor) (*testing.T, bool, string, typ
 
 // generateAddresses generates numAddrs of normal AccAddrs and ValAddrs
 func generateAddresses(app *app.App, ctx sdk.Context, numAddrs int) ([]sdk.AccAddress, []sdk.ValAddress) {
-	addrDels := utils.AddTestAddrs(app, ctx, numAddrs, sdk.NewInt(10000))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, numAddrs, sdk.NewInt(10000))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	return addrDels, addrVals

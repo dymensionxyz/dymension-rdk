@@ -30,7 +30,7 @@ func TestDelegation(t *testing.T) {
 		DelegatorAddress: delegations[0].DelegatorAddress,
 	})
 
-	addrDels := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(10000))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 3, sdk.DefaultPowerReduction)
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	// construct the governors
@@ -151,7 +151,7 @@ func TestDelegation(t *testing.T) {
 func TestUnbondingDelegation(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	delAddrs := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(10000))
+	delAddrs := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(10000))
 	valAddrs := simapp.ConvertAddrsToValAddrs(delAddrs)
 
 	ubd := stakingtypes.NewUnbondingDelegation(
@@ -201,7 +201,7 @@ func TestUnbondingDelegation(t *testing.T) {
 func TestUnbondDelegation(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	delAddrs := utils.AddTestAddrs(app, ctx, 1, sdk.NewInt(10000))
+	delAddrs := utils.AddTestAddrsIncremental(app, ctx, 1, sdk.NewInt(10000))
 	valAddrs := simapp.ConvertAddrsToValAddrs(delAddrs)
 
 	startTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
@@ -240,7 +240,7 @@ func TestUnbondDelegation(t *testing.T) {
 func TestUnbondingDelegationsMaxEntries(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	addrDels := utils.AddTestAddrs(app, ctx, 1, sdk.NewInt(10000))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 1, sdk.NewInt(10000))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	startTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
@@ -322,7 +322,7 @@ func TestUnbondingDelegationsMaxEntries(t *testing.T) {
 func TestUndelegateSelfDelegationBelowMinSelfDelegation(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	addrDels := utils.AddTestAddrs(app, ctx, 1, sdk.NewInt(10000))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 1, sdk.NewInt(10000))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 	delTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	delCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), delTokens))
@@ -383,7 +383,7 @@ func TestUndelegateFromUnbondingGovernor(t *testing.T) {
 	delTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	delCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), delTokens))
 
-	addrDels := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	// create a governor with a self-delegation
@@ -468,7 +468,7 @@ func TestUndelegateFromUnbondedGovernor(t *testing.T) {
 	delTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	delCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), delTokens))
 
-	addrDels := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	// add bonded tokens to pool for delegations
@@ -548,7 +548,7 @@ func TestUnbondingAllDelegationFromGovernor(t *testing.T) {
 	delTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
 	delCoins := sdk.NewCoins(sdk.NewCoin(app.StakingKeeper.BondDenom(ctx), delTokens))
 
-	addrDels := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	// add bonded tokens to pool for delegations
@@ -618,7 +618,7 @@ func TestUnbondingAllDelegationFromGovernor(t *testing.T) {
 func TestGetRedelegationsFromSrcGovernor(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	addrDels := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	rd := stakingtypes.NewRedelegation(addrDels[0], addrVals[0], addrVals[1], 0,
@@ -645,7 +645,7 @@ func TestGetRedelegationsFromSrcGovernor(t *testing.T) {
 func TestRedelegation(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	addrDels := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	rd := stakingtypes.NewRedelegation(addrDels[0], addrVals[0], addrVals[1], 0,
@@ -708,7 +708,7 @@ func TestRedelegation(t *testing.T) {
 func TestRedelegateToSameGovernor(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	addrDels := utils.AddTestAddrs(app, ctx, 1, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 1, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	valTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 10)
@@ -737,7 +737,7 @@ func TestRedelegateToSameGovernor(t *testing.T) {
 func TestRedelegationMaxEntries(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	addrDels := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	startTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 20)
@@ -793,7 +793,7 @@ func TestRedelegationMaxEntries(t *testing.T) {
 func TestRedelegateSelfDelegation(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	addrDels := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	startTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 30)
@@ -848,7 +848,7 @@ func TestRedelegateSelfDelegation(t *testing.T) {
 func TestRedelegateFromUnbondingGovernor(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	addrDels := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	startTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 30)
@@ -929,7 +929,7 @@ func TestRedelegateFromUnbondingGovernor(t *testing.T) {
 func TestRedelegateFromUnbondedGovernor(t *testing.T) {
 	_, app, ctx := createTestInput(t)
 
-	addrDels := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(0))
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(0))
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	startTokens := app.StakingKeeper.TokensFromConsensusPower(ctx, 30)
@@ -971,7 +971,7 @@ func TestRedelegateFromUnbondedGovernor(t *testing.T) {
 	ctx = ctx.WithBlockTime(time.Unix(333, 0))
 
 	// unbond the all self-delegation to put governor in unbonding state
-	_, err := app.StakingKeeper.Undelegate(ctx, val0AccAddr, addrVals[0], sdk.NewDecFromInt(delTokens))
+	_, err := app.StakingKeeper.Undelegate(ctx, val0AccAddr, addrVals[0], sdk.NewDecFromInt(valTokens))
 	require.NoError(t, err)
 
 	// end block

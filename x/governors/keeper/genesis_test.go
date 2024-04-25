@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,8 +16,8 @@ import (
 )
 
 func bootstrapGenesisTest(t *testing.T, numAddrs int) (*app.App, sdk.Context, []sdk.AccAddress) {
-	app := utils.Setup(t, false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+
+	_, app, ctx := createTestInput(t)
 
 	addrDels, _ := generateAddresses(app, ctx, numAddrs)
 	return app, ctx, addrDels
@@ -34,6 +33,7 @@ func TestInitGenesis(t *testing.T) {
 	require.Len(t, governors, 1)
 	var delegations []stakingtypes.Delegation
 
+	// adding additional governores
 	// initialize the governors
 	bondedVal1 := types.Governor{
 		OperatorAddress: sdk.ValAddress(addrs[0]).String(),
@@ -70,7 +70,7 @@ func TestInitGenesis(t *testing.T) {
 	delegations = append(delegations, genesisDelegations...)
 
 	genesisState := types.NewGenesisState(params, governors, delegations)
-	// vals := app.StakingKeeper.InitGenesis(ctx, genesisState)
+	app.StakingKeeper.InitGenesis(ctx, genesisState)
 
 	actualGenesis := app.StakingKeeper.ExportGenesis(ctx)
 	require.Equal(t, genesisState.Params, actualGenesis.Params)
@@ -175,14 +175,8 @@ func TestInitGenesisLargeGovernorSet(t *testing.T) {
 		),
 	)
 
-	vals := app.StakingKeeper.InitGenesis(ctx, genesisState)
+	app.StakingKeeper.InitGenesis(ctx, genesisState)
 
-	abcivals := make([]abci.ValidatorUpdate, 100)
-	// for i, val := range governors[:100] {
-	// abcivals[i] = val.ABCIValidatorUpdate(app.StakingKeeper.PowerReduction(ctx))
-	// }
-
-	// remove genesis governor
-	vals = vals[:100]
-	require.Equal(t, abcivals, vals)
+	res := app.StakingKeeper.GetAllGovernors(ctx)
+	require.Len(t, res, size)
 }
