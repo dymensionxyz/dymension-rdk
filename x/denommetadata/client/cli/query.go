@@ -23,40 +23,10 @@ func GetQueryCmd() *cobra.Command {
 	}
 
 	denommetadataQueryCmd.AddCommand(
-		GetCmdQueryParams(),
 		GetCmdIBCDenomBaseOnDenomTrace(),
 	)
 
 	return denommetadataQueryCmd
-}
-
-// GetCmdQueryParams implements a command to return the current parameters.
-func GetCmdQueryParams() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "params",
-		Short: "Query the current denom metadata module parameters",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, _ []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			params := &types.QueryParamsRequest{}
-
-			res, err := queryClient.Params(context.Background(), params)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(&res.Params)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-
-	return cmd
 }
 
 // GetCmdIBCDenomBaseOnDenomTrace implements a command to return the IBC denom base on a denom trace.

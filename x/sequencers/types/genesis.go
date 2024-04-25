@@ -9,10 +9,13 @@ import (
 // DefaultIndex is the default capability global index
 const DefaultIndex uint64 = 1
 
+var DefaultAddressPermissions = []AddressPermissions(nil) // no one allowed
+
 // DefaultGenesis returns the default Capability genesis state
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
-		Params: DefaultParams(),
+		Params:             DefaultParams(),
+		AddressPermissions: DefaultAddressPermissions,
 	}
 }
 

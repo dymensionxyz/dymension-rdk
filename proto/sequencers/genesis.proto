@@ -3,6 +3,7 @@ package rollapp.sequencers.types;
 
 import "gogoproto/gogo.proto";
 import "sequencers/params.proto";
+import "sequencers/permission.proto";
 
 // this line is used by starport scaffolding # genesis/proto/import
 
@@ -12,7 +13,14 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
 
+  // the address and its permissions to trigger some special actions
+  // on the rollapp
+  repeated AddressPermissions address_permissions = 2 [
+    (gogoproto.moretags) = "yaml:\"address_permissions\"",
+    (gogoproto.nullable) = false
+  ];
+
   // genesis_operator_address defines the genesis operator address of the
   // sequencer.
-  string genesis_operator_address = 2;
+  string genesis_operator_address = 3;
 }

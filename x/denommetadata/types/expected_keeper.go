@@ -19,3 +19,8 @@ type TransferKeeper interface {
 	HasDenomTrace(ctx sdk.Context, denomTraceHash tmbytes.HexBytes) bool
 	SetDenomTrace(ctx sdk.Context, denomTrace transfertypes.DenomTrace)
 }
+
+// SequencerKeeper defines the expected interface needed to check for address permission.
+type SequencerKeeper interface {
+	HasPermission(ctx sdk.Context, accAddr sdk.AccAddress, permission string) bool
+}

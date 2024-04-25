@@ -29,7 +29,10 @@ var (
 	SequencersKey           = []byte{0x21} // prefix for each key to a sequencer
 	SequencersByConsAddrKey = []byte{0x22} // prefix for each key to a sequencer index, by pubkey
 
+	AddressPermissionsKey = []byte{0x30} // prefix for each key to a permission address
+
 	HistoricalInfoKey = []byte{0x50} // prefix for the historical info
+
 )
 
 // GetSequencerKey creates the key for the sequencer with address
@@ -40,6 +43,11 @@ func GetSequencerKey(operatorAddr sdk.ValAddress) []byte {
 // GetSequencerByConsAddrKey creates the key for the sequencer with pubkey
 func GetSequencerByConsAddrKey(addr sdk.ConsAddress) []byte {
 	return append(SequencersByConsAddrKey, address.MustLengthPrefix(addr)...)
+}
+
+// GetPermissionedAddressesKey creates the key for permissions address
+func GetAddressPermissionsKey(addr sdk.AccAddress) []byte {
+	return append(AddressPermissionsKey, address.MustLengthPrefix(addr)...)
 }
 
 // GetHistoricalInfoKey returns a key prefix for indexing HistoricalInfo objects.

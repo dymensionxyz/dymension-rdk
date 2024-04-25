@@ -29,7 +29,8 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type State struct {
 	// is_locked is a boolean that indicates if the genesis event has occured
 	IsLocked bool `protobuf:"varint,1,opt,name=is_locked,json=isLocked,proto3" json:"is_locked,omitempty"`
-	// genesis_tokens is the list of tokens that are expected to be locked on genesis event
+	// genesis_tokens is the list of tokens that are expected to be locked on
+	// genesis event
 	GenesisTokens github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=genesis_tokens,json=genesisTokens,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"genesis_tokens"`
 }
 

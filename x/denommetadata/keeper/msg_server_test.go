@@ -5,14 +5,16 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/suite"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/testutils"
-	"github.com/stretchr/testify/suite"
-
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
+	sequencerstypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 type DenomMetadataMsgServerTestSuite struct {
@@ -34,9 +36,8 @@ func (suite *DenomMetadataMsgServerTestSuite) setupTest(hooks types.DenomMetadat
 	suite.k.SetHooks(types.NewMultiDenommetadataHooks(hooks))
 	suite.msgServer = keeper.NewMsgServerImpl(suite.k)
 	// Set allowed addresses
-	initialParams := types.DefaultParams()
-	initialParams.AllowedAddresses = []string{senderAddress}
-	suite.k.SetParams(suite.ctx, initialParams)
+	senderAccAddr := sdk.MustAccAddressFromBech32(senderAddress)
+	suite.app.SequencersKeeper.GrantPermissions(suite.ctx, senderAccAddr, sequencerstypes.NewPermissions([]string{types.ModuleName}))
 }
 
 const (
@@ -92,9 +93,8 @@ func (suite *DenomMetadataMsgServerTestSuite) TestCreateDenomMetadata() {
 				},
 			},
 			malleate: func() {
-				initialParams := types.DefaultParams()
-				initialParams.AllowedAddresses = []string{}
-				suite.k.SetParams(suite.ctx, initialParams)
+				senderAccAddr := sdk.MustAccAddressFromBech32(senderAddress)
+				suite.app.SequencersKeeper.RevokeAllPermissions(suite.ctx, senderAccAddr)
 			},
 			hooks:            &mockERC20Hook{},
 			expectHookCalled: false,
