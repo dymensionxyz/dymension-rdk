@@ -61,14 +61,17 @@ func TestStakingMsgs(t *testing.T) {
 		},
 	}
 
-	app := utils.SetupWithGenesisAccounts(t, accs, balances...)
-	simapp.CheckBalance(t, app, addr1, sdk.Coins{genCoin})
-	simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin})
+	balancesCheck := sdk.Coins{genCoin}
+	app := utils.SetupWithGenesisAccountsNoGovernors(t, accs, balances)
+	ctxCheck := app.BaseApp.NewContext(true, tmproto.Header{})
+
+	require.True(t, balancesCheck.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr1)))
+	require.True(t, balancesCheck.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr2)))
 
 	// create governor
 	description := types.NewDescription("foo_moniker", "", "", "", "")
 	createGovernorMsg, err := types.NewMsgCreateGovernor(
-		sdk.ValAddress(addr1), valKey.PubKey(), bondCoin, description, commissionRates, sdk.OneInt(),
+		sdk.ValAddress(addr1), bondCoin, description, commissionRates, sdk.OneInt(),
 	)
 	require.NoError(t, err)
 
@@ -76,7 +79,7 @@ func TestStakingMsgs(t *testing.T) {
 	txGen := simapp.MakeTestEncodingConfig().TxConfig
 	_, _, err = simapp.SignCheckDeliver(t, txGen, app.BaseApp, header, []sdk.Msg{createGovernorMsg}, "", []uint64{0}, []uint64{0}, true, true, priv1)
 	require.NoError(t, err)
-	simapp.CheckBalance(t, app, addr1, sdk.Coins{genCoin.Sub(bondCoin)})
+	require.True(t, sdk.Coins{genCoin.Sub(bondCoin)}.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr1)))
 
 	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
 	app.BeginBlock(abci.RequestBeginBlock{Header: header})
@@ -101,14 +104,16 @@ func TestStakingMsgs(t *testing.T) {
 	require.Equal(t, description, governor.Description)
 
 	// delegate
-	simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin})
+	require.True(t, sdk.Coins{genCoin}.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr2)))
+
 	delegateMsg := types.NewMsgDelegate(addr2, sdk.ValAddress(addr1), bondCoin)
 
 	header = tmproto.Header{Height: app.LastBlockHeight() + 1}
 	_, _, err = simapp.SignCheckDeliver(t, txGen, app.BaseApp, header, []sdk.Msg{delegateMsg}, "", []uint64{1}, []uint64{0}, true, true, priv2)
 	require.NoError(t, err)
 
-	simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin.Sub(bondCoin)})
+	require.True(t, sdk.Coins{genCoin.Sub(bondCoin)}.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr2)))
+
 	checkDelegation(t, app, addr2, sdk.ValAddress(addr1), true, sdk.NewDecFromInt(bondTokens))
 
 	// begin unbonding
@@ -121,5 +126,5 @@ func TestStakingMsgs(t *testing.T) {
 	checkDelegation(t, app, addr2, sdk.ValAddress(addr1), false, sdk.Dec{})
 
 	// balance should be the same because bonding not yet complete
-	simapp.CheckBalance(t, app, addr2, sdk.Coins{genCoin.Sub(bondCoin)})
+	require.True(t, sdk.Coins{genCoin.Sub(bondCoin)}.IsEqual(app.BankKeeper.GetAllBalances(ctxCheck, addr2)))
 }

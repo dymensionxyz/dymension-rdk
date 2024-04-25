@@ -143,6 +143,18 @@ func SetupWithGovernors(t *testing.T, governors []sdk.ValAddress, genAccs []auth
 	return genesisStateWithValSet(t, "test_100-1", govSet, genAccs, balances)
 }
 
+func SetupWithGenesisAccountsNoGovernors(t *testing.T, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
+	app := genesisStateWithValSet(t, "test_100-1", []sdk.ValAddress{}, genAccs, balances)
+
+	// commit genesis changes
+	app.Commit()
+	app.BeginBlock(abci.RequestBeginBlock{Header: tmproto.Header{
+		Height:  app.LastBlockHeight() + 1,
+		AppHash: app.LastCommitID().Hash,
+	}})
+	return app
+}
+
 func SetupWithGenesisAccounts(t *testing.T, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
 	t.Helper()
 
