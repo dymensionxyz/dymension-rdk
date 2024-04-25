@@ -59,7 +59,7 @@ func getBaseSimappWithCustomKeeper(t *testing.T) (*codec.LegacyAmino, *app.App, 
 
 // generateAddresses generates numAddrs of normal AccAddrs and ValAddrs
 func generateAddresses(app *app.App, ctx sdk.Context, numAddrs int, accAmount math.Int) ([]sdk.AccAddress, []sdk.ValAddress) {
-	addrDels := utils.AddTestAddrs(app, ctx, numAddrs, accAmount)
+	addrDels := utils.AddTestAddrsIncremental(app, ctx, numAddrs, accAmount)
 	addrVals := simapp.ConvertAddrsToValAddrs(addrDels)
 
 	return addrDels, addrVals

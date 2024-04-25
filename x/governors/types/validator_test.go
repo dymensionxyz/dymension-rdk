@@ -174,11 +174,16 @@ func TestPossibleOverflow(t *testing.T) {
 }
 
 func TestGovernorMarshalUnmarshalJSON(t *testing.T) {
-	governor := newGovernor(t, valAddr1)
+	bechValAddr := "cosmosvaloper10aer0ayy9x0muf3ynyej7uht5lpp65xwknu930"
+	valAddr, err := sdk.ValAddressFromBech32(bechValAddr)
+	require.NoError(t, err)
+
+	governor := newGovernor(t, valAddr)
 	js, err := legacy.Cdc.MarshalJSON(governor)
 	require.NoError(t, err)
 	require.NotEmpty(t, js)
-	require.Contains(t, string(js), "\"consensus_pubkey\":{\"type\":\"tendermint/PubKeyEd25519\"")
+
+	require.Contains(t, string(js), `{"operator_address":"cosmosvaloper10aer0ayy9x0muf3ynyej7uht5lpp65xwknu930"`)
 	got := &types.Governor{}
 	err = legacy.Cdc.UnmarshalJSON(js, got)
 	assert.NoError(t, err)

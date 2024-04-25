@@ -28,9 +28,9 @@ type KeeperTestSuite struct {
 }
 
 func (suite *KeeperTestSuite) SetupTest() {
-	// app := utils.Setup(suite.T(), false)
-	_, app, ctx := createTestInput(suite.T())
-	// ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	app := utils.SetupWithSingleGovernor(suite.T(), false)
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	addrs, _, governors := createGovernors(suite.T(), ctx, app, []int64{9, 8, 7})
 
 	querier := keeper.Querier{Keeper: app.StakingKeeper}
 
@@ -39,8 +39,6 @@ func (suite *KeeperTestSuite) SetupTest() {
 	queryClient := types.NewQueryClient(queryHelper)
 
 	suite.msgServer = keeper.NewMsgServerImpl(app.StakingKeeper)
-
-	addrs, _, governors := createGovernors(suite.T(), ctx, app, []int64{9, 8, 7})
 
 	// sort a copy of the governors, so that original governors does not
 	// have its order changed

@@ -118,6 +118,31 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	return app
 }
 
+func SetupWithSingleGovernor(t *testing.T, isCheckTx bool) *app.App {
+	// generate genesis account
+	senderPrivKey := secp256k1.GenPrivKey()
+	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+	balance := banktypes.Balance{
+		Address: acc.GetAddress().String(),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
+	}
+
+	return SetupWithGenesisAccounts(t, []authtypes.GenesisAccount{acc}, []banktypes.Balance{balance})
+}
+
+func SetupWithGovernors(t *testing.T, governors []sdk.ValAddress, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
+	t.Helper()
+
+	govSet := make([]sdk.ValAddress, 0, len(governors))
+	for _, gov := range governors {
+		governor, err := govtypes.NewGovernor(gov, govtypes.NewDescription("test", "test", "test", "test", "test"))
+		require.NoError(t, err)
+		govSet = append(govSet, governor.GetOperator())
+	}
+
+	return genesisStateWithValSet(t, "test_100-1", govSet, genAccs, balances)
+}
+
 func SetupWithGenesisAccounts(t *testing.T, genAccs []authtypes.GenesisAccount, balances []banktypes.Balance) *app.App {
 	t.Helper()
 

@@ -67,7 +67,6 @@ func TestMsgCreateGovernor(t *testing.T) {
 		{"partial description", "", "", "c", "", "", commission1, sdk.OneInt(), valAddr1, coinPos, true},
 		{"empty description", "", "", "", "", "", commission2, sdk.OneInt(), valAddr1, coinPos, false},
 		{"empty address", "a", "b", "c", "d", "e", commission2, sdk.OneInt(), emptyAddr, coinPos, false},
-		{"empty pubkey", "a", "b", "c", "d", "e", commission1, sdk.OneInt(), valAddr1, coinPos, false},
 		{"empty bond", "a", "b", "c", "d", "e", commission2, sdk.OneInt(), valAddr1, coinZero, false},
 		{"nil bond", "a", "b", "c", "d", "e", commission2, sdk.OneInt(), valAddr1, sdk.Coin{}, false},
 		{"zero min self delegation", "a", "b", "c", "d", "e", commission1, sdk.ZeroInt(), valAddr1, coinPos, false},

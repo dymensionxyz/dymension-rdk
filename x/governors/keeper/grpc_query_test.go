@@ -730,7 +730,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryGovernorUnbondingDelegations() {
 }
 
 func createGovernors(t *testing.T, ctx sdk.Context, app *app.App, powers []int64) ([]sdk.AccAddress, []sdk.ValAddress, []types.Governor) {
-	addrs := utils.AddTestAddrs(app, ctx, 5, app.StakingKeeper.TokensFromConsensusPower(ctx, 300))
+	addrs := utils.AddTestAddrsIncremental(app, ctx, 5, app.StakingKeeper.TokensFromConsensusPower(ctx, 300))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
 	cdc := simapp.MakeTestEncodingConfig().Codec
 	app.StakingKeeper = keeper.NewKeeper(

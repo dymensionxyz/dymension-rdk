@@ -30,7 +30,7 @@ func TestCancelUnbondingDelegation(t *testing.T) {
 	require.Equal(t, sdk.NewInt64Coin(bondDenom, startTokens.Int64()), moduleBalance)
 
 	// accounts
-	delAddrs := utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(10000))
+	delAddrs := utils.AddTestAddrsIncremental(app, ctx, 2, sdk.NewInt(10000))
 	governors := app.StakingKeeper.GetGovernors(ctx, 10)
 	require.Equal(t, len(governors), 1)
 
