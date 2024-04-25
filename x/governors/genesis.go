@@ -1,4 +1,4 @@
-package staking
+package governors
 
 import (
 	"fmt"

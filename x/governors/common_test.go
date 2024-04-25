@@ -1,4 +1,4 @@
-package staking_test
+package governors_test
 
 import (
 	"math/big"
