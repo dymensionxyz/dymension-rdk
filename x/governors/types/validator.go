@@ -66,7 +66,7 @@ func (v Governor) String() string {
 	return string(out)
 }
 
-// ToSDKGovernors -  convenience function convert []Governor to []sdk.GovernorI
+// ToValidator -  convenience function convert []Governor to []sdk.GovernorI
 func (v Governor) ToValidator() (validator stakingtypes.ValidatorI) {
 	return stakingtypes.Validator{
 		OperatorAddress:   v.GetOperator().String(),
