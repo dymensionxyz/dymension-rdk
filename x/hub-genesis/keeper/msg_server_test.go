@@ -166,7 +166,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 
 			suite.k.SetState(suite.ctx, tc.genesisState.State)
 			moduleAddr := suite.app.AccountKeeper.GetModuleAddress(types.ModuleName)
-			suite.app.SequencersKeeper.GrantPermissions(suite.ctx, tc.permissionAddress, sequencerstypes.NewPermissions([]string{types.ModuleName}))
+			suite.app.SequencersKeeper.GrantPermissions(suite.ctx, tc.permissionAddress, sequencerstypes.NewPermissionsList([]string{types.ModuleName}))
 
 			// check the initial module balance
 			rollappBalanceBefore := suite.app.BankKeeper.GetBalance(suite.ctx, moduleAddr, rollappDenom)

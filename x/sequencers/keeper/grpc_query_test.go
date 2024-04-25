@@ -23,3 +23,26 @@ func TestParamsQuery(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, &types.QueryParamsResponse{Params: types.DefaultParams()}, response)
 }
+
+func TestPermissionsQuery(t *testing.T) {
+	app := utils.Setup(t, false)
+	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
+	q := keeper.Querier{Keeper: *k}
+
+	wctx := sdk.WrapSDKContext(ctx)
+
+	accAddr := utils.AccAddress()
+
+	request := &types.QueryPermissionsRequest{
+		Address: sdk.MustBech32ifyAddressBytes(sdk.Bech32PrefixAccAddr, accAddr),
+	}
+
+	response, err := q.Permissions(wctx, request)
+	require.NoError(t, err)
+	require.Equal(t, &types.QueryPermissionsResponse{Permissions: ""}, response)
+
+	k.GrantPermissions(ctx, accAddr, types.NewPermissionsList([]string{"test1", "test2"}))
+	response, err = q.Permissions(wctx, request)
+	require.NoError(t, err)
+	require.Equal(t, &types.QueryPermissionsResponse{Permissions: "test1\ntest2"}, response)
+}

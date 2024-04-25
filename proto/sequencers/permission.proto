@@ -12,13 +12,13 @@ message AddressPermissions {
 
   string address = 1 [ (gogoproto.moretags) = "yaml:\"address\"" ];
   // list of the module name that addresses have permission to execute msg
-  Permissions permissions = 2 [
-    (gogoproto.moretags) = "yaml:\"permissions\"",
+  PermissionList permission_list = 2 [
+    (gogoproto.moretags) = "yaml:\"permission_list\"",
     (gogoproto.nullable) = false
   ];
 }
 
-message Permissions {
+message PermissionList {
   option (gogoproto.equal) = true;
 
   repeated string permissions = 1

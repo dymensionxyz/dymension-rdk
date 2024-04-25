@@ -26,15 +26,6 @@ func init() {
 	govtypes.RegisterProposalType(ProposalTypeRevokePermissions)
 }
 
-// NewGrantPermissionsProposal creates a new grant permissions proposal.
-func NewGrantPermissionsProposal(title, description string, addrPerms AddressPermissions) *GrantPermissionsProposal {
-	return &GrantPermissionsProposal{
-		Title:              title,
-		Description:        description,
-		AddressPermissions: addrPerms,
-	}
-}
-
 // GetTitle returns the title of a grant permissions proposal.
 func (gpp *GrantPermissionsProposal) GetTitle() string { return gpp.Title }
 
@@ -44,7 +35,7 @@ func (gpp *GrantPermissionsProposal) GetDescription() string { return gpp.Descri
 // ProposalRoute returns the routing key of a community pool spend proposal.
 func (gpp *GrantPermissionsProposal) ProposalRoute() string { return RouterKey }
 
-// ProposalType returns the type of a community pool spend proposal.
+// ProposalType returns the type of community pool spend proposal.
 func (gpp *GrantPermissionsProposal) ProposalType() string { return ProposalTypeGrantPermissions }
 
 // ValidateBasic runs basic stateless validity checks
@@ -54,7 +45,12 @@ func (gpp *GrantPermissionsProposal) ValidateBasic() error {
 		return err
 	}
 
-	return gpp.AddressPermissions.Validate()
+	for _, addrPerms := range gpp.AddressPermissions {
+		if err := addrPerms.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // String implements the Stringer interface.
@@ -68,15 +64,6 @@ func (gpp GrantPermissionsProposal) String() string {
 	return b.String()
 }
 
-// NewRevokePermissionsProposall creates a new revoke permissions proposal.
-func NewRevokePermissionsProposal(title, description string, addrPerms AddressPermissions) *RevokePermissionsProposal {
-	return &RevokePermissionsProposal{
-		Title:              title,
-		Description:        description,
-		AddressPermissions: addrPerms,
-	}
-}
-
 // GetTitle returns the title of a revoke permissions proposal.
 func (rpp *RevokePermissionsProposal) GetTitle() string { return rpp.Title }
 
@@ -86,7 +73,7 @@ func (rpp *RevokePermissionsProposal) GetDescription() string { return rpp.Descr
 // ProposalRoute returns the routing key of a revoke permissions proposal.
 func (rpp *RevokePermissionsProposal) ProposalRoute() string { return RouterKey }
 
-// ProposalType returns the type of a revoke permissions proposal.
+// ProposalType returns the type of revoke permissions proposal.
 func (rpp *RevokePermissionsProposal) ProposalType() string { return ProposalTypeRevokePermissions }
 
 // ValidateBasic runs basic stateless validity checks
@@ -96,7 +83,12 @@ func (rpp *RevokePermissionsProposal) ValidateBasic() error {
 		return err
 	}
 
-	return rpp.AddressPermissions.Validate()
+	for _, addrPerms := range rpp.AddressPermissions {
+		if err := addrPerms.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // String implements the Stringer interface.

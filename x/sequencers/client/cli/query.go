@@ -22,6 +22,7 @@ func GetQueryCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(CmdQueryParams())
+	cmd.AddCommand(CmdQueryPermissions())
 	cmd.AddCommand(CmdQuerySequencers())
 	cmd.AddCommand(CmdQuerySequencer())
 

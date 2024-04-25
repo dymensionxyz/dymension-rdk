@@ -16,10 +16,10 @@ func (ap *AddressPermissions) Validate() error {
 		return fmt.Errorf("address format error: %s", err.Error())
 	}
 
-	return ap.Permissions.Validate()
+	return ap.PermissionList.Validate()
 }
 
-func (p *Permissions) Validate() error {
+func (p *PermissionList) Validate() error {
 	if len(p.Permissions) == 0 {
 		return errors.New("permissions field cannot be empty")
 	}
@@ -37,14 +37,17 @@ func (p *Permissions) Validate() error {
 	return nil
 }
 
-func DefaultPermissions() Permissions {
-	return Permissions{
+func DefaultPermissionList() PermissionList {
+	return PermissionList{
 		Permissions: []string{},
 	}
 }
 
-func NewPermissions(permission []string) Permissions {
-	return Permissions{
+func NewPermissionsList(permission []string) PermissionList {
+	if len(permission) == 0 || permission == nil{
+		return DefaultPermissionList()
+	}
+	return PermissionList{
 		Permissions: permission,
 	}
 }

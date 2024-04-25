@@ -37,7 +37,7 @@ func (suite *DenomMetadataMsgServerTestSuite) setupTest(hooks types.DenomMetadat
 	suite.msgServer = keeper.NewMsgServerImpl(suite.k)
 	// Set allowed addresses
 	senderAccAddr := sdk.MustAccAddressFromBech32(senderAddress)
-	suite.app.SequencersKeeper.GrantPermissions(suite.ctx, senderAccAddr, sequencerstypes.NewPermissions([]string{types.ModuleName}))
+	suite.app.SequencersKeeper.GrantPermissions(suite.ctx, senderAccAddr, sequencerstypes.NewPermissionsList([]string{types.ModuleName}))
 }
 
 const (

@@ -14,7 +14,8 @@ message GrantPermissionsProposal {
   string title = 1;
   string description = 2;
 
-  AddressPermissions address_permissions = 3 [ (gogoproto.nullable) = false ];
+  repeated AddressPermissions address_permissions = 3
+      [ (gogoproto.nullable) = false ];
 }
 
 message RevokePermissionsProposal {
@@ -25,5 +26,6 @@ message RevokePermissionsProposal {
   string title = 1;
   string description = 2;
 
-  AddressPermissions address_permissions = 3 [ (gogoproto.nullable) = false ];
+  repeated AddressPermissions address_permissions = 3
+      [ (gogoproto.nullable) = false ];
 }

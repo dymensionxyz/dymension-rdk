@@ -24,9 +24,9 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type GrantPermissionsProposal struct {
-	Title              string             `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
-	Description        string             `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	AddressPermissions AddressPermissions `protobuf:"bytes,3,opt,name=address_permissions,json=addressPermissions,proto3" json:"address_permissions"`
+	Title              string               `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Description        string               `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	AddressPermissions []AddressPermissions `protobuf:"bytes,3,rep,name=address_permissions,json=addressPermissions,proto3" json:"address_permissions"`
 }
 
 func (m *GrantPermissionsProposal) Reset()      { *m = GrantPermissionsProposal{} }
@@ -62,9 +62,9 @@ func (m *GrantPermissionsProposal) XXX_DiscardUnknown() {
 var xxx_messageInfo_GrantPermissionsProposal proto.InternalMessageInfo
 
 type RevokePermissionsProposal struct {
-	Title              string             `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
-	Description        string             `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	AddressPermissions AddressPermissions `protobuf:"bytes,3,opt,name=address_permissions,json=addressPermissions,proto3" json:"address_permissions"`
+	Title              string               `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Description        string               `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	AddressPermissions []AddressPermissions `protobuf:"bytes,3,rep,name=address_permissions,json=addressPermissions,proto3" json:"address_permissions"`
 }
 
 func (m *RevokePermissionsProposal) Reset()      { *m = RevokePermissionsProposal{} }
@@ -117,7 +117,7 @@ var fileDescriptor_d40c11f5a74a5529 = []byte{
 	0x28, 0xbf, 0x20, 0xbf, 0x38, 0x31, 0x47, 0x48, 0x84, 0x8b, 0xb5, 0x24, 0xb3, 0x24, 0x27, 0x55,
 	0x82, 0x51, 0x81, 0x51, 0x83, 0x33, 0x08, 0xc2, 0x11, 0x52, 0xe0, 0xe2, 0x4e, 0x49, 0x2d, 0x4e,
 	0x2e, 0xca, 0x2c, 0x28, 0xc9, 0xcc, 0xcf, 0x93, 0x60, 0x02, 0xcb, 0x21, 0x0b, 0x09, 0x25, 0x73,
-	0x09, 0x27, 0xa6, 0xa4, 0x14, 0xa5, 0x16, 0x17, 0x23, 0xb9, 0xbe, 0x58, 0x82, 0x59, 0x81, 0x51,
+	0x09, 0x27, 0xa6, 0xa4, 0x14, 0xa5, 0x16, 0x17, 0x23, 0xb9, 0xbe, 0x58, 0x82, 0x59, 0x81, 0x59,
 	0x83, 0xdb, 0x48, 0x47, 0x0f, 0x97, 0xfb, 0xf5, 0x1c, 0x21, 0x9a, 0x90, 0x9c, 0xe2, 0xc4, 0x72,
 	0xe2, 0x9e, 0x3c, 0x43, 0x90, 0x50, 0x22, 0x86, 0x8c, 0x15, 0x4f, 0xc7, 0x02, 0x79, 0x86, 0x19,
 	0x0b, 0xe4, 0x19, 0x5e, 0x2c, 0x90, 0x67, 0x54, 0x3a, 0xc6, 0xc8, 0x25, 0x19, 0x94, 0x5a, 0x96,
@@ -126,7 +126,7 @@ var fileDescriptor_d40c11f5a74a5529 = []byte{
 	0x0c, 0x51, 0x16, 0xe9, 0x99, 0x25, 0x19, 0xa5, 0x49, 0x7a, 0xc9, 0xf9, 0xb9, 0xfa, 0x29, 0x95,
 	0xb9, 0xa9, 0x79, 0x20, 0xed, 0x15, 0x95, 0x55, 0x08, 0x8e, 0x6e, 0x51, 0x4a, 0xb6, 0x7e, 0x85,
 	0x3e, 0x52, 0x7c, 0x83, 0x9d, 0x93, 0xc4, 0x06, 0x8e, 0x6b, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff,
-	0xff, 0x52, 0xee, 0xb6, 0x5f, 0x5b, 0x02, 0x00, 0x00,
+	0xff, 0x87, 0x43, 0xb4, 0x54, 0x5b, 0x02, 0x00, 0x00,
 }
 
 func (this *GrantPermissionsProposal) Equal(that interface{}) bool {
@@ -154,8 +154,13 @@ func (this *GrantPermissionsProposal) Equal(that interface{}) bool {
 	if this.Description != that1.Description {
 		return false
 	}
-	if !this.AddressPermissions.Equal(&that1.AddressPermissions) {
+	if len(this.AddressPermissions) != len(that1.AddressPermissions) {
 		return false
+	}
+	for i := range this.AddressPermissions {
+		if !this.AddressPermissions[i].Equal(&that1.AddressPermissions[i]) {
+			return false
+		}
 	}
 	return true
 }
@@ -184,8 +189,13 @@ func (this *RevokePermissionsProposal) Equal(that interface{}) bool {
 	if this.Description != that1.Description {
 		return false
 	}
-	if !this.AddressPermissions.Equal(&that1.AddressPermissions) {
+	if len(this.AddressPermissions) != len(that1.AddressPermissions) {
 		return false
+	}
+	for i := range this.AddressPermissions {
+		if !this.AddressPermissions[i].Equal(&that1.AddressPermissions[i]) {
+			return false
+		}
 	}
 	return true
 }
@@ -209,16 +219,20 @@ func (m *GrantPermissionsProposal) MarshalToSizedBuffer(dAtA []byte) (int, error
 	_ = i
 	var l int
 	_ = l
-	{
-		size, err := m.AddressPermissions.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.AddressPermissions) > 0 {
+		for iNdEx := len(m.AddressPermissions) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.AddressPermissions[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGovPermission(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
 		}
-		i -= size
-		i = encodeVarintGovPermission(dAtA, i, uint64(size))
 	}
-	i--
-	dAtA[i] = 0x1a
 	if len(m.Description) > 0 {
 		i -= len(m.Description)
 		copy(dAtA[i:], m.Description)
@@ -256,16 +270,20 @@ func (m *RevokePermissionsProposal) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	_ = i
 	var l int
 	_ = l
-	{
-		size, err := m.AddressPermissions.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
+	if len(m.AddressPermissions) > 0 {
+		for iNdEx := len(m.AddressPermissions) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.AddressPermissions[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGovPermission(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
 		}
-		i -= size
-		i = encodeVarintGovPermission(dAtA, i, uint64(size))
 	}
-	i--
-	dAtA[i] = 0x1a
 	if len(m.Description) > 0 {
 		i -= len(m.Description)
 		copy(dAtA[i:], m.Description)
@@ -308,8 +326,12 @@ func (m *GrantPermissionsProposal) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovGovPermission(uint64(l))
 	}
-	l = m.AddressPermissions.Size()
-	n += 1 + l + sovGovPermission(uint64(l))
+	if len(m.AddressPermissions) > 0 {
+		for _, e := range m.AddressPermissions {
+			l = e.Size()
+			n += 1 + l + sovGovPermission(uint64(l))
+		}
+	}
 	return n
 }
 
@@ -327,8 +349,12 @@ func (m *RevokePermissionsProposal) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovGovPermission(uint64(l))
 	}
-	l = m.AddressPermissions.Size()
-	n += 1 + l + sovGovPermission(uint64(l))
+	if len(m.AddressPermissions) > 0 {
+		for _, e := range m.AddressPermissions {
+			l = e.Size()
+			n += 1 + l + sovGovPermission(uint64(l))
+		}
+	}
 	return n
 }
 
@@ -460,7 +486,8 @@ func (m *GrantPermissionsProposal) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.AddressPermissions.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.AddressPermissions = append(m.AddressPermissions, AddressPermissions{})
+			if err := m.AddressPermissions[len(m.AddressPermissions)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -607,7 +634,8 @@ func (m *RevokePermissionsProposal) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.AddressPermissions.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.AddressPermissions = append(m.AddressPermissions, AddressPermissions{})
+			if err := m.AddressPermissions[len(m.AddressPermissions)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

@@ -1,6 +1,7 @@
 package sequencers
 
 import (
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
@@ -16,7 +17,7 @@ func NewUpdatePermissionProposalHandler(k *keeper.Keeper) govtypes.Handler {
 		case *types.RevokePermissionsProposal:
 			return HandleRevokePermissionsProposal(ctx, k, c)
 		default:
-			return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized permissions proposal content type: %T", c)
+			return errorsmod.Wrapf(sdkerrors.ErrUnknownRequest, "unrecognized permissions proposal content type: %T", c)
 		}
 	}
 }
@@ -27,28 +28,30 @@ func HandleGrantPermissionsProposal(ctx sdk.Context, k *keeper.Keeper, p *types.
 		return err
 	}
 
-	addrPerms := p.AddressPermissions
-	accAddr, err := sdk.AccAddressFromBech32(addrPerms.Address)
-	if err != nil {
-		return err
-	}
+	for _, addrPerms := range p.AddressPermissions {
+		accAddr, err := sdk.AccAddressFromBech32(addrPerms.Address)
+		if err != nil {
+			return err
+		}
 
-	k.GrantPermissions(ctx, accAddr, addrPerms.Permissions)
+		k.GrantPermissions(ctx, accAddr, addrPerms.PermissionList)
+	}
 	return nil
 }
 
-// HandleUpdateDenomMetadataProposal is a handler for executing a revoke permissions proposal
+// HandleRevokePermissionsProposal is a handler for executing a revoke permissions proposal
 func HandleRevokePermissionsProposal(ctx sdk.Context, k *keeper.Keeper, p *types.RevokePermissionsProposal) error {
 	if err := p.ValidateBasic(); err != nil {
 		return err
 	}
 
-	addrPerms := p.AddressPermissions
-	accAddr, err := sdk.AccAddressFromBech32(addrPerms.Address)
-	if err != nil {
-		return err
-	}
+	for _, addrPerms := range p.AddressPermissions {
+		accAddr, err := sdk.AccAddressFromBech32(addrPerms.Address)
+		if err != nil {
+			return err
+		}
 
-	k.RevokePermissions(ctx, accAddr, addrPerms.Permissions)
+		k.RevokePermissions(ctx, accAddr, addrPerms.PermissionList)
+	}
 	return nil
 }

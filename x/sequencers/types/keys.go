@@ -45,7 +45,7 @@ func GetSequencerByConsAddrKey(addr sdk.ConsAddress) []byte {
 	return append(SequencersByConsAddrKey, address.MustLengthPrefix(addr)...)
 }
 
-// GetPermissionedAddressesKey creates the key for permissions address
+// GetAddressPermissionsKey creates the key for address's permissions
 func GetAddressPermissionsKey(addr sdk.AccAddress) []byte {
 	return append(AddressPermissionsKey, address.MustLengthPrefix(addr)...)
 }
