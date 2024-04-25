@@ -1,0 +1,26 @@
+syntax = "proto3";
+package rollapp.sequencers.types;
+
+import "gogoproto/gogo.proto";
+
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
+
+message AddressPermissions {
+  option (gogoproto.equal) = true;
+
+  string address = 1 [ (gogoproto.moretags) = "yaml:\"address\"" ];
+  // list of the module name that addresses have permission to execute msg
+  PermissionList permission_list = 2 [
+    (gogoproto.moretags) = "yaml:\"permission_list\"",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message PermissionList {
+  option (gogoproto.equal) = true;
+
+  repeated string permissions = 1
+      [ (gogoproto.moretags) = "yaml:\"permissions\"" ];
+}

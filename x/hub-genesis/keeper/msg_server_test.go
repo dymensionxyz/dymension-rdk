@@ -15,6 +15,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/testutil/ibctest"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	sequencerstypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 const (
@@ -57,6 +58,7 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 	cases := []struct {
 		name                 string
 		genesisState         *types.GenesisState
+		permissionAddress    sdk.AccAddress
 		msg                  *types.MsgHubGenesisEvent
 		rollappBalanceBefore sdk.Coin
 		expErr               error
@@ -65,11 +67,9 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 		{
 			name: "successful hub genesis event",
 			genesisState: &types.GenesisState{
-				Params: types.Params{
-					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
-				},
 				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
+			permissionAddress: authorisedAddress,
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
@@ -80,11 +80,9 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 		}, {
 			name: "invalid rollapp genesis event - genesis event already triggered",
 			genesisState: &types.GenesisState{
-				Params: types.Params{
-					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
-				},
 				State: types.State{IsLocked: true, GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
+			permissionAddress: authorisedAddress,
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
@@ -95,11 +93,9 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 		}, {
 			name: "invalid rollapp genesis event - address not in Allowlist",
 			genesisState: &types.GenesisState{
-				Params: types.Params{
-					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: utils.AccAddress().String()}},
-				},
 				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
+			permissionAddress: utils.AccAddress(),
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
@@ -110,11 +106,9 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 		}, {
 			name: "invalid rollapp genesis event - invalid channel id",
 			genesisState: &types.GenesisState{
-				Params: types.Params{
-					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
-				},
 				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
+			permissionAddress: authorisedAddress,
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: "invalid-channel",
@@ -125,11 +119,9 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 		}, {
 			name: "invalid rollapp genesis event - invalid chain id",
 			genesisState: &types.GenesisState{
-				Params: types.Params{
-					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
-				},
 				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
+			permissionAddress: authorisedAddress,
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
@@ -140,11 +132,9 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 		}, {
 			name: "invalid rollapp genesis event - module account has no coins",
 			genesisState: &types.GenesisState{
-				Params: types.Params{
-					GenesisTriggererAllowlist: []types.GenesisTriggererParams{{Address: authorisedAddress.String()}},
-				},
 				State: types.State{GenesisTokens: sdk.NewCoins(initialRollappBalance)},
 			},
+			permissionAddress: authorisedAddress,
 			msg: &types.MsgHubGenesisEvent{
 				Address:   authorisedAddress.String(),
 				ChannelId: path.EndpointA.ChannelID,
@@ -175,8 +165,8 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			}
 
 			suite.k.SetState(suite.ctx, tc.genesisState.State)
-			suite.k.SetParams(suite.ctx, tc.genesisState.Params)
 			moduleAddr := suite.app.AccountKeeper.GetModuleAddress(types.ModuleName)
+			suite.app.SequencersKeeper.GrantPermissions(suite.ctx, tc.permissionAddress, sequencerstypes.NewPermissionsList([]string{types.ModuleName}))
 
 			// check the initial module balance
 			rollappBalanceBefore := suite.app.BankKeeper.GetBalance(suite.ctx, moduleAddr, rollappDenom)

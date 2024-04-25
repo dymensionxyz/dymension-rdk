@@ -56,7 +56,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
-	return ValidateGenesis(genState)
+	return nil
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
@@ -130,10 +130,6 @@ func (am AppModule) RegisterInvariants(sdk.InvariantRegistry) {}
 // InitGenesis performs the capability module's genesis initialization It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {
-	// Initialize global index to index in genesis state
-	var genState types.GenesisState
-	cdc.MustUnmarshalJSON(gs, &genState)
-	InitGenesis(ctx, am.keeper, genState)
 	return []abci.ValidatorUpdate{}
 }
 

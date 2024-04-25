@@ -23,3 +23,8 @@ type BankKeeper interface {
 type ChannelKeeper interface {
 	GetChannelClientState(ctx sdk.Context, portID, channelID string) (string, exported.ClientState, error)
 }
+
+// SequencerKeeper defines the expected interface needed to check for address permission.
+type SequencerKeeper interface {
+	HasPermission(ctx sdk.Context, accAddr sdk.AccAddress, permission string) bool
+}

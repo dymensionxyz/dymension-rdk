@@ -34,7 +34,7 @@ import (
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/posthandler"
 	authsims "github.com/cosmos/cosmos-sdk/x/auth/simulation"
-	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
@@ -391,6 +391,7 @@ func NewRollapp(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
+		AddRoute(seqtypes.RouterKey, sequencers.NewUpdatePermissionProposalHandler(&app.SequencersKeeper)).
 		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
 	govConfig := govtypes.DefaultConfig()
@@ -426,10 +427,10 @@ func NewRollapp(
 	app.DenommetadataKeeper = denommetadatakeeper.NewKeeper(
 		appCodec,
 		keys[denommetadatatypes.StoreKey],
+		app.SequencersKeeper,
 		app.BankKeeper,
 		app.TransferKeeper,
 		nil,
-		app.GetSubspace(denommetadatatypes.ModuleName),
 	)
 	// set hook for denom metadata keeper later
 	app.DenommetadataKeeper.SetHooks(
@@ -441,8 +442,8 @@ func NewRollapp(
 	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
 		appCodec,
 		keys[hubgentypes.StoreKey],
-		app.GetSubspace(hubgentypes.ModuleName),
 		app.IBCKeeper.ChannelKeeper,
+		app.SequencersKeeper,
 		app.BankKeeper,
 		app.AccountKeeper,
 	)
@@ -854,13 +855,11 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(governorstypes.ModuleName)
 	paramsKeeper.Subspace(seqtypes.ModuleName)
 	paramsKeeper.Subspace(minttypes.ModuleName)
-	paramsKeeper.Subspace(denommetadatatypes.ModuleName)
 	paramsKeeper.Subspace(epochstypes.ModuleName)
 	paramsKeeper.Subspace(distrtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govv1.ParamKeyTable())
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	paramsKeeper.Subspace(hubgentypes.ModuleName)
 
 	return paramsKeeper
 }
@@ -877,7 +876,7 @@ func MakeEncodingConfig() EncodingConfig {
 	amino := codec.NewLegacyAmino()
 	interfaceRegistry := types.NewInterfaceRegistry()
 	codec := codec.NewProtoCodec(interfaceRegistry)
-	txCfg := tx.NewTxConfig(codec, tx.DefaultSignModes)
+	txCfg := authtx.NewTxConfig(codec, authtx.DefaultSignModes)
 
 	encodingConfig := EncodingConfig{
 		InterfaceRegistry: interfaceRegistry,
