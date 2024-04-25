@@ -8,6 +8,7 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/stretchr/testify/require"
+	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/simapp"
@@ -15,10 +16,9 @@ import (
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
-	stakingkeeper "github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
-
-	"github.com/dymensionxyz/dymension-rdk/x/governors/teststaking"
-	govtypes "github.com/dymensionxyz/dymension-rdk/x/governors/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	"github.com/cosmos/cosmos-sdk/x/staking/teststaking"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 var (
@@ -62,25 +62,25 @@ func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
 }
 
-func createGovernors(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
+func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
 	addrs := utils.AddTestAddrs(app, ctx, 2, sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper)
+	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
-	// create governor with 6 power and 50% commission
-	tstaking.Commission = govtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
+	// create validator with 6 power and 50% commission
+	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
 	coin := sdk.NewCoin(sdk.DefaultBondDenom, sdk.TokensFromConsensusPower(6, sdk.DefaultPowerReduction))
-	msg, err := govtypes.NewMsgCreateGovernor(valAddrs[0], coin, govtypes.Description{}, tstaking.Commission, sdk.OneInt())
+	msg, err := stakingtypes.NewMsgCreateValidator(valAddrs[0], valConsPk1, coin, stakingtypes.Description{}, tstaking.Commission, sdk.OneInt())
 	require.NoError(t, err)
-	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper).CreateGovernor(ctx, msg)
+	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper.Keeper).CreateValidator(ctx, msg)
 	require.NoError(t, err)
 
-	// create second governor with 4 power and 10% commision
-	tstaking.Commission = govtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
+	// create second validator with 4 power and 10% commision
+	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
 	coin = sdk.NewCoin(sdk.DefaultBondDenom, sdk.TokensFromConsensusPower(4, sdk.DefaultPowerReduction))
-	msg, err = govtypes.NewMsgCreateGovernor(valAddrs[1], coin, govtypes.Description{}, tstaking.Commission, sdk.OneInt())
+	msg, err = stakingtypes.NewMsgCreateValidator(valAddrs[1], valConsPk2, coin, stakingtypes.Description{}, tstaking.Commission, sdk.OneInt())
 	require.NoError(t, err)
-	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper).CreateGovernor(ctx, msg)
+	_, err = stakingkeeper.NewMsgServerImpl(app.StakingKeeper.Keeper).CreateValidator(ctx, msg)
 	require.NoError(t, err)
 	return valAddrs
 }
@@ -88,7 +88,7 @@ func createGovernors(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddre
 /* -------------------------------------------------------------------------- */
 /*                          stakers only, no proposer                         */
 /* -------------------------------------------------------------------------- */
-func TestAllocateTokensGovernorsNoProposer(t *testing.T) {
+func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
@@ -101,12 +101,12 @@ func TestAllocateTokensGovernorsNoProposer(t *testing.T) {
 		WithdrawAddrEnabled: false,
 	})
 
-	valAddrs := createGovernors(t, ctx, app)
+	valAddrs := createValidators(t, ctx, app)
 	assertInitial(t, ctx, app, valAddrs)
 	fundModules(t, ctx, app)
 
-	// end block to bond governor and start new block
-	app.StakingKeeper.BlockGovernorUpdates(ctx)
+	// end block to bond validator and start new block
+	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// allocate tokens as if both had voted and second was proposer
@@ -151,7 +151,7 @@ func TestAllocateTokensGovernorsNoProposer(t *testing.T) {
 /* -------------------------------------------------------------------------- */
 /*                          proposer only, no stakers                         */
 /* -------------------------------------------------------------------------- */
-func TestAllocateTokensToProposerNoGovernors(t *testing.T) {
+func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
@@ -193,16 +193,16 @@ func TestAllocateTokensToProposerNoGovernors(t *testing.T) {
 /* -------------------------------------------------------------------------- */
 /*                          both proposer and members                          */
 /* -------------------------------------------------------------------------- */
-func TestAllocateTokensGovernorsAndProposer(t *testing.T) {
+func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	valAddrs := createGovernors(t, ctx, app)
+	valAddrs := createValidators(t, ctx, app)
 	assertInitial(t, ctx, app, valAddrs)
 	fundModules(t, ctx, app)
 
-	// end block to bond governor and start new block
-	app.StakingKeeper.BlockGovernorUpdates(ctx)
+	// end block to bond validator and start new block
+	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	proposerReward := 0.4
@@ -266,19 +266,32 @@ func TestAllocateTokensTruncation(t *testing.T) {
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper)
+	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
-	// create governor with 10% commission
-	tstaking.Commission = govtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
-	tstaking.CreateGovernor(valAddrs[0], sdk.NewInt(110), true)
+	// create validator with 10% commission
+	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
+	tstaking.CreateValidator(valAddrs[0], valConsPk1, sdk.NewInt(110), true)
 
-	// create second governor with 10% commission
-	tstaking.Commission = govtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
-	tstaking.CreateGovernor(valAddrs[1], sdk.NewInt(100), true)
+	// create second validator with 10% commission
+	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
+	tstaking.CreateValidator(valAddrs[1], valConsPk2, sdk.NewInt(100), true)
 
-	// create third governor with 10% commission
-	tstaking.Commission = govtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
-	tstaking.CreateGovernor(valAddrs[2], sdk.NewInt(100), true)
+	// create third validator with 10% commission
+	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(1, 1), sdk.NewDecWithPrec(1, 1), sdk.NewDec(0))
+	tstaking.CreateValidator(valAddrs[2], valConsPk3, sdk.NewInt(100), true)
+
+	abciValA := abci.Validator{
+		Address: valConsPk1.Address(),
+		Power:   11,
+	}
+	abciValB := abci.Validator{
+		Address: valConsPk2.Address(),
+		Power:   10,
+	}
+	abciValС := abci.Validator{
+		Address: valConsPk3.Address(),
+		Power:   10,
+	}
 
 	// assert initial state: zero outstanding rewards, zero community pool, zero commission, zero current rewards
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards.IsZero())
@@ -299,6 +312,21 @@ func TestAllocateTokensTruncation(t *testing.T) {
 	utils.FundModuleAccount(app, ctx, feeCollector.GetName(), fees)
 
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
+
+	_ = []abci.VoteInfo{
+		{
+			Validator:       abciValA,
+			SignedLastBlock: true,
+		},
+		{
+			Validator:       abciValB,
+			SignedLastBlock: true,
+		},
+		{
+			Validator:       abciValС,
+			SignedLastBlock: true,
+		},
+	}
 	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
 
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards.IsValid())
@@ -306,17 +334,17 @@ func TestAllocateTokensTruncation(t *testing.T) {
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[2]).Rewards.IsValid())
 }
 
-func TestAllocateTokensToGovernorWithCommission(t *testing.T) {
+func TestAllocateTokensToValidatorWithCommission(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
-	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper)
+	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
-	// create governor with 50% commission
-	tstaking.Commission = govtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
-	tstaking.CreateGovernor(sdk.ValAddress(addrs[0]), sdk.NewInt(100), true)
+	// create validator with 50% commission
+	tstaking.Commission = stakingtypes.NewCommissionRates(sdk.NewDecWithPrec(5, 1), sdk.NewDecWithPrec(5, 1), sdk.NewDec(0))
+	tstaking.CreateValidator(sdk.ValAddress(addrs[0]), valConsPk1, sdk.NewInt(100), true)
 	val := app.StakingKeeper.Validator(ctx, valAddrs[0])
 
 	// allocate tokens
