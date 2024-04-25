@@ -18,7 +18,6 @@ import (
 	govtypes "github.com/dymensionxyz/dymension-rdk/x/governors/types"
 	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/stretchr/testify/require"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -60,7 +59,8 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 }
 
 var (
-	ProposerPK       = simapp.CreateTestPubKeys(1)[0]
+	ProposerPriv     = mock.NewPV()
+	ProposerPK, _    = ProposerPriv.GetPubKey()
 	ProposerConsAddr = sdk.ConsAddress(ProposerPK.Address())
 
 	OperatorPK = secp256k1.GenPrivKey().PubKey()
@@ -85,7 +85,7 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	//fixme: call setupWithGenesisAccounts
 	t.Helper()
 
-	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
+	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPriv.PrivKey.PubKey())
 	require.NoError(t, err)
 
 	app, genesisState := setup(true, 5)
@@ -164,7 +164,7 @@ func genesisStateWithValSet(t *testing.T, chainId string, governors []sdk.ValAdd
 		require.GreaterOrEqual(t, len(genAccs), 1)
 	}
 
-	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
+	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPriv.PrivKey.PubKey())
 	require.NoError(t, err)
 
 	app, genesisState := setup(true, 5)

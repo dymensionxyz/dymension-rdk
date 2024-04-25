@@ -22,15 +22,15 @@ func SetupChain(t *testing.T, coord *ibctesting.Coordinator, chainID, rollAppDen
 	var (
 		validatorsPerChain = 4
 		validators         []*tmtypes.Validator
-		signersByAddress   = make(map[string]tmtypes.PrivValidator, validatorsPerChain)
 	)
+	signersByAddress := make(map[string]tmtypes.PrivValidator, 1)
+	signersByAddress[ProposerPK.Address().String()] = ProposerPriv
 
 	for i := 0; i < validatorsPerChain; i++ {
 		privVal := mock.NewPV()
 		pubKey, err := privVal.GetPubKey()
 		require.NoError(t, err)
 		validators = append(validators, tmtypes.NewValidator(pubKey, 1))
-		signersByAddress[pubKey.Address().String()] = privVal
 	}
 
 	valSet := tmtypes.NewValidatorSet(validators)
