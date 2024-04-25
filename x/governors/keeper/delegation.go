@@ -372,7 +372,7 @@ func (k Keeper) DequeueAllMatureUBDQueue(ctx sdk.Context, currTime time.Time) (m
 
 	// gets an iterator for all timeslices from time 0 until the current Blockheader time
 	unbondingTimesliceIterator := k.UBDQueueIterator(ctx, currTime)
-	defer unbondingTimesliceIterator.Close()
+	defer unbondingTimesliceIterator.Close() // nolint: errcheck
 
 	for ; unbondingTimesliceIterator.Valid(); unbondingTimesliceIterator.Next() {
 		timeslice := stakingtypes.DVPairs{}

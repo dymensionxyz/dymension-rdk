@@ -19,7 +19,7 @@ func (k Keeper) IterateValidators(ctx sdk.Context, fn func(index int64, validato
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.GovernorsKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	i := int64(0)
 
@@ -41,7 +41,7 @@ func (k Keeper) IterateBondedValidatorsByPower(ctx sdk.Context, fn func(index in
 	maxGovernors := k.MaxGovernors(ctx)
 
 	iterator := sdk.KVStoreReversePrefixIterator(store, types.GovernorsByPowerIndexKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	i := int64(0)
 	for ; iterator.Valid() && i < int64(maxGovernors); iterator.Next() {
@@ -80,7 +80,7 @@ func (k Keeper) IterateGovernors(ctx sdk.Context, fn func(index int64, governor 
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.GovernorsKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	i := int64(0)
 
@@ -101,7 +101,7 @@ func (k Keeper) IterateBondedGovernorsByPower(ctx sdk.Context, fn func(index int
 	maxGovernors := k.MaxGovernors(ctx)
 
 	iterator := sdk.KVStoreReversePrefixIterator(store, types.GovernorsByPowerIndexKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	i := int64(0)
 	for ; iterator.Valid() && i < int64(maxGovernors); iterator.Next() {
@@ -121,7 +121,7 @@ func (k Keeper) IterateBondedGovernorsByPower(ctx sdk.Context, fn func(index int
 // iterate through the active governor set and perform the provided function
 func (k Keeper) IterateLastGovernors(ctx sdk.Context, fn func(index int64, governor types.GovernorI) (stop bool)) {
 	iterator := k.LastGovernorsIterator(ctx)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	i := int64(0)
 
@@ -171,7 +171,7 @@ func (k Keeper) IterateDelegations(ctx sdk.Context, delAddr sdk.AccAddress,
 	delegatorPrefixKey := types.GetDelegationsKey(delAddr)
 
 	iterator := sdk.KVStorePrefixIterator(store, delegatorPrefixKey) // smallest to largest
-	defer iterator.Close()
+	defer iterator.Close()                                           // nolint: errcheck
 
 	for i := int64(0); iterator.Valid(); iterator.Next() {
 		del := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())
@@ -190,7 +190,7 @@ func (k Keeper) GetAllSDKDelegations(ctx sdk.Context) (delegations []stakingtype
 	store := ctx.KVStore(k.storeKey)
 
 	iterator := sdk.KVStorePrefixIterator(store, types.DelegationKey)
-	defer iterator.Close()
+	defer iterator.Close() // nolint: errcheck
 
 	for ; iterator.Valid(); iterator.Next() {
 		delegation := stakingtypes.MustUnmarshalDelegation(k.cdc, iterator.Value())

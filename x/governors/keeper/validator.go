@@ -255,7 +255,7 @@ func (k Keeper) IterateLastGovernorPowers(ctx sdk.Context, handler func(operator
 	store := ctx.KVStore(k.storeKey)
 
 	iter := sdk.KVStorePrefixIterator(store, types.LastGovernorPowerKey)
-	defer iter.Close()
+	defer iter.Close() // nolint: errcheck
 
 	for ; iter.Valid(); iter.Next() {
 		addr := sdk.ValAddress(types.AddressFromLastGovernorPowerKey(iter.Key()))

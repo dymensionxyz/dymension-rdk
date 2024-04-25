@@ -259,7 +259,10 @@ func (k Keeper) bondGovernor(ctx sdk.Context, governor types.Governor) (types.Go
 	k.DeleteGovernorQueue(ctx, governor)
 
 	// trigger hook
-	k.AfterGovernorBonded(ctx, governor.GetOperator())
+	err := k.AfterGovernorBonded(ctx, governor.GetOperator())
+	if err != nil {
+		return governor, err
+	}
 
 	return governor, nil
 }
