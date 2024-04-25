@@ -50,8 +50,6 @@ func (suite *HubGenesisMsgServerTestSuite) setupTest() {
 }
 
 func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
-	suite.T().Skip("THIS TEST IS FAILING")
-
 	suite.setupTest()
 	path := suite.NewTransferPath(suite.RollAppChain, suite.HubChain)
 	suite.Coordinator.Setup(path)

@@ -26,6 +26,10 @@ func SetupChain(t *testing.T, coord *ibctesting.Coordinator, chainID, rollAppDen
 	signersByAddress := make(map[string]tmtypes.PrivValidator, 1)
 	signersByAddress[ProposerPK.Address().String()] = ProposerPriv
 
+	vals := make([]*tmtypes.Validator, 1)
+	vals[0] = tmtypes.NewValidator(ProposerPK, 1)
+	sequencers := tmtypes.NewValidatorSet(vals)
+
 	for i := 0; i < validatorsPerChain; i++ {
 		privVal := mock.NewPV()
 		pubKey, err := privVal.GetPubKey()
@@ -84,8 +88,8 @@ func SetupChain(t *testing.T, coord *ibctesting.Coordinator, chainID, rollAppDen
 		QueryServer:    app.GetIBCKeeper(),
 		TxConfig:       txConfig,
 		Codec:          app.AppCodec(),
-		Vals:           valSet,
-		NextVals:       valSet,
+		Vals:           sequencers,
+		NextVals:       sequencers,
 		Signers:        signersByAddress,
 		SenderPrivKey:  senderAccs[0].SenderPrivKey,
 		SenderAccount:  senderAccs[0].SenderAccount,
