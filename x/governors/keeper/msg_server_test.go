@@ -11,13 +11,11 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/types"
 	"github.com/stretchr/testify/require"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 func TestCancelUnbondingDelegation(t *testing.T) {
 	// setup the app
-	app := utils.Setup(t, false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	_, app, ctx := createTestInput(t)
 	msgServer := keeper.NewMsgServerImpl(app.StakingKeeper)
 	bondDenom := app.StakingKeeper.BondDenom(ctx)
 

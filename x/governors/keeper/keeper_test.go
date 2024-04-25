@@ -28,8 +28,9 @@ type KeeperTestSuite struct {
 }
 
 func (suite *KeeperTestSuite) SetupTest() {
-	app := utils.Setup(suite.T(), false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+	// app := utils.Setup(suite.T(), false)
+	_, app, ctx := createTestInput(suite.T())
+	// ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	querier := keeper.Querier{Keeper: app.StakingKeeper}
 

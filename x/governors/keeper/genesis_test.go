@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
@@ -178,5 +179,5 @@ func TestInitGenesisLargeGovernorSet(t *testing.T) {
 	app.StakingKeeper.InitGenesis(ctx, genesisState)
 
 	res := app.StakingKeeper.GetAllGovernors(ctx)
-	require.Len(t, res, size)
+	assert.Len(t, res, size+1) // +1 for genesis governor
 }
