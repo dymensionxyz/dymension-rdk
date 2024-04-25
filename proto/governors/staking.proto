@@ -83,30 +83,34 @@ message Governor {
 
   // status is the validator status (bonded/unbonding/unbonded).
   BondStatus status = 2;
+
+    // jailed defined whether the validator has been jailed from bonded status or not.
+    bool jailed = 3;
+
   // tokens define the delegated tokens (incl. self-delegation).
-  string tokens = 3 [
+  string tokens = 4 [
     (cosmos_proto.scalar)  = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable)   = false
   ];
   // delegator_shares defines total shares issued to a validator's delegators.
-  string delegator_shares = 4 [
+  string delegator_shares = 5 [
     (cosmos_proto.scalar)  = "cosmos.Dec",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
   // description defines the description terms for the validator.
-  Description description = 5 [(gogoproto.nullable) = false];
+  Description description = 6 [(gogoproto.nullable) = false];
   // unbonding_height defines, if unbonding, the height at which this validator has begun unbonding.
-  int64 unbonding_height = 6;
+  int64 unbonding_height = 7;
   // unbonding_time defines, if unbonding, the min time for the validator to complete unbonding.
-  google.protobuf.Timestamp unbonding_time = 7 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
+  google.protobuf.Timestamp unbonding_time = 8 [(gogoproto.nullable) = false, (gogoproto.stdtime) = true];
   // commission defines the commission parameters.
-  Commission commission = 8 [(gogoproto.nullable) = false];
+  Commission commission = 9 [(gogoproto.nullable) = false];
   // min_self_delegation is the validator's self declared minimum self delegation.
   //
   // Since: cosmos-sdk 0.46
-  string min_self_delegation = 9 [
+  string min_self_delegation = 10 [
     (cosmos_proto.scalar)  = "cosmos.Int",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable)   = false

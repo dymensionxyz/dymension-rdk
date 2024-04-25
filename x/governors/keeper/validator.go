@@ -43,6 +43,10 @@ func (k Keeper) SetGovernor(ctx sdk.Context, governor types.Governor) {
 
 // governor index
 func (k Keeper) SetGovernorByPowerIndex(ctx sdk.Context, governor types.Governor) {
+	// jailed governors are not kept in the power index
+	if governor.Jailed {
+		return
+	}
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetGovernorsByPowerIndexKey(governor, k.PowerReduction(ctx)), governor.GetOperator())
 }
@@ -411,4 +415,15 @@ func (k Keeper) UnbondAllMatureGovernors(ctx sdk.Context) {
 			store.Delete(key)
 		}
 	}
+}
+
+// send a governor to jail
+func (k Keeper) jailGovernor(ctx sdk.Context, governor types.Governor) {
+	if governor.Jailed {
+		panic(fmt.Sprintf("cannot jail already jailed governor, governor: %v\n", governor))
+	}
+
+	governor.Jailed = true
+	k.SetGovernor(ctx, governor)
+	k.DeleteGovernorByPowerIndex(ctx, governor)
 }

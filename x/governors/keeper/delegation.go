@@ -736,10 +736,9 @@ func (k Keeper) Unbond(
 
 	// If the delegation is the operator of the governor and undelegating will decrease the governor's
 	// self-delegation below their minimum, we jail the governor.
-	if isGovernorOperator && /* && !governor.Jailed*/
+	if isGovernorOperator && !governor.Jailed &&
 		governor.TokensFromShares(delegation.Shares).TruncateInt().LT(governor.MinSelfDelegation) {
-		// k.jailGovernor(ctx, governor)
-		//FIXME: fix this
+		k.jailGovernor(ctx, governor)
 		governor = k.mustGetGovernor(ctx, governor.GetOperator())
 	}
 

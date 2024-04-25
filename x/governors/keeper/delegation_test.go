@@ -375,6 +375,7 @@ func TestUndelegateSelfDelegationBelowMinSelfDelegation(t *testing.T) {
 	require.True(t, found)
 	require.Equal(t, app.StakingKeeper.TokensFromConsensusPower(ctx, 14), governor.Tokens)
 	require.Equal(t, types.Unbonding, governor.Status)
+	require.True(t, governor.Jailed)
 }
 
 func TestUndelegateFromUnbondingGovernor(t *testing.T) {
