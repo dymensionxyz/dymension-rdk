@@ -4,11 +4,14 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/governors/keeper"
@@ -25,7 +28,43 @@ func init() {
 // createTestInput Returns a simapp with custom StakingKeeper
 // to avoid messing with the hooks.
 func createTestInput(t *testing.T) (*codec.LegacyAmino, *app.App, sdk.Context) {
-	app := utils.Setup(t, false)
+
+	// // generate genesis account
+	// senderPrivKey := secp256k1.GenPrivKey()
+	// acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+	// balance := banktypes.Balance{
+	// 	Address: acc.GetAddress().String(),
+	// 	Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
+	// }
+
+	// pk := PKs[0]
+
+	// gov, err := types.NewGovernor(sdk.ValAddress(pk.Address()), types.NewDescription("test", "test", "test", "test", "test"))
+	// require.NoError(t, err)
+
+	// bondAmt := sdk.DefaultPowerReduction
+	// gov.Tokens = bondAmt
+	// gov.Status = types.Bonded
+	// gov.DelegatorShares = sdk.OneDec()
+
+	// govSet := []types.Governor{gov}
+	// delegations := stakingtypes.NewDelegation(genAccs[0].GetAddress(), val.Address.Bytes(), sdk.OneDec())
+
+	// // generate genesis account
+	// acc := authtypes.NewBaseAccount(sdk.AccAddress(pk.Address()), pk, 0, 0)
+	// balance := banktypes.Balance{
+	// 	Address: acc.GetAddress().String(),
+	// 	Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
+	// }
+	// generate genesis account
+	senderPrivKey := secp256k1.GenPrivKey()
+	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+	balance := banktypes.Balance{
+		Address: acc.GetAddress().String(),
+		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(100000000000000))),
+	}
+
+	app := utils.SetupWithGenesisAccounts(t, []authtypes.GenesisAccount{acc}, []banktypes.Balance{balance})
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	app.StakingKeeper = keeper.NewKeeper(

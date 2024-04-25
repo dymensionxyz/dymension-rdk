@@ -57,12 +57,6 @@ func GetGovernorKey(operatorAddr sdk.ValAddress) []byte {
 	return append(GovernorsKey, address.MustLengthPrefix(operatorAddr)...)
 }
 
-// GetGovernorByConsAddrKey creates the key for the governor with pubkey
-// VALUE: governor operator address ([]byte)
-func GetGovernorByConsAddrKey(addr sdk.ConsAddress) []byte {
-	return append(GovernorsByConsAddrKey, address.MustLengthPrefix(addr)...)
-}
-
 // AddressFromGovernorsKey creates the governor operator address from GovernorsKey
 func AddressFromGovernorsKey(key []byte) []byte {
 	kv.AssertKeyAtLeastLength(key, 3)
