@@ -59,6 +59,11 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				return nil
 			}
 
+			genDoc, err := rdk_genutiltypes.GenesisDocFromFile(config.GenesisFile())
+			if err != nil {
+				fmt.Println("Failed to read genesis doc from file", err)
+			}
+
 			traceWriterFile, _ := cmd.Flags().GetString(flagTraceStore)
 			traceWriter, err := openTraceWriter(traceWriterFile)
 			if err != nil {
@@ -101,7 +106,7 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 					PubKeyTypes: exported.ConsensusParams.Validator.PubKeyTypes,
 				},
 			}
-			doc["bech32_prefix"] = exported.Bech32Prefix
+			doc["bech32_prefix"] = genDoc["bech32_prefix"]
 
 			// NOTE: Tendermint uses a custom JSON decoder for GenesisDoc
 			// (except for stuff inside AppState). Inside AppState, we're free
