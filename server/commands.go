@@ -19,7 +19,7 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 )
 
-// add Rollapp commands
+// AddRollappCommands add special commands specifically for rollapp
 func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport rdktypes.AppExporter, addStartFlags types.ModuleInitFlags) {
 	dymintCmd := &cobra.Command{
 		Use:   "dymint",
