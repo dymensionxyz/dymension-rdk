@@ -1,8 +1,6 @@
 package cli
 
 import (
-	"context"
-
 	"cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -26,7 +24,7 @@ func CmdQueryPermissions() *cobra.Command {
 				return errors.Wrapf(err, "address format error")
 			}
 
-			res, err := queryClient.Permissions(context.Background(), &types.QueryPermissionsRequest{
+			res, err := queryClient.Permissions(cmd.Context(), &types.QueryPermissionsRequest{
 				Address: address,
 			})
 			if err != nil {

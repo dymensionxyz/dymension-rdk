@@ -1,8 +1,11 @@
 package keeper
 
 import (
+	"github.com/tendermint/tendermint/libs/log"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
@@ -48,4 +51,20 @@ func (k *Keeper) SetHooks(sh types.MultiDenomMetadataHooks) {
 // GetHooks get the denommetadata hooks
 func (k *Keeper) GetHooks() types.MultiDenomMetadataHooks {
 	return k.hooks
+}
+
+// Logger returns a module-specific logger.
+func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", "x/"+types.ModuleName)
+}
+
+func (k *Keeper) isAddressPermissioned(ctx sdk.Context, address string) bool {
+	logger := k.Logger(ctx)
+	accAddr, err := sdk.AccAddressFromBech32(address)
+	if err != nil {
+		logger.Error("failed to extract account address from bech32: ", err)
+		return false
+	}
+
+	return k.sequencerKeeper.HasPermission(ctx, accAddr, types.ModuleName) 
 }

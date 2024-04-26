@@ -8,7 +8,7 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
 // State holds the state of the genesis event
 message State {
-  // is_locked is a boolean that indicates if the genesis event has occured
+  // is_locked is a boolean that indicates if the genesis event has occurred
   bool is_locked = 1;
 
   // genesis_tokens is the list of tokens that are expected to be locked on
