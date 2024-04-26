@@ -24,18 +24,14 @@ func (p *PermissionList) Validate() error {
 	if len(p.Permissions) == 0 {
 		return errors.New("permissions field cannot be empty")
 	}
-	perms := p.Permissions
+
+	perms := slices.Clone(p.Permissions)
 	slices.Sort(perms)
 	perms = slices.Compact(perms)
 
 	// Check if duplicates
 	if len(perms) != len(p.Permissions) {
 		return fmt.Errorf("duplicated permission in AddressPermissions")
-	}
-
-	// Check if permissions list is sorted
-	if !p.Equal(NewPermissionsList(perms)) {
-		return fmt.Errorf("PermissionList is not sorted yet")
 	}
 	return nil
 }

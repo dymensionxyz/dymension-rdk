@@ -61,3 +61,14 @@ func (k Keeper) lockRollappGenesisTokens(ctx sdk.Context, sourceChannel string, 
 	escrowAddress := ibctypes.GetEscrowAddress("transfer", sourceChannel)
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, escrowAddress, tokens)
 }
+
+func (k *Keeper) isAddressPermissioned(ctx sdk.Context, address string) bool {
+	logger := k.Logger(ctx)
+	accAddr, err := sdk.AccAddressFromBech32(address)
+	if err != nil {
+		logger.Error("failed to extract account address from bech32: ", err)
+		return false
+	}
+
+	return k.sequencerKeeper.HasPermission(ctx, accAddr, types.ModuleName)
+}

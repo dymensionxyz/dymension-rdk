@@ -26,6 +26,15 @@ func init() {
 	govtypes.RegisterProposalType(ProposalTypeRevokePermissions)
 }
 
+// NewGrantPermissionsProposal creates a new grant permissions proposal.
+func NewGrantPermissionsProposal(title, description string, addrPerms []AddressPermissions) *GrantPermissionsProposal {
+	return &GrantPermissionsProposal{
+		Title:              title,
+		Description:        description,
+		AddressPermissions: addrPerms,
+	}
+}
+
 // GetTitle returns the title of a grant permissions proposal.
 func (gpp *GrantPermissionsProposal) GetTitle() string { return gpp.Title }
 
@@ -62,6 +71,15 @@ func (gpp GrantPermissionsProposal) String() string {
 	  AddressPermissions: %s
 `, gpp.Title, gpp.Description, &gpp.AddressPermissions))
 	return b.String()
+}
+
+// NewRevokePermissionsProposal creates a new revoke permissions proposal.
+func NewRevokePermissionsProposal(title, description string, addrPerms []AddressPermissions) *RevokePermissionsProposal {
+	return &RevokePermissionsProposal{
+		Title:              title,
+		Description:        description,
+		AddressPermissions: addrPerms,
+	}
 }
 
 // GetTitle returns the title of a revoke permissions proposal.

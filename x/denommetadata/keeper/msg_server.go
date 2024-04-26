@@ -33,12 +33,7 @@ func (k msgServer) CreateDenomMetadata(
 		return nil, err
 	}
 
-	accAddr, err := sdk.AccAddressFromBech32(msg.SenderAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	if !k.sequencerKeeper.HasPermission(ctx, accAddr, types.ModuleName) {
+	if !k.isAddressPermissioned(ctx, msg.SenderAddress) {
 		return nil, types.ErrNoPermission
 	}
 
@@ -77,15 +72,9 @@ func (k msgServer) UpdateDenomMetadata(
 		return nil, err
 	}
 
-	accAddr, err := sdk.AccAddressFromBech32(msg.SenderAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	if !k.sequencerKeeper.HasPermission(ctx, accAddr, types.ModuleName) {
+	if !k.isAddressPermissioned(ctx, msg.SenderAddress) {
 		return nil, types.ErrNoPermission
 	}
-
 	for _, metadata := range msg.Metadatas {
 		found := k.bankKeeper.HasDenomMetaData(ctx, metadata.TokenMetadata.Base)
 		if !found {
