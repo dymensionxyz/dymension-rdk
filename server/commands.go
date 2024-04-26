@@ -8,7 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
-	rdk_types "github.com/dymensionxyz/dymension-rdk/server/types"
+	rdktypes "github.com/dymensionxyz/dymension-rdk/server/types"
 
 	"github.com/dymensionxyz/dymension-rdk/server/commands"
 	"github.com/dymensionxyz/dymint/conv"
@@ -20,7 +20,7 @@ import (
 )
 
 // add Rollapp commands
-func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport rdk_types.AppExporter, addStartFlags types.ModuleInitFlags) {
+func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport rdktypes.AppExporter, addStartFlags types.ModuleInitFlags) {
 	dymintCmd := &cobra.Command{
 		Use:   "dymint",
 		Short: "dymint subcommands",

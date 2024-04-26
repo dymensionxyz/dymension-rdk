@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	rdk_genutiltypes "github.com/dymensionxyz/dymension-rdk/x/genutil/types"
+	rdkgenutiltypes "github.com/dymensionxyz/dymension-rdk/x/genutil/types"
 	"github.com/spf13/cobra"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
@@ -60,7 +60,7 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				return nil
 			}
 
-			genDoc, err := rdk_genutiltypes.GenesisDocFromFile(config.GenesisFile())
+			genDoc, err := rdkgenutiltypes.GenesisDocFromFile(config.GenesisFile())
 			if err != nil {
 				fmt.Println("Failed to read genesis doc from file", err)
 			}
@@ -80,7 +80,7 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				return fmt.Errorf("error exporting state: %v", err)
 			}
 
-			doc, err := rdk_genutiltypes.GenesisDocFromFile(serverCtx.Config.GenesisFile())
+			doc, err := rdkgenutiltypes.GenesisDocFromFile(serverCtx.Config.GenesisFile())
 			if err != nil {
 				return err
 			}
