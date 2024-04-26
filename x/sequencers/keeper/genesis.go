@@ -25,6 +25,14 @@ func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) []abc
 	}
 	k.DeleteSequencer(ctx, seq)
 
+	for _, addressPermission := range genState.AddressPermissions {
+		address, err := sdk.AccAddressFromBech32(addressPermission.Address)
+		if err != nil {
+			panic(err)
+		}
+		k.GrantPermissions(ctx, address, addressPermission.GetPermissionList())
+	}
+
 	pubkey, err := seq.ConsPubKey()
 	if err != nil {
 		panic(err)
