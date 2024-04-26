@@ -13,6 +13,11 @@ func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) []abc
 	var updates []abci.ValidatorUpdate
 	k.SetParams(ctx, genState.Params)
 
+	for _, addrPerms := range genState.AddressPermissions {
+		accAddr := sdk.MustAccAddressFromBech32(addrPerms.Address)
+		k.GrantPermissions(ctx, accAddr, addrPerms.PermissionList)
+	}
+
 	operatorAddr, err := sdk.ValAddressFromBech32(genState.GenesisOperatorAddress)
 	if err != nil {
 		panic(err)
