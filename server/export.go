@@ -89,9 +89,18 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			doc["validators"] = exported.Validators
 			doc["initial_height"] = exported.Height
 
-			consensus_param := doc["consensus_params"].(map[string]interface{})
-			block := consensus_param["block"].(map[string]interface{})
-			time_iota_ms, _ := strconv.ParseInt(block["time_iota_ms"].(string), 10, 64)
+			consensus_param, ok := doc["consensus_params"].(map[string]interface{})
+			if !ok {
+				return err
+			}
+			block, ok := consensus_param["block"].(map[string]interface{})
+			if !ok {
+				return err
+			}
+			time_iota_ms, err := strconv.ParseInt(block["time_iota_ms"].(string), 10, 64)
+			if err != nil {
+				return err
+			}
 			doc["consensus_params"] = &tmproto.ConsensusParams{
 				Block: tmproto.BlockParams{
 					MaxBytes:   exported.ConsensusParams.Block.MaxBytes,
