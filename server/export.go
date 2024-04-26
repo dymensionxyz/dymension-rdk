@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 
 	rdk_genutiltypes "github.com/dymensionxyz/dymension-rdk/x/genutil/types"
 	"github.com/spf13/cobra"
@@ -90,12 +91,12 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 
 			consensus_param := doc["consensus_params"].(map[string]interface{})
 			block := consensus_param["block"].(map[string]interface{})
-
+			time_iota_ms, _ := strconv.ParseInt(block["time_iota_ms"].(string), 10, 64)
 			doc["consensus_params"] = &tmproto.ConsensusParams{
 				Block: tmproto.BlockParams{
 					MaxBytes:   exported.ConsensusParams.Block.MaxBytes,
 					MaxGas:     exported.ConsensusParams.Block.MaxGas,
-					TimeIotaMs: block["time_iota_ms"].(int64),
+					TimeIotaMs: time_iota_ms,
 				},
 				Evidence: tmproto.EvidenceParams{
 					MaxAgeNumBlocks: exported.ConsensusParams.Evidence.MaxAgeNumBlocks,
