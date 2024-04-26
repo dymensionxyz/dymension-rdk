@@ -74,7 +74,6 @@ func (k msgServer) UpdateDenomMetadata(
 
 	if !k.isAddressPermissioned(ctx, msg.SenderAddress) {
 		return nil, types.ErrNoPermission
-
 	}
 	for _, metadata := range msg.Metadatas {
 		found := k.bankKeeper.HasDenomMetaData(ctx, metadata.TokenMetadata.Base)

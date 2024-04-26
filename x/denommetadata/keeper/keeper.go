@@ -66,5 +66,5 @@ func (k *Keeper) isAddressPermissioned(ctx sdk.Context, address string) bool {
 		return false
 	}
 
-	return k.sequencerKeeper.HasPermission(ctx, accAddr, types.ModuleName) 
+	return k.sequencerKeeper.HasPermission(ctx, accAddr, types.ModuleName)
 }
