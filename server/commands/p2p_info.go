@@ -80,8 +80,8 @@ func showP2PInfo(cmd *cobra.Command, args []string) error {
 	})
 
 	//Info displayed: Libp2p Peeer ID, Multiaddress (connection info) and time pasted since connection
-	for _, p := range peers {
-		fmt.Printf("Id:%s Multiaddress:%s Connection duration:%s\n", p.peerId, p.multiAddress, p.connectionDuration)
+	for i, p := range peers {
+		fmt.Printf("Peer %d Id:%s Multiaddress:%s Connection duration:%s\n", i, p.peerId, p.multiAddress, p.connectionDuration)
 	}
 	return nil
 
