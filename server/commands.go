@@ -10,7 +10,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 
 	"github.com/dymensionxyz/dymension-rdk/server/commands"
-	dymintcommands "github.com/dymensionxyz/dymint/cmd/dymint/commands"
 	"github.com/dymensionxyz/dymint/conv"
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
@@ -30,7 +29,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		ShowSequencer(),
 		ShowNodeIDCmd(),
 		commands.InspectStateCmd(),
-		dymintcommands.ShowP2PInfoCmd,
+		commands.ShowP2PInfoCmd(),
 		ResetAll(),
 		server.VersionCmd(),
 		ResetState(),
