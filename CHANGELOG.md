@@ -1,83 +1,9 @@
-# [](https://github.com/dymensionxyz/dymension-rdk/compare/v1.5.0-beta...v) (2024-04-25)
+# [0.2.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/10bff865d6b3a676c574423f81805ed3929efcf7...v0.2.0-beta) (2023-02-15)
 
 
-### Features
+### Reverts
 
-* Add  collect-gentxs command to pickup custom gendoc ([#388](https://github.com/dymensionxyz/dymension-rdk/issues/388)) ([f6997e0](https://github.com/dymensionxyz/dymension-rdk/commit/f6997e0d1a5c38ac5637f6e615845bfb78842976))
-* **denommetadata:** Add support for providing denom-trace and creation of multiple denom-metadatas  ([#384](https://github.com/dymensionxyz/dymension-rdk/issues/384)) ([c720640](https://github.com/dymensionxyz/dymension-rdk/commit/c720640d7d392d58fb191852cd8f4a5d85afc04e))
-
-
-
-# [1.5.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.4.0-beta...v1.5.0-beta) (2024-04-14)
-
-
-
-# [1.4.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.3.0-beta...v1.4.0-beta) (2024-04-13)
-
-
-### Bug Fixes
-
-* **denommetadata:** fixed ibc voucher denom query ([#378](https://github.com/dymensionxyz/dymension-rdk/issues/378)) ([bf14e28](https://github.com/dymensionxyz/dymension-rdk/commit/bf14e28256c444930195b3a6df760d3626c205fa))
-
-
-
-# [1.3.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.2.0-beta...v1.3.0-beta) (2024-04-11)
-
-
-### Bug Fixes
-
-* **allocation:** do not destroy fee rewards if allocating to proposer fails ([#358](https://github.com/dymensionxyz/dymension-rdk/issues/358)) ([bfd0943](https://github.com/dymensionxyz/dymension-rdk/commit/bfd09432d61eb2c33e29621a1ab868661aeda50c))
-* **mint:** added missing cli query for current inflation ([#366](https://github.com/dymensionxyz/dymension-rdk/issues/366)) ([6ecadd8](https://github.com/dymensionxyz/dymension-rdk/commit/6ecadd818429e1870da7e6f6e044bc87f900ec8b))
-* **sequencer:** added HistoricalEntries param validation ([#369](https://github.com/dymensionxyz/dymension-rdk/issues/369)) ([8e4b891](https://github.com/dymensionxyz/dymension-rdk/commit/8e4b891e68304912b839c2b3ef2a733d91426ce2))
-* **sequencers:** sequencers genesis operator address not exported ([#367](https://github.com/dymensionxyz/dymension-rdk/issues/367)) ([2a1f308](https://github.com/dymensionxyz/dymension-rdk/commit/2a1f308c31141143c20fadee37578c5be0df4f87))
-
-
-### Features
-
-* add get ibc denom base on denom trace query ([#376](https://github.com/dymensionxyz/dymension-rdk/issues/376)) ([807717b](https://github.com/dymensionxyz/dymension-rdk/commit/807717b3219609a68e14d4f11100c539db001008))
-
-
-
-# [1.2.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.1.0-beta...v1.2.0-beta) (2024-03-26)
-
-
-### Features
-
-* **deonmetadata:** enable testing for denom metadata creation with erc20 hook ([#343](https://github.com/dymensionxyz/dymension-rdk/issues/343)) ([8e3dc66](https://github.com/dymensionxyz/dymension-rdk/commit/8e3dc66c8c6d6894cbf2d5d12112772069ea8774))
-
-
-
-# [1.1.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.0.0-beta...v1.1.0-beta) (2024-03-22)
-
-
-### Bug Fixes
-
-* dymint reset-state command not working ([#309](https://github.com/dymensionxyz/dymension-rdk/issues/309)) ([4f5a707](https://github.com/dymensionxyz/dymension-rdk/commit/4f5a70734530f4da1c8980cdeb9b59d5a2148577))
-
-
-### Features
-
-* adding_inspect_command ([#289](https://github.com/dymensionxyz/dymension-rdk/issues/289)) ([a58be89](https://github.com/dymensionxyz/dymension-rdk/commit/a58be893b8aa113b302aeb308036858b80f7958c))
-* mint add query cmd for current inflation ([#328](https://github.com/dymensionxyz/dymension-rdk/issues/328)) ([1c49688](https://github.com/dymensionxyz/dymension-rdk/commit/1c49688dc88de8cb70a358ba80eced1a9062543c))
-* permissioned creation of token metadata ([#327](https://github.com/dymensionxyz/dymension-rdk/issues/327)) ([ffe8e06](https://github.com/dymensionxyz/dymension-rdk/commit/ffe8e06500e248b4e45097700c3b296131971084))
-* rollapp genesis token locking upon channel creation ([#333](https://github.com/dymensionxyz/dymension-rdk/issues/333)) ([4bbdcda](https://github.com/dymensionxyz/dymension-rdk/commit/4bbdcdadb10c44d8458b48ac1c552fa9fcea3321))
-
-
-
-# [1.0.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v0.4.0-rc1...v1.0.0-beta) (2023-10-19)
-
-
-### Bug Fixes
-
-* added keyring-backend flag for gentx_seq ([#239](https://github.com/dymensionxyz/dymension-rdk/issues/239)) ([7bf5d44](https://github.com/dymensionxyz/dymension-rdk/commit/7bf5d44d353a0eb5e6823542c44dd0cc94bed921))
-* evm module to use sequencers module instead of staking ([#223](https://github.com/dymensionxyz/dymension-rdk/issues/223)) ([315aa83](https://github.com/dymensionxyz/dymension-rdk/commit/315aa83afd3daf381608d59af088f405ad05b3ad))
-* fixed epochs proto API path ([#236](https://github.com/dymensionxyz/dymension-rdk/issues/236)) ([0013f9f](https://github.com/dymensionxyz/dymension-rdk/commit/0013f9f12bb52c0e2a2547c3508e242764083ec7))
-* sequencer module returns two objects in initchain ([#237](https://github.com/dymensionxyz/dymension-rdk/issues/237)) ([76c5329](https://github.com/dymensionxyz/dymension-rdk/commit/76c5329f3b3801c5ce3ab61a8dfc1a5a8319bc9c))
-
-
-### Features
-
-* support stakers on genesis ([#260](https://github.com/dymensionxyz/dymension-rdk/issues/260)) ([4632268](https://github.com/dymensionxyz/dymension-rdk/commit/463226890c589dee8d1b41fda246e44130a11e4f))
+* Revert "removed vue and ts-client" ([10bff86](https://github.com/dymensionxyz/dymension-rdk/commit/10bff865d6b3a676c574423f81805ed3929efcf7))
 
 
 
@@ -115,12 +41,86 @@
 
 
 
-# [0.2.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/10bff865d6b3a676c574423f81805ed3929efcf7...v0.2.0-beta) (2023-02-15)
+# [1.0.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v0.4.0-rc1...v1.0.0-beta) (2023-10-19)
 
 
-### Reverts
+### Bug Fixes
 
-* Revert "removed vue and ts-client" ([10bff86](https://github.com/dymensionxyz/dymension-rdk/commit/10bff865d6b3a676c574423f81805ed3929efcf7))
+* added keyring-backend flag for gentx_seq ([#239](https://github.com/dymensionxyz/dymension-rdk/issues/239)) ([7bf5d44](https://github.com/dymensionxyz/dymension-rdk/commit/7bf5d44d353a0eb5e6823542c44dd0cc94bed921))
+* evm module to use sequencers module instead of staking ([#223](https://github.com/dymensionxyz/dymension-rdk/issues/223)) ([315aa83](https://github.com/dymensionxyz/dymension-rdk/commit/315aa83afd3daf381608d59af088f405ad05b3ad))
+* fixed epochs proto API path ([#236](https://github.com/dymensionxyz/dymension-rdk/issues/236)) ([0013f9f](https://github.com/dymensionxyz/dymension-rdk/commit/0013f9f12bb52c0e2a2547c3508e242764083ec7))
+* sequencer module returns two objects in initchain ([#237](https://github.com/dymensionxyz/dymension-rdk/issues/237)) ([76c5329](https://github.com/dymensionxyz/dymension-rdk/commit/76c5329f3b3801c5ce3ab61a8dfc1a5a8319bc9c))
+
+
+### Features
+
+* support stakers on genesis ([#260](https://github.com/dymensionxyz/dymension-rdk/issues/260)) ([4632268](https://github.com/dymensionxyz/dymension-rdk/commit/463226890c589dee8d1b41fda246e44130a11e4f))
+
+
+
+# [1.1.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.0.0-beta...v1.1.0-beta) (2024-03-22)
+
+
+### Bug Fixes
+
+* dymint reset-state command not working ([#309](https://github.com/dymensionxyz/dymension-rdk/issues/309)) ([4f5a707](https://github.com/dymensionxyz/dymension-rdk/commit/4f5a70734530f4da1c8980cdeb9b59d5a2148577))
+
+
+### Features
+
+* adding_inspect_command ([#289](https://github.com/dymensionxyz/dymension-rdk/issues/289)) ([a58be89](https://github.com/dymensionxyz/dymension-rdk/commit/a58be893b8aa113b302aeb308036858b80f7958c))
+* mint add query cmd for current inflation ([#328](https://github.com/dymensionxyz/dymension-rdk/issues/328)) ([1c49688](https://github.com/dymensionxyz/dymension-rdk/commit/1c49688dc88de8cb70a358ba80eced1a9062543c))
+* permissioned creation of token metadata ([#327](https://github.com/dymensionxyz/dymension-rdk/issues/327)) ([ffe8e06](https://github.com/dymensionxyz/dymension-rdk/commit/ffe8e06500e248b4e45097700c3b296131971084))
+* rollapp genesis token locking upon channel creation ([#333](https://github.com/dymensionxyz/dymension-rdk/issues/333)) ([4bbdcda](https://github.com/dymensionxyz/dymension-rdk/commit/4bbdcdadb10c44d8458b48ac1c552fa9fcea3321))
+
+
+
+# [1.2.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.1.0-beta...v1.2.0-beta) (2024-03-26)
+
+
+### Features
+
+* **deonmetadata:** enable testing for denom metadata creation with erc20 hook ([#343](https://github.com/dymensionxyz/dymension-rdk/issues/343)) ([8e3dc66](https://github.com/dymensionxyz/dymension-rdk/commit/8e3dc66c8c6d6894cbf2d5d12112772069ea8774))
+
+
+
+# [1.3.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.2.0-beta...v1.3.0-beta) (2024-04-11)
+
+
+### Bug Fixes
+
+* **allocation:** do not destroy fee rewards if allocating to proposer fails ([#358](https://github.com/dymensionxyz/dymension-rdk/issues/358)) ([bfd0943](https://github.com/dymensionxyz/dymension-rdk/commit/bfd09432d61eb2c33e29621a1ab868661aeda50c))
+* **mint:** added missing cli query for current inflation ([#366](https://github.com/dymensionxyz/dymension-rdk/issues/366)) ([6ecadd8](https://github.com/dymensionxyz/dymension-rdk/commit/6ecadd818429e1870da7e6f6e044bc87f900ec8b))
+* **sequencer:** added HistoricalEntries param validation ([#369](https://github.com/dymensionxyz/dymension-rdk/issues/369)) ([8e4b891](https://github.com/dymensionxyz/dymension-rdk/commit/8e4b891e68304912b839c2b3ef2a733d91426ce2))
+* **sequencers:** sequencers genesis operator address not exported ([#367](https://github.com/dymensionxyz/dymension-rdk/issues/367)) ([2a1f308](https://github.com/dymensionxyz/dymension-rdk/commit/2a1f308c31141143c20fadee37578c5be0df4f87))
+
+
+### Features
+
+* add get ibc denom base on denom trace query ([#376](https://github.com/dymensionxyz/dymension-rdk/issues/376)) ([807717b](https://github.com/dymensionxyz/dymension-rdk/commit/807717b3219609a68e14d4f11100c539db001008))
+
+
+
+# [1.4.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.3.0-beta...v1.4.0-beta) (2024-04-13)
+
+
+### Bug Fixes
+
+* **denommetadata:** fixed ibc voucher denom query ([#378](https://github.com/dymensionxyz/dymension-rdk/issues/378)) ([bf14e28](https://github.com/dymensionxyz/dymension-rdk/commit/bf14e28256c444930195b3a6df760d3626c205fa))
+
+
+
+# [1.5.0-beta](https://github.com/dymensionxyz/dymension-rdk/compare/v1.4.0-beta...v1.5.0-beta) (2024-04-14)
+
+
+
+# [](https://github.com/dymensionxyz/dymension-rdk/compare/v1.5.0-beta...v) (2024-05-14)
+
+
+### Features
+
+* Add  collect-gentxs command to pickup custom gendoc ([#388](https://github.com/dymensionxyz/dymension-rdk/issues/388)) ([f6997e0](https://github.com/dymensionxyz/dymension-rdk/commit/f6997e0d1a5c38ac5637f6e615845bfb78842976))
+* **denommetadata:** Add support for providing denom-trace and creation of multiple denom-metadatas  ([#384](https://github.com/dymensionxyz/dymension-rdk/issues/384)) ([c720640](https://github.com/dymensionxyz/dymension-rdk/commit/c720640d7d392d58fb191852cd8f4a5d85afc04e))
 
 
 
