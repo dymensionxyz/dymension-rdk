@@ -36,12 +36,7 @@ func InspectStateCmd() *cobra.Command {
 			fmt.Println("========================================")
 			fmt.Println("========================================")
 
-			var heightInt uint64
-			if len(args) > 0 {
-				heightInt, _ = strconv.ParseUint(args[0], 10, 64)
-			} else {
-				heightInt = state.LastStoreHeight
-			}
+			heightInt, _ := strconv.ParseUint(args[0], 10, 64)
 
 			fmt.Println("LOADING BLOCK AT HEIGHT: ", heightInt)
 			block, err := s.LoadBlock(heightInt)
