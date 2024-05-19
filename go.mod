@@ -7,7 +7,7 @@ require (
 	cosmossdk.io/math v1.3.0
 	github.com/cometbft/cometbft v0.37.2
 	github.com/cosmos/cosmos-sdk v0.46.16
-	github.com/cosmos/ibc-go/v6 v6.2.1
+	github.com/cosmos/ibc-go/v6 v6.3.1
 	github.com/dymensionxyz/dymint v1.1.3-rc03
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.3
