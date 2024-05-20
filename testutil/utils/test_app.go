@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"github.com/CosmWasm/wasmd/x/wasm"
 	"testing"
 	"time"
 
@@ -68,8 +69,9 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.Raw
 	db := dbm.NewMemDB()
 
 	encCdc := app.MakeEncodingConfig()
+	var emptyWasmOpts []wasm.Option
 	testApp := app.NewRollapp(
-		log.NewNopLogger(), db, nil, true, map[int64]bool{}, "/tmp", invCheckPeriod, encCdc, EmptyAppOptions{},
+		log.NewNopLogger(), db, nil, true, map[int64]bool{}, "/tmp", invCheckPeriod, encCdc, app.GetEnabledProposals(), EmptyAppOptions{}, emptyWasmOpts,
 	)
 	if withGenesis {
 		return testApp, app.NewDefaultGenesisState(encCdc.Codec)

@@ -1,0 +1,160 @@
+syntax = "proto3";
+package rollapp.gasless.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
+
+// Msg defines the Msg service.
+service Msg {
+    // CreateGasTank defines a method for creating a new gas tank
+    rpc CreateGasTank(MsgCreateGasTank) returns (MsgCreateGasTankResponse);
+
+    // AuthorizeActors defines a method for authorizing accounts to take actions on provider's behalf
+    rpc AuthorizeActors(MsgAuthorizeActors) returns (MsgAuthorizeActorsResponse);
+
+    // UpdateGasTankStatus defines a method for marking gas tank as active or inactive
+    rpc UpdateGasTankStatus(MsgUpdateGasTankStatus) returns (MsgUpdateGasTankStatusResponse);
+
+    // UpdateGasTankConfigs defines a method for updating the configs of gas tank
+    rpc UpdateGasTankConfigs(MsgUpdateGasTankConfig) returns (MsgUpdateGasTankConfigResponse);
+
+    // BlockConsumer defines a method for blocking a suspected malicious consumer
+    rpc BlockConsumer(MsgBlockConsumer) returns (MsgBlockConsumerResponse);
+
+    // UnblockConsumer defines a method for unblocking consumer
+    rpc UnblockConsumer(MsgUnblockConsumer) returns (MsgUnblockConsumerResponse);
+
+    // UpdateGasConsumerLimit defines a method for updating consumption limit of gas consumer
+    rpc UpdateGasConsumerLimit(MsgUpdateGasConsumerLimit) returns (MsgUpdateGasConsumerLimitResponse);
+}
+
+
+// MsgCreateGasTank defines an SDK message for creating a new GasTank.
+message MsgCreateGasTank {
+    // provider specifies the bech32-encoded address that is the gas provider.
+    string provider = 1;
+
+    // fee_denom specifies the denom of the gas deposit coin 
+    string fee_denom = 2;
+
+    // max_fee_usage_per_tx specifies the maximum fee allowed for each tx
+    string max_fee_usage_per_tx = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+
+    // max_txs_count_per_consumer specifies the number of txs allowed for each consumer 
+    uint64 max_txs_count_per_consumer = 4;
+
+    // max_fee_usage_per_consumer specifies the maximum fee consumption allowed for each consumer
+    string max_fee_usage_per_consumer = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    
+    // txs_allowed specifies txs paths allowed to consume gas from the gas tank
+    repeated string txs_allowed = 6;
+    
+    // contracts_allowed specifies wasm contracts allowed to consume gas from the gas tank
+    repeated string contracts_allowed = 7;
+
+    // gas_deposit specifies the initial desposit in the gas tank
+    cosmos.base.v1beta1.Coin gas_deposit = 8 [(gogoproto.nullable) = false];
+}
+
+message MsgCreateGasTankResponse {}
+
+// MsgAuthorizeActors defines the SDK message for authorizing accounts to take actions on provider's behalf
+message MsgAuthorizeActors {
+    // gas_tank_id specifies the id of the gas tank
+    uint64 gas_tank_id = 1;
+
+    // provider specifies the bech32-encoded address that is the gas provider.
+    string provider = 2;
+
+    // actors specifies the list of bech32-encoded address allowed to take actions
+    repeated string actors = 3;
+}
+
+message MsgAuthorizeActorsResponse {}
+
+// MsgUpdateGasTankStatus defines an SDK message for updating the status of gas tank.
+message MsgUpdateGasTankStatus {
+    // gas_tank_id specifies the id of the gas tank
+    uint64 gas_tank_id = 1;
+
+    // provider specifies the bech32-encoded address that is the gas provider.
+    string provider = 2;
+}
+
+message MsgUpdateGasTankStatusResponse{}
+
+// MsgUpdateGasTankConfig defines an SDK message for updating the configs of gas tank.
+message MsgUpdateGasTankConfig {
+    // gas_tank_id specifies the id of the gas tank
+    uint64 gas_tank_id = 1;
+
+    // provider specifies the bech32-encoded address that is the gas provider.
+    string provider = 2;
+
+    // max_fee_usage_per_tx specifies the maximum fee allowed for each tx
+    string max_fee_usage_per_tx = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+
+    // max_txs_count_per_consumer specifies the number of txs allowed for each consumer 
+    uint64 max_txs_count_per_consumer = 4;
+
+    // max_fee_usage_per_consumer specifies the maximum fee consumption allowed for each consumer
+    string max_fee_usage_per_consumer = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    
+    // txs_allowed specifies txs paths allowed to consume gas from the gas tank
+    repeated string txs_allowed = 6;
+    
+    // contracts_allowed specifies wasm contracts allowed to consume gas from the gas tank
+    repeated string contracts_allowed = 7;
+}
+
+message MsgUpdateGasTankConfigResponse {}
+
+// MsgBlockConsumer defines an SDK message for blocking the  suspected malicious consumer.
+message MsgBlockConsumer {
+    // gas_tank_id specifies the id of the gas tank
+    uint64 gas_tank_id = 1;
+
+    // actor specifies the bech32-encoded address that is the gas provider or authorized actor.
+    string actor = 2;
+    
+    // consumer specifies the bech32-encoded address of a consumer.
+    string consumer = 3;
+}
+
+message MsgBlockConsumerResponse {}
+
+// MsgUnblockConsumer defines an SDK message for unblocking consumer.
+message MsgUnblockConsumer {
+    // gas_tank_id specifies the id of the gas tank
+    uint64 gas_tank_id = 1;
+
+    // actor specifies the bech32-encoded address that is the gas provider or authorized actor.
+    string actor = 2;
+    
+    // consumer specifies the bech32-encoded address of a consumer.
+    string consumer = 3;
+}
+
+message MsgUnblockConsumerResponse {}
+
+// MsgUpdateGasConsumerLimit defines an SDK message for updating the consumption limits of gas consumer.
+message MsgUpdateGasConsumerLimit {
+    // gas_tank_id specifies the id of the gas tank
+    uint64 gas_tank_id = 1;
+
+    // provider specifies the bech32-encoded address that is the gas provider.
+    string provider = 2;
+
+    // consumer specifies the bech32-encoded address of a consumer.
+    string consumer = 3;
+
+    // total_txs_allowed specifies the number of txs allowed for each consumer 
+    uint64 total_txs_allowed = 4;
+
+    // total_fee_consumption_allowed specifies the maximum fee consumption allowed for each consumer
+    string total_fee_consumption_allowed = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+}
+
+message MsgUpdateGasConsumerLimitResponse {}

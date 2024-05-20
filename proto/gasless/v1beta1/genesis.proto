@@ -1,0 +1,18 @@
+syntax = "proto3";
+package rollapp.gasless.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "gasless/v1beta1/params.proto";
+import "gasless/v1beta1/gasless.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
+option (gogoproto.goproto_getters_all) = false;
+
+// GenesisState defines the gasless module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  repeated TxGTIDs tx_to_gas_tank_ids = 2 [(gogoproto.nullable) = false];
+  uint64 last_gas_tank_id = 3;
+  repeated GasTank gas_tanks = 4 [(gogoproto.nullable) = false];
+  repeated GasConsumer gas_consumers = 5 [(gogoproto.nullable) = false];
+}
