@@ -1,0 +1,177 @@
+syntax = "proto3";
+package rollapp.gasless.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "gasless/v1beta1/params.proto";
+import "gasless/v1beta1/gasless.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryMessagesAndContractsRequest is a request type for the Query/MessagesAndContracts RPC method.
+message QueryMessagesAndContractsRequest {}
+
+message ContractDetails {
+  uint64 code_id = 1;
+  string address = 2;
+  string lable = 3;
+}
+
+// QueryMessagesAndContractsResponse is a response type for the Query/MessagesAndContracts RPC method.
+message QueryMessagesAndContractsResponse {
+  repeated string messages = 1;
+  repeated ContractDetails contracts = 2;
+}
+
+message GasTankResponse {
+  uint64 id = 1;
+  string provider = 2;
+  string reserve = 3;
+  cosmos.base.v1beta1.Coin gas_tank_balance = 4 [(gogoproto.nullable) = false];
+  bool is_active = 5;
+  uint64 max_txs_count_per_consumer = 6;
+  string max_fee_usage_per_consumer = 7 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  string max_fee_usage_per_tx = 8 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  repeated string txs_allowed = 9;
+  repeated string contracts_allowed = 10;
+  repeated string authorized_actors = 11;
+  string fee_denom = 12;
+}
+
+// QueryGasTankRequest is a request type for the Query/GasTank RPC method.
+message QueryGasTankRequest {
+  uint64 gas_tank_id = 1;
+}
+
+// QueryGasTankResponse is a response type for the Query/GasTank RPC method.
+message QueryGasTankResponse {
+  GasTankResponse gas_tank = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryGasTanksRequest is a request type for the Query/GasTanks RPC method.
+message QueryGasTanksRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryGasTanksResponse is a response type for the Query/GasTanks RPC method.
+message QueryGasTanksResponse {
+  repeated GasTankResponse gas_tanks = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryGasTanksByProviderRequest is a request type for the Query/GasTanksByProvider RPC method.
+message QueryGasTanksByProviderRequest {
+  string provider = 1;
+}
+
+// QueryGasTanksByProviderResponse is a response type for the Query/GasTanksByProvider RPC method.
+message QueryGasTanksByProviderResponse {
+  repeated GasTankResponse gas_tanks = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryGasConsumerRequest is a request type for the Query/GasConsumer RPC method.
+message QueryGasConsumerRequest {
+  string consumer = 1;
+}
+
+// QueryGasConsumerResponse is a response type for the Query/GasConsumer RPC method.
+message QueryGasConsumerResponse {
+  GasConsumer gas_consumer = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryGasConsumersRequest is a request type for the Query/GasConsumers RPC method.
+message QueryGasConsumersRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryGasConsumersResponse is a response type for the Query/GasConsumers RPC method.
+message QueryGasConsumersResponse {
+  repeated GasConsumer gas_consumers = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message GasConsumersByGasTankIDResponse {
+  string consumer = 1;
+  bool is_blocked = 2;
+  uint64 total_txs_allowed = 3;
+  uint64 total_txs_made = 4;
+  cosmos.base.v1beta1.Coin total_fee_consumption_allowed = 5 [(gogoproto.nullable) = false];
+  cosmos.base.v1beta1.Coin total_fees_consumed = 6 [(gogoproto.nullable) = false];
+  Usage usage = 7;
+}
+
+// QueryGasConsumersByGasTankIDRequest is a request type for the Query/GasConsumersByGasTankID RPC method.
+message QueryGasConsumersByGasTankIDRequest {
+  uint64 gas_tank_id = 1;
+}
+
+// QueryGasConsumersByGasTankIDResponse is a response type for the Query/GasConsumersByGasTankID RPC method.
+message QueryGasConsumersByGasTankIDResponse {
+  uint64 gas_tank_id = 1;
+  cosmos.base.v1beta1.Coin overall_fees_consumed = 2 [(gogoproto.nullable) = false];
+  repeated GasConsumersByGasTankIDResponse gas_consumers = 3 [(gogoproto.nullable) = false];
+}
+
+message QueryGasTankIdsForAllTXC {}
+
+message QueryGasTankIdsForAllTXCResponse {
+  repeated TxGTIDs tx_to_gt_ids = 1;
+}
+
+// Query defines the gRPC querier service.
+service Query {
+  // Params returns parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/params";
+  }
+
+  // MessagesAndContracts return all cosmos.base.v1beta1.Msg messages and available contract details 
+  rpc MessagesAndContracts(QueryMessagesAndContractsRequest) returns (QueryMessagesAndContractsResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/mac";
+  }
+
+  // GasTank returns gas tank details 
+  rpc GasTank(QueryGasTankRequest) returns (QueryGasTankResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/tank/{gas_tank_id}";
+  }
+
+  // GasTanks return details of all the gas tanks
+  rpc GasTanks(QueryGasTanksRequest) returns (QueryGasTanksResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/tanks";
+  }
+
+  // GasTanksByProvider return details of all the gas tanks for the given provider
+  rpc GasTanksByProvider(QueryGasTanksByProviderRequest) returns (QueryGasTanksByProviderResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/provider/tanks/{provider}";
+  }
+
+  // GasConsumer returns gas consumer details 
+  rpc GasConsumer(QueryGasConsumerRequest) returns (QueryGasConsumerResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/consumer/{consumer}";
+  }
+
+  // GasConsumers return details of all the gas consumers
+  rpc GasConsumers(QueryGasConsumersRequest) returns (QueryGasConsumersResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/consumers";
+  }
+
+  // GasConsumersByGasTankID return details of all the gas consumers for the given tank ID
+  rpc GasConsumersByGasTankID(QueryGasConsumersByGasTankIDRequest) returns (QueryGasConsumersByGasTankIDResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/tank/consumers/{gas_tank_id}";
+  }
+
+  // GasTankIdsForAllTXC returns gas tanks ids with all available tx or contracts
+  rpc GasTankIdsForAllTXC(QueryGasTankIdsForAllTXC) returns (QueryGasTankIdsForAllTXCResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/txc";
+  }
+}

@@ -1,0 +1,16 @@
+syntax = "proto3";
+package rollapp.gasless.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
+option (gogoproto.goproto_getters_all) = false;
+
+// Params defines the parameters for the module.
+message Params {
+    uint64 tank_creation_limit = 1;
+    repeated cosmos.base.v1beta1.Coin minimum_gas_deposit = 2
+      [(gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins", (gogoproto.nullable) = false];
+    string fee_burning_percentage = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];  
+}

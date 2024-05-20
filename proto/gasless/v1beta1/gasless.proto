@@ -1,0 +1,70 @@
+syntax = "proto3";
+package rollapp.gasless.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
+option (gogoproto.goproto_getters_all) = false;
+
+
+// AddressType enumerates the available types of a address.
+enum AddressType {
+    option (gogoproto.goproto_enum_prefix) = false;
+  
+    // the 32 bytes length address type of ADR 028.
+    ADDRESS_TYPE_32_BYTES = 0 [(gogoproto.enumvalue_customname) = "AddressType32Bytes"];
+    // the default 20 bytes length address type.
+    ADDRESS_TYPE_20_BYTES = 1 [(gogoproto.enumvalue_customname) = "AddressType20Bytes"];
+  }
+
+message TxGTIDs {
+    string tx_path_or_contract_address = 1;
+    repeated uint64 gas_tank_ids = 2;
+}
+
+message GasTank {
+    uint64 id = 1;
+    string provider = 2;
+    string reserve = 3;
+    bool is_active = 4;
+    uint64 max_txs_count_per_consumer = 5;
+    string max_fee_usage_per_consumer = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    string max_fee_usage_per_tx = 7 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    repeated string txs_allowed = 8;
+    repeated string contracts_allowed = 9;
+    repeated string authorized_actors = 10;
+    string fee_denom = 11;
+}
+
+message UsageDetail {
+    google.protobuf.Timestamp timestamp = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+    string gas_consumed = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+}
+
+message UsageDetails {
+    string usage_identifier = 1;
+    repeated UsageDetail details = 2;
+}
+
+message Usage {
+    repeated UsageDetails txs = 1;
+    repeated UsageDetails contracts = 2;
+}
+
+message ConsumptionDetail {
+    uint64 gas_tank_id = 1;
+    bool is_blocked = 2;
+    uint64 total_txs_allowed = 3;
+    uint64 total_txs_made = 4;
+    string total_fee_consumption_allowed = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    string total_fees_consumed = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    Usage usage = 7;
+}
+
+message GasConsumer {
+    string consumer = 1;
+    repeated ConsumptionDetail consumptions = 2;
+}
+
+
