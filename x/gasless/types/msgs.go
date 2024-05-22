@@ -75,7 +75,7 @@ func (msg MsgCreateGasTank) ValidateBasic() error {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive")
 	}
 	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "atleast one tx or contract is required to initialize")
+		return sdkerrors.Wrap(errors.ErrInvalidRequest, "at least one tx or contract is required to initialize")
 	}
 	return nil
 }
@@ -224,7 +224,7 @@ func (msg MsgUpdateGasTankConfig) ValidateBasic() error {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive")
 	}
 	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "atleast one tx or contract is required to initialize")
+		return sdkerrors.Wrap(errors.ErrInvalidRequest, "at least one tx or contract is required to initialize")
 	}
 	return nil
 }

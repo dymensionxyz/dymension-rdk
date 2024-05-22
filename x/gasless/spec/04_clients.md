@@ -14,7 +14,7 @@ The CLI has been updated with new queries and transactions for the `x/gasless` m
 | :------------------- | :------------------------- | :------------ | :------------------------------------------------------------------------------- |
 | `aibd query gasless` | `params`                   |               | Get Gasless params                                                               |
 | `aibd query gasless` | `mac`                      |               | Get all the available MessageTypes and ContractAddress on the network            |
-| `aibd query gasless` | `gastank`                  | [gas-tank-id] | Get specific GasTank with if                                                     |
+| `aibd query gasless` | `gastank`                  | [gas-tank-id] | Get specific GasTank with id                                                     |
 | `aibd query gasless` | `gastanks`                 |               | Get all the available GasTanks                                                   |
 | `aibd query gasless` | `gas-tanks-by-provider`    | [provider]    | Get all GasTanks with given provider address                                     |
 | `aibd query gasless` | `gasconsumer`              | [consumer]    | Get GasConsumer with the given address                                           |

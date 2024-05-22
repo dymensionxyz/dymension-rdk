@@ -75,7 +75,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 			return ctx, err
 		}
 	}
-	if err := dfd.checkDeductFee(ctx, tx, fee); err != nil {
+	if err := dfd.checkAndDeductFees(ctx, tx, fee); err != nil {
 		return ctx, err
 	}
 
@@ -84,7 +84,7 @@ func (dfd DeductFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 	return next(newCtx, tx, simulate)
 }
 
-func (dfd DeductFeeDecorator) checkDeductFee(ctx sdk.Context, sdkTx sdk.Tx, fee sdk.Coins) error {
+func (dfd DeductFeeDecorator) checkAndDeductFees(ctx sdk.Context, sdkTx sdk.Tx, fee sdk.Coins) error {
 	feeTx, ok := sdkTx.(sdk.FeeTx)
 	if !ok {
 		return sdkerrors.Wrap(errortypes.ErrTxDecode, "Tx must be a FeeTx")

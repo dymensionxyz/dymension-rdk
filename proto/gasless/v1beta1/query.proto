@@ -24,7 +24,7 @@ message QueryMessagesAndContractsRequest {}
 message ContractDetails {
   uint64 code_id = 1;
   string address = 2;
-  string lable = 3;
+  string label = 3;
 }
 
 // QueryMessagesAndContractsResponse is a response type for the Query/MessagesAndContracts RPC method.
@@ -71,6 +71,7 @@ message QueryGasTanksResponse {
 
 // QueryGasTanksByProviderRequest is a request type for the Query/GasTanksByProvider RPC method.
 message QueryGasTanksByProviderRequest {
+  // provider specifies the bech32-encoded address that is the gas provider.
   string provider = 1;
 }
 
@@ -81,6 +82,7 @@ message QueryGasTanksByProviderResponse {
 
 // QueryGasConsumerRequest is a request type for the Query/GasConsumer RPC method.
 message QueryGasConsumerRequest {
+  // consumer specifies the bech32-encoded address of a consumer.
   string consumer = 1;
 }
 

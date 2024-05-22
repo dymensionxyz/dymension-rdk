@@ -11,7 +11,6 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
-	"github.com/dymensionxyz/dymension-rdk/x/gasless/expected"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -22,9 +21,9 @@ type Keeper struct {
 	paramSpace        paramstypes.Subspace
 	interfaceRegistry codectypes.InterfaceRegistry
 
-	accountKeeper expected.AccountKeeper
-	bankKeeper    expected.BankKeeper
-	wasmKeeper    *wasmkeeper.Keeper
+	// accountKeeper types.AccountKeeper
+	bankKeeper types.BankKeeper
+	wasmKeeper *wasmkeeper.Keeper
 }
 
 // NewKeeper creates a new gasless Keeper instance.
@@ -33,8 +32,7 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	paramSpace paramstypes.Subspace,
 	interfaceRegistry codectypes.InterfaceRegistry,
-	accountKeeper expected.AccountKeeper,
-	bankKeeper expected.BankKeeper,
+	bankKeeper types.BankKeeper,
 	wasmKeeper *wasmkeeper.Keeper,
 ) Keeper {
 	if !paramSpace.HasKeyTable() {
@@ -46,7 +44,6 @@ func NewKeeper(
 		storeKey:          storeKey,
 		paramSpace:        paramSpace,
 		interfaceRegistry: interfaceRegistry,
-		accountKeeper:     accountKeeper,
 		bankKeeper:        bankKeeper,
 		wasmKeeper:        wasmKeeper,
 	}

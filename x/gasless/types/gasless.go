@@ -139,7 +139,7 @@ func (gasTank GasTank) Validate() error {
 		return fmt.Errorf("max_fee_usage_per_consumer should be positive")
 	}
 	if len(gasTank.TxsAllowed) == 0 && len(gasTank.ContractsAllowed) == 0 {
-		return fmt.Errorf("atleast one tx or contract is required to initialize")
+		return fmt.Errorf("at least one tx or contract is required to initialize")
 	}
 
 	return nil

@@ -42,7 +42,7 @@ func (k Keeper) GetAllAvailableContracts(ctx sdk.Context) (contractsDetails []ty
 			contractsDetails = append(contractsDetails, types.ContractDetails{
 				CodeId:  ci.CodeID,
 				Address: c,
-				Lable:   ci.Label,
+				Label:   ci.Label,
 			})
 		}
 	}
@@ -78,7 +78,7 @@ func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGa
 	}
 
 	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have atleast one tx path or contract address")
+		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address")
 	}
 
 	if len(msg.TxsAllowed) > 0 {
@@ -281,7 +281,7 @@ func (k Keeper) ValidateMsgUpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUp
 	}
 
 	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have atleast one tx path or contract address")
+		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address")
 	}
 
 	if len(msg.TxsAllowed) > 0 {
