@@ -405,8 +405,7 @@ func NewRollapp(
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
 		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper)).
-		AddRoute(gaslesstypes.RouterKey, gasless.NewGaslessProposalHandler(app.GaslessKeeper))
+		AddRoute(ibcclienttypes.RouterKey, ibcclient.NewClientProposalHandler(app.IBCKeeper.ClientKeeper))
 
 	govConfig := govtypes.DefaultConfig()
 	/*
@@ -467,7 +466,6 @@ func NewRollapp(
 		app.keys[gaslesstypes.StoreKey],
 		app.GetSubspace(gaslesstypes.ModuleName),
 		app.interfaceRegistry,
-		app.AccountKeeper,
 		app.BankKeeper,
 		&app.WasmKeeper,
 	)
@@ -542,7 +540,7 @@ func NewRollapp(
 		ibctransfer.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper, app.AccountKeeper),
-		gasless.NewAppModule(appCodec, app.GaslessKeeper, app.AccountKeeper, app.BankKeeper),
+		gasless.NewAppModule(appCodec, app.GaslessKeeper, app.BankKeeper),
 	}
 
 	app.mm = module.NewManager(modules...)

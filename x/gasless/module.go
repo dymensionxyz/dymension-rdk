@@ -17,7 +17,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/client/cli"
-	"github.com/dymensionxyz/dymension-rdk/x/gasless/expected"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
@@ -97,18 +96,16 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper        keeper.Keeper
-	accountKeeper expected.AccountKeeper
-	bankKeeper    expected.BankKeeper
+	keeper     keeper.Keeper
+	bankKeeper types.BankKeeper
 }
 
 func NewAppModule(cdc codec.Codec, keeper keeper.Keeper,
-	accountKeeper expected.AccountKeeper, bankKeeper expected.BankKeeper,
+	bankKeeper types.BankKeeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         keeper,
-		accountKeeper:  accountKeeper,
 		bankKeeper:     bankKeeper,
 	}
 }

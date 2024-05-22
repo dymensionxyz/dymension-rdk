@@ -52,7 +52,7 @@ foo@bar:~$ aibd tx gasless update-authorized-actors 1 "rol14hj2tavq8f....,rol14h
 
 ### Updating GasTank Status
 
-A GasTank can be disabled and enabled by owner anytime
+A GasTank can be disabled and enabled by the owner anytime
 
 ```console
 foo@bar:~$ aibd tx gasless update-gas-tank-status [gas-tank-id]
@@ -68,7 +68,7 @@ if the GasTank is active, running the above tx will make it as inactive and do v
 
 ### Updating GasTank Configs
 
-Configurations of the gas tank can be updated buy he owner of the GasTank
+Configurations of the gas tank can be updated by the owner of the GasTank
 
 ```console
 foo@bar:~$ aibd tx gasless update-gas-tank-config [gas-tank-id] [max-fee-usage-per-tx] [max-txs-count-per-consumer] [max-fee-usage-per-consumer] [txs-allowed] [contracts-allowed]
@@ -96,7 +96,7 @@ foo@bar:~$ aibd tx gasless block-consumer 1 rol14hj2tavq8f........ --from coolus
 
 ### Unblock Consumer
 
-GasTank owner or Authorized Actor can ubblock consumer
+GasTank owner or Authorized Actor can unblock a consumer
 
 ```console
 foo@bar:~$ aibd tx gasless unblock-consumer [gas-tank-id] [consumer]
@@ -134,7 +134,7 @@ foo@bar:~$ aibd tx bank send cooluser [gas-tank-reserve-address] [funds-to-depos
 
 Clients can interact with MessageTypes and Contracts registered with GasTank in gasless module.
 
-No additional step is to be taken by the client and can make the tx as usual, after that the gas fee is taken care of by the GasTank.
+No additional steps need to be taken by the client. They can send the transaction as usual, and the GasTank will handle the gas fees.
 
 ```console
 foo@bar:~$ aibd tx wasm execute [contract_address] --from cooluser --chain-id test-1 --fees 25000aaib

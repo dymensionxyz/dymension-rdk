@@ -12,7 +12,7 @@ These objects are used to store the state of a
 
 - `GasTanks` - to store the configurations and tank status.
 - `GasConsumer` - to track the number of times a wallet has interacted with the whitelisted txs and fee usage from the gas tank
-- `TxGTIDs` - mapping for message types or contract address with the gas tank ids whitelisted them.
+- `TxGTIDs` - defines a key-value pair where the key is either a message type or a contract address, and the value is a list of gas tank IDs. These gas tank IDs represent the gas tanks that have whitelisted the specified message type or contract address for zero fees.
 
 ```go
 // this defines the configuration of the gas tank with reserve address, status of tank and other basic configs.

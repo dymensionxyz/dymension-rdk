@@ -52,12 +52,12 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive"),
 		},
 		{
-			Name:   "error atleast one txPath or contract is required",
+			Name:   "error at least one txPath or contract is required",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), 123, sdkmath.NewInt(1000000), []string{}, []string{}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have atleast one tx path or contract address"),
+			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address"),
 		},
 		{
-			Name:   "error deposit samller than required min deposit",
+			Name:   "error deposit smaller than required min deposit",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), 123, sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, sdk.NewCoin("stake", sdk.NewInt(100))),
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "minimum required deposit is %s", params.MinimumGasDeposit[0].String()),
 		},
@@ -92,7 +92,6 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 
 			tank, err := s.keeper.CreateGasTank(s.ctx, &tc.Msg)
 			if tc.ExpErr != nil {
-				s.Require().Error(err)
 				s.Require().EqualError(err, tc.ExpErr.Error())
 			} else {
 				s.Require().NoError(err)
@@ -300,7 +299,7 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 		{
 			Name: "error inactive tank",
 			Msg: *types.NewMsgUpdateGasTankConfig(
-				inactiveTank.Id, provider1, sdk.NewInt(1000), 10, sdk.NewInt(1000000),
+				inactiveTank.Id, provider2, sdk.NewInt(1000), 10, sdk.NewInt(1000000),
 				[]string{"/cosmos.bank.v1beta1.MsgSend"},
 				[]string{},
 			),
@@ -334,13 +333,13 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive"),
 		},
 		{
-			Name: "error atleast one txPath or contract is required",
+			Name: "error at least one txPath or contract is required",
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				tank1.Id, provider1, sdk.NewInt(1000), 10, sdk.NewInt(1000000),
 				[]string{},
 				[]string{},
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have atleast one tx path or contract address"),
+			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address"),
 		},
 		{
 			Name: "error invalid message type URL",
@@ -449,7 +448,7 @@ func (s *KeeperTestSuite) TestBlockConsumer() {
 		ExpErr error
 	}{
 		{
-			Name: "error invalid gas tank ID",
+			Name: "error: gas tank not found",
 			Msg: *types.NewMsgBlockConsumer(
 				12, provider1, consumer1,
 			),
@@ -578,7 +577,7 @@ func (s *KeeperTestSuite) TestUnblockConsumer() {
 		ExpErr error
 	}{
 		{
-			Name: "error invalid gas tank ID",
+			Name: "error: gas tank not found",
 			Msg: *types.NewMsgUnblockConsumer(
 				12, provider1, consumer1,
 			),
@@ -715,7 +714,7 @@ func (s *KeeperTestSuite) TestUpdateGasConsumerLimit() {
 		{
 			Name: "error inactive tank",
 			Msg: *types.NewMsgUpdateGasConsumerLimit(
-				inactiveTank.Id, provider1, consumer1, 12, sdk.NewInt(1234),
+				inactiveTank.Id, provider2, consumer1, 12, sdk.NewInt(1234),
 			),
 			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive"),
 		},

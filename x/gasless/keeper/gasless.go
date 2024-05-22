@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"slices"
 	"strconv"
 	"strings"
 
@@ -42,11 +43,33 @@ func (k Keeper) GetAllAvailableContracts(ctx sdk.Context) (contractsDetails []ty
 			contractsDetails = append(contractsDetails, types.ContractDetails{
 				CodeId:  ci.CodeID,
 				Address: c,
-				Lable:   ci.Label,
+				Label:   ci.Label,
 			})
 		}
 	}
 	return contractsDetails
+}
+
+func (k Keeper) GetGasTankReserveBalance(ctx sdk.Context, gasTank types.GasTank) sdk.Coin {
+	reserveAddress := gasTank.GetGasTankReserveAddress()
+	return k.bankKeeper.GetBalance(ctx, reserveAddress, gasTank.FeeDenom)
+}
+
+func (k Keeper) GasTankBaseValidation(ctx sdk.Context, gasTankID uint64, provider string) (types.GasTank, error) {
+	gasTank, found := k.GetGasTank(ctx, gasTankID)
+	if !found {
+		return types.GasTank{}, sdkerrors.Wrapf(errors.ErrNotFound, "gas tank with id %d not found", gasTankID)
+	}
+
+	if _, err := sdk.AccAddressFromBech32(provider); err != nil {
+		return types.GasTank{}, sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid provider address: %v", err)
+	}
+
+	if gasTank.Provider != provider {
+		return types.GasTank{}, sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized provider")
+	}
+
+	return gasTank, nil
 }
 
 func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) error {
@@ -78,7 +101,7 @@ func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGa
 	}
 
 	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have atleast one tx path or contract address")
+		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address")
 	}
 
 	if len(msg.TxsAllowed) > 0 {
@@ -161,21 +184,13 @@ func (k Keeper) CreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) (typ
 }
 
 func (k Keeper) ValidateMsgAuthorizeActors(ctx sdk.Context, msg *types.MsgAuthorizeActors) error {
-	gasTank, found := k.GetGasTank(ctx, msg.GasTankId)
-	if !found {
-		return sdkerrors.Wrapf(errors.ErrNotFound, "gas tank with id %d not found", msg.GasTankId)
+	gasTank, err := k.GasTankBaseValidation(ctx, msg.GasTankId, msg.Provider)
+	if err != nil {
+		return err
 	}
 
 	if !gasTank.IsActive {
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive")
-	}
-
-	if _, err := sdk.AccAddressFromBech32(msg.Provider); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid provider address: %v", err)
-	}
-
-	if gasTank.Provider != msg.Provider {
-		return sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized provider")
 	}
 
 	msg.Actors = types.RemoveDuplicates(msg.Actors)
@@ -215,17 +230,9 @@ func (k Keeper) AuthorizeActors(ctx sdk.Context, msg *types.MsgAuthorizeActors) 
 }
 
 func (k Keeper) ValidatMsgUpdateGasTankStatus(ctx sdk.Context, msg *types.MsgUpdateGasTankStatus) error {
-	gasTank, found := k.GetGasTank(ctx, msg.GasTankId)
-	if !found {
-		return sdkerrors.Wrapf(errors.ErrNotFound, "gas tank with id %d not found", msg.GasTankId)
-	}
-
-	if _, err := sdk.AccAddressFromBech32(msg.Provider); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid provider address: %v", err)
-	}
-
-	if gasTank.Provider != msg.Provider {
-		return sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized provider")
+	_, err := k.GasTankBaseValidation(ctx, msg.GasTankId, msg.Provider)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -252,21 +259,13 @@ func (k Keeper) UpdateGasTankStatus(ctx sdk.Context, msg *types.MsgUpdateGasTank
 }
 
 func (k Keeper) ValidateMsgUpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTankConfig) error {
-	gasTank, found := k.GetGasTank(ctx, msg.GasTankId)
-	if !found {
-		return sdkerrors.Wrapf(errors.ErrNotFound, "gas tank with id %d not found", msg.GasTankId)
+	gasTank, err := k.GasTankBaseValidation(ctx, msg.GasTankId, msg.Provider)
+	if err != nil {
+		return err
 	}
 
 	if !gasTank.IsActive {
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive")
-	}
-
-	if _, err := sdk.AccAddressFromBech32(msg.Provider); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid provider address: %v", err)
-	}
-
-	if gasTank.Provider != msg.Provider {
-		return sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized provider")
 	}
 
 	if msg.MaxTxsCountPerConsumer == 0 {
@@ -281,7 +280,7 @@ func (k Keeper) ValidateMsgUpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUp
 	}
 
 	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have atleast one tx path or contract address")
+		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address")
 	}
 
 	if len(msg.TxsAllowed) > 0 {
@@ -370,10 +369,7 @@ func (k Keeper) ValidateMsgBlockConsumer(ctx sdk.Context, msg *types.MsgBlockCon
 		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid consumer address: %v", err)
 	}
 
-	authorizedActors := gasTank.AuthorizedActors
-	authorizedActors = append(authorizedActors, gasTank.Provider)
-
-	if !types.ItemExists(authorizedActors, msg.Actor) {
+	if !slices.Contains(append(gasTank.AuthorizedActors, gasTank.Provider), msg.Actor) {
 		return sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized actor")
 	}
 	return nil
@@ -451,25 +447,17 @@ func (k Keeper) UnblockConsumer(ctx sdk.Context, msg *types.MsgUnblockConsumer) 
 }
 
 func (k Keeper) ValidateMsgUpdateGasConsumerLimit(ctx sdk.Context, msg *types.MsgUpdateGasConsumerLimit) error {
-	gasTank, found := k.GetGasTank(ctx, msg.GasTankId)
-	if !found {
-		return sdkerrors.Wrapf(errors.ErrNotFound, "gas tank with id %d not found", msg.GasTankId)
+	gasTank, err := k.GasTankBaseValidation(ctx, msg.GasTankId, msg.Provider)
+	if err != nil {
+		return err
 	}
 
 	if !gasTank.IsActive {
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive")
 	}
 
-	if _, err := sdk.AccAddressFromBech32(msg.Provider); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid provider address: %v", err)
-	}
-
 	if _, err := sdk.AccAddressFromBech32(msg.Consumer); err != nil {
 		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid consumer address: %v", err)
-	}
-
-	if gasTank.Provider != msg.Provider {
-		return sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized provider")
 	}
 
 	if msg.TotalTxsAllowed == 0 {

@@ -28,6 +28,22 @@ const (
 	TypeMsgUpdateGasConsumerLimit = "update_gas_consumer_limit"
 )
 
+func BaseValidation(
+	gasTankID uint64,
+	provider, consumer string,
+) error {
+	if gasTankID == 0 {
+		return sdkerrors.Wrap(errors.ErrInvalidRequest, "gas tank id must not be 0")
+	}
+	if _, err := sdk.AccAddressFromBech32(provider); err != nil {
+		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid address %s : %v", provider, err)
+	}
+	if _, err := sdk.AccAddressFromBech32(consumer); err != nil {
+		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid address %s : %v", consumer, err)
+	}
+	return nil
+}
+
 // NewMsgCreateGasTank returns a new MsgCreateGasTank.
 func NewMsgCreateGasTank(
 	provider sdk.AccAddress,
@@ -75,7 +91,7 @@ func (msg MsgCreateGasTank) ValidateBasic() error {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive")
 	}
 	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "atleast one tx or contract is required to initialize")
+		return sdkerrors.Wrap(errors.ErrInvalidRequest, "at least one tx or contract is required to initialize")
 	}
 	return nil
 }
@@ -98,7 +114,7 @@ func NewMsgAuthorizeActors(
 	provider sdk.AccAddress,
 	actors []sdk.AccAddress,
 ) *MsgAuthorizeActors {
-	authorizedActors := []string{}
+	authorizedActors := make([]string, 0, len(actors))
 	for _, actor := range actors {
 		authorizedActors = append(authorizedActors, actor.String())
 	}
@@ -121,8 +137,8 @@ func (msg MsgAuthorizeActors) ValidateBasic() error {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "gas tank id must not be 0")
 	}
 
-	if len(msg.Actors) > 5 {
-		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "only 5 actors can be authorized")
+	if len(msg.Actors) > MaximumAuthorizedActorsLimit {
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "only %d actors can be authorized", MaximumAuthorizedActorsLimit)
 	}
 
 	for _, actor := range msg.Actors {
@@ -224,7 +240,7 @@ func (msg MsgUpdateGasTankConfig) ValidateBasic() error {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive")
 	}
 	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "atleast one tx or contract is required to initialize")
+		return sdkerrors.Wrap(errors.ErrInvalidRequest, "at least one tx or contract is required to initialize")
 	}
 	return nil
 }
@@ -258,16 +274,7 @@ func (msg MsgBlockConsumer) Route() string { return RouterKey }
 func (msg MsgBlockConsumer) Type() string { return TypeMsgBlockConsumer }
 
 func (msg MsgBlockConsumer) ValidateBasic() error {
-	if msg.GasTankId == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "gas tank id must not be 0")
-	}
-	if _, err := sdk.AccAddressFromBech32(msg.Actor); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid actor address: %v", err)
-	}
-	if _, err := sdk.AccAddressFromBech32(msg.Consumer); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid consumer address: %v", err)
-	}
-	return nil
+	return BaseValidation(msg.GasTankId, msg.Actor, msg.Consumer)
 }
 
 func (msg MsgBlockConsumer) GetSignBytes() []byte {
@@ -299,16 +306,7 @@ func (msg MsgUnblockConsumer) Route() string { return RouterKey }
 func (msg MsgUnblockConsumer) Type() string { return TypeMsgUnblockConsumer }
 
 func (msg MsgUnblockConsumer) ValidateBasic() error {
-	if msg.GasTankId == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "gas tank id must not be 0")
-	}
-	if _, err := sdk.AccAddressFromBech32(msg.Actor); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid provider address: %v", err)
-	}
-	if _, err := sdk.AccAddressFromBech32(msg.Consumer); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid consumer address: %v", err)
-	}
-	return nil
+	return BaseValidation(msg.GasTankId, msg.Actor, msg.Consumer)
 }
 
 func (msg MsgUnblockConsumer) GetSignBytes() []byte {
@@ -344,15 +342,10 @@ func (msg MsgUpdateGasConsumerLimit) Route() string { return RouterKey }
 func (msg MsgUpdateGasConsumerLimit) Type() string { return TypeMsgUpdateGasConsumerLimit }
 
 func (msg MsgUpdateGasConsumerLimit) ValidateBasic() error {
-	if msg.GasTankId == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "gas tank id must not be 0")
+	if err := BaseValidation(msg.GasTankId, msg.Provider, msg.Consumer); err != nil {
+		return err
 	}
-	if _, err := sdk.AccAddressFromBech32(msg.Provider); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid provider address: %v", err)
-	}
-	if _, err := sdk.AccAddressFromBech32(msg.Consumer); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid consumer address: %v", err)
-	}
+
 	if msg.TotalTxsAllowed == 0 {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "total txs allowed must not be 0")
 	}

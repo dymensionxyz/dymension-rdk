@@ -58,17 +58,12 @@ func (params *Params) ParamSetPairs() paramstypes.ParamSetPairs {
 }
 
 // Validate validates Params.
-func (params Params) Validate() error {
-	for _, field := range []struct {
-		val          interface{}
-		validateFunc func(i interface{}) error
-	}{
-		{params.TankCreationLimit, validateTankCreationLimit},
-		{params.MinimumGasDeposit, validateMinimumGasDeposit},
-	} {
-		if err := field.validateFunc(field.val); err != nil {
-			return err
-		}
+func (p Params) Validate() error {
+	if err := validateTankCreationLimit(p.TankCreationLimit); err != nil {
+		return fmt.Errorf("invalid tank creation limit: %w", err)
+	}
+	if err := validateMinimumGasDeposit(p.MinimumGasDeposit); err != nil {
+		return fmt.Errorf("invalid minimum gas deposit: %w", err)
 	}
 	return nil
 }
