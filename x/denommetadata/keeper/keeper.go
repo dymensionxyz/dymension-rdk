@@ -1,10 +1,14 @@
 package keeper
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
@@ -42,6 +46,80 @@ func NewKeeper(
 		transferKeeper: tk,
 		hooks:          hooks,
 	}
+}
+
+func (k Keeper) GetDenomMetadata(ctx sdk.Context, denomHash transfertypes.DenomTrace) (md types.DenomMetadata, err error) {
+	tokenMetadata, ok := k.bankKeeper.GetDenomMetaData(ctx, denomHash.IBCDenom())
+	if !ok {
+		err = banktypes.ErrDenomMetadataNotFound
+		return
+	}
+
+	denomTrace, ok := k.transferKeeper.GetDenomTrace(ctx, denomHash.Hash())
+	if !ok {
+		err = fmt.Errorf("denom trace not found for denom %s", denomHash.IBCDenom())
+		return
+	}
+
+	md = types.DenomMetadata{
+		TokenMetadata: tokenMetadata,
+		DenomTrace:    denomTrace.GetFullDenomPath(),
+	}
+
+	return
+}
+
+// CreateDenomMetadata create the denom metadata in bank module
+func (k Keeper) CreateDenomMetadata(ctx sdk.Context, metadatas ...types.DenomMetadata) error {
+	for _, metadata := range metadatas {
+		found := k.bankKeeper.HasDenomMetaData(ctx, metadata.TokenMetadata.Base)
+		if found {
+			return types.ErrDenomAlreadyExists
+		}
+
+		k.bankKeeper.SetDenomMetaData(ctx, metadata.TokenMetadata)
+		// set hook after denom metadata creation
+		if err := k.hooks.AfterDenomMetadataCreation(ctx, metadata.TokenMetadata); err != nil {
+			return fmt.Errorf("error in after denom metadata creation hook: %w", err)
+		}
+
+		// construct the denomination trace from the full raw denomination
+		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
+
+		traceHash := denomTrace.Hash()
+		if !k.transferKeeper.HasDenomTrace(ctx, traceHash) {
+			k.transferKeeper.SetDenomTrace(ctx, denomTrace)
+		}
+	}
+
+	return nil
+}
+
+// UpdateDenomMetadata update the denom metadata in bank module
+func (k Keeper) UpdateDenomMetadata(ctx sdk.Context, metadatas ...types.DenomMetadata) error {
+	for _, metadata := range metadatas {
+		found := k.bankKeeper.HasDenomMetaData(ctx, metadata.TokenMetadata.Base)
+		if !found {
+			return types.ErrDenomDoesNotExist
+		}
+
+		k.bankKeeper.SetDenomMetaData(ctx, metadata.TokenMetadata)
+
+		// set hook after denom metadata update
+		if err := k.hooks.AfterDenomMetadataUpdate(ctx, metadata.TokenMetadata); err != nil {
+			return fmt.Errorf("error in after denom metadata update hook: %w", err)
+		}
+
+		// construct the denomination trace from the full raw denomination
+		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
+
+		traceHash := denomTrace.Hash()
+		if k.transferKeeper.HasDenomTrace(ctx, traceHash) {
+			k.transferKeeper.SetDenomTrace(ctx, denomTrace) // nolint: errcheck
+		}
+	}
+
+	return nil
 }
 
 // GetParams returns the total set of denommetadata parameters.
