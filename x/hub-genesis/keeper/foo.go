@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
@@ -46,7 +48,7 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 		Sender:           srcAddr.String(),
 		Receiver:         dstAddr.String(),
 		TimeoutHeight:    clienttypes.Height{},
-		TimeoutTimestamp: 0,
+		TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()),
 		Memo:             "special",
 	}
 	_, err := i.transferK.Transfer(sdk.WrapSDKContext(ctx), &m)
