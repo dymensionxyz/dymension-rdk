@@ -2,9 +2,10 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
+	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	transferkeeper "github.com/evmos/evmos/v12/x/ibc/transfer/keeper"
 )
 
@@ -38,7 +39,7 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 	dstAddr := sdk.AccAddress("dym13d2qrv402klpu6t6qk0uvd8eqxmrw6srmsm4yu")
 
-	m := types.MsgTransfer{
+	m := transfertypes.MsgTransfer{
 		SourcePort:       portID,
 		SourceChannel:    channelID,
 		Token:            firstCoin,
