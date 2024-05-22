@@ -1,4 +1,4 @@
-package foo
+package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -11,13 +11,15 @@ import (
 type OnChanOpenConfirmInterceptor struct {
 	porttypes.IBCModule
 	transferK transferkeeper.Keeper
+	k         Keeper
 }
 
 func NewOnChanOpenConfirmInterceptor(
-	keeper transferkeeper.Keeper,
+	k Keeper,
+	transferK transferkeeper.Keeper,
 	next porttypes.IBCModule,
 ) *OnChanOpenConfirmInterceptor {
-	return &OnChanOpenConfirmInterceptor{next, keeper}
+	return &OnChanOpenConfirmInterceptor{next, transferK, k}
 }
 
 func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
@@ -31,15 +33,24 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 	ctx.Logger().Info("OnChanOpenConfirm interceptor!", "port id", portID, "channelID", channelID)
 
+	state := i.k.GetState(ctx)
+
+	firstCoin := state.GenesisTokens[0]
+
+	srcAccount := i.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+	srcAddr := srcAccount.GetAddress()
+
+	dstAddr := sdk.AccAddress("dym13d2qrv402klpu6t6qk0uvd8eqxmrw6srmsm4yu")
+
 	m := types.MsgTransfer{
 		SourcePort:       portID,
 		SourceChannel:    channelID,
-		Token:            sdk.Coin{},
-		Sender:           "",
-		Receiver:         "",
+		Token:            firstCoin,
+		Sender:           srcAddr.String(),
+		Receiver:         dstAddr.String(),
 		TimeoutHeight:    clienttypes.Height{},
 		TimeoutTimestamp: 0,
-		Memo:             "",
+		Memo:             "special",
 	}
 	res, err := i.transferK.Transfer(ctx.Context(), &m)
 	if err != nil {
