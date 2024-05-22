@@ -125,3 +125,13 @@ func NewConsumptionDetail(
 		},
 	}
 }
+
+func NewUsageDetails(
+	usageIdentifier string,
+	usageDetail UsageDetail,
+) *UsageDetails {
+	return &UsageDetails{
+		UsageIdentifier: usageIdentifier,
+		Details:         []*UsageDetail{&usageDetail},
+	}
+}

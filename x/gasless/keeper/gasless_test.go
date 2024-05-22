@@ -92,7 +92,6 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 
 			tank, err := s.keeper.CreateGasTank(s.ctx, &tc.Msg)
 			if tc.ExpErr != nil {
-				s.Require().Error(err)
 				s.Require().EqualError(err, tc.ExpErr.Error())
 			} else {
 				s.Require().NoError(err)
@@ -300,7 +299,7 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 		{
 			Name: "error inactive tank",
 			Msg: *types.NewMsgUpdateGasTankConfig(
-				inactiveTank.Id, provider1, sdk.NewInt(1000), 10, sdk.NewInt(1000000),
+				inactiveTank.Id, provider2, sdk.NewInt(1000), 10, sdk.NewInt(1000000),
 				[]string{"/cosmos.bank.v1beta1.MsgSend"},
 				[]string{},
 			),
@@ -449,7 +448,7 @@ func (s *KeeperTestSuite) TestBlockConsumer() {
 		ExpErr error
 	}{
 		{
-			Name: "error invalid gas tank ID",
+			Name: "error: gas tank not found",
 			Msg: *types.NewMsgBlockConsumer(
 				12, provider1, consumer1,
 			),
@@ -578,7 +577,7 @@ func (s *KeeperTestSuite) TestUnblockConsumer() {
 		ExpErr error
 	}{
 		{
-			Name: "error invalid gas tank ID",
+			Name: "error: gas tank not found",
 			Msg: *types.NewMsgUnblockConsumer(
 				12, provider1, consumer1,
 			),
@@ -715,7 +714,7 @@ func (s *KeeperTestSuite) TestUpdateGasConsumerLimit() {
 		{
 			Name: "error inactive tank",
 			Msg: *types.NewMsgUpdateGasConsumerLimit(
-				inactiveTank.Id, provider1, consumer1, 12, sdk.NewInt(1234),
+				inactiveTank.Id, provider2, consumer1, 12, sdk.NewInt(1234),
 			),
 			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive"),
 		},

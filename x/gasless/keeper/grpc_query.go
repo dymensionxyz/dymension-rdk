@@ -20,20 +20,19 @@ type Querier struct {
 var _ types.QueryServer = Querier{}
 
 // Params queries the parameters of the gasless module.
-func (k Querier) Params(c context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
+func (k Querier) Params(goCtx context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	var params types.Params
 	k.Keeper.paramSpace.GetParamSet(ctx, &params)
 	return &types.QueryParamsResponse{Params: params}, nil
 }
 
-func (k Querier) MessagesAndContracts(c context.Context, _ *types.QueryMessagesAndContractsRequest) (*types.QueryMessagesAndContractsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
+func (k Querier) MessagesAndContracts(goCtx context.Context, _ *types.QueryMessagesAndContractsRequest) (*types.QueryMessagesAndContractsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	messages := k.GetAvailableMessages(ctx)
 	contractsDetails := k.GetAllAvailableContracts(ctx)
 	contracts := []*types.ContractDetails{}
-	for _, c := range contractsDetails {
-		contract := c
+	for _, contract := range contractsDetails {
 		contracts = append(contracts, &contract)
 	}
 	return &types.QueryMessagesAndContractsResponse{
@@ -42,7 +41,7 @@ func (k Querier) MessagesAndContracts(c context.Context, _ *types.QueryMessagesA
 	}, nil
 }
 
-func (k Querier) GasTank(c context.Context, req *types.QueryGasTankRequest) (*types.QueryGasTankResponse, error) {
+func (k Querier) GasTank(goCtx context.Context, req *types.QueryGasTankRequest) (*types.QueryGasTankResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -51,7 +50,7 @@ func (k Querier) GasTank(c context.Context, req *types.QueryGasTankRequest) (*ty
 		return nil, status.Error(codes.InvalidArgument, "gas tank id cannot be 0")
 	}
 
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	gt, found := k.GetGasTank(ctx, req.GasTankId)
 	if !found {
@@ -64,12 +63,12 @@ func (k Querier) GasTank(c context.Context, req *types.QueryGasTankRequest) (*ty
 	}, nil
 }
 
-func (k Querier) GasTanks(c context.Context, req *types.QueryGasTanksRequest) (*types.QueryGasTanksResponse, error) {
+func (k Querier) GasTanks(goCtx context.Context, req *types.QueryGasTanksRequest) (*types.QueryGasTanksResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	store := ctx.KVStore(k.storeKey)
 
 	keyPrefix := types.GetAllGasTanksKey()
@@ -97,7 +96,7 @@ func (k Querier) GasTanks(c context.Context, req *types.QueryGasTanksRequest) (*
 	}, nil
 }
 
-func (k Querier) GasTanksByProvider(c context.Context, req *types.QueryGasTanksByProviderRequest) (*types.QueryGasTanksByProviderResponse, error) {
+func (k Querier) GasTanksByProvider(goCtx context.Context, req *types.QueryGasTanksByProviderRequest) (*types.QueryGasTanksByProviderResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -106,7 +105,7 @@ func (k Querier) GasTanksByProvider(c context.Context, req *types.QueryGasTanksB
 		return nil, status.Error(codes.InvalidArgument, "invalid provider address")
 	}
 
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	allGasTanks := k.GetAllGasTanks(ctx)
 
@@ -122,7 +121,7 @@ func (k Querier) GasTanksByProvider(c context.Context, req *types.QueryGasTanksB
 	}, nil
 }
 
-func (k Querier) GasConsumer(c context.Context, req *types.QueryGasConsumerRequest) (*types.QueryGasConsumerResponse, error) {
+func (k Querier) GasConsumer(goCtx context.Context, req *types.QueryGasConsumerRequest) (*types.QueryGasConsumerResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -131,7 +130,7 @@ func (k Querier) GasConsumer(c context.Context, req *types.QueryGasConsumerReque
 		return nil, status.Error(codes.InvalidArgument, "invalid consumer address")
 	}
 
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	gc, found := k.GetGasConsumer(ctx, sdk.MustAccAddressFromBech32(req.Consumer))
 	if !found {
@@ -142,12 +141,12 @@ func (k Querier) GasConsumer(c context.Context, req *types.QueryGasConsumerReque
 	}, nil
 }
 
-func (k Querier) GasConsumers(c context.Context, req *types.QueryGasConsumersRequest) (*types.QueryGasConsumersResponse, error) {
+func (k Querier) GasConsumers(goCtx context.Context, req *types.QueryGasConsumersRequest) (*types.QueryGasConsumersResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	store := ctx.KVStore(k.storeKey)
 
 	keyPrefix := types.GetAllGasConsumersKey()
@@ -174,7 +173,7 @@ func (k Querier) GasConsumers(c context.Context, req *types.QueryGasConsumersReq
 	}, nil
 }
 
-func (k Querier) GasConsumersByGasTankID(c context.Context, req *types.QueryGasConsumersByGasTankIDRequest) (*types.QueryGasConsumersByGasTankIDResponse, error) {
+func (k Querier) GasConsumersByGasTankID(goCtx context.Context, req *types.QueryGasConsumersByGasTankIDRequest) (*types.QueryGasConsumersByGasTankIDResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
@@ -183,7 +182,7 @@ func (k Querier) GasConsumersByGasTankID(c context.Context, req *types.QueryGasC
 		return nil, status.Error(codes.InvalidArgument, "gas tank id cannot be 0")
 	}
 
-	ctx := sdk.UnwrapSDKContext(c)
+	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	gt, found := k.GetGasTank(ctx, req.GasTankId)
 	if !found {
@@ -219,8 +218,8 @@ func (k Querier) GasConsumersByGasTankID(c context.Context, req *types.QueryGasC
 	}, nil
 }
 
-func (k Querier) GasTankIdsForAllTXC(c context.Context, _ *types.QueryGasTankIdsForAllTXC) (*types.QueryGasTankIdsForAllTXCResponse, error) {
-	ctx := sdk.UnwrapSDKContext(c)
+func (k Querier) GasTankIdsForAllTXC(goCtx context.Context, _ *types.QueryGasTankIdsForAllTXC) (*types.QueryGasTankIdsForAllTXCResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
 	txToGtids := []*types.TxGTIDs{}
 	allTxGtids := k.GetAllTxGTIDs(ctx)
 	for _, val := range allTxGtids {
