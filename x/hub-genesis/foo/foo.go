@@ -10,7 +10,7 @@ import (
 
 type OnChanOpenConfirmInterceptor struct {
 	porttypes.IBCModule
-	transferkeeper.Keeper
+	transferK transferkeeper.Keeper
 }
 
 func NewOnChanOpenConfirmInterceptor(
@@ -32,8 +32,8 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	ctx.Logger().Info("OnChanOpenConfirm interceptor!", "port id", portID, "channelID", channelID)
 
 	m := types.MsgTransfer{
-		SourcePort:       "",
-		SourceChannel:    "",
+		SourcePort:       portID,
+		SourceChannel:    channelID,
 		Token:            sdk.Coin{},
 		Sender:           "",
 		Receiver:         "",
@@ -41,7 +41,7 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 		TimeoutTimestamp: 0,
 		Memo:             "",
 	}
-	res, err := i.Transfer(ctx.Context(), &m)
+	res, err := i.transferK.Transfer(ctx.Context(), &m)
 	if err != nil {
 		ctx.Logger().Info("OnChanOpenConfirm transfer", "err", err)
 	}
