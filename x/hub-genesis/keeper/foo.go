@@ -14,11 +14,7 @@ type OnChanOpenConfirmInterceptor struct {
 	k         Keeper
 }
 
-func NewOnChanOpenConfirmInterceptor(
-	k Keeper,
-	transferK transferkeeper.Keeper,
-	next porttypes.IBCModule,
-) *OnChanOpenConfirmInterceptor {
+func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, transferK transferkeeper.Keeper, k Keeper) *OnChanOpenConfirmInterceptor {
 	return &OnChanOpenConfirmInterceptor{next, transferK, k}
 }
 
@@ -52,11 +48,12 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 		TimeoutTimestamp: 0,
 		Memo:             "special",
 	}
-	res, err := i.transferK.Transfer(ctx.Context(), &m)
+	_, err := i.transferK.Transfer(sdk.WrapSDKContext(ctx), &m)
 	if err != nil {
-		ctx.Logger().Info("OnChanOpenConfirm transfer", "err", err)
+		ctx.Logger().Error("OnChanOpenConfirm transfer", "err", err)
+	} else {
+		ctx.Logger().Info("sent special transfer")
 	}
-	_ = res
 
 	return i.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 }
