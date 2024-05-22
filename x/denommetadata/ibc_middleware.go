@@ -56,18 +56,17 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) exported.Acknowledgement {
-	var altPacket types.WrappedFungibleTokenPacketData
-	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &altPacket); err != nil {
-		// try if it's a FungibleTokenPacketData packet
-		altPacket.FungibleTokenPacketData = new(transfertypes.FungibleTokenPacketData)
-		if nerr := types.ModuleCdc.UnmarshalJSON(packet.GetData(), altPacket.FungibleTokenPacketData); nerr == nil {
-			return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
-		}
+	packetData := new(transfertypes.FungibleTokenPacketData)
+	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), packetData); err != nil {
 		err = errorsmod.Wrapf(errortypes.ErrInvalidType, "cannot unmarshal ICS-20 transfer packet data")
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	rawDenom := altPacket.FungibleTokenPacketData.Denom
+	if len(packetData.Memo) == 0 {
+		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
+	}
+
+	rawDenom := packetData.Denom
 
 	denomTrace := transfertypes.ParseDenomTrace(rawDenom)
 	if denomTrace.Path == "" {
@@ -77,7 +76,7 @@ func (im IBCMiddleware) OnRecvPacket(
 	_, err := im.keeper.GetDenomMetadata(ctx, denomTrace)
 	if err != nil {
 		if errors.Is(err, banktypes.ErrDenomMetadataNotFound) {
-			if err = im.createNewDenom(ctx, altPacket.DenomMetadata, denomTrace); err != nil {
+			if err = im.createNewDenom(ctx, packetData, denomTrace); err != nil {
 				return channeltypes.NewErrorAcknowledgement(err)
 			}
 		} else {
@@ -85,17 +84,20 @@ func (im IBCMiddleware) OnRecvPacket(
 		}
 	}
 
-	packetData := altPacket.FungibleTokenPacketData
-
-	packet.Data, err = types.ModuleCdc.MarshalJSON(packetData)
-	if err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
-	}
-
 	return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 }
 
-func (im IBCMiddleware) createNewDenom(ctx sdk.Context, dm *banktypes.Metadata, denomTrace transfertypes.DenomTrace) error {
+func (im IBCMiddleware) createNewDenom(ctx sdk.Context, packetData *transfertypes.FungibleTokenPacketData, denomTrace transfertypes.DenomTrace) error {
+	packetMetaData, err := types.ParsePacketMetadata(packetData.Memo)
+	if errors.Is(err, types.ErrMemoUnmarshal) || errors.Is(err, types.ErrMemoDMEmpty) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	dm := packetMetaData.DenomMetadata
+
 	denomUnits := make([]*banktypes.DenomUnit, 0, len(dm.DenomUnits))
 	for _, du := range dm.DenomUnits {
 		if du.Exponent == 0 {
