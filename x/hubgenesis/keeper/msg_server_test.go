@@ -13,8 +13,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/ibctest"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 )
 
 const (

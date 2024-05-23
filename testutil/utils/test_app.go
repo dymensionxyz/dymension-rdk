@@ -11,7 +11,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"

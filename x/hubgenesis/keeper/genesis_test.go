@@ -6,7 +6,7 @@ import (
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/nullify"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 	"github.com/stretchr/testify/require"
 )
 

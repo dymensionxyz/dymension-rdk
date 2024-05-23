@@ -2,7 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 )
 
 // GetParams returns the total set of minting parameters.

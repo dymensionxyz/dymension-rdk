@@ -9,7 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 )
 
 // GetTxCmd returns the transaction commands for this module

@@ -7,7 +7,7 @@ import (
 
 	denommetadatakeeper "github.com/dymensionxyz/dymension-rdk/x/denommetadata/keeper"
 	epochkeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
-	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
+	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hubgenesis/keeper"
 	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"

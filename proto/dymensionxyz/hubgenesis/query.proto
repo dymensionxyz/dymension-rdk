@@ -6,20 +6,20 @@ import "google/api/annotations.proto";
 import "dymensionxyz/hubgenesis/params.proto";
 import "dymensionxyz/hubgenesis/state.proto";
 
-option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types";
 
 // Query provides defines the gRPC querier service.
 service Query {
   // Params returns the total set of hub-genesis parameters.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get =
-        "/dymensionxyz/dymension-rdk/hub-genesis/params";
+        "/dymensionxyz/dymension-rdk/hubgenesis/params";
   }
 
    // State returns the state of the genesis event.
    rpc State(QueryStateRequest) returns (QueryStateResponse) {
     option (google.api.http).get =
-        "/dymensionxyz/dymension-rdk/hub-genesis/state";
+        "/dymensionxyz/dymension-rdk/hubgenesis/state";
   }
 }
 

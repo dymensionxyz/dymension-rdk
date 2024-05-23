@@ -5,9 +5,9 @@ import (
 	"io"
 	"net/http"
 
-	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
-	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
-	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hubgenesis"
+	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hubgenesis/keeper"
+	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/gorilla/mux"

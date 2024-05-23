@@ -5,12 +5,12 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 )
 
 var _ types.QueryServer = Querier{}
 
-// Querier defines a wrapper around the x/hub-genesis keeper providing gRPC method
+// Querier defines a wrapper around the x/hubgenesis keeper providing gRPC method
 // handlers.
 type Querier struct {
 	Keeper

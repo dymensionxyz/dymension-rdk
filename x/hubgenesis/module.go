@@ -1,4 +1,4 @@
-package hub_genesis
+package hubgenesis
 
 import (
 	"context"
@@ -17,10 +17,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/client/cli"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/client/cli"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/keeper"
 
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 )
 
 var (
@@ -127,7 +127,7 @@ func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
 }
 
-// LegacyQuerierHandler returns the x/hub-genesis module's sdk.Querier.
+// LegacyQuerierHandler returns the x/hubgenesis module's sdk.Querier.
 func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 	return func(sdk.Context, []string, abci.RequestQuery) ([]byte, error) {
 		return nil, fmt.Errorf("legacy querier not supported for the x/%s module", types.ModuleName)

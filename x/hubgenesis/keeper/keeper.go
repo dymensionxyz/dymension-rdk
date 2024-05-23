@@ -6,7 +6,7 @@ import (
 	ibctypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	"github.com/tendermint/tendermint/libs/log"
 
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
