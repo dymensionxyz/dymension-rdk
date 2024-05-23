@@ -46,7 +46,7 @@ proto-lint:
 
 proto-gen:
 	@echo "Generating Protobuf files"
-	@$(protoImage) sh ./protocol/scripts/protocgen.sh
+	@$(protoImage) sh ./proto/protocgen.sh
 
 proto-check-bc-breaking:
 	@rm -rf ./.proto-export
