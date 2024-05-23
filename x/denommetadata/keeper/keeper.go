@@ -69,6 +69,10 @@ func (k Keeper) GetDenomMetadata(ctx sdk.Context, denomHash transfertypes.DenomT
 	return
 }
 
+func (k Keeper) HasDenomMetadata(ctx sdk.Context, denomHash transfertypes.DenomTrace) bool {
+	return k.bankKeeper.HasDenomMetaData(ctx, denomHash.IBCDenom())
+}
+
 // CreateDenomMetadata create the denom metadata in bank module
 func (k Keeper) CreateDenomMetadata(ctx sdk.Context, metadatas ...types.DenomMetadata) error {
 	for _, metadata := range metadatas {

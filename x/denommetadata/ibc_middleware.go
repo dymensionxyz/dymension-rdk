@@ -51,11 +51,28 @@ func NewIBCMiddleware(k keeper.Keeper, channelKeeper types.ChannelKeeper, app po
 	}
 }
 
+// OnRecvPacket registers the denom metadata if it does not exist
 func (im IBCMiddleware) OnRecvPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) exported.Acknowledgement {
+	/*_, clientState, err := im.channelKeeper.GetChannelClientState(ctx, packet.DestinationPort, packet.DestinationChannel)
+	if err != nil {
+		err = errorsmod.Wrapf(errortypes.ErrInvalidRequest, "client state not found")
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
+
+	// Extract the chain ID from the client state
+	tmClientState, ok := clientState.(*tenderminttypes.ClientState)
+	if !ok {
+		return channeltypes.NewErrorAcknowledgement(errors.New("expected tendermint client state"))
+	}
+
+	sourceChainID := tmClientState.GetChainID()
+	_ = sourceChainID*/
+	// TODO: check source chain against a whitelist or something
+
 	packetData := new(transfertypes.FungibleTokenPacketData)
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), packetData); err != nil {
 		err = errorsmod.Wrapf(errortypes.ErrInvalidType, "cannot unmarshal ICS-20 transfer packet data")
@@ -73,15 +90,12 @@ func (im IBCMiddleware) OnRecvPacket(
 		denomTrace.Path = fmt.Sprintf("%s/%s", packet.GetDestPort(), packet.GetDestChannel())
 	}
 
-	_, err := im.keeper.GetDenomMetadata(ctx, denomTrace)
-	if err != nil {
-		if errors.Is(err, banktypes.ErrDenomMetadataNotFound) {
-			if err = im.createNewDenom(ctx, packetData, denomTrace); err != nil {
-				return channeltypes.NewErrorAcknowledgement(err)
-			}
-		} else {
-			return channeltypes.NewErrorAcknowledgement(err)
-		}
+	if im.keeper.HasDenomMetadata(ctx, denomTrace) {
+		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
+	}
+
+	if err := im.createNewDenom(ctx, packetData, denomTrace); err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
 	return im.IBCModule.OnRecvPacket(ctx, packet, relayer)

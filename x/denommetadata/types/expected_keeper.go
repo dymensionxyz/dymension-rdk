@@ -4,7 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
-	"github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
+	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 )
 
@@ -23,5 +23,5 @@ type TransferKeeper interface {
 }
 
 type ChannelKeeper interface {
-	GetChannel(ctx sdk.Context, portID, channelID string) (channel types.Channel, found bool)
+	GetChannelClientState(ctx sdk.Context, portID, channelID string) (string, exported.ClientState, error)
 }
