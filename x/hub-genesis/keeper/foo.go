@@ -26,15 +26,17 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	/*
-		TODO: send a transfer on the channelID
-	*/
+	l := ctx.Logger().With("name", "OnChanOpenConfirm interceptor!", "port id", portID, "channelID", channelID)
 
-	ctx.Logger().Info("OnChanOpenConfirm interceptor!", "port id", portID, "channelID", channelID)
+	err := i.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
+	if err != nil {
+		l.Error("Passed on OnChanOpenConfirm", "err", err)
+		return err
+	}
 
 	state := i.k.GetState(ctx)
 
-	firstCoin := state.GenesisTokens[0]
+	firstCoin := state.GenesisTokens[0] // TODO: send all transfers
 
 	srcAccount := i.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress()
@@ -51,12 +53,13 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 		TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()),
 		Memo:             "special",
 	}
-	_, err := i.transferK.Transfer(sdk.WrapSDKContext(ctx), &m)
+
+	_, err = i.transferK.Transfer(sdk.WrapSDKContext(ctx), &m)
 	if err != nil {
 		ctx.Logger().Error("OnChanOpenConfirm transfer", "err", err)
 	} else {
 		ctx.Logger().Info("sent special transfer")
 	}
 
-	return i.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
+	return nil
 }
