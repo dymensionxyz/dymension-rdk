@@ -5,7 +5,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types"
 )
 
-// InitGenesis new hub-genesis genesis.
+// InitGenesis new hubgenesis genesis.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 

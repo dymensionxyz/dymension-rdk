@@ -10,7 +10,7 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types";
 
 // Query provides defines the gRPC querier service.
 service Query {
-  // Params returns the total set of hub-genesis parameters.
+  // Params returns the total set of hubgenesis parameters.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get =
         "/dymensionxyz/dymension-rdk/hubgenesis/params";

@@ -5,7 +5,7 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types";
 
 import "gogoproto/gogo.proto";
 
-// Params holds parameters for the hub-genesis module.
+// Params holds parameters for the hubgenesis module.
 message Params {
   option (gogoproto.goproto_stringer) = false;
 

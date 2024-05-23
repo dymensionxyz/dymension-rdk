@@ -9,7 +9,7 @@ import (
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
-	cdc.RegisterConcrete(&MsgHubGenesisEvent{}, "hub-genesis/HubGenesisEvent", nil)
+	cdc.RegisterConcrete(&MsgHubGenesisEvent{}, "hubgenesis/HubGenesisEvent", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {

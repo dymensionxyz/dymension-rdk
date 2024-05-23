@@ -7,7 +7,7 @@ import "dymensionxyz/hubgenesis/state.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hubgenesis/types";
 
-// GenesisState defines the hub-genesis module's genesis state.
+// GenesisState defines the hubgenesis module's genesis state.
 message GenesisState {
   // params defines all the parameters of the module.
   Params params = 1 [ (gogoproto.nullable) = false ];

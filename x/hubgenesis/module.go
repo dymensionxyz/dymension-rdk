@@ -28,24 +28,24 @@ var (
 	_ module.AppModuleBasic = AppModuleBasic{}
 )
 
-// AppModuleBasic defines the basic application module used by the hub-genesis module.
+// AppModuleBasic defines the basic application module used by the hubgenesis module.
 type AppModuleBasic struct {
 	cdc codec.Codec
 }
 
 var _ module.AppModuleBasic = AppModuleBasic{}
 
-// Name returns the hub-genesis module's name.
+// Name returns the hubgenesis module's name.
 func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
 
-// RegisterCodec registers the hub-genesis module's types for the given codec.
+// RegisterCodec registers the hubgenesis module's types for the given codec.
 func (AppModuleBasic) RegisterCodec(cdc *codec.LegacyAmino) {
 	types.RegisterCodec(cdc)
 }
 
-// RegisterLegacyAminoCodec registers the hub-genesis module's types on the given LegacyAmino codec.
+// RegisterLegacyAminoCodec registers the hubgenesis module's types on the given LegacyAmino codec.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	types.RegisterCodec(cdc)
 }
@@ -55,13 +55,13 @@ func (b AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
 	types.RegisterInterfaces(reg)
 }
 
-// DefaultGenesis returns default genesis state as raw bytes for the hub-genesis
+// DefaultGenesis returns default genesis state as raw bytes for the hubgenesis
 // module.
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	return cdc.MustMarshalJSON(types.DefaultGenesisState())
 }
 
-// ValidateGenesis performs genesis state validation for the hub-genesis module.
+// ValidateGenesis performs genesis state validation for the hubgenesis module.
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
 	var data types.GenesisState
 	if err := cdc.UnmarshalJSON(bz, &data); err != nil {
@@ -71,30 +71,30 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingCo
 	return types.ValidateGenesis(data)
 }
 
-// RegisterRESTRoutes registers the REST routes for the hub-genesis module.
+// RegisterRESTRoutes registers the REST routes for the hubgenesis module.
 func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
 }
 
-// RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the hub-genesis module.
+// RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the hubgenesis module.
 func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *runtime.ServeMux) {
 	if err := types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(clientCtx)); err != nil {
 		panic(err)
 	}
 }
 
-// GetTxCmd returns no root tx command for the hub-genesis module.
+// GetTxCmd returns no root tx command for the hubgenesis module.
 func (AppModuleBasic) GetTxCmd() *cobra.Command {
 	return cli.GetTxCmd()
 }
 
-// GetQueryCmd returns the root query command for the hub-genesis module.
+// GetQueryCmd returns the root query command for the hubgenesis module.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd()
 }
 
 // ___________________________________________________________________________
 
-// AppModule implements an application module for the hub-genesis module.
+// AppModule implements an application module for the hubgenesis module.
 type AppModule struct {
 	AppModuleBasic
 
@@ -111,18 +111,18 @@ func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper)
 	}
 }
 
-// Name returns the hub-genesis module's name.
+// Name returns the hubgenesis module's name.
 func (AppModule) Name() string {
 	return types.ModuleName
 }
 
-// RegisterInvariants registers the hub-genesis module invariants.
+// RegisterInvariants registers the hubgenesis module invariants.
 func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
-// Route returns the message routing key for the hub-genesis module.
+// Route returns the message routing key for the hubgenesis module.
 func (AppModule) Route() sdk.Route { return sdk.Route{} }
 
-// QuerierRoute returns the hub-genesis module's querier route name.
+// QuerierRoute returns the hubgenesis module's querier route name.
 func (AppModule) QuerierRoute() string {
 	return types.QuerierRoute
 }
@@ -141,7 +141,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 }
 
-// InitGenesis performs genesis initialization for the hub-genesis module. It returns
+// InitGenesis performs genesis initialization for the hubgenesis module. It returns
 // no validator updates.
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
@@ -151,18 +151,18 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 	return []abci.ValidatorUpdate{}
 }
 
-// ExportGenesis returns the exported genesis state as raw bytes for the hub-genesis
+// ExportGenesis returns the exported genesis state as raw bytes for the hubgenesis
 // module.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
 	gs := am.keeper.ExportGenesis(ctx)
 	return cdc.MustMarshalJSON(gs)
 }
 
-// BeginBlock returns the begin blocker for the hub-genesis module.
+// BeginBlock returns the begin blocker for the hubgenesis module.
 func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 }
 
-// EndBlock returns the end blocker for the hub-genesis module. It returns no validator
+// EndBlock returns the end blocker for the hubgenesis module. It returns no validator
 // updates.
 func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
@@ -175,7 +175,7 @@ func (AppModule) ProposalContents(simState module.SimulationState) []simtypes.We
 	return nil
 }
 
-// WeightedOperations doesn't return any hub-genesis module operation.
+// WeightedOperations doesn't return any hubgenesis module operation.
 func (AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
 	return nil
 }

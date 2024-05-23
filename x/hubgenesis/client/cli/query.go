@@ -11,11 +11,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 )
 
-// GetQueryCmd returns the cli query commands for the hub-genesis module.
+// GetQueryCmd returns the cli query commands for the hubgenesis module.
 func GetQueryCmd() *cobra.Command {
 	hubGenQueryCmd := &cobra.Command{
 		Use:                        types.ModuleName,
-		Short:                      "Querying commands for the hub-genesis module",
+		Short:                      "Querying commands for the hubgenesis module",
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
@@ -29,12 +29,12 @@ func GetQueryCmd() *cobra.Command {
 	return hubGenQueryCmd
 }
 
-// GetCmdQueryParams implements a command to return the current hub-genesis
+// GetCmdQueryParams implements a command to return the current hubgenesis
 // parameters.
 func GetCmdQueryParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "params",
-		Short: "Query the current hub-genesis parameters",
+		Short: "Query the current hubgenesis parameters",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -58,12 +58,12 @@ func GetCmdQueryParams() *cobra.Command {
 	return cmd
 }
 
-// GetCmdQueryState implements a command to return the current hub-genesis
+// GetCmdQueryState implements a command to return the current hubgenesis
 // state.
 func GetCmdQueryState() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "state",
-		Short: "Query the current hub-genesis state",
+		Short: "Query the current hubgenesis state",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
