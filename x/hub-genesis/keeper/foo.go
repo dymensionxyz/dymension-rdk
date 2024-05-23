@@ -41,14 +41,16 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	srcAccount := i.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress()
 
-	dstAddr := sdk.AccAddress("dym13d2qrv402klpu6t6qk0uvd8eqxmrw6srmsm4yu")
+	dstStr := "dym13d2qrv402klpu6t6qk0uvd8eqxmrw6srmsm4yu"
+	dstAddr := sdk.AccAddress(dstStr)
+	_ = dstAddr
 
 	m := transfertypes.MsgTransfer{
 		SourcePort:       portID,
 		SourceChannel:    channelID,
 		Token:            firstCoin,
 		Sender:           srcAddr.String(),
-		Receiver:         dstAddr.String(),
+		Receiver:         dstStr,
 		TimeoutHeight:    clienttypes.Height{},
 		TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()),
 		Memo:             "special",
