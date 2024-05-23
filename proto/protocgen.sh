@@ -20,4 +20,3 @@ find . -name "*.pb.go" -o -name "*.pb.gw.go" -type f -not -path "./proto/*" -del
 cp -r proto/.gen/github.com/dymensionxyz/dymension-rdk/* .
 rm -rf proto/.gen/github.com/
 
-go mod tidy
