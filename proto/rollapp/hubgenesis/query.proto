@@ -1,10 +1,10 @@
 syntax = "proto3";
-package rollapp.hub_genesis;
+package rollapp.hubgenesis;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "hub-genesis/params.proto";
-import "hub-genesis/state.proto";
+import "rollapp/hubgenesis/params.proto";
+import "rollapp/hubgenesis/state.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
