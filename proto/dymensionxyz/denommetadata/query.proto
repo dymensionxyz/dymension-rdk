@@ -3,7 +3,7 @@ package rollapp.denommetadata.types;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "denommetadata/params.proto";
+import "dymensionxyz/denommetadata/params.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types";
 
