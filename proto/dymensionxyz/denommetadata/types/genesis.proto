@@ -1,5 +1,5 @@
 syntax = "proto3";
-package dymensionxyz.denommetadata;
+package dymensionxyz.denommetadata.types;
 
 import "gogoproto/gogo.proto";
 import "dymensionxyz/denommetadata/types/params.proto";

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package dymensionxyz.sequencers;
+package dymensionxyz.sequencers.types;
 
 import "gogoproto/gogo.proto";
 import "dymensionxyz/sequencers/types/params.proto";
