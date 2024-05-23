@@ -1,5 +1,5 @@
 syntax = "proto3";
-package rollapp.epochs.types;
+package dymensionxyz.epochs;
 
 import "gogoproto/gogo.proto";
 import "google/protobuf/duration.proto";

@@ -1,12 +1,12 @@
 syntax = "proto3";
-package rollapp.sequencers.types;
+package dymensionxyz.sequencers;
 
 import "gogoproto/gogo.proto";
 
 import "cosmos/staking/v1beta1/staking.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "sequencers/params.proto";
+import "dymensionxyz/sequencers/params.proto";
 
 // this line is used by starport scaffolding # 1
 

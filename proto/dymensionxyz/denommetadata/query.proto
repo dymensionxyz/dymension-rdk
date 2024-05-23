@@ -1,5 +1,5 @@
 syntax = "proto3";
-package rollapp.denommetadata.types;
+package dymensionxyz.denommetadata;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";

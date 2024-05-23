@@ -1,5 +1,5 @@
 syntax = "proto3";
-package rollapp.sequencers.types;
+package dymensionxyz.sequencers;
 import "gogoproto/gogo.proto";
 import "google/protobuf/duration.proto";
 

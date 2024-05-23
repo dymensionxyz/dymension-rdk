@@ -1,9 +1,9 @@
 syntax = "proto3";
-package rollapp.mint.v1beta1;
+package dymensionxyz.mint.v1beta1;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "mint/v1beta1/params.proto";
+import "dymensionxyz/mint/v1beta1/params.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/mint/types";
 

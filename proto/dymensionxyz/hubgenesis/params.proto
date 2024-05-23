@@ -1,5 +1,5 @@
 syntax = "proto3";
-package rollapp.hub_genesis;
+package dymensionxyz.hubgenesis;
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 

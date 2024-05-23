@@ -1,8 +1,8 @@
 syntax = "proto3";
-package rollapp.sequencers.types;
+package dymensionxyz.sequencers;
 
 import "gogoproto/gogo.proto";
-import "sequencers/params.proto";
+import "dymensionxyz/sequencers/params.proto";
 
 // this line is used by starport scaffolding # genesis/proto/import
 

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package rollapp.mint.v1beta1;
+package dymensionxyz.mint.v1beta1;
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/mint/types";
 
