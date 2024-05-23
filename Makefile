@@ -49,6 +49,11 @@ proto-format: install-clang-format ## Formats protobuf files
 	@echo "Formatting Protobuf files"
 	@find ./ -not -path "*third_party/*" -name "*.proto" -exec clang-format -i {} \;
 
+
+# ---------------------------------------------------------------------------- #
+#                                   Misc                                       #
+# ---------------------------------------------------------------------------- #
+
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help
 help: ## generates help for all targets
