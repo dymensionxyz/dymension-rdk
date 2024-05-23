@@ -2,7 +2,7 @@ syntax = "proto3";
 package dymensionxyz.sequencers;
 
 import "gogoproto/gogo.proto";
-import "dymensionxyz/sequencers/params.proto";
+import "dymensionxyz/sequencers/types/params.proto";
 
 // this line is used by starport scaffolding # genesis/proto/import
 

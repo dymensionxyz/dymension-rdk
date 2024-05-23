@@ -2,7 +2,7 @@ syntax = "proto3";
 package dymensionxyz.denommetadata;
 
 import "gogoproto/gogo.proto";
-import "dymensionxyz/denommetadata/denommetadata.proto";
+import "dymensionxyz/denommetadata/types/denommetadata.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types";
 

@@ -4,7 +4,7 @@ package dymensionxyz.epochs;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "dymensionxyz/epochs/genesis.proto";
+import "dymensionxyz/epochs/types/genesis.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/epochs/types";
 
