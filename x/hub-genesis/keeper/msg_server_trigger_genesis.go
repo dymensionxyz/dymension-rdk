@@ -11,18 +11,6 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
-type msgServer struct {
-	Keeper
-}
-
-// NewMsgServerImpl returns an implementation of the MsgServer interface
-// for the provided Keeper.
-func NewMsgServerImpl(keeper Keeper) types.MsgServer {
-	return &msgServer{Keeper: keeper}
-}
-
-var _ types.MsgServer = msgServer{}
-
 func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubGenesisEvent) (*types.MsgHubGenesisEventResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
