@@ -9,10 +9,15 @@ import (
 func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 
-	modAddress := k.accountKeeper.GetModuleAddress(types.ModuleName)
-	if !k.accountKeeper.HasAccount(ctx, modAddress) {
-		k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-	}
+	/*
+		TODO: there used to be this check to create the module account, I think I will need it now that I don't include
+		it in the bank genesis state or anything
+		if !k.accountKeeper.HasAccount(ctx, modAddress) {
+		}
+	*/
+	acc := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+	_ = acc
+	// TODO: how to mint tokens?
 
 	/*
 		TODO: there used to be a check here to see if the balance which will later be needed for sending
