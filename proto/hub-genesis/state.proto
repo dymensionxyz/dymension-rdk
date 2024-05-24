@@ -19,7 +19,7 @@ message State {
     ];
 
   repeated GenesisAccount genesis_accounts = 9 [(gogoproto.nullable) = false];
-  repeated TokenMetadata metadatas = 8 [(gogoproto.nullable) = false];
+  repeated TokenMetadata token_metadatas = 8 [(gogoproto.nullable) = false];
 }
 /*
 
