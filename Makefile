@@ -33,21 +33,119 @@ test_evm: ## Run go test
 #                                   Protobuf                                   #
 # ---------------------------------------------------------------------------- #
 
-install-protoc: ## Install protoc if not already installed
-	@which protoc >/dev/null || (echo "protoc not found. Installing..." && \
-        (uname | grep -q Darwin && brew install protobuf || sudo apt install -y protobuf-compiler))
+###############################################################################
+###                                Proto                                    ###
+###############################################################################
 
-install-clang-format: ## Install clang-format if not already installed (NOTE: the version of clang-format on ubuntu is really old, follow this page https://stackoverflow.com/a/56879394 if you want newest version)
-	@which clang-format >/dev/null || (echo "clang-format not found. Installing..." && \
-        (uname | grep -q Darwin && brew install clang-format || sudo apt install -y clang-format))
+# ------
+# NOTE: Link to the tendermintdev/sdk-proto-gen docker images:
+#       https://hub.docker.com/r/tendermintdev/sdk-proto-gen/tags
+#
+protoVer=v0.7
+protoImageName=tendermintdev/sdk-proto-gen:$(protoVer)
+containerProtoGen=cosmos-sdk-proto-gen-$(protoVer)
+containerProtoFmt=cosmos-sdk-proto-fmt-$(protoVer)
+# ------
+# NOTE: cosmos/proto-builder image is needed because clang-format is not installed
+#       on the tendermintdev/sdk-proto-gen docker image.
+#		Link to the cosmos/proto-builder docker images:
+#       https://github.com/cosmos/cosmos-sdk/pkgs/container/proto-builder
+#
+protoCosmosVer=0.11.2
+protoCosmosName=ghcr.io/cosmos/proto-builder:$(protoCosmosVer)
+protoCosmosImage=$(DOCKER) run --network host --rm -v $(CURDIR):/workspace --workdir /workspace $(protoCosmosName)
 
-proto-gen: install-protoc ## Generates protobuf files
+# do download deps first if you get stuck
+proto-gen:
 	@echo "Generating Protobuf files"
-	@sh ./scripts/protocgen.sh
+	@if docker ps -a --format '{{.Names}}' | grep -Eq "^${containerProtoGen}$$"; then docker start -a $(containerProtoGen); else docker run --name $(containerProtoGen) -v $(CURDIR):/workspace --workdir /workspace $(protoImageName) \
+		sh ./scripts/protocgen.sh; fi
+	@go mod tidy
 
-proto-format: install-clang-format ## Formats protobuf files
-	@echo "Formatting Protobuf files"
-	@find ./ -not -path "*third_party/*" -name "*.proto" -exec clang-format -i {} \;
+proto-swagger-gen:
+	@echo "Downloading Protobuf dependencies"
+	@make proto-download-deps
+	@echo "Generating Protobuf Swagger"
+	$(protoCosmosImage) sh ./scripts/protoc-swagger-gen.sh
+
+SWAGGER_DIR=./swagger-proto
+THIRD_PARTY_DIR=$(SWAGGER_DIR)/third_party
+
+proto-download-deps:
+	mkdir -p "$(THIRD_PARTY_DIR)/cosmos_tmp" && \
+	cd "$(THIRD_PARTY_DIR)/cosmos_tmp" && \
+	git init && \
+	git remote add origin "https://github.com/cosmos/cosmos-sdk.git" && \
+	git config core.sparseCheckout true && \
+	printf "proto\nthird_party\n" > .git/info/sparse-checkout && \
+	git fetch --depth=1 origin "$(DEPS_COSMOS_SDK_VERSION)" && \
+	git checkout FETCH_HEAD && \
+	rm -f ./proto/buf.* && \
+	mv ./proto/* ..
+	rm -rf "$(THIRD_PARTY_DIR)/cosmos_tmp"
+
+	mkdir -p "$(THIRD_PARTY_DIR)/ethermint_tmp" && \
+	cd "$(THIRD_PARTY_DIR)/ethermint_tmp" && \
+	git init && \
+	git remote add origin "https://github.com/dymensionxyz/ethermint.git" && \
+	git config core.sparseCheckout true && \
+	printf "proto\nthird_party\n" > .git/info/sparse-checkout && \
+	git fetch --depth=1 origin "$(DEPS_ETHERMINT_VERSION)" && \
+	git checkout FETCH_HEAD && \
+	rm -f ./proto/buf.* && \
+	mv ./proto/* ..
+	rm -rf "$(THIRD_PARTY_DIR)/ethermint_tmp"
+
+	mkdir -p "$(THIRD_PARTY_DIR)/osmosis_tmp" && \
+	cd "$(THIRD_PARTY_DIR)/osmosis_tmp" && \
+	git init && \
+	git remote add origin "https://github.com/dymensionxyz/osmosis.git" && \
+	git config core.sparseCheckout true && \
+	printf "proto\nthird_party\n" > .git/info/sparse-checkout && \
+	git fetch --depth=1 origin "$(DEPS_OSMOSIS_VERSION)" && \
+	git checkout FETCH_HEAD && \
+	rm -f ./proto/buf.* && \
+	mv ./proto/* ..
+	rm -rf "$(THIRD_PARTY_DIR)/osmosis_tmp"
+
+	mkdir -p "$(THIRD_PARTY_DIR)/ibc_tmp" && \
+	cd "$(THIRD_PARTY_DIR)/ibc_tmp" && \
+	git init && \
+	git remote add origin "https://github.com/cosmos/ibc-go.git" && \
+	git config core.sparseCheckout true && \
+	printf "proto\n" > .git/info/sparse-checkout && \
+	git fetch --depth=1 origin "$(DEPS_IBC_GO_VERSION)" && \
+	git checkout FETCH_HEAD && \
+	rm -f ./proto/buf.* && \
+	mv ./proto/* ..
+	rm -rf "$(THIRD_PARTY_DIR)/ibc_tmp"
+
+	mkdir -p "$(THIRD_PARTY_DIR)/cosmos_proto_tmp" && \
+	cd "$(THIRD_PARTY_DIR)/cosmos_proto_tmp" && \
+	git init && \
+	git remote add origin "https://github.com/cosmos/cosmos-proto.git" && \
+	git config core.sparseCheckout true && \
+	printf "proto\n" > .git/info/sparse-checkout && \
+	git fetch --depth=1 origin "$(DEPS_COSMOS_PROTO_VERSION)" && \
+	git checkout FETCH_HEAD && \
+	rm -f ./proto/buf.* && \
+	mv ./proto/* ..
+	rm -rf "$(THIRD_PARTY_DIR)/cosmos_proto_tmp"
+
+	mkdir -p "$(THIRD_PARTY_DIR)/gogoproto" && \
+	curl -SSL https://raw.githubusercontent.com/cosmos/gogoproto/$(DEPS_COSMOS_GOGOPROTO_VERSION)/gogoproto/gogo.proto > "$(THIRD_PARTY_DIR)/gogoproto/gogo.proto"
+
+	mkdir -p "$(THIRD_PARTY_DIR)/google/api" && \
+	curl -sSL https://raw.githubusercontent.com/googleapis/googleapis/master/google/api/annotations.proto > "$(THIRD_PARTY_DIR)/google/api/annotations.proto"
+	curl -sSL https://raw.githubusercontent.com/googleapis/googleapis/master/google/api/http.proto > "$(THIRD_PARTY_DIR)/google/api/http.proto"
+
+	mkdir -p "$(THIRD_PARTY_DIR)/confio/ics23" && \
+	curl -sSL https://raw.githubusercontent.com/confio/ics23/$(DEPS_CONFIO_ICS23_VERSION)/proofs.proto > "$(THIRD_PARTY_DIR)/proofs.proto"
+
+
+# ---------------------------------------------------------------------------- #
+#                                   Misc                                       #
+# ---------------------------------------------------------------------------- #
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help
