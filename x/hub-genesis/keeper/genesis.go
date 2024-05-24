@@ -9,32 +9,21 @@ import (
 
 // InitGenesis new hub-genesis genesis.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
-	k.SetParams(ctx, genState.Params)
+	k.accountKeeper.GetModuleAccount(ctx, types.ModuleName) // TODO: check if it's necessary
 
 	/*
-		TODO: there used to be this check to create the module account, I think I will need it now that I don't include
-		it in the bank genesis state or anything
-		if !k.accountKeeper.HasAccount(ctx, modAddress) {
-		}
-	*/
-	acc := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-	_ = acc
-	// TODO: how to mint tokens?
-
-	/*
-		TODO: there used to be a check here to see if the balance which will later be needed for sending
-		to the hub is available.
-		But I think it's better to not check, potentially..
-		Simply, send the tokens!
+		Mint coins which will later be transferred to the hub
 	*/
 	for _, ga := range genState.State.GetGenesisAccounts() {
 		coin := ga.GetAmount()
 		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.Coins{coin})
 		if err != nil {
+			// TODO: okay to panic?
 			panic(fmt.Errorf("init genesis mint coins: %w", err))
 		}
 	}
 
+	k.SetParams(ctx, genState.Params)
 	k.SetState(ctx, genState.State)
 }
 
