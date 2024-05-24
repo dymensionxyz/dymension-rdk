@@ -55,6 +55,7 @@ protoCosmosVer=0.11.2
 protoCosmosName=ghcr.io/cosmos/proto-builder:$(protoCosmosVer)
 protoCosmosImage=$(DOCKER) run --network host --rm -v $(CURDIR):/workspace --workdir /workspace $(protoCosmosName)
 
+# do download deps first if you get stuck
 proto-gen:
 	@echo "Generating Protobuf files"
 	@if docker ps -a --format '{{.Names}}' | grep -Eq "^${containerProtoGen}$$"; then docker start -a $(containerProtoGen); else docker run --name $(containerProtoGen) -v $(CURDIR):/workspace --workdir /workspace $(protoImageName) \
