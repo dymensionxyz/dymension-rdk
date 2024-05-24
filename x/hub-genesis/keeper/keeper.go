@@ -21,7 +21,7 @@ type (
 
 		channelKeeper types.ChannelKeeper
 		bankKeeper    types.BankKeeper
-		accountKeeper types.AccountKeeper
+		accountKeeper types.AuthAccountKeeper
 	}
 )
 
@@ -31,7 +31,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	channelKeeper types.ChannelKeeper,
 	bankKeeper types.BankKeeper,
-	accountKeeper types.AccountKeeper,
+	accountKeeper types.AuthAccountKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {

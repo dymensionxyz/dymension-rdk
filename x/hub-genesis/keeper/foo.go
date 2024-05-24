@@ -31,7 +31,7 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 	err := i.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
-		l.Error("Passed on OnChanOpenConfirm", "err", err)
+		l.Error("Next middleware: on OnChanOpenConfirm", "err", err)
 		return err
 	}
 

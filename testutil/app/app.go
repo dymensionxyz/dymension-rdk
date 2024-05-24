@@ -178,7 +178,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		hubgentypes.ModuleName:         {authtypes.Burner},
+		hubgentypes.ModuleName:         {authtypes.Minter},
 		denommetadatatypes.ModuleName:  {authtypes.Minter},
 	}
 )
@@ -607,7 +607,7 @@ func NewRollapp(
 // 	anteHandler, err := rollappapp.NewAnteHandler(
 // 		rollappapp.HandlerOptions{
 // 			HandlerOptions: ante.HandlerOptions{
-// 				AccountKeeper:   app.AccountKeeper,
+// 				AuthAccountKeeper:   app.AuthAccountKeeper,
 // 				BankKeeper:      app.BankKeeper,
 // 				SignModeHandler: txConfig.SignModeHandler(),
 // 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,

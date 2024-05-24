@@ -6,8 +6,8 @@ import (
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 )
 
-// AccountKeeper defines the contract required for account APIs.
-type AccountKeeper interface {
+// AuthAccountKeeper defines the contract required for account APIs.
+type AuthAccountKeeper interface {
 	GetModuleAddress(name string) sdk.AccAddress
 	HasAccount(ctx sdk.Context, addr sdk.AccAddress) bool
 
