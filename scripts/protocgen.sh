@@ -25,8 +25,7 @@ cd ..
 # Note: Proto files are suffixed with the current binary version.
 cp -r github.com/dymensionxyz/dymension-rdk/* ./
 
-#rm -rf github.com
-
+rm -rf github.com
 
 
 # TODO: Uncomment once ORM/Pulsar support is needed.
