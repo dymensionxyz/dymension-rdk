@@ -48,7 +48,7 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 
 	// check if genesis event was already triggered
 	state := m.GetState(ctx)
-	if state.IsLocked {
+	if state.GetGenesisTokensWereEscrowed() {
 		return nil, types.ErrGenesisEventAlreadyTriggered
 	}
 
@@ -56,7 +56,7 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 		return nil, errorsmod.Wrapf(types.ErrLockingGenesisTokens, "failed to lock tokens: %v", err)
 	}
 
-	state.IsLocked = true
+	state.GenesisTokensWereEscrowed = true
 	m.SetState(ctx, state)
 
 	return &types.MsgHubGenesisEventResponse{}, nil
