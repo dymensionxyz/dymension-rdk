@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	_ "embed"
 	"testing"
 
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"

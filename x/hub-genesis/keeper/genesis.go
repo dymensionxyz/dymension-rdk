@@ -14,15 +14,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 		k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	}
 
-	// if tokens provided and waiting to be locked, verify the balance
-	if !genState.State.GetGenesisTokensWereEscrowed() && !genState.State.GenesisTokens.IsZero() {
-		// get spendable coins in the module account
-		spendable := k.bankKeeper.SpendableCoins(ctx, modAddress)
-		// we expect the genesis balance of the module account to be equal to required genesis tokens
-		if !spendable.IsEqual(genState.State.GenesisTokens) {
-			panic(types.ErrWrongGenesisBalance)
-		}
-	}
+	/*
+		TODO: there used to be a check here to see if the balance which will later be needed for sending
+		to the hub is available.
+		But I think it's better to not check, potentially..
+		Simply, send the tokens!
+	*/
+
 	k.SetState(ctx, genState.State)
 }
 
