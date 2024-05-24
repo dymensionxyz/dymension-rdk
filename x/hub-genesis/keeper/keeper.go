@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	ibctypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
@@ -52,19 +51,4 @@ func NewKeeper(
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
-}
-
-// lock coins by sending them to an escrow address
-func (k Keeper) lockRollappGenesisTokens(ctx sdk.Context, sourceChannel string, tokens sdk.Coins) error {
-	// get spendable coins in the module account
-	account := k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-	spendable := k.bankKeeper.SpendableCoins(ctx, account.GetAddress())
-
-	// validate it's enough for the required tokens
-	if !spendable.IsAllGTE(tokens) {
-		return types.ErrGenesisInsufficientBalance
-	}
-
-	escrowAddress := ibctypes.GetEscrowAddress("transfer", sourceChannel)
-	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, escrowAddress, tokens)
 }
