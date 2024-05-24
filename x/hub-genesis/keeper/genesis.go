@@ -9,8 +9,6 @@ import (
 
 // InitGenesis new hub-genesis genesis.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
-	// k.accountKeeper.GetModuleAccount(ctx, types.ModuleName) // TODO: check if it's necessary
-
 	/*
 		Mint coins which will later be transferred to the hub
 		TODO: need to not do it if it not height 0 genesis
