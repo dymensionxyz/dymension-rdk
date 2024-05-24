@@ -18,6 +18,7 @@ type AuthAccountKeeper interface {
 type BankKeeper interface {
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
+	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 }
 
 type ChannelKeeper interface {

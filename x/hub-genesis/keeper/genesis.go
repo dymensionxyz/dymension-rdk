@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
@@ -25,6 +27,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 		But I think it's better to not check, potentially..
 		Simply, send the tokens!
 	*/
+	for _, ga := range genState.State.GetGenesisAccounts() {
+		coin := ga.GetAmount()
+		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.Coins{coin})
+		if err != nil {
+			panic(fmt.Errorf("init genesis mint coins: %w", err))
+		}
+	}
 
 	k.SetState(ctx, genState.State)
 }
