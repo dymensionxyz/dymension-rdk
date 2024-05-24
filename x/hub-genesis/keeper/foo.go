@@ -37,14 +37,19 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 	state := i.k.GetState(ctx)
 
-	firstCoin := state.GenesisTokens[0] // TODO: send all transfers
+	// firstCoin := state.GenesisTokens[0] // TODO: send all transfers
+	var firstCoin sdk.Coin
+	dstStr := "dym13d2qrv402klpu6t6qk0uvd8eqxmrw6srmsm4yu"
+	for i, a := range state.GenesisAccounts {
+		l.Info("got genesis account", "acc", a)
+		if i == 0 {
+			firstCoin = a.GetAmount()
+			dstStr = a.GetAddress()
+		}
+	}
 
 	srcAccount := i.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress()
-
-	dstStr := "dym13d2qrv402klpu6t6qk0uvd8eqxmrw6srmsm4yu"
-	dstAddr := sdk.AccAddress(dstStr)
-	_ = dstAddr
 
 	m := transfertypes.MsgTransfer{
 		SourcePort:       portID,
