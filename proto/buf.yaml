@@ -5,9 +5,9 @@ deps:
   # Use version recommended in https://github.com/cosmos/cosmos-sdk/blob/main/proto/README.md
   - buf.build/cosmos/cosmos-sdk:v0.46.16
   # Latest release was in Dec 2021, https://buf.build/cosmos/cosmos-proto/commits/main
-  - buf.build/cosmos/cosmos-proto:1935555c206d4afb9e94615dfd0fad31
+  - buf.build/cosmos/cosmos-proto:04467658e59e44bbb22fe568206e1f70
   # Latest release was in Oct 2022, https://buf.build/cosmos/gogo-proto/commits/main
-  - buf.build/cosmos/gogo-proto:5e5b9fdd01804356895f8f79a6f1ddc1
+  - buf.build/cosmos/gogo-proto:88ef6483f90f478fb938c37dde52ece3
   - buf.build/googleapis/googleapis:cc916c31859748a68fd229a3c8d7a2e8
 breaking:
   use:
