@@ -1,0 +1,42 @@
+syntax = "proto3";
+package rollapp.hub_genesis;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "hub-genesis/params.proto";
+import "hub-genesis/state.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
+
+// Query provides defines the gRPC querier service.
+service Query {
+  // Params returns the total set of hub-genesis parameters.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get =
+        "/dymensionxyz/dymension-rdk/hub-genesis/params";
+  }
+
+   // State returns the state of the genesis event.
+   rpc State(QueryStateRequest) returns (QueryStateResponse) {
+    option (google.api.http).get =
+        "/dymensionxyz/dymension-rdk/hub-genesis/state";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params defines the parameters of the module.
+  Params params = 1 [ (gogoproto.nullable) = false ];
+}
+
+// QueryStateRequest is the request type for the Query/State RPC method.
+message QueryStateRequest {}
+
+// QueryStateResponse is the response type for the Query/State RPC method.
+message QueryStateResponse {
+  // state holds the state of the genesis event
+  State state = 1 [(gogoproto.nullable) = false];
+}

@@ -1,0 +1,15 @@
+syntax = "proto3";
+package rollapp.hub_genesis;
+
+import "gogoproto/gogo.proto";
+import "hub-genesis/params.proto";
+import "hub-genesis/state.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
+
+// GenesisState defines the hub-genesis module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [ (gogoproto.nullable) = false ];
+  State state = 2 [(gogoproto.nullable) = false];
+}

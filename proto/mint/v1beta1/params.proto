@@ -1,0 +1,38 @@
+syntax = "proto3";
+package rollapp.mint.v1beta1;
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/mint/types";
+
+import "gogoproto/gogo.proto";
+
+// Params holds parameters for the mint module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+
+  // type of coin to mint
+  string mint_denom = 1;
+
+  // mint epoch identifier
+  string mint_epoch_identifier = 2
+      [ (gogoproto.moretags) = "yaml:\"mint_epoch_identifier\"" ];
+
+  // start epoch to start minting rewards from
+  int64 mint_start_epoch = 3
+      [ (gogoproto.moretags) =
+            "yaml:\"minting_rewards_distribution_start_epoch\"" ];
+
+  string inflation_change_epoch_identifier = 4
+      [ (gogoproto.moretags) = "yaml:\"inflation_change_epoch_identifier\"" ];
+
+  string inflation_rate_change = 5 [
+    (gogoproto.moretags) = "yaml:\"inflation_rate_change\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+
+  string target_inflation_rate = 6 [
+    (gogoproto.moretags) = "yaml:\"target_inflation_rate\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}

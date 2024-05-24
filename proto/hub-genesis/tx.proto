@@ -1,0 +1,22 @@
+syntax = "proto3";
+package rollapp.hub_genesis;
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
+
+// Msg defines the Msg service.
+service Msg {
+  rpc TriggerGenesisEvent(MsgHubGenesisEvent)
+      returns (MsgHubGenesisEventResponse);
+}
+
+// MsgHubGenesisEvent is the message type for triggering the hub genesis event
+message MsgHubGenesisEvent {
+  // address is the bech32-encoded address of the sender
+  string address = 1;
+  // channel_id is the hub channel id on the rollapp
+  string channel_id = 2;
+  // hub_id is the hub's chainid
+  string hub_id = 3;
+}
+
+message MsgHubGenesisEventResponse {}

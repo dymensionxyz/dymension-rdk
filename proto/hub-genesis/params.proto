@@ -1,0 +1,25 @@
+syntax = "proto3";
+package rollapp.hub_genesis;
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
+
+import "gogoproto/gogo.proto";
+
+// Params holds parameters for the hub-genesis module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+
+  // genesis_triggerer_allowlist is a list of the
+  // accounts that are allowed to trigger a genesis event on the rollapp.
+  // In the case of an empty list, there are no restrictions
+  repeated GenesisTriggererParams genesis_triggerer_allowlist = 1 [
+    (gogoproto.moretags) = "yaml:\"genesis_triggerer_allowlist\"",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message GenesisTriggererParams {
+  // address is a bech32-encoded address of the
+  // accounts that are allowed to trigger a rollapp genesis event.
+  string address = 1 [ (gogoproto.moretags) = "yaml:\"address\"" ];
+}

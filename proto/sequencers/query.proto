@@ -1,0 +1,96 @@
+syntax = "proto3";
+package rollapp.sequencers.types;
+
+import "gogoproto/gogo.proto";
+
+import "cosmos/staking/v1beta1/staking.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "sequencers/params.proto";
+
+// this line is used by starport scaffolding # 1
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Sequencers queries all sequencers that match the given status.
+  rpc Sequencers(QuerySequencersRequest) returns (QuerySequencersResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/sequencers";
+  }
+
+  // Sequencer queries validator info for given validator address.
+  rpc Sequencer(QuerySequencerRequest) returns (QuerySequencerResponse) {
+    option (google.api.http).get =
+        "/dymensionxyz/dymension-rdk/sequencers/sequencers/{sequencer_addr}";
+  }
+
+  // HistoricalInfo queries the historical info for given height.
+  rpc HistoricalInfo(QueryHistoricalInfoRequest)
+      returns (QueryHistoricalInfoResponse) {
+    option (google.api.http).get =
+        "/dymensionxyz/dymension-rdk/sequencers/historical_info/{height}";
+  }
+
+  // Parameters queries the staking parameters.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/cosmos/staking/v1beta1/params";
+  }
+}
+
+// QuerySequencersRequest is request type for Query/Sequencers RPC method.
+message QuerySequencersRequest {
+  // status enables to query for sequencers matching a given status.
+  string status = 1;
+
+  // pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QuerySequencersResponse is response type for the Query/Sequencers RPC method
+message QuerySequencersResponse {
+  // sequencers contains all the queried sequencers.
+  repeated cosmos.staking.v1beta1.Validator sequencers = 1
+      [ (gogoproto.nullable) = false ];
+
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QuerySequencerRequest is response type for the Query/Sequencer RPC method
+message QuerySequencerRequest {
+  // sequencer_addr defines the sequencer address to query for.
+  string sequencer_addr = 1;
+}
+
+// QuerySequencerResponse is response type for the Query/Sequencer RPC method
+message QuerySequencerResponse {
+  // sequencer defines the the sequencer info.
+  cosmos.staking.v1beta1.Validator sequencer = 1
+      [ (gogoproto.nullable) = false ];
+}
+
+// QueryHistoricalInfoRequest is request type for the Query/HistoricalInfo RPC
+// method.
+message QueryHistoricalInfoRequest {
+  // height defines at which height to query the historical info.
+  int64 height = 1;
+}
+
+// QueryHistoricalInfoResponse is response type for the Query/HistoricalInfo RPC
+// method.
+message QueryHistoricalInfoResponse {
+  // hist defines the historical info at the given height.
+  cosmos.staking.v1beta1.HistoricalInfo hist = 1;
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [ (gogoproto.nullable) = false ];
+}
+
+// this line is used by starport scaffolding # 3

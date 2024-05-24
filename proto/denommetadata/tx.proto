@@ -1,0 +1,38 @@
+syntax = "proto3";
+package rollapp.denommetadata.types;
+
+import "gogoproto/gogo.proto";
+import "denommetadata/denommetadata.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types";
+
+// Msg defines the Msg service.
+service Msg {
+  rpc CreateDenomMetadata(MsgCreateDenomMetadata)
+      returns (MsgCreateDenomMetadataResponse) {};
+
+  rpc UpdateDenomMetadata(MsgUpdateDenomMetadata)
+      returns (MsgUpdateDenomMetadataResponse) {};
+}
+
+// MsgCreateDenomMetadata defines a message that create the denom metadata.
+message MsgCreateDenomMetadata {
+  // sender_address is the bech32 address of message sender.
+  string sender_address = 1;
+  repeated DenomMetadata metadatas = 2 [ (gogoproto.nullable) = false ];
+}
+
+// MsgCreateDenomMetadataResponse defines the MsgCreateDenomMetadata response
+// type
+message MsgCreateDenomMetadataResponse {}
+
+// MsgDistributeTokens defines a message that update the denom metadata.
+message MsgUpdateDenomMetadata {
+  // sender_address is the bech32 address of message sender.
+  string sender_address = 1;
+  repeated DenomMetadata metadatas = 2 [ (gogoproto.nullable) = false ];
+}
+
+// MsgUpdateDenomMetadataResponse defines the MsgUpdateDenomMetadata response
+// type
+message MsgUpdateDenomMetadataResponse {}
