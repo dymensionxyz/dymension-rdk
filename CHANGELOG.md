@@ -1,3 +1,12 @@
+#  (2024-05-26)
+
+
+### Features
+
+* **ci:** Add changelog workflow ([#393](https://github.com/dymensionxyz/dymension-rdk/issues/393)) ([568a98f](https://github.com/dymensionxyz/dymension-rdk/commit/568a98f0ad1b4644bff91b29a278566d017d98dc))
+
+
+
 # [](https://github.com/dymensionxyz/dymension-rdk/compare/v1.5.0-beta...v) (2024-05-24)
 
 
