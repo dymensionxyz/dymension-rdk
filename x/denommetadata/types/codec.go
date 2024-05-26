@@ -47,7 +47,6 @@ func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 		&MsgCreateDenomMetadata{},
 		&MsgUpdateDenomMetadata{},
 	)
-	registry.RegisterImplementations(&WrappedFungibleTokenPacketData{})
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }

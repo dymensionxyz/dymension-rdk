@@ -4,7 +4,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
-	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 )
 
@@ -20,8 +19,4 @@ type TransferKeeper interface {
 	GetDenomTrace(ctx sdk.Context, denomTraceHash tmbytes.HexBytes) (transfertypes.DenomTrace, bool)
 	HasDenomTrace(ctx sdk.Context, denomTraceHash tmbytes.HexBytes) bool
 	SetDenomTrace(ctx sdk.Context, denomTrace transfertypes.DenomTrace)
-}
-
-type ChannelKeeper interface {
-	GetChannelClientState(ctx sdk.Context, portID, channelID string) (string, exported.ClientState, error)
 }

@@ -38,16 +38,14 @@ var _ porttypes.IBCModule = &IBCMiddleware{}
 // IBCMiddleware implements the ICS26 callbacks for the transfer middleware
 type IBCMiddleware struct {
 	porttypes.IBCModule
-	keeper        keeper.Keeper
-	channelKeeper types.ChannelKeeper
+	keeper keeper.Keeper
 }
 
 // NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application
-func NewIBCMiddleware(k keeper.Keeper, channelKeeper types.ChannelKeeper, app porttypes.IBCModule) IBCMiddleware {
+func NewIBCMiddleware(k keeper.Keeper, app porttypes.IBCModule) IBCMiddleware {
 	return IBCMiddleware{
-		channelKeeper: channelKeeper,
-		IBCModule:     app,
-		keeper:        k,
+		IBCModule: app,
+		keeper:    k,
 	}
 }
 
