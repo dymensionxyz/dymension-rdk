@@ -57,22 +57,6 @@ func (im IBCMiddleware) OnRecvPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) exported.Acknowledgement {
-	/*_, clientState, err := im.channelKeeper.GetChannelClientState(ctx, packet.DestinationPort, packet.DestinationChannel)
-	if err != nil {
-		err = errorsmod.Wrapf(errortypes.ErrInvalidRequest, "client state not found")
-		return channeltypes.NewErrorAcknowledgement(err)
-	}
-
-	// Extract the chain ID from the client state
-	tmClientState, ok := clientState.(*tenderminttypes.ClientState)
-	if !ok {
-		return channeltypes.NewErrorAcknowledgement(errors.New("expected tendermint client state"))
-	}
-
-	sourceChainID := tmClientState.GetChainID()
-	_ = sourceChainID*/
-	// TODO: check source chain against a whitelist or something
-
 	packetData := new(transfertypes.FungibleTokenPacketData)
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), packetData); err != nil {
 		err = errorsmod.Wrapf(errortypes.ErrInvalidType, "cannot unmarshal ICS-20 transfer packet data")
