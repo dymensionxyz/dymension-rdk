@@ -1,11 +1,18 @@
 package types
 
 import (
+	"slices"
+
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 	"github.com/tendermint/tendermint/crypto"
 )
+
+// Comparable is a type constraint that allows only comparable types.
+type Comparable interface {
+	comparable
+}
 
 // DeriveAddress derives an address with the given address length type, module name, and
 // address derivation name. It is used to derive private plan gas tank address.
@@ -29,32 +36,16 @@ func GetCoinByDenomFromCoins(denom string, coins sdk.Coins) (sdk.Coin, bool) {
 	return sdk.Coin{}, false
 }
 
-// ItemExists returns true if item exists in array else false .
-func ItemExists(array []string, item string) bool {
-	for _, v := range array {
-		if v == item {
-			return true
-		}
-	}
-	return false
+// ItemExists returns true if item exists in array else false.
+func ItemExists[T Comparable](array []T, item T) bool {
+	return slices.Contains(array, item)
 }
 
-func RemoveDuplicates(input []string) []string {
-	uniqueMap := make(map[string]bool)
-	for _, str := range input {
-		uniqueMap[str] = true
-	}
-	uniqueSlice := make([]string, 0, len(uniqueMap))
-	for str := range uniqueMap {
-		uniqueSlice = append(uniqueSlice, str)
-	}
-	return uniqueSlice
-}
-
-func RemoveDuplicatesUint64(list []uint64) []uint64 {
-	uniqueMap := make(map[uint64]bool)
-	var uniqueList []uint64
-	for _, v := range list {
+// RemoveDuplicates removes duplicates from a slice of any comparable type.
+func RemoveDuplicates[T Comparable](input []T) []T {
+	uniqueMap := make(map[T]bool)
+	var uniqueList []T
+	for _, v := range input {
 		if !uniqueMap[v] {
 			uniqueMap[v] = true
 			uniqueList = append(uniqueList, v)
@@ -63,18 +54,13 @@ func RemoveDuplicatesUint64(list []uint64) []uint64 {
 	return uniqueList
 }
 
-func RemoveValueFromListUint64(list []uint64, x uint64) []uint64 {
-	var newList []uint64
-	for _, v := range list {
-		if v != x {
-			newList = append(newList, v)
-		}
-	}
-	return newList
+// RemoveValueFromList removes all occurrences of a specific value from a slice of any comparable type.
+func RemoveValueFromList[T Comparable](list []T, x T) []T {
+	return slices.DeleteFunc(list, func(v T) bool { return v == x })
 }
 
 func ShiftToEndUint64(list []uint64, x uint64) []uint64 {
-	list = RemoveDuplicatesUint64(list)
+	list = RemoveDuplicates(list)
 	var index int = -1
 	for i, val := range list {
 		if val == x {

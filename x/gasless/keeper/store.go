@@ -210,7 +210,7 @@ func (k Keeper) AddToTxGtids(ctx sdk.Context, txs, contracts []string, gtid uint
 			txGtids = types.NewTxGTIDs(txPath)
 		}
 		txGtids.GasTankIds = append(txGtids.GasTankIds, gtid)
-		txGtids.GasTankIds = types.RemoveDuplicatesUint64(txGtids.GasTankIds)
+		txGtids.GasTankIds = types.RemoveDuplicates(txGtids.GasTankIds)
 		k.SetTxGTIDs(ctx, txGtids)
 	}
 
@@ -220,7 +220,7 @@ func (k Keeper) AddToTxGtids(ctx sdk.Context, txs, contracts []string, gtid uint
 			txGtids = types.NewTxGTIDs(c)
 		}
 		txGtids.GasTankIds = append(txGtids.GasTankIds, gtid)
-		txGtids.GasTankIds = types.RemoveDuplicatesUint64(txGtids.GasTankIds)
+		txGtids.GasTankIds = types.RemoveDuplicates(txGtids.GasTankIds)
 		k.SetTxGTIDs(ctx, txGtids)
 	}
 }
@@ -231,7 +231,7 @@ func (k Keeper) RemoveFromTxGtids(ctx sdk.Context, txs, contracts []string, gtid
 		if !found {
 			continue
 		}
-		txGtids.GasTankIds = types.RemoveValueFromListUint64(txGtids.GasTankIds, gtid)
+		txGtids.GasTankIds = types.RemoveValueFromList(txGtids.GasTankIds, gtid)
 		if len(txGtids.GasTankIds) == 0 {
 			k.DeleteTxGTIDs(ctx, txGtids)
 			continue
@@ -244,7 +244,7 @@ func (k Keeper) RemoveFromTxGtids(ctx sdk.Context, txs, contracts []string, gtid
 		if !found {
 			continue
 		}
-		txGtids.GasTankIds = types.RemoveValueFromListUint64(txGtids.GasTankIds, gtid)
+		txGtids.GasTankIds = types.RemoveValueFromList(txGtids.GasTankIds, gtid)
 		if len(txGtids.GasTankIds) == 0 {
 			k.DeleteTxGTIDs(ctx, txGtids)
 			continue
