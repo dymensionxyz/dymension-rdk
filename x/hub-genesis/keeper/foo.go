@@ -4,22 +4,28 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
+type DenomMetadataKeeper interface {
+	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
+}
+
 type OnChanOpenConfirmInterceptor struct {
 	porttypes.IBCModule
 	transfer Transfer
 	k        Keeper
+	denomK   DenomMetadataKeeper
 }
 
 type Transfer func(ctx sdk.Context, transfer *transfertypes.MsgTransfer) error
 
-func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Keeper) *OnChanOpenConfirmInterceptor {
-	return &OnChanOpenConfirmInterceptor{next, t, k}
+func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Keeper, denomK DenomMetadataKeeper) *OnChanOpenConfirmInterceptor {
+	return &OnChanOpenConfirmInterceptor{next, t, k, denomK}
 }
 
 func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
