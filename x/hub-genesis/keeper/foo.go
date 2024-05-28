@@ -39,7 +39,8 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 	// firstCoin := state.GenesisTokens[0] // TODO: send all transfers
 	var firstCoin sdk.Coin
-	dstStr := "dym13d2qrv402klpu6t6qk0uvd8eqxmrw6srmsm4yu"
+	// dstStr := "dym13d2qrv402klpu6t6qk0uvd8eqxmrw6srmsm4yu"
+	var dstStr string
 	for i, a := range state.GenesisAccounts {
 		l.Info("got genesis account", "acc", a)
 		if i == 0 {
