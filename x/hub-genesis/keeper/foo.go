@@ -52,6 +52,10 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 	for _, a := range state.GetGenesisAccounts() {
 
+		// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
+		// we assume the hub will deduplicate
+		memo := i.createMemo(ctx, a.Amount.Denom)
+
 		m := transfertypes.MsgTransfer{
 			SourcePort:       portID,
 			SourceChannel:    channelID,
@@ -60,7 +64,7 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 			Receiver:         a.GetAddress(),
 			TimeoutHeight:    clienttypes.Height{},
 			TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()),
-			Memo:             "special",
+			Memo:             memo,
 		}
 
 		err = i.transfer(ctx, &m)
@@ -77,4 +81,11 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	}
 
 	return errors.Join(errs...)
+}
+
+// createMemo creates a memo to go with the transfer. It's used by the hub to confirm
+// that the transfer originated from the chain itself, rather than a user of the chain.
+// It may also contain token metadata.
+func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) string {
+	i.denomK.GetDenomMetaData(ctx, denom)
 }
