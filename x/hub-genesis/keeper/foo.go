@@ -1,9 +1,13 @@
 package keeper
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
+
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	errorsmod "cosmossdk.io/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -54,7 +58,12 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 		// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
 		// we assume the hub will deduplicate
-		memo := i.createMemo(ctx, a.Amount.Denom)
+		memo, err := i.createMemo(ctx, a.Amount.Denom)
+		if err != nil {
+			err = errorsmod.Wrapf(err, "create memo: coin: %s", a.Amount)
+			errs = append(errs, err)
+			continue
+		}
 
 		m := transfertypes.MsgTransfer{
 			SourcePort:       portID,
@@ -68,24 +77,48 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 		}
 
 		err = i.transfer(ctx, &m)
-
-		if err == nil {
-			ctx.Logger().Info("sent special transfer")
+		if err != nil {
+			err = errorsmod.Wrapf(err, "transfer: receiver: %s: amt: %s", a.GetAddress(), a.Amount.String())
+			errs = append(errs, err)
 			continue
 		}
 
-		err = fmt.Errorf("transfer: receiver: %s: amt: %s", a.GetAddress(), a.Amount.String())
-		errs = append(errs, err)
+		ctx.Logger().Info("sent special transfer")
 
-		ctx.Logger().Error("OnChanOpenConfirm transfer", "err", err) // TODO: don't log(?)
 	}
 
-	return errors.Join(errs...)
+	err = errors.Join(err)
+	if err != nil {
+		ctx.Logger().Error("OnChanOpenConfirm genesis transfers", "err", err) // TODO: don't log(?)
+	}
+
+	return err
 }
 
 // createMemo creates a memo to go with the transfer. It's used by the hub to confirm
 // that the transfer originated from the chain itself, rather than a user of the chain.
 // It may also contain token metadata.
-func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) string {
-	i.denomK.GetDenomMetaData(ctx, denom)
+func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) (string, error) {
+	d, ok := i.denomK.GetDenomMetaData(ctx, denom)
+	if !ok {
+		return "", errorsmod.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
+	}
+
+	m := memo{
+		DoesNotOriginateFromUser: true,
+		DenomMetadata:            d,
+	}
+
+	bz, err := json.Marshal(m)
+	if err != nil {
+		return "", sdkerrors.ErrJSONMarshal
+	}
+
+	return string(bz), nil
+}
+
+type memo struct {
+	// If the packet originates from the chain itself, and not a user, this will be true
+	DoesNotOriginateFromUser bool               `json:"does_not_originate_from_user"`
+	DenomMetadata            banktypes.Metadata `json:"denom_metadata"`
 }
