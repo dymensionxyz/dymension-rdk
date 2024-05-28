@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -43,38 +45,36 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 	state := i.k.GetState(ctx)
 
-	// firstCoin := state.GenesisTokens[0] // TODO: send all transfers
-	var firstCoin sdk.Coin
-	// dstStr := "dym13d2qrv402klpu6t6qk0uvd8eqxmrw6srmsm4yu"
-	var dstStr string
-	for i, a := range state.GenesisAccounts {
-		l.Info("got genesis account", "acc", a)
-		if i == 0 {
-			firstCoin = a.GetAmount()
-			dstStr = a.GetAddress()
-		}
-	}
-
 	srcAccount := i.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-	srcAddr := srcAccount.GetAddress()
+	srcAddr := srcAccount.GetAddress().String()
 
-	m := transfertypes.MsgTransfer{
-		SourcePort:       portID,
-		SourceChannel:    channelID,
-		Token:            firstCoin,
-		Sender:           srcAddr.String(),
-		Receiver:         dstStr,
-		TimeoutHeight:    clienttypes.Height{},
-		TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()),
-		Memo:             "special",
+	var errs []error
+
+	for _, a := range state.GetGenesisAccounts() {
+
+		m := transfertypes.MsgTransfer{
+			SourcePort:       portID,
+			SourceChannel:    channelID,
+			Token:            a.Amount,
+			Sender:           srcAddr,
+			Receiver:         a.GetAddress(),
+			TimeoutHeight:    clienttypes.Height{},
+			TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()),
+			Memo:             "special",
+		}
+
+		err = i.transfer(ctx, &m)
+
+		if err == nil {
+			ctx.Logger().Info("sent special transfer")
+			continue
+		}
+
+		err = fmt.Errorf("transfer: receiver: %s: amt: %s", a.GetAddress(), a.Amount.String())
+		errs = append(errs, err)
+
+		ctx.Logger().Error("OnChanOpenConfirm transfer", "err", err) // TODO: don't log(?)
 	}
 
-	err = i.transfer(ctx, &m)
-	if err != nil {
-		ctx.Logger().Error("OnChanOpenConfirm transfer", "err", err)
-	} else {
-		ctx.Logger().Info("sent special transfer")
-	}
-
-	return nil
+	return errors.Join(errs...)
 }
