@@ -105,6 +105,7 @@ func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) 
 	}
 
 	m := memo{
+		IsGenesisDenomMetadata:   true,
 		DoesNotOriginateFromUser: true,
 		DenomMetadata:            d,
 	}
@@ -118,7 +119,9 @@ func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) 
 }
 
 type memo struct {
-	// If the packet originates from the chain itself, and not a user, this will be true
+	// If this is true, and the memo originated from the rollapp, the hub will skip eibc
+	IsGenesisDenomMetadata bool `json:"is_genesis_denom_metadata"`
+	// If the packet originates from the chain itself, and not a user, this will be true. This is required if IsGenesisDenomMetadata is true
 	DoesNotOriginateFromUser bool               `json:"does_not_originate_from_user"`
 	DenomMetadata            banktypes.Metadata `json:"denom_metadata"`
 }
