@@ -2,17 +2,32 @@
 
 set -eo pipefail
 
-proto_dirs=$(find ./proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
+# get protoc executions
+# go get github.com/regen-network/cosmos-proto/protoc-gen-gocosmos 2>/dev/null
+
+
+echo "Generating gogo proto code"
+cd proto
+proto_dirs=$(find ../proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 for dir in $proto_dirs; do
-  protoc \
-    -I "proto" \
-    -I "third_party/proto" \
-    --gocosmos_out=plugins=interfacetype+grpc,\
-Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types:. \
-    --grpc-gateway_out=logtostderr=true,allow_colon_final_segments=true:. \
-  $(find "${dir}" -maxdepth 1 -name '*.proto')
+    for file in $(find "${dir}" -maxdepth 1 -name '*.proto'); do
+      if grep go_package $file &>/dev/null; then
+        echo "Generating gogo proto code for $file"
+        buf generate --template buf.gen.gogo.yaml $file
+      fi
+    done
 done
 
+cd ..
+
 # move proto files to the right places
+#
+# Note: Proto files are suffixed with the current binary version.
 cp -r github.com/dymensionxyz/dymension-rdk/* ./
+
 rm -rf github.com
+
+
+# TODO: Uncomment once ORM/Pulsar support is needed.
+#
+# Ref: https://github
