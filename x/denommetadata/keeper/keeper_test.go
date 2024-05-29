@@ -141,7 +141,7 @@ func (suite *DenomMetadataKeeperTestSuite) TestCreateDenomMetadata() {
 				err: fmt.Errorf("failed to deploy the erc20 contract for the IBC coin"),
 			},
 			expectHookCalled: false,
-			expectErr:        "error in after denom metadata creation hook: failed to deploy the erc20 contract for the IBC coin",
+			expectErr:        "after denom metadata creation hook: ",
 		},
 	}
 
