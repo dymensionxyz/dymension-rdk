@@ -8,21 +8,13 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
 // State holds the state of the genesis event
 message State {
-    // were the initial genesis tokens escrowed successfully?
-    bool genesis_tokens_were_escrowed = 1 [deprecated=true];
-    
-    // genesis_tokens is the list of tokens that are expected to be locked on genesis event
-    repeated cosmos.base.v1beta1.Coin genesis_tokens = 2 [
-      (gogoproto.nullable) = false,
-      (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
-      deprecated = true
-    ];
-
+  reserved 1;
+  reserved 2;
   repeated GenesisAccount genesis_accounts = 9 [(gogoproto.nullable) = false];
 }
 /*
 
-TODO: the below is copied from, clean up!
+TODO: the below is copy pasted, clean up! (Dan: is it??)
  */
 
 // GenesisAccount is a struct for the genesis account for the rollapp
