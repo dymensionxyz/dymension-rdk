@@ -19,7 +19,7 @@ type Keeper struct {
 	cdc        codec.BinaryCodec
 	paramSpace paramtypes.Subspace
 
-	bankKeeper     types.BankKeeper
+	types.BankKeeper
 	transferKeeper types.TransferKeeper
 	hooks          types.MultiDenomMetadataHooks
 }
@@ -42,14 +42,14 @@ func NewKeeper(
 		storeKey:       storeKey,
 		cdc:            cdc,
 		paramSpace:     paramSpace,
-		bankKeeper:     bk,
+		BankKeeper:     bk,
 		transferKeeper: tk,
 		hooks:          hooks,
 	}
 }
 
 func (k Keeper) GetDenomMetadata(ctx sdk.Context, denomHash transfertypes.DenomTrace) (md types.DenomMetadata, err error) {
-	tokenMetadata, ok := k.bankKeeper.GetDenomMetaData(ctx, denomHash.IBCDenom())
+	tokenMetadata, ok := k.GetDenomMetaData(ctx, denomHash.IBCDenom())
 	if !ok {
 		err = banktypes.ErrDenomMetadataNotFound
 		return
@@ -57,7 +57,7 @@ func (k Keeper) GetDenomMetadata(ctx sdk.Context, denomHash transfertypes.DenomT
 
 	denomTrace, ok := k.transferKeeper.GetDenomTrace(ctx, denomHash.Hash())
 	if !ok {
-		err = fmt.Errorf("denom trace not found for denom %s", denomHash.IBCDenom())
+		err = fmt.Errorf("denom trace not found: denom: %s", denomHash.IBCDenom())
 		return
 	}
 
@@ -69,29 +69,33 @@ func (k Keeper) GetDenomMetadata(ctx sdk.Context, denomHash transfertypes.DenomT
 	return
 }
 
-func (k Keeper) HasDenomMetadata(ctx sdk.Context, denomHash transfertypes.DenomTrace) bool {
-	return k.bankKeeper.HasDenomMetaData(ctx, denomHash.IBCDenom())
-}
-
 // CreateDenomMetadata create the denom metadata in bank module
 func (k Keeper) CreateDenomMetadata(ctx sdk.Context, metadatas ...types.DenomMetadata) error {
 	for _, metadata := range metadatas {
-		found := k.bankKeeper.HasDenomMetaData(ctx, metadata.TokenMetadata.Base)
-		if found {
-			return types.ErrDenomAlreadyExists
+		if err := metadata.TokenMetadata.Validate(); err != nil {
+			return err
 		}
 
-		k.bankKeeper.SetDenomMetaData(ctx, metadata.TokenMetadata)
+		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
+		// If path is empty, then the denom is not ibc denom
+		if denomTrace.Path != "" {
+			denom := denomTrace.IBCDenom()
+			if denom != metadata.TokenMetadata.Base {
+				return fmt.Errorf("denom parse from denom trace does not match metadata base denom. base denom: %s, expected: %s", metadata.TokenMetadata.Base, denom)
+			}
+		}
+
+		if k.HasDenomMetaData(ctx, metadata.TokenMetadata.Base) {
+			return nil
+		}
+
+		k.SetDenomMetaData(ctx, metadata.TokenMetadata)
 		// set hook after denom metadata creation
 		if err := k.hooks.AfterDenomMetadataCreation(ctx, metadata.TokenMetadata); err != nil {
-			return fmt.Errorf("error in after denom metadata creation hook: %w", err)
+			return fmt.Errorf("after denom metadata creation hook: %w", err)
 		}
 
-		// construct the denomination trace from the full raw denomination
-		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
-
-		traceHash := denomTrace.Hash()
-		if !k.transferKeeper.HasDenomTrace(ctx, traceHash) {
+		if !k.transferKeeper.HasDenomTrace(ctx, denomTrace.Hash()) {
 			k.transferKeeper.SetDenomTrace(ctx, denomTrace)
 		}
 	}
@@ -102,23 +106,32 @@ func (k Keeper) CreateDenomMetadata(ctx sdk.Context, metadatas ...types.DenomMet
 // UpdateDenomMetadata update the denom metadata in bank module
 func (k Keeper) UpdateDenomMetadata(ctx sdk.Context, metadatas ...types.DenomMetadata) error {
 	for _, metadata := range metadatas {
-		found := k.bankKeeper.HasDenomMetaData(ctx, metadata.TokenMetadata.Base)
+		found := k.HasDenomMetaData(ctx, metadata.TokenMetadata.Base)
 		if !found {
 			return types.ErrDenomDoesNotExist
 		}
 
-		k.bankKeeper.SetDenomMetaData(ctx, metadata.TokenMetadata)
+		if err := metadata.TokenMetadata.Validate(); err != nil {
+			return err
+		}
+
+		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
+		// If path is empty, then the denom is not ibc denom
+		if denomTrace.Path != "" {
+			denom := denomTrace.IBCDenom()
+			if denom != metadata.TokenMetadata.Base {
+				return fmt.Errorf("denom parse from denom trace does not match metadata base denom. base denom: %s, expected: %s", metadata.TokenMetadata.Base, denom)
+			}
+		}
+
+		k.SetDenomMetaData(ctx, metadata.TokenMetadata)
 
 		// set hook after denom metadata update
 		if err := k.hooks.AfterDenomMetadataUpdate(ctx, metadata.TokenMetadata); err != nil {
-			return fmt.Errorf("error in after denom metadata update hook: %w", err)
+			return fmt.Errorf("after denom metadata update hook: %w", err)
 		}
 
-		// construct the denomination trace from the full raw denomination
-		denomTrace := transfertypes.ParseDenomTrace(metadata.DenomTrace)
-
-		traceHash := denomTrace.Hash()
-		if k.transferKeeper.HasDenomTrace(ctx, traceHash) {
+		if k.transferKeeper.HasDenomTrace(ctx, denomTrace.Hash()) {
 			k.transferKeeper.SetDenomTrace(ctx, denomTrace) // nolint: errcheck
 		}
 	}

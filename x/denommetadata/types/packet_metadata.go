@@ -20,7 +20,7 @@ const memoObjectKeyDM = "denom_metadata"
 var (
 	ErrMemoUnmarshal          = fmt.Errorf("unmarshal memo")
 	ErrDenomMetadataUnmarshal = fmt.Errorf("unmarshal denom metadata")
-	ErrMemoDMEmpty            = fmt.Errorf("memo denom metadata field is missing")
+	ErrMemoDenomMetadataEmpty = fmt.Errorf("memo denom metadata field is missing")
 )
 
 func ParsePacketMetadata(input string) (*PacketMetadata, error) {
@@ -33,7 +33,7 @@ func ParsePacketMetadata(input string) (*PacketMetadata, error) {
 		return nil, ErrMemoUnmarshal
 	}
 	if memo[memoObjectKeyDM] == nil {
-		return nil, ErrMemoDMEmpty
+		return nil, ErrMemoDenomMetadataEmpty
 	}
 
 	var metadata PacketMetadata

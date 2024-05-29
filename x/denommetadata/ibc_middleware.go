@@ -1,19 +1,3 @@
-// Copyright 2022 Evmos Foundation
-// This file is part of the Evmos Network packages.
-//
-// Evmos is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// The Evmos packages are distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with the Evmos packages. If not, see https://github.com/evmos/evmos/blob/main/LICENSE
-
 package denommetadata
 
 import (
@@ -29,7 +13,6 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 
-	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
 
@@ -38,14 +21,19 @@ var _ porttypes.IBCModule = &IBCMiddleware{}
 // IBCMiddleware implements the ICS26 callbacks for the transfer middleware
 type IBCMiddleware struct {
 	porttypes.IBCModule
-	keeper keeper.Keeper
+	keeper DenomMetadataKeeper
+}
+
+type DenomMetadataKeeper interface {
+	HasDenomMetaData(ctx sdk.Context, denom string) bool
+	CreateDenomMetadata(ctx sdk.Context, metadatas ...types.DenomMetadata) error
 }
 
 // NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application
-func NewIBCMiddleware(k keeper.Keeper, app porttypes.IBCModule) IBCMiddleware {
+func NewIBCMiddleware(keeper DenomMetadataKeeper, app porttypes.IBCModule) IBCMiddleware {
 	return IBCMiddleware{
 		IBCModule: app,
-		keeper:    k,
+		keeper:    keeper,
 	}
 }
 
@@ -65,37 +53,39 @@ func (im IBCMiddleware) OnRecvPacket(
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	rawDenom := packetData.Denom
+	packetMetaData, err := types.ParsePacketMetadata(packetData.Memo)
+	// if the memo is not an object, or does not contain the metadata, we can skip
+	if errors.Is(err, types.ErrMemoUnmarshal) || errors.Is(err, types.ErrMemoDenomMetadataEmpty) {
+		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
+	}
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
 
-	denomTrace := transfertypes.ParseDenomTrace(rawDenom)
+	if err = packetMetaData.DenomMetadata.Validate(); err != nil {
+		return channeltypes.NewErrorAcknowledgement(errortypes.ErrInvalidType)
+	}
+
+	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
 	if denomTrace.Path == "" {
 		denomTrace.Path = fmt.Sprintf("%s/%s", packet.GetDestPort(), packet.GetDestChannel())
 	}
 
-	if im.keeper.HasDenomMetadata(ctx, denomTrace) {
+	if im.keeper.HasDenomMetaData(ctx, denomTrace.IBCDenom()) {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	if err := im.createNewDenom(ctx, packetData, denomTrace); err != nil {
+	if err := im.createNewDenom(ctx, packetMetaData.DenomMetadata, denomTrace); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
 	return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 }
 
-func (im IBCMiddleware) createNewDenom(ctx sdk.Context, packetData *transfertypes.FungibleTokenPacketData, denomTrace transfertypes.DenomTrace) error {
-	packetMetaData, err := types.ParsePacketMetadata(packetData.Memo)
-	if errors.Is(err, types.ErrMemoUnmarshal) || errors.Is(err, types.ErrMemoDMEmpty) {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-
-	dm := packetMetaData.DenomMetadata
-
-	denomUnits := make([]*banktypes.DenomUnit, 0, len(dm.DenomUnits))
-	for _, du := range dm.DenomUnits {
+func (im IBCMiddleware) createNewDenom(ctx sdk.Context, denonmMetadata banktypes.Metadata, denomTrace transfertypes.DenomTrace) error {
+	denomUnits := make([]*banktypes.DenomUnit, 0, len(denonmMetadata.DenomUnits))
+	for _, du := range denonmMetadata.DenomUnits {
+		// we can skip the exp 0, it's not very useful
 		if du.Exponent == 0 {
 			continue
 		}
@@ -109,20 +99,20 @@ func (im IBCMiddleware) createNewDenom(ctx sdk.Context, packetData *transfertype
 
 	newDenomMetadata := types.DenomMetadata{
 		TokenMetadata: banktypes.Metadata{
-			Description: dm.Description,
+			Description: denonmMetadata.Description,
 			DenomUnits:  denomUnits,
 			Base:        denomTrace.IBCDenom(),
-			Display:     dm.Display,
-			Name:        dm.Name,
-			Symbol:      dm.Symbol,
-			URI:         dm.URI,
-			URIHash:     dm.URIHash,
+			Display:     denonmMetadata.Display,
+			Name:        denonmMetadata.Name,
+			Symbol:      denonmMetadata.Symbol,
+			URI:         denonmMetadata.URI,
+			URIHash:     denonmMetadata.URIHash,
 		},
 		DenomTrace: denomTrace.GetFullDenomPath(),
 	}
 
 	if err := im.keeper.CreateDenomMetadata(ctx, newDenomMetadata); err != nil {
-		return fmt.Errorf("failed to create denom metadata: %w", err)
+		return fmt.Errorf("create denom metadata: %w", err)
 	}
 
 	return nil
