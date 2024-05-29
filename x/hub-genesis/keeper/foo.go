@@ -17,21 +17,20 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
-type DenomMetadataKeeper interface {
-	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
-}
-
 type OnChanOpenConfirmInterceptor struct {
 	porttypes.IBCModule
 	transfer Transfer
 	k        Keeper
-	denomK   DenomMetadataKeeper
+	getDenom GetDenomMetaData
 }
 
-type Transfer func(ctx sdk.Context, transfer *transfertypes.MsgTransfer) error
+type (
+	Transfer         func(ctx sdk.Context, transfer *transfertypes.MsgTransfer) error
+	GetDenomMetaData func(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
+)
 
-func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Keeper, denomK DenomMetadataKeeper) *OnChanOpenConfirmInterceptor {
-	return &OnChanOpenConfirmInterceptor{next, t, k, denomK}
+func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData) *OnChanOpenConfirmInterceptor {
+	return &OnChanOpenConfirmInterceptor{next, t, k, d}
 }
 
 func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
@@ -99,7 +98,7 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 // that the transfer originated from the chain itself, rather than a user of the chain.
 // It may also contain token metadata.
 func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) (string, error) {
-	d, ok := i.denomK.GetDenomMetaData(ctx, denom)
+	d, ok := i.getDenom(ctx, denom)
 	if !ok {
 		return "", errorsmod.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
 	}
