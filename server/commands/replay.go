@@ -31,9 +31,9 @@ func ReplayCmd(appCreator types.AppCreator) *cobra.Command {
 			cfg := ctx.Config
 			home := cfg.RootDir
 
-			var heightInt int64
+			var heightInt uint64
 			if len(args) > 0 {
-				heightInt, _ = strconv.ParseInt(args[0], 10, 64)
+				heightInt, _ = strconv.ParseUint(args[0], 10, 64)
 			} else {
 				return fmt.Errorf("replay height not specified")
 			}
@@ -99,7 +99,7 @@ func ReplayCmd(appCreator types.AppCreator) *cobra.Command {
 			}
 
 			// rollback the app multistore
-			if err := app.CommitMultiStore().RollbackToVersion(heightInt); err != nil {
+			if err := app.CommitMultiStore().RollbackToVersion(int64(heightInt)); err != nil {
 				return fmt.Errorf("failed to rollback to version: %w", err)
 			}
 
