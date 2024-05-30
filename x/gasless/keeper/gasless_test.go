@@ -78,7 +78,7 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 		},
 		{
 			Name:   "success gas tank creation",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), 123, sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), 123, sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string(nil), sdk.NewCoin("stake", sdk.NewInt(100000000))),
 			ExpErr: nil,
 		},
 	}
