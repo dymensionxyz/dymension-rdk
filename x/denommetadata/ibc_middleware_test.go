@@ -1,106 +1,175 @@
 package denommetadata_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 	"github.com/stretchr/testify/require"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata"
-	denommetadatamoduletypes "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
+	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
 
 func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 	tests := []struct {
-		name        string
-		keeper      *mockKeeper
-		packet      types.Packet
-		want        exported.Acknowledgement
-		wantCreated bool
+		name         string
+		keeper       *mockKeeper
+		packet       channeltypes.Packet
+		wantAck      exported.Acknowledgement
+		wantSentData []byte
+		wantCreated  bool
 	}{
 		{
-			name:   "valid packet data",
+			name:   "valid packet data with packet metadata",
 			keeper: &mockKeeper{},
-			packet: types.Packet{
-				Data: validDenomMetadata,
+			packet: channeltypes.Packet{
+				Data: mustMarshalJSON(validFungibleTokenWithPacketMetadata),
 			},
-			want:        emptyResult,
-			wantCreated: true,
+			wantAck:      emptyResult,
+			wantSentData: mustMarshalJSON(validFungibleToken),
+			wantCreated:  true,
 		}, {
 			name:   "invalid packet data",
 			keeper: &mockKeeper{},
-			packet: types.Packet{
+			packet: channeltypes.Packet{
 				Data: []byte(``),
 			},
-			want:        types.NewErrorAcknowledgement(errortypes.ErrInvalidType),
-			wantCreated: false,
+			wantAck:      channeltypes.NewErrorAcknowledgement(errortypes.ErrInvalidType),
+			wantSentData: nil,
+			wantCreated:  false,
 		}, {
 			name:   "no memo",
 			keeper: &mockKeeper{},
-			packet: types.Packet{
+			packet: channeltypes.Packet{
 				Data: []byte(`{"memo": ""}`),
 			},
-			want:        emptyResult,
-			wantCreated: false,
+			wantAck:      emptyResult,
+			wantSentData: []byte(`{"memo": ""}`),
+			wantCreated:  false,
 		}, {
-			name:   "bad memo",
+			name:   "custom memo",
 			keeper: &mockKeeper{},
-			packet: types.Packet{
-				Data: []byte(`{"memo": "bad"}`),
+			packet: channeltypes.Packet{
+				Data: []byte(`{"memo": "thanks for the sweater, grandma!"}`),
 			},
-			want:        emptyResult,
-			wantCreated: false,
+			wantAck:      emptyResult,
+			wantSentData: []byte(`{"memo": "thanks for the sweater, grandma!"}`),
+			wantCreated:  false,
 		}, {
-			name:   "memo has invalid metadata",
+			name:   "memo has empty packet metadata",
 			keeper: &mockKeeper{},
-			packet: types.Packet{
-				Data: []byte(`{"memo": "{\"denom_metadata\":\"invalid\"}"}`),
+			packet: channeltypes.Packet{
+				Data: []byte(`{"memo": "{\"packet_metadata\":\"\"}"}`),
 			},
-			want:        types.NewErrorAcknowledgement(fmt.Errorf("whatever")),
-			wantCreated: false,
+			wantAck:      emptyResult,
+			wantSentData: []byte(`{"memo": "{\"packet_metadata\":\"\"}"}`),
+			wantCreated:  false,
+		}, {
+			name:   "memo has empty denom metadata",
+			keeper: &mockKeeper{},
+			packet: channeltypes.Packet{
+				Data: []byte(`{"memo": "{\"packet_metadata\":{\"denom_metadata\":null}}"}`),
+			},
+			wantAck:      emptyResult,
+			wantSentData: []byte(`{"memo": "{\"packet_metadata\":{\"denom_metadata\":null}}"}`),
+			wantCreated:  false,
 		}, {
 			name:   "denom metadata already exists in keeper",
 			keeper: &mockKeeper{hasDenomMetaData: true},
-			packet: types.Packet{
-				Data: validDenomMetadata,
+			packet: channeltypes.Packet{
+				Data: mustMarshalJSON(validFungibleTokenWithPacketMetadata),
 			},
-			want:        emptyResult,
-			wantCreated: false,
+			wantAck:      emptyResult,
+			wantSentData: mustMarshalJSON(validFungibleToken),
+			wantCreated:  false,
 		}, {
 			name:   "keeper error",
 			keeper: &mockKeeper{err: fmt.Errorf("whatever")},
-			packet: types.Packet{
-				Data: validDenomMetadata,
+			packet: channeltypes.Packet{
+				Data: mustMarshalJSON(validFungibleTokenWithPacketMetadata),
 			},
-			want:        types.NewErrorAcknowledgement(fmt.Errorf("whatever")),
-			wantCreated: false,
+			wantAck:      channeltypes.NewErrorAcknowledgement(fmt.Errorf("whatever")),
+			wantSentData: nil,
+			wantCreated:  false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			im := denommetadata.NewIBCMiddleware(tt.keeper, mockIBCModule{})
+			app := &mockIBCModule{}
+			im := denommetadata.NewIBCMiddleware(tt.keeper, app)
 			got := im.OnRecvPacket(sdk.Context{}, tt.packet, sdk.AccAddress{})
-			require.Equal(t, tt.want, got)
+			require.Equal(t, tt.wantAck, got)
+			require.Equal(t, string(tt.wantSentData), string(app.sentData))
 			require.Equal(t, tt.wantCreated, tt.keeper.created)
 		})
 	}
 }
 
 var (
-	emptyResult        = types.Acknowledgement{}
-	validDenomMetadata = []byte(`{"memo": "{\"denom_metadata\":{\"name\":\"name\",\"symbol\":\"symbol\",\"base\":\"base\",\"display\":\"display\",\"denom_units\":[{\"denom\":\"base\",\"exponent\":0},{\"denom\":\"display\",\"exponent\":18}]}}"}`)
+	emptyResult = channeltypes.Acknowledgement{}
+
+	validFungibleToken = transfertypes.FungibleTokenPacketData{
+		Denom:    "adym",
+		Amount:   "100",
+		Sender:   "sender",
+		Receiver: "receiver",
+		Memo:     validUserMemo,
+	}
+	validFungibleTokenWithPacketMetadata = transfertypes.FungibleTokenPacketData{
+		Denom:    "adym",
+		Amount:   "100",
+		Sender:   "sender",
+		Receiver: "receiver",
+		Memo:     string(mustMarshalJSON(validMemoData)),
+	}
+	validMemoData = &types.MemoData{
+		UserMemo: validUserMemo,
+		PacketMetadata: &types.PacketMetadata{
+			DenomMetadata: &validDenomMetadata,
+		},
+	}
+	validUserMemo      = "user memo"
+	validDenomMetadata = banktypes.Metadata{
+		Description: "Denom of the Hub",
+		Base:        "adym",
+		Display:     "DYM",
+		Name:        "DYM",
+		Symbol:      "adym",
+		DenomUnits: []*banktypes.DenomUnit{
+			{
+				Denom:    "adym",
+				Exponent: 0,
+			}, {
+				Denom:    "DYM",
+				Exponent: 18,
+			},
+		},
+	}
 )
+
+func mustMarshalJSON(v any) []byte {
+	bz, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return bz
+}
 
 type mockIBCModule struct {
 	porttypes.IBCModule
+	sentData []byte
 }
 
-func (m mockIBCModule) OnRecvPacket(sdk.Context, types.Packet, sdk.AccAddress) exported.Acknowledgement {
+func (m *mockIBCModule) OnRecvPacket(_ sdk.Context, p channeltypes.Packet, _ sdk.AccAddress) exported.Acknowledgement {
+	m.sentData = p.Data
 	return emptyResult
 }
 
@@ -109,7 +178,7 @@ type mockKeeper struct {
 	err                       error
 }
 
-func (m *mockKeeper) CreateDenomMetadata(sdk.Context, ...denommetadatamoduletypes.DenomMetadata) error {
+func (m *mockKeeper) CreateDenomMetadata(sdk.Context, ...types.DenomMetadata) error {
 	m.created = m.err == nil
 	return m.err
 }

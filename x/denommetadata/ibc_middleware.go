@@ -53,7 +53,7 @@ func (im IBCMiddleware) OnRecvPacket(
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	packetMetaData, err := types.ParsePacketMetadata(packetData.Memo)
+	memoData, err := types.ParseMemoData(packetData.Memo)
 	// if the memo is not an object, or does not contain the metadata, we can skip
 	if errors.Is(err, types.ErrMemoUnmarshal) || errors.Is(err, types.ErrMemoDenomMetadataEmpty) {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
@@ -62,7 +62,13 @@ func (im IBCMiddleware) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	if err = packetMetaData.DenomMetadata.Validate(); err != nil {
+	if memoData.PacketMetadata == nil || memoData.PacketMetadata.DenomMetadata == nil {
+		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
+	}
+
+	dm := *memoData.PacketMetadata.DenomMetadata
+
+	if err = dm.Validate(); err != nil {
 		return channeltypes.NewErrorAcknowledgement(errortypes.ErrInvalidType)
 	}
 
@@ -71,11 +77,20 @@ func (im IBCMiddleware) OnRecvPacket(
 		denomTrace.Path = fmt.Sprintf("%s/%s", packet.GetDestPort(), packet.GetDestChannel())
 	}
 
+	// set the memo back to the original user memo, if there was any
+	packetData.Memo = memoData.UserMemo
+
+	// re-marshal the packet data
+	packet.Data, err = types.ModuleCdc.MarshalJSON(packetData)
+	if err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
+
 	if im.keeper.HasDenomMetaData(ctx, denomTrace.IBCDenom()) {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	if err := im.createNewDenom(ctx, packetMetaData.DenomMetadata, denomTrace); err != nil {
+	if err = im.createNewDenom(ctx, dm, denomTrace); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 

@@ -7,39 +7,32 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
+// MemoData represents the structure of the memo with user and hub metadata
+type MemoData struct {
+	UserMemo       string          `json:"user_memo"`
+	PacketMetadata *PacketMetadata `json:"packet_metadata"`
+}
+
 type PacketMetadata struct {
-	DenomMetadata types.Metadata `json:"denom_metadata"`
+	DenomMetadata *types.Metadata `json:"denom_metadata"`
 }
 
 func (p PacketMetadata) ValidateBasic() error {
 	return p.DenomMetadata.Validate()
 }
 
-const memoObjectKeyDM = "denom_metadata"
-
 var (
 	ErrMemoUnmarshal          = fmt.Errorf("unmarshal memo")
-	ErrDenomMetadataUnmarshal = fmt.Errorf("unmarshal denom metadata")
 	ErrMemoDenomMetadataEmpty = fmt.Errorf("memo denom metadata field is missing")
 )
 
-func ParsePacketMetadata(input string) (*PacketMetadata, error) {
+func ParseMemoData(input string) (*MemoData, error) {
 	bz := []byte(input)
-
-	memo := make(map[string]any)
-
+	var memo MemoData
 	err := json.Unmarshal(bz, &memo)
 	if err != nil {
 		return nil, ErrMemoUnmarshal
 	}
-	if memo[memoObjectKeyDM] == nil {
-		return nil, ErrMemoDenomMetadataEmpty
-	}
 
-	var metadata PacketMetadata
-	err = json.Unmarshal(bz, &metadata)
-	if err != nil {
-		return nil, ErrDenomMetadataUnmarshal
-	}
-	return &metadata, nil
+	return &memo, nil
 }
