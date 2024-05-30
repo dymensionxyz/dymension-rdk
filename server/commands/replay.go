@@ -24,9 +24,8 @@ import (
 // StartCmd runs the service passed in, either stand-alone or in-process with Dymint.
 func ReplayCmd(appCreator types.AppCreator) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "replay",
-		Short: "replay",
-		Long:  `replay command.`,
+		Use:   "replay [height]",
+		Short: "replay command used to move a full-node back to the state at the specified height.",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := server.GetServerContextFromCmd(cmd)
