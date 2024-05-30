@@ -1,11 +1,6 @@
 package commands
 
 import (
-	"fmt"
-	"strconv"
-
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/dymensionxyz/dymint/store"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +12,7 @@ func InspectStateCmd() *cobra.Command {
 		Args:    cobra.MaximumNArgs(1),
 		Short:   "Print the state at a given height (latest height if not specified))",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx := client.GetClientContextFromCmd(cmd)
+			/*clientCtx := client.GetClientContextFromCmd(cmd)
 			directory := clientCtx.HomeDir
 
 			// Initialize the KVStore (e.g., open the database connection, etc.)
@@ -54,7 +49,7 @@ func InspectStateCmd() *cobra.Command {
 				fmt.Printf("Failed to retrieve block responses from KVStore: %v\n", err)
 				return err
 			}
-			fmt.Printf("%+v\n", resp)
+			fmt.Printf("%+v\n", resp)*/
 			return nil
 		},
 	}
