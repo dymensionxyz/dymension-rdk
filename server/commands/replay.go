@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// StartCmd runs the service passed in, either stand-alone or in-process with Dymint.
+// ReplayCmd rollbacks the app multistore to specific height and updates dymint state according to it
 func ReplayCmd(appCreator types.AppCreator) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "replay [height]",
