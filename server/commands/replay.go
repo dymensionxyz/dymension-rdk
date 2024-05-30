@@ -17,7 +17,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/dymensionxyz/dymension-rdk/utils"
-	rdklogger "github.com/dymensionxyz/dymension-rdk/utils/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -114,6 +113,5 @@ func ReplayCmd(appCreator types.AppCreator) *cobra.Command {
 	}
 
 	dymintconf.AddNodeFlags(cmd)
-	rdklogger.AddLogFlags(cmd)
 	return cmd
 }
