@@ -38,11 +38,11 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	l := ctx.Logger().With("name", "OnChanOpenConfirm interceptor!", "port id", portID, "channelID", channelID)
+	l := ctx.Logger().With("name", "OnChanOpenConfirm middleware", "port id", portID, "channelID", channelID)
 
 	err := i.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
-		l.Error("Next middleware: on OnChanOpenConfirm", "err", err)
+		l.Error("Next middleware: on OnChanOpenConfirm.", "err", err)
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 			Sender:           srcAddr,
 			Receiver:         a.GetAddress(),
 			TimeoutHeight:    clienttypes.Height{},
-			TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()),
+			TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()), // TODO: value?
 			Memo:             memo,
 		}
 
@@ -82,13 +82,13 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 			continue
 		}
 
-		ctx.Logger().Info("sent special transfer")
-
 	}
 
 	err = errors.Join(err)
 	if err != nil {
-		ctx.Logger().Error("OnChanOpenConfirm genesis transfers", "err", err) // TODO: don't log(?)
+		l.Error("Genesis transfers.", "err", err) // TODO: don't log(?)
+	} else {
+		l.Info("Sent genesis transfers.")
 	}
 
 	return err
@@ -103,11 +103,8 @@ func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) 
 		return "", errorsmod.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
 	}
 
-	m := memo{
-		IsGenesisDenomMetadata:   true,
-		DoesNotOriginateFromUser: true,
-		DenomMetadata:            d,
-	}
+	m := memo{}
+	m.GenesisTransfer.Data = d
 
 	bz, err := json.Marshal(m)
 	if err != nil {
@@ -118,9 +115,7 @@ func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) 
 }
 
 type memo struct {
-	// If this is true, and the memo originated from the rollapp, the hub will skip eibc
-	IsGenesisDenomMetadata bool `json:"is_genesis_denom_metadata"`
-	// If the packet originates from the chain itself, and not a user, this will be true. This is required if IsGenesisDenomMetadata is true
-	DoesNotOriginateFromUser bool               `json:"does_not_originate_from_user"`
-	DenomMetadata            banktypes.Metadata `json:"denom_metadata"`
+	GenesisTransfer struct {
+		Data banktypes.Metadata `json:"data"`
+	} `json:"genesis_transfer"`
 }
