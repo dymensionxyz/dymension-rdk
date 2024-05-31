@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogotypes "github.com/cosmos/gogoproto/types"
 
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -209,7 +210,7 @@ func (k Keeper) AddGasTankIdToUsageIdentifiers(ctx sdk.Context, usageIdentifiers
 			usageIdentifierToGasTankIds = types.NewUsageIdentifierToGastankIds(usageIdentifier)
 		}
 		usageIdentifierToGasTankIds.GasTankIds = append(usageIdentifierToGasTankIds.GasTankIds, gasTankID)
-		usageIdentifierToGasTankIds.GasTankIds = types.RemoveDuplicates(usageIdentifierToGasTankIds.GasTankIds)
+		usageIdentifierToGasTankIds.GasTankIds = utils.RemoveDuplicates(usageIdentifierToGasTankIds.GasTankIds)
 		k.SetUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 	}
 }
@@ -220,7 +221,7 @@ func (k Keeper) RemoveGasTankIdFromUsageIdentifiers(ctx sdk.Context, usageIdenti
 		if !found {
 			continue
 		}
-		usageIdentifierToGasTankIds.GasTankIds = types.RemoveValueFromList(usageIdentifierToGasTankIds.GasTankIds, gasTankID)
+		usageIdentifierToGasTankIds.GasTankIds = utils.RemoveValueFromSlice(usageIdentifierToGasTankIds.GasTankIds, gasTankID)
 		if len(usageIdentifierToGasTankIds.GasTankIds) == 0 {
 			k.DeleteUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 			continue

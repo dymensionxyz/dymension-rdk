@@ -8,6 +8,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 )
 
 // MustMarshalUsageIdentifierToGastankIds returns the UsageIdentifierToGasTankIds bytes.
@@ -80,8 +81,8 @@ func UnmarshalGasConsumer(cdc codec.BinaryCodec, value []byte) (gasConsumer GasC
 }
 
 func DeriveGasTankReserveAddress(gasTankID uint64) sdk.AccAddress {
-	return DeriveAddress(
-		AddressType32Bytes,
+	return utils.DeriveAddress(
+		utils.AddressType32Bytes,
 		ModuleName,
 		strings.Join([]string{GasTankAddressPrefix, strconv.FormatUint(gasTankID, 10)}, ModuleAddressNameSplitter))
 }
@@ -101,7 +102,7 @@ func NewGasTank(
 		IsActive:               true,
 		MaxFeeUsagePerConsumer: maxFeeUsagePerConsumer,
 		MaxFeeUsagePerTx:       maxFeeUsagePerTx,
-		UsageIdentifiers:       RemoveDuplicates(usageIdentifiers),
+		UsageIdentifiers:       utils.RemoveDuplicates(usageIdentifiers),
 		AuthorizedActors:       []string{},
 		FeeDenom:               feeDenom,
 	}

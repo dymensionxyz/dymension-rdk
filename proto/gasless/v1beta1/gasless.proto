@@ -7,17 +7,6 @@ import "google/protobuf/timestamp.proto";
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
 option (gogoproto.goproto_getters_all) = false;
 
-
-// AddressType enumerates the available types of a address.
-enum AddressType {
-    option (gogoproto.goproto_enum_prefix) = false;
-  
-    // the 32 bytes length address type of ADR 028.
-    ADDRESS_TYPE_32_BYTES = 0 [(gogoproto.enumvalue_customname) = "AddressType32Bytes"];
-    // the default 20 bytes length address type.
-    ADDRESS_TYPE_20_BYTES = 1 [(gogoproto.enumvalue_customname) = "AddressType20Bytes"];
-  }
-
 message UsageIdentifierToGasTankIds {
     string usage_identifier = 1;
     repeated uint64 gas_tank_ids = 2;

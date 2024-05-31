@@ -1286,7 +1286,7 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	// Params returns parameters of the module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// AvailableUsageIdentifiers return all cosmos.base.v1beta1.Msg message types and available contract details
+	// AvailableUsageIdentifiers return all available usage identifiers
 	AvailableUsageIdentifiers(ctx context.Context, in *QueryAvailableUsageIdentifiersRequest, opts ...grpc.CallOption) (*QueryAvailableUsageIdentifiersResponse, error)
 	// GasTank returns gas tank details
 	GasTank(ctx context.Context, in *QueryGasTankRequest, opts ...grpc.CallOption) (*QueryGasTankResponse, error)
@@ -1397,7 +1397,7 @@ func (c *queryClient) GasTankIdsForAllUsageIdentifiers(ctx context.Context, in *
 type QueryServer interface {
 	// Params returns parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// AvailableUsageIdentifiers return all cosmos.base.v1beta1.Msg message types and available contract details
+	// AvailableUsageIdentifiers return all available usage identifiers
 	AvailableUsageIdentifiers(context.Context, *QueryAvailableUsageIdentifiersRequest) (*QueryAvailableUsageIdentifiersResponse, error)
 	// GasTank returns gas tank details
 	GasTank(context.Context, *QueryGasTankRequest) (*QueryGasTankResponse, error)

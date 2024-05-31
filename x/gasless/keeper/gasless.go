@@ -8,6 +8,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -37,36 +38,36 @@ func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGa
 	params := k.GetParams(ctx)
 
 	if msg.FeeDenom != msg.GasDeposit.Denom {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, " fee denom %s do not match gas depoit denom %s ", msg.FeeDenom, msg.GasDeposit.Denom)
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, " fee denom %s do not match gas depoit denom %s ", msg.FeeDenom, msg.GasDeposit.Denom)
 	}
 
 	if !msg.MaxFeeUsagePerTx.IsPositive() {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_tx should be positive")
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "max_fee_usage_per_tx should be positive")
 	}
 	if !msg.MaxFeeUsagePerConsumer.IsPositive() {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive")
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive")
 	}
 
 	if len(msg.UsageIdentifiers) == 0 {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one usage identifier")
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "request should have at least one usage identifier")
 	}
 
 	if len(msg.UsageIdentifiers) > 0 {
 		for _, identifier := range msg.UsageIdentifiers {
 			if !k.IsValidUsageIdentifier(ctx, identifier) {
-				return sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", identifier)
+				return sdkerrors.Wrapf(errors.ErrInvalidRequest, "invalid usage identifier - %s", identifier)
 			}
 
 		}
 	}
 
-	minDepositRequired, found := types.GetCoinByDenomFromCoins(msg.FeeDenom, params.MinimumGasDeposit)
+	minDepositRequired, found := utils.GetCoinByDenomFromCoins(msg.FeeDenom, params.MinimumGasDeposit)
 	if !found {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, " fee denom %s not allowed ", msg.FeeDenom)
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, " fee denom %s not allowed ", msg.FeeDenom)
 	}
 
 	if msg.GasDeposit.IsLT(minDepositRequired) {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "minimum required deposit is %s", minDepositRequired.String())
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "minimum required deposit is %s", minDepositRequired.String())
 	}
 
 	return nil
@@ -123,7 +124,7 @@ func (k Keeper) ValidateMsgAuthorizeActors(ctx sdk.Context, msg *types.MsgAuthor
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive")
 	}
 
-	msg.Actors = types.RemoveDuplicates(msg.Actors)
+	msg.Actors = utils.RemoveDuplicates(msg.Actors)
 	if len(msg.Actors) > types.MaximumAuthorizedActorsLimit {
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "maximum %d actors can be authorized", types.MaximumAuthorizedActorsLimit)
 	}
@@ -143,7 +144,7 @@ func (k Keeper) AuthorizeActors(ctx sdk.Context, msg *types.MsgAuthorizeActors) 
 	}
 
 	gasTank, _ := k.GetGasTank(ctx, msg.GasTankId)
-	gasTank.AuthorizedActors = types.RemoveDuplicates(msg.Actors)
+	gasTank.AuthorizedActors = utils.RemoveDuplicates(msg.Actors)
 
 	k.SetGasTank(ctx, gasTank)
 
@@ -199,20 +200,20 @@ func (k Keeper) ValidateMsgUpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUp
 	}
 
 	if !msg.MaxFeeUsagePerTx.IsPositive() {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_tx should be positive")
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "max_fee_usage_per_tx should be positive")
 	}
 	if !msg.MaxFeeUsagePerConsumer.IsPositive() {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive")
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive")
 	}
 
 	if len(msg.UsageIdentifiers) == 0 {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one usage identifier")
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "request should have at least one usage identifier")
 	}
 
 	if len(msg.UsageIdentifiers) > 0 {
 		for _, identifier := range msg.UsageIdentifiers {
 			if !k.IsValidUsageIdentifier(ctx, identifier) {
-				return sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", identifier)
+				return sdkerrors.Wrapf(errors.ErrInvalidRequest, "invalid usage identifier - %s", identifier)
 			}
 
 		}
@@ -237,7 +238,7 @@ func (k Keeper) UpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTank
 	gasTank.MaxFeeUsagePerTx = msg.MaxFeeUsagePerTx
 	gasTank.MaxFeeUsagePerConsumer = msg.MaxFeeUsagePerConsumer
 
-	gasTank.UsageIdentifiers = types.RemoveDuplicates(msg.UsageIdentifiers)
+	gasTank.UsageIdentifiers = utils.RemoveDuplicates(msg.UsageIdentifiers)
 
 	if consumerUpdateRequire {
 		k.UpdateConsumerAllowance(ctx, gasTank)
@@ -327,7 +328,7 @@ func (k Keeper) ValidateMsgUnblockConsumer(ctx sdk.Context, msg *types.MsgUnbloc
 	authorizedActors := gasTank.AuthorizedActors
 	authorizedActors = append(authorizedActors, gasTank.Provider)
 
-	if !types.ItemExists(authorizedActors, msg.Actor) {
+	if !slices.Contains(authorizedActors, msg.Actor) {
 		return sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized actor")
 	}
 	return nil
@@ -370,7 +371,7 @@ func (k Keeper) ValidateMsgUpdateGasConsumerLimit(ctx sdk.Context, msg *types.Ms
 	}
 
 	if !msg.TotalFeeConsumptionAllowed.IsPositive() {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "total fee consumption allowed should be positive")
+		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "total fee consumption allowed should be positive")
 	}
 
 	return nil

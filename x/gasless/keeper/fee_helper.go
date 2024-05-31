@@ -7,6 +7,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -44,8 +45,6 @@ func (k Keeper) GetUpdatedGasConsumerAndConsumptionIndex(ctx sdk.Context, consum
 
 func (k Keeper) CanGasTankBeUsedAsSource(ctx sdk.Context, gtid uint64, consumer types.GasConsumer, fee sdk.Coin) (gasTank types.GasTank, isValid bool, err error) {
 	gasTank, found := k.GetGasTank(ctx, gtid)
-	// there is no gas tank with given id, likely impossible to happen
-	// exists only as aditional check.
 	if !found {
 		return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "gas tank not found")
 	}
@@ -188,7 +187,7 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 
 	// shift the used gas tank at the end of all tanks, so that a different gas tank can be picked
 	// in next cycle if there exists any.
-	usageIdentifierToGasTankIds.GasTankIds = types.ShiftToEndUint64(usageIdentifierToGasTankIds.GasTankIds, gasTank.Id)
+	usageIdentifierToGasTankIds.GasTankIds = utils.ShiftValueToEnd(usageIdentifierToGasTankIds.GasTankIds, gasTank.Id)
 	k.SetUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 
 	feeSource := gasTank.GetGasTankReserveAddress()

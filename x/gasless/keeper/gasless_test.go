@@ -5,6 +5,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 
 	// _ "github.com/stretchr/testify/suite"
@@ -22,42 +23,42 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 		{
 			Name:   "error fee and deposit denom mismatch",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "uatom", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, " fee denom %s do not match gas depoit denom %s ", "uatom", "stake"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, " fee denom %s do not match gas depoit denom %s ", "uatom", "stake"),
 		},
 		{
 			Name:   "error max fee usage per tx should be positive",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(0), sdkmath.NewInt(1000000), []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_tx should be positive"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "max_fee_usage_per_tx should be positive"),
 		},
 		{
 			Name:   "error max fee usage per consumer should be positive",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(0), []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive"),
 		},
 		{
 			Name:   "error at least one usage identifier is required",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one usage identifier"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "request should have at least one usage identifier"),
 		},
 		{
 			Name:   "error deposit smaller than required min deposit",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, sdk.NewCoin("stake", sdk.NewInt(100))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "minimum required deposit is %s", params.MinimumGasDeposit[0].String()),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "minimum required deposit is %s", params.MinimumGasDeposit[0].String()),
 		},
 		{
 			Name:   "error fee denom not allowed",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "uatom", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, sdk.NewCoin("uatom", sdk.NewInt(100))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, " fee denom %s not allowed ", "uatom"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, " fee denom %s not allowed ", "uatom"),
 		},
 		{
 			Name:   "error invalid usage identifier",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"random usage identifier"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", "random usage identifier"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "invalid usage identifier - %s", "random usage identifier"),
 		},
 		{
 			Name:   "error invalid usage identifier 2",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", "stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "invalid usage identifier - %s", "stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"),
 		},
 		{
 			Name:   "success gas tank creation",
@@ -169,7 +170,7 @@ func (s *KeeperTestSuite) TestAuthorizeActors() {
 				s.Require().NotNil(tank)
 
 				s.Require().IsType(types.GasTank{}, tank)
-				s.Require().Equal(len(types.RemoveDuplicates(tc.Msg.Actors)), len(tank.AuthorizedActors))
+				s.Require().Equal(len(utils.RemoveDuplicates(tc.Msg.Actors)), len(tank.AuthorizedActors))
 				slices.Sort(tc.Msg.Actors)
 				slices.Sort(tank.AuthorizedActors)
 				s.Require().Equal(tc.Msg.Actors, tank.AuthorizedActors)
@@ -280,7 +281,7 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 				tank1.Id, provider1, sdk.ZeroInt(), sdk.NewInt(1000000),
 				[]string{"/cosmos.bank.v1beta1.MsgSend"},
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_tx should be positive"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "max_fee_usage_per_tx should be positive"),
 		},
 		{
 			Name: "error max fee usage per consumer should be positive",
@@ -288,7 +289,7 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 				tank1.Id, provider1, sdk.NewInt(1000), sdk.ZeroInt(),
 				[]string{"/cosmos.bank.v1beta1.MsgSend"},
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive"),
 		},
 		{
 			Name: "error at least one usage identifier is required",
@@ -296,7 +297,7 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 				tank1.Id, provider1, sdk.NewInt(1000), sdk.NewInt(1000000),
 				[]string{},
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one usage identifier"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "request should have at least one usage identifier"),
 		},
 		{
 			Name: "error invalid usage identifier 1",
@@ -304,7 +305,7 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 				tank1.Id, provider1, sdk.NewInt(1000), sdk.NewInt(1000000),
 				[]string{"random message type"},
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", "random message type"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "invalid usage identifier - %s", "random message type"),
 		},
 		{
 			Name: "error invalid usage identifier 2",
@@ -312,7 +313,7 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 				tank1.Id, provider1, sdk.NewInt(1000), sdk.NewInt(1000000),
 				[]string{"invalid identifier"},
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", "invalid identifier"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "invalid usage identifier - %s", "invalid identifier"),
 		},
 		{
 			Name: "success tank configs updated",
@@ -649,7 +650,7 @@ func (s *KeeperTestSuite) TestUpdateGasConsumerLimit() {
 			Msg: *types.NewMsgUpdateGasConsumerLimit(
 				tank1.Id, provider1, consumer1, sdk.NewInt(0),
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "total fee consumption allowed should be positive"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "total fee consumption allowed should be positive"),
 		},
 		{
 			Name: "success consumer limit update 1",

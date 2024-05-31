@@ -12,7 +12,8 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
 	chain "github.com/dymensionxyz/dymension-rdk/testutil/app"
-	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	testutils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
@@ -34,7 +35,7 @@ func TestKeeperTestSuite(t *testing.T) {
 }
 
 func (s *KeeperTestSuite) SetupTest() {
-	s.app = utils.Setup(s.T(), false)
+	s.app = testutils.Setup(s.T(), false)
 	s.ctx = s.app.BaseApp.NewContext(false, tmproto.Header{})
 	s.keeper = s.app.GaslessKeeper
 	s.querier = keeper.Querier{Keeper: s.keeper}
@@ -112,7 +113,7 @@ func (s *KeeperTestSuite) CreateNewGasTank(
 	parsedDepositCoin := ParseCoin(deposit)
 	s.fundAddr(provider, sdk.NewCoins(parsedDepositCoin))
 
-	usageIdentifiers = types.RemoveDuplicates(usageIdentifiers)
+	usageIdentifiers = utils.RemoveDuplicates(usageIdentifiers)
 	tank, err := s.keeper.CreateGasTank(s.ctx, types.NewMsgCreateGasTank(
 		provider,
 		feeDenom,
