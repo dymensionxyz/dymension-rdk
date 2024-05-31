@@ -200,8 +200,6 @@ func (k Querier) GasConsumersByGasTankID(goCtx context.Context, req *types.Query
 				tankConsumers = append(tankConsumers, types.GasConsumersByGasTankIDResponse{
 					Consumer:                   consumer.Consumer,
 					IsBlocked:                  consumption.IsBlocked,
-					TotalTxsAllowed:            consumption.TotalTxsAllowed,
-					TotalTxsMade:               consumption.TotalTxsMade,
 					TotalFeeConsumptionAllowed: sdk.NewCoin(gt.FeeDenom, consumption.TotalFeeConsumptionAllowed),
 					TotalFeesConsumed:          sdk.NewCoin(gt.FeeDenom, consumption.TotalFeesConsumed),
 					Usage:                      consumption.Usage,

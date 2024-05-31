@@ -83,7 +83,6 @@ func NewGasTankResponse(gasTank GasTank, balance sdk.Coin) GasTankResponse {
 		Reserve:                gasTank.Reserve,
 		GasTankBalance:         balance,
 		IsActive:               gasTank.IsActive,
-		MaxTxsCountPerConsumer: gasTank.MaxTxsCountPerConsumer,
 		MaxFeeUsagePerConsumer: gasTank.MaxFeeUsagePerConsumer,
 		MaxFeeUsagePerTx:       gasTank.MaxFeeUsagePerTx,
 		TxsAllowed:             gasTank.TxsAllowed,
@@ -95,14 +94,11 @@ func NewGasTankResponse(gasTank GasTank, balance sdk.Coin) GasTankResponse {
 
 func NewConsumptionDetail(
 	gasTankID uint64,
-	totalTxsAllowed uint64,
 	totalFeeConsumptionAllowed sdkmath.Int,
 ) *ConsumptionDetail {
 	return &ConsumptionDetail{
 		GasTankId:                  gasTankID,
 		IsBlocked:                  false,
-		TotalTxsAllowed:            totalTxsAllowed,
-		TotalTxsMade:               0,
 		TotalFeeConsumptionAllowed: totalFeeConsumptionAllowed,
 		TotalFeesConsumed:          sdk.ZeroInt(),
 		Usage: &Usage{

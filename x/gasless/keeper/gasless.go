@@ -89,10 +89,6 @@ func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGa
 		return sdkerrors.Wrapf(types.ErrorInvalidrequest, " fee denom %s do not match gas depoit denom %s ", msg.FeeDenom, msg.GasDeposit.Denom)
 	}
 
-	if msg.MaxTxsCountPerConsumer == 0 {
-		return sdkerrors.Wrap(types.ErrorInvalidrequest, "max tx count per consumer must not be 0")
-	}
-
 	if !msg.MaxFeeUsagePerTx.IsPositive() {
 		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_tx should be positive")
 	}
@@ -146,7 +142,6 @@ func (k Keeper) CreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) (typ
 	gasTank := types.NewGasTank(
 		id,
 		sdk.MustAccAddressFromBech32(msg.GetProvider()),
-		msg.MaxTxsCountPerConsumer,
 		msg.MaxFeeUsagePerConsumer,
 		msg.MaxFeeUsagePerTx,
 		msg.TxsAllowed,
@@ -173,7 +168,6 @@ func (k Keeper) CreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) (typ
 			sdk.NewAttribute(types.AttributeKeyGasTankID, strconv.FormatUint(gasTank.Id, 10)),
 			sdk.NewAttribute(types.AttributeKeyFeeDenom, msg.FeeDenom),
 			sdk.NewAttribute(types.AttributeKeyMaxFeeUsagePerTx, msg.MaxFeeUsagePerTx.String()),
-			sdk.NewAttribute(types.AttributeKeyMaxTxsCountPerConsumer, strconv.FormatUint(msg.MaxTxsCountPerConsumer, 10)),
 			sdk.NewAttribute(types.AttributeKeyMaxFeeUsagePerConsumer, msg.MaxFeeUsagePerConsumer.String()),
 			sdk.NewAttribute(types.AttributeKeyTxsAllowed, strings.Join(gasTank.TxsAllowed, ",")),
 			sdk.NewAttribute(types.AttributeKeyContractsAllowed, strings.Join(gasTank.ContractsAllowed, ",")),
@@ -268,10 +262,6 @@ func (k Keeper) ValidateMsgUpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUp
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive")
 	}
 
-	if msg.MaxTxsCountPerConsumer == 0 {
-		return sdkerrors.Wrap(types.ErrorInvalidrequest, "max tx count per consumer must not be 0")
-	}
-
 	if !msg.MaxFeeUsagePerTx.IsPositive() {
 		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_tx should be positive")
 	}
@@ -316,13 +306,12 @@ func (k Keeper) UpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTank
 	gasTank, _ := k.GetGasTank(ctx, msg.GasTankId)
 
 	consumerUpdateRequire := false
-	if gasTank.MaxTxsCountPerConsumer != msg.MaxTxsCountPerConsumer || !gasTank.MaxFeeUsagePerConsumer.Equal(msg.MaxFeeUsagePerConsumer) {
+	if !gasTank.MaxFeeUsagePerConsumer.Equal(msg.MaxFeeUsagePerConsumer) {
 		consumerUpdateRequire = true
 	}
 	k.RemoveFromTxGtids(ctx, gasTank.TxsAllowed, gasTank.ContractsAllowed, gasTank.Id)
 
 	gasTank.MaxFeeUsagePerTx = msg.MaxFeeUsagePerTx
-	gasTank.MaxTxsCountPerConsumer = msg.MaxTxsCountPerConsumer
 	gasTank.MaxFeeUsagePerConsumer = msg.MaxFeeUsagePerConsumer
 
 	gasTank.TxsAllowed = types.RemoveDuplicates(msg.TxsAllowed)
@@ -341,7 +330,6 @@ func (k Keeper) UpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTank
 			sdk.NewAttribute(types.AttributeKeyProvider, msg.Provider),
 			sdk.NewAttribute(types.AttributeKeyGasTankID, strconv.FormatUint(gasTank.Id, 10)),
 			sdk.NewAttribute(types.AttributeKeyMaxFeeUsagePerTx, msg.MaxFeeUsagePerTx.String()),
-			sdk.NewAttribute(types.AttributeKeyMaxTxsCountPerConsumer, strconv.FormatUint(msg.MaxTxsCountPerConsumer, 10)),
 			sdk.NewAttribute(types.AttributeKeyMaxFeeUsagePerConsumer, msg.MaxFeeUsagePerConsumer.String()),
 			sdk.NewAttribute(types.AttributeKeyTxsAllowed, strings.Join(gasTank.TxsAllowed, ",")),
 			sdk.NewAttribute(types.AttributeKeyContractsAllowed, strings.Join(gasTank.ContractsAllowed, ",")),
@@ -460,10 +448,6 @@ func (k Keeper) ValidateMsgUpdateGasConsumerLimit(ctx sdk.Context, msg *types.Ms
 		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid consumer address: %v", err)
 	}
 
-	if msg.TotalTxsAllowed == 0 {
-		return sdkerrors.Wrap(types.ErrorInvalidrequest, "total txs allowed must not be 0")
-	}
-
 	if !msg.TotalFeeConsumptionAllowed.IsPositive() {
 		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "total fee consumption allowed should be positive")
 	}
@@ -478,10 +462,8 @@ func (k Keeper) UpdateGasConsumerLimit(ctx sdk.Context, msg *types.MsgUpdateGasC
 
 	gasTank, _ := k.GetGasTank(ctx, msg.GasTankId)
 	gasConsumer, consumptionIndex := k.GetOrCreateGasConsumer(ctx, sdk.MustAccAddressFromBech32(msg.Consumer), gasTank)
-	if !gasConsumer.Consumptions[consumptionIndex].TotalFeeConsumptionAllowed.Equal(msg.TotalFeeConsumptionAllowed) ||
-		gasConsumer.Consumptions[consumptionIndex].TotalTxsAllowed != msg.TotalTxsAllowed {
+	if !gasConsumer.Consumptions[consumptionIndex].TotalFeeConsumptionAllowed.Equal(msg.TotalFeeConsumptionAllowed) {
 		gasConsumer.Consumptions[consumptionIndex].TotalFeeConsumptionAllowed = msg.TotalFeeConsumptionAllowed
-		gasConsumer.Consumptions[consumptionIndex].TotalTxsAllowed = msg.TotalTxsAllowed
 		k.SetGasConsumer(ctx, gasConsumer)
 	}
 
@@ -491,7 +473,6 @@ func (k Keeper) UpdateGasConsumerLimit(ctx sdk.Context, msg *types.MsgUpdateGasC
 			sdk.NewAttribute(types.AttributeKeyProvider, msg.Provider),
 			sdk.NewAttribute(types.AttributeKeyConsumer, msg.Consumer),
 			sdk.NewAttribute(types.AttributeKeyGasTankID, strconv.FormatUint(msg.GasTankId, 10)),
-			sdk.NewAttribute(types.AttributeKeyMaxTxsCountPerConsumer, strconv.FormatUint(msg.TotalTxsAllowed, 10)),
 			sdk.NewAttribute(types.AttributeKeyMaxFeeUsagePerConsumer, msg.TotalFeeConsumptionAllowed.String()),
 		),
 	})

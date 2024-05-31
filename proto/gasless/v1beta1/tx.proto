@@ -42,20 +42,17 @@ message MsgCreateGasTank {
     // max_fee_usage_per_tx specifies the maximum fee allowed for each tx
     string max_fee_usage_per_tx = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
 
-    // max_txs_count_per_consumer specifies the number of txs allowed for each consumer 
-    uint64 max_txs_count_per_consumer = 4;
-
     // max_fee_usage_per_consumer specifies the maximum fee consumption allowed for each consumer
-    string max_fee_usage_per_consumer = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    string max_fee_usage_per_consumer = 4 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
     
     // txs_allowed specifies txs paths allowed to consume gas from the gas tank
-    repeated string txs_allowed = 6;
+    repeated string txs_allowed = 5;
     
     // contracts_allowed specifies wasm contracts allowed to consume gas from the gas tank
-    repeated string contracts_allowed = 7;
+    repeated string contracts_allowed = 6;
 
     // gas_deposit specifies the initial desposit in the gas tank
-    cosmos.base.v1beta1.Coin gas_deposit = 8 [(gogoproto.nullable) = false];
+    cosmos.base.v1beta1.Coin gas_deposit = 7 [(gogoproto.nullable) = false];
 }
 
 message MsgCreateGasTankResponse {}
@@ -96,17 +93,14 @@ message MsgUpdateGasTankConfig {
     // max_fee_usage_per_tx specifies the maximum fee allowed for each tx
     string max_fee_usage_per_tx = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
 
-    // max_txs_count_per_consumer specifies the number of txs allowed for each consumer 
-    uint64 max_txs_count_per_consumer = 4;
-
     // max_fee_usage_per_consumer specifies the maximum fee consumption allowed for each consumer
-    string max_fee_usage_per_consumer = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    string max_fee_usage_per_consumer = 4 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
     
     // txs_allowed specifies txs paths allowed to consume gas from the gas tank
-    repeated string txs_allowed = 6;
+    repeated string txs_allowed = 5;
     
     // contracts_allowed specifies wasm contracts allowed to consume gas from the gas tank
-    repeated string contracts_allowed = 7;
+    repeated string contracts_allowed = 6;
 }
 
 message MsgUpdateGasTankConfigResponse {}
@@ -150,11 +144,8 @@ message MsgUpdateGasConsumerLimit {
     // consumer specifies the bech32-encoded address of a consumer.
     string consumer = 3;
 
-    // total_txs_allowed specifies the number of txs allowed for each consumer 
-    uint64 total_txs_allowed = 4;
-
     // total_fee_consumption_allowed specifies the maximum fee consumption allowed for each consumer
-    string total_fee_consumption_allowed = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    string total_fee_consumption_allowed = 4 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
 }
 
 message MsgUpdateGasConsumerLimitResponse {}

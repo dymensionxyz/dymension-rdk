@@ -89,7 +89,6 @@ func DeriveGasTankReserveAddress(gasTankID uint64) sdk.AccAddress {
 func NewGasTank(
 	id uint64,
 	provider sdk.AccAddress,
-	maxTxsCountPerConsumer uint64,
 	maxFeeUsagePerConsumer sdkmath.Int,
 	maxFeeUsagePerTx sdkmath.Int,
 	txsAllowed []string,
@@ -101,7 +100,6 @@ func NewGasTank(
 		Provider:               provider.String(),
 		Reserve:                DeriveGasTankReserveAddress(id).String(),
 		IsActive:               true,
-		MaxTxsCountPerConsumer: maxTxsCountPerConsumer,
 		MaxFeeUsagePerConsumer: maxFeeUsagePerConsumer,
 		MaxFeeUsagePerTx:       maxFeeUsagePerTx,
 		TxsAllowed:             RemoveDuplicates(txsAllowed),
@@ -128,9 +126,6 @@ func (gasTank GasTank) Validate() error {
 	}
 	if err := sdk.ValidateDenom(gasTank.FeeDenom); err != nil {
 		return fmt.Errorf("invalid fee denom: %w", err)
-	}
-	if gasTank.MaxTxsCountPerConsumer == 0 {
-		return fmt.Errorf("max tx count per consumer must not be 0")
 	}
 	if !gasTank.MaxFeeUsagePerTx.IsPositive() {
 		return fmt.Errorf("max_fee_usage_per_tx should be positive")

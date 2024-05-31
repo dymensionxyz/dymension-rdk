@@ -39,7 +39,6 @@ func (k Keeper) EmitFeeConsumptionEvent(
 
 func (k Keeper) GetUpdatedGasConsumerAndConsumptionIndex(ctx sdk.Context, consumerAddress sdk.AccAddress, gasTank types.GasTank, feeAmount sdkmath.Int) (types.GasConsumer, uint64) {
 	gasConsumer, consumptionIndex := k.GetOrCreateGasConsumer(ctx, consumerAddress, gasTank)
-	gasConsumer.Consumptions[consumptionIndex].TotalTxsMade = gasConsumer.Consumptions[consumptionIndex].TotalTxsMade + 1
 	gasConsumer.Consumptions[consumptionIndex].TotalFeesConsumed = gasConsumer.Consumptions[consumptionIndex].TotalFeesConsumed.Add(feeAmount)
 	return gasConsumer, consumptionIndex
 }
@@ -92,11 +91,6 @@ func (k Keeper) CanGasTankBeUsedAsSource(ctx sdk.Context, gtid uint64, consumer 
 	// consumer is blocked by the gas tank
 	if consumptionDetails.IsBlocked {
 		return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "blocked by gas tank")
-	}
-
-	// consumer exhausted the transaction count limit, hence not eligible with given gas tank
-	if consumptionDetails.TotalTxsMade >= consumptionDetails.TotalTxsAllowed {
-		return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "exhausted tx limit")
 	}
 
 	// if total fees consumed by the consumer is more than or equal to the allowed consumption

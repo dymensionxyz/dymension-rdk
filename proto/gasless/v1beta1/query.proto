@@ -39,13 +39,12 @@ message GasTankResponse {
   string reserve = 3;
   cosmos.base.v1beta1.Coin gas_tank_balance = 4 [(gogoproto.nullable) = false];
   bool is_active = 5;
-  uint64 max_txs_count_per_consumer = 6;
-  string max_fee_usage_per_consumer = 7 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-  string max_fee_usage_per_tx = 8 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-  repeated string txs_allowed = 9;
-  repeated string contracts_allowed = 10;
-  repeated string authorized_actors = 11;
-  string fee_denom = 12;
+  string max_fee_usage_per_consumer = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  string max_fee_usage_per_tx = 7 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  repeated string txs_allowed = 8;
+  repeated string contracts_allowed = 9;
+  repeated string authorized_actors = 10;
+  string fee_denom = 11;
 }
 
 // QueryGasTankRequest is a request type for the Query/GasTank RPC method.
@@ -105,11 +104,9 @@ message QueryGasConsumersResponse {
 message GasConsumersByGasTankIDResponse {
   string consumer = 1;
   bool is_blocked = 2;
-  uint64 total_txs_allowed = 3;
-  uint64 total_txs_made = 4;
-  cosmos.base.v1beta1.Coin total_fee_consumption_allowed = 5 [(gogoproto.nullable) = false];
-  cosmos.base.v1beta1.Coin total_fees_consumed = 6 [(gogoproto.nullable) = false];
-  Usage usage = 7;
+  cosmos.base.v1beta1.Coin total_fee_consumption_allowed = 3 [(gogoproto.nullable) = false];
+  cosmos.base.v1beta1.Coin total_fees_consumed = 4 [(gogoproto.nullable) = false];
+  Usage usage = 5;
 }
 
 // QueryGasConsumersByGasTankIDRequest is a request type for the Query/GasConsumersByGasTankID RPC method.

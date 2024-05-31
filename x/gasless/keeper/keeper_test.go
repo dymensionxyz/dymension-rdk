@@ -105,7 +105,6 @@ func (s *KeeperTestSuite) CreateNewGasTank(
 	provider sdk.AccAddress,
 	feeDenom string,
 	maxFeeUsagePerTx sdkmath.Int,
-	maxTxsCountsPerConsumer uint64,
 	maxFeeUsagePerConsumer sdkmath.Int,
 	txsAllowed, contractsAllowed []string,
 	deposit string,
@@ -119,7 +118,6 @@ func (s *KeeperTestSuite) CreateNewGasTank(
 		provider,
 		feeDenom,
 		maxFeeUsagePerTx,
-		maxTxsCountsPerConsumer,
 		maxFeeUsagePerConsumer,
 		txsAllowed,
 		contractsAllowed,
@@ -129,7 +127,6 @@ func (s *KeeperTestSuite) CreateNewGasTank(
 	s.Require().IsType(types.GasTank{}, tank)
 	s.Require().Equal(feeDenom, tank.FeeDenom)
 	s.Require().Equal(maxFeeUsagePerTx, tank.MaxFeeUsagePerTx)
-	s.Require().Equal(maxTxsCountsPerConsumer, tank.MaxTxsCountPerConsumer)
 	s.Require().Equal(maxFeeUsagePerConsumer, tank.MaxFeeUsagePerConsumer)
 	s.Require().Equal(txsAllowed, tank.TxsAllowed)
 	s.Require().Equal(contractsAllowed, tank.ContractsAllowed)

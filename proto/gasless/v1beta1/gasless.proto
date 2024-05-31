@@ -28,13 +28,12 @@ message GasTank {
     string provider = 2;
     string reserve = 3;
     bool is_active = 4;
-    uint64 max_txs_count_per_consumer = 5;
-    string max_fee_usage_per_consumer = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-    string max_fee_usage_per_tx = 7 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-    repeated string txs_allowed = 8;
-    repeated string contracts_allowed = 9;
-    repeated string authorized_actors = 10;
-    string fee_denom = 11;
+    string max_fee_usage_per_consumer = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    string max_fee_usage_per_tx = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    repeated string txs_allowed = 7;
+    repeated string contracts_allowed = 8;
+    repeated string authorized_actors = 9;
+    string fee_denom = 10;
 }
 
 message UsageDetail {
@@ -55,11 +54,9 @@ message Usage {
 message ConsumptionDetail {
     uint64 gas_tank_id = 1;
     bool is_blocked = 2;
-    uint64 total_txs_allowed = 3;
-    uint64 total_txs_made = 4;
-    string total_fee_consumption_allowed = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-    string total_fees_consumed = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-    Usage usage = 7;
+    string total_fee_consumption_allowed = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    string total_fees_consumed = 4 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    Usage usage = 5;
 }
 
 message GasConsumer {

@@ -49,7 +49,6 @@ func NewMsgCreateGasTank(
 	provider sdk.AccAddress,
 	feeDenom string,
 	maxFeeUsagePerTx sdkmath.Int,
-	maxTxsCountPerConsumer uint64,
 	maxFeeUsagePerConsumer sdkmath.Int,
 	txsAllowed []string,
 	contractsAllowed []string,
@@ -59,7 +58,6 @@ func NewMsgCreateGasTank(
 		Provider:               provider.String(),
 		FeeDenom:               feeDenom,
 		MaxFeeUsagePerTx:       maxFeeUsagePerTx,
-		MaxTxsCountPerConsumer: maxTxsCountPerConsumer,
 		MaxFeeUsagePerConsumer: maxFeeUsagePerConsumer,
 		TxsAllowed:             txsAllowed,
 		ContractsAllowed:       contractsAllowed,
@@ -80,9 +78,6 @@ func (msg MsgCreateGasTank) ValidateBasic() error {
 	}
 	if msg.FeeDenom != msg.GasDeposit.Denom {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "denom mismatch, fee denom and gas_deposit")
-	}
-	if msg.MaxTxsCountPerConsumer == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max tx count per consumer must not be 0")
 	}
 	if !msg.MaxFeeUsagePerTx.IsPositive() {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max_fee_usage_per_tx should be positive")
@@ -203,7 +198,6 @@ func NewMsgUpdateGasTankConfig(
 	gasTankID uint64,
 	provider sdk.AccAddress,
 	maxFeeUsagePerTx sdkmath.Int,
-	maxTxsCountPerConsumer uint64,
 	maxFeeUsagePerConsumer sdkmath.Int,
 	txsAllowed []string,
 	contractsAllowed []string,
@@ -212,7 +206,6 @@ func NewMsgUpdateGasTankConfig(
 		GasTankId:              gasTankID,
 		Provider:               provider.String(),
 		MaxFeeUsagePerTx:       maxFeeUsagePerTx,
-		MaxTxsCountPerConsumer: maxTxsCountPerConsumer,
 		MaxFeeUsagePerConsumer: maxFeeUsagePerConsumer,
 		TxsAllowed:             txsAllowed,
 		ContractsAllowed:       contractsAllowed,
@@ -229,9 +222,6 @@ func (msg MsgUpdateGasTankConfig) ValidateBasic() error {
 	}
 	if msg.GasTankId == 0 {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "gas tank id must not be 0")
-	}
-	if msg.MaxTxsCountPerConsumer == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max tx count per consumer must not be 0")
 	}
 	if !msg.MaxFeeUsagePerTx.IsPositive() {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max_fee_usage_per_tx should be positive")
@@ -325,14 +315,12 @@ func (msg MsgUnblockConsumer) GetSigners() []sdk.AccAddress {
 func NewMsgUpdateGasConsumerLimit(
 	gasTankID uint64,
 	provider, consumer sdk.AccAddress,
-	totalTxsAllowed uint64,
 	totalFeeConsumptionAllowed sdkmath.Int,
 ) *MsgUpdateGasConsumerLimit {
 	return &MsgUpdateGasConsumerLimit{
 		GasTankId:                  gasTankID,
 		Provider:                   provider.String(),
 		Consumer:                   consumer.String(),
-		TotalTxsAllowed:            totalTxsAllowed,
 		TotalFeeConsumptionAllowed: totalFeeConsumptionAllowed,
 	}
 }
@@ -346,9 +334,6 @@ func (msg MsgUpdateGasConsumerLimit) ValidateBasic() error {
 		return err
 	}
 
-	if msg.TotalTxsAllowed == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "total txs allowed must not be 0")
-	}
 	if !msg.TotalFeeConsumptionAllowed.IsPositive() {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "total fee consumption by consumer should be positive")
 	}

@@ -195,7 +195,6 @@ func (k Keeper) GetOrCreateGasConsumer(ctx sdk.Context, consumer sdk.AccAddress,
 
 	gasConsumer.Consumptions = append(gasConsumer.Consumptions, types.NewConsumptionDetail(
 		gasTank.Id,
-		gasTank.MaxTxsCountPerConsumer,
 		gasTank.MaxFeeUsagePerConsumer,
 	))
 	k.SetGasConsumer(ctx, gasConsumer)
@@ -258,7 +257,6 @@ func (k Keeper) UpdateConsumerAllowance(ctx sdk.Context, gasTank types.GasTank) 
 	for _, consumer := range allConsumers {
 		for index, consumption := range consumer.Consumptions {
 			if consumption.GasTankId == gasTank.Id {
-				consumer.Consumptions[index].TotalTxsAllowed = gasTank.MaxTxsCountPerConsumer
 				consumer.Consumptions[index].TotalFeeConsumptionAllowed = gasTank.MaxFeeUsagePerConsumer
 				k.SetGasConsumer(ctx, consumer)
 				break
