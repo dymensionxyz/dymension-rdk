@@ -5,34 +5,26 @@ import (
 	"math"
 
 	sdkerrors "cosmossdk.io/errors"
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	gaslesskeeper "github.com/dymensionxyz/dymension-rdk/x/gasless/keeper"
-	gaslesstypes "github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
-// DeductFeeDecorator deducts fees from the fee payer. The fee payer is the fee granter (if specified) or first signer of the tx.
-// If the fee payer does not have the funds to pay for the fees, return an InsufficientFunds error.
-// Call next AnteHandler if fees successfully deducted.
+// DeductFeeDecorator deducts fees from the first signer of the tx
+// If the first signer does not have the funds to pay for the fees, return with InsufficientFunds error
+// Call next AnteHandler if fees successfully deducted
 // CONTRACT: Tx must implement FeeTx interface to use DeductFeeDecorator
 type DeductFeeDecorator struct {
 	accountKeeper  ante.AccountKeeper
-	bankKeeper     gaslesstypes.BankKeeper
+	bankKeeper     authtypes.BankKeeper
 	feegrantKeeper ante.FeegrantKeeper
 	txFeeChecker   ante.TxFeeChecker
 	gaslessKeeper  gaslesskeeper.Keeper
 }
 
-func NewDeductFeeDecorator(
-	ak ante.AccountKeeper,
-	bk gaslesstypes.BankKeeper,
-	fk ante.FeegrantKeeper,
-	tfc ante.TxFeeChecker,
-	glk gaslesskeeper.Keeper,
-) DeductFeeDecorator {
+func NewDeductFeeDecorator(ak ante.AccountKeeper, bk authtypes.BankKeeper, fk ante.FeegrantKeeper, tfc ante.TxFeeChecker, glk gaslesskeeper.Keeper) DeductFeeDecorator {
 	if tfc == nil {
 		tfc = checkTxFeeWithValidatorMinGasPrices
 	}
@@ -83,8 +75,8 @@ func (dfd DeductFeeDecorator) checkAndDeductFees(ctx sdk.Context, sdkTx sdk.Tx, 
 		return sdkerrors.Wrap(errortypes.ErrTxDecode, "Tx must be a FeeTx")
 	}
 
-	if addr := dfd.accountKeeper.GetModuleAddress(types.FeeCollectorName); addr == nil {
-		return fmt.Errorf("fee collector module account (%s) has not been set", types.FeeCollectorName)
+	if addr := dfd.accountKeeper.GetModuleAddress(authtypes.FeeCollectorName); addr == nil {
+		return fmt.Errorf("fee collector module account (%s) has not been set", authtypes.FeeCollectorName)
 	}
 
 	feePayer := feeTx.FeePayer()
@@ -99,7 +91,7 @@ func (dfd DeductFeeDecorator) checkAndDeductFees(ctx sdk.Context, sdkTx sdk.Tx, 
 		} else if !feeGranter.Equals(feePayer) {
 			err := dfd.feegrantKeeper.UseGrantedFees(ctx, feeGranter, feePayer, fee, sdkTx.GetMsgs())
 			if err != nil {
-				return sdkerrors.Wrapf(err, "%s does not allow to pay fees for %s", feeGranter, feePayer)
+				return sdkerrors.Wrapf(err, "%s does not not allow to pay fees for %s", feeGranter, feePayer)
 			}
 		}
 
@@ -115,7 +107,7 @@ func (dfd DeductFeeDecorator) checkAndDeductFees(ctx sdk.Context, sdkTx sdk.Tx, 
 
 	// deduct the fees
 	if !fee.IsZero() {
-		err := DeductFees(dfd.bankKeeper, ctx, deductFeesFromAcc, fee, dfd.gaslessKeeper.GetParams(ctx).FeeBurningPercentage)
+		err := DeductFees(dfd.bankKeeper, ctx, deductFeesFromAcc, fee)
 		if err != nil {
 			return err
 		}
@@ -134,24 +126,12 @@ func (dfd DeductFeeDecorator) checkAndDeductFees(ctx sdk.Context, sdkTx sdk.Tx, 
 }
 
 // DeductFees deducts fees from the given account.
-func DeductFees(bankKeeper gaslesstypes.BankKeeper, ctx sdk.Context, acc types.AccountI, fees sdk.Coins, fbp sdkmath.Int) error {
+func DeductFees(bankKeeper authtypes.BankKeeper, ctx sdk.Context, acc authtypes.AccountI, fees sdk.Coins) error {
 	if !fees.IsValid() {
 		return sdkerrors.Wrapf(errortypes.ErrInsufficientFee, "invalid fee amount: %s", fees)
 	}
 
-	// Calculate burning amounts by given percentage and fee amounts
-	burningFees := sdk.Coins{}
-	for _, fee := range fees {
-		burningAmount := fee.Amount.Mul(fbp).Quo(sdk.NewInt(100))
-		burningFees = burningFees.Add(sdk.NewCoin(fee.Denom, burningAmount))
-	}
-
-	err := bankKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), types.FeeCollectorName, fees)
-	if err != nil {
-		return sdkerrors.Wrapf(errortypes.ErrInsufficientFunds, err.Error())
-	}
-
-	err = bankKeeper.BurnCoins(ctx, types.FeeCollectorName, burningFees)
+	err := bankKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), authtypes.FeeCollectorName, fees)
 	if err != nil {
 		return sdkerrors.Wrapf(errortypes.ErrInsufficientFunds, err.Error())
 	}

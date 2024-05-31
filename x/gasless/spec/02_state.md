@@ -121,9 +121,6 @@ message Params {
     // minimum deposit require while creating gas tank.
     repeated cosmos.base.v1beta1.Coin minimum_gas_deposit = 2
       [(gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins", (gogoproto.nullable) = false];
-
-    // the fee burning percentage received from the tx ( default 0% )
-    string fee_burning_percentage = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
 }
 ```
 
