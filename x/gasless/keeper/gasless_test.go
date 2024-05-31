@@ -14,23 +14,11 @@ import (
 func (s *KeeperTestSuite) TestCreateGasTank() {
 	params := s.keeper.GetParams(s.ctx)
 
-	provider1 := s.addr(1)
-	provider1Tanks := []types.GasTank{}
-	for i := 0; i < int(params.TankCreationLimit); i++ {
-		tank := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
-		provider1Tanks = append(provider1Tanks, tank)
-	}
-
 	testCases := []struct {
 		Name   string
 		Msg    types.MsgCreateGasTank
 		ExpErr error
 	}{
-		{
-			Name:   "error tank creation limit reached",
-			Msg:    *types.NewMsgCreateGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{}, []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorMaxLimitReachedByProvider, " %d gas tanks already created by the provider", params.TankCreationLimit),
-		},
 		{
 			Name:   "error fee and deposit denom mismatch",
 			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "uatom", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{}, []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),

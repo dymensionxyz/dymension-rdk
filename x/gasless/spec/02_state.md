@@ -99,7 +99,7 @@ message TxGTIDs {
 
 ## Genesis & Params
 
-The `x/gasless` module's `GenesisState` defines the state necessary for initializing the chain from a previously exported height. It contains the module Parameters,GasTank mapping, GasTanks and GasConsumers. The params are used to control the tank creation limit, deposits and fee burning ratio. This value can be modified with a governance proposal.
+The `x/gasless` module's `GenesisState` defines the state necessary for initializing the chain from a previously exported height. It contains the module Parameters,GasTank mapping, GasTanks and GasConsumers. The params are used to control initial deposits. This value can be modified with a governance proposal.
 
 ```go
 // GenesisState defines the gasless module's genesis state.
@@ -115,9 +115,6 @@ message GenesisState {
 ```go
 // Params defines the parameters for the module.
 message Params {
-    // maximum tanks a wallet can create
-    uint64 tank_creation_limit = 1;
-
     // minimum deposit require while creating gas tank.
     repeated cosmos.base.v1beta1.Coin minimum_gas_deposit = 2
       [(gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins", (gogoproto.nullable) = false];

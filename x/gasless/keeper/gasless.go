@@ -74,16 +74,6 @@ func (k Keeper) GasTankBaseValidation(ctx sdk.Context, gasTankID uint64, provide
 
 func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) error {
 	params := k.GetParams(ctx)
-	allGasTanks := k.GetAllGasTanks(ctx)
-	gasTanks := uint64(0)
-	for _, gt := range allGasTanks {
-		if gt.Provider == msg.Provider {
-			gasTanks++
-		}
-	}
-	if gasTanks >= params.TankCreationLimit {
-		return sdkerrors.Wrapf(types.ErrorMaxLimitReachedByProvider, " %d gas tanks already created by the provider", params.TankCreationLimit)
-	}
 
 	if msg.FeeDenom != msg.GasDeposit.Denom {
 		return sdkerrors.Wrapf(types.ErrorInvalidrequest, " fee denom %s do not match gas depoit denom %s ", msg.FeeDenom, msg.GasDeposit.Denom)
