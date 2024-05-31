@@ -5,7 +5,6 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 
 	// _ "github.com/stretchr/testify/suite"
@@ -99,85 +98,6 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 			}
 		})
 	}
-}
-
-func (s *KeeperTestSuite) TestAuthorizeActors() {
-	provider1 := s.addr(1)
-	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
-
-	provider2 := s.addr(2)
-	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
-	inactiveTank.IsActive = false
-	s.keeper.SetGasTank(s.ctx, inactiveTank)
-
-	testCases := []struct {
-		Name   string
-		Msg    types.MsgAuthorizeActors
-		ExpErr error
-	}{
-		{
-			Name: "error invalid gas tank ID",
-			Msg: *types.NewMsgAuthorizeActors(
-				12, provider1, []sdk.AccAddress{s.addr(10), s.addr(11), s.addr(12)},
-			),
-			ExpErr: sdkerrors.Wrapf(errors.ErrNotFound, "gas tank with id %d not found", 12),
-		},
-		{
-			Name: "error unauthorized provider",
-			Msg: *types.NewMsgAuthorizeActors(
-				tank1.Id, provider2, []sdk.AccAddress{s.addr(10), s.addr(11), s.addr(12)},
-			),
-			ExpErr: sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized provider"),
-		},
-		{
-			Name: "error inactive tank",
-			Msg: *types.NewMsgAuthorizeActors(
-				inactiveTank.Id, provider2, []sdk.AccAddress{s.addr(10), s.addr(11), s.addr(12)},
-			),
-			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive"),
-		},
-		{
-			Name: "error max actor limit ",
-			Msg: *types.NewMsgAuthorizeActors(
-				tank1.Id, provider1, []sdk.AccAddress{s.addr(10), s.addr(11), s.addr(12), s.addr(13), s.addr(14), s.addr(15), s.addr(16)},
-			),
-			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "maximum %d actors can be authorized", types.MaximumAuthorizedActorsLimit),
-		},
-		{
-			Name: "success with duplicate actors",
-			Msg: *types.NewMsgAuthorizeActors(
-				tank1.Id, provider1, []sdk.AccAddress{s.addr(10), s.addr(10), s.addr(10), s.addr(10), s.addr(10), s.addr(10), s.addr(10)},
-			),
-			ExpErr: nil,
-		},
-		{
-			Name: "success with unique actors",
-			Msg: *types.NewMsgAuthorizeActors(
-				tank1.Id, provider1, []sdk.AccAddress{s.addr(10), s.addr(11), s.addr(12), s.addr(13), s.addr(14)},
-			),
-			ExpErr: nil,
-		},
-	}
-
-	for _, tc := range testCases {
-		s.Run(tc.Name, func() {
-			tank, err := s.keeper.AuthorizeActors(s.ctx, &tc.Msg)
-			if tc.ExpErr != nil {
-				s.Require().Error(err)
-				s.Require().EqualError(err, tc.ExpErr.Error())
-			} else {
-				s.Require().NoError(err)
-				s.Require().NotNil(tank)
-
-				s.Require().IsType(types.GasTank{}, tank)
-				s.Require().Equal(len(utils.RemoveDuplicates(tc.Msg.Actors)), len(tank.AuthorizedActors))
-				slices.Sort(tc.Msg.Actors)
-				slices.Sort(tank.AuthorizedActors)
-				s.Require().Equal(tc.Msg.Actors, tank.AuthorizedActors)
-			}
-		})
-	}
-
 }
 
 func (s *KeeperTestSuite) TestUpdateGasTankStatus() {
@@ -367,17 +287,13 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 func (s *KeeperTestSuite) TestBlockConsumer() {
 	provider1 := s.addr(1)
 	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
-	actors := []sdk.AccAddress{s.addr(2), s.addr(3), s.addr(4)}
-	s.keeper.AuthorizeActors(s.ctx, types.NewMsgAuthorizeActors(tank1.Id, provider1, actors))
 
-	provider2 := s.addr(5)
+	provider2 := s.addr(2)
 	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	inactiveTank.IsActive = false
 	s.keeper.SetGasTank(s.ctx, inactiveTank)
 
-	consumer1 := s.addr(6)
-	consumer2 := s.addr(7)
-	consumer3 := s.addr(8)
+	consumer1 := s.addr(3)
 
 	testCases := []struct {
 		Name   string
@@ -394,42 +310,21 @@ func (s *KeeperTestSuite) TestBlockConsumer() {
 		{
 			Name: "error inactive tank",
 			Msg: *types.NewMsgBlockConsumer(
-				inactiveTank.Id, provider1, consumer1,
+				inactiveTank.Id, provider2, consumer1,
 			),
 			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive"),
 		},
 		{
-			Name: "error unauthorized actor",
+			Name: "error unauthorized provider",
 			Msg: *types.NewMsgBlockConsumer(
-				tank1.Id, consumer1, consumer1,
+				tank1.Id, provider2, consumer1,
 			),
-			ExpErr: sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized actor"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized provider"),
 		},
 		{
 			Name: "success provider consumer block",
 			Msg: *types.NewMsgBlockConsumer(
 				tank1.Id, provider1, consumer1,
-			),
-			ExpErr: nil,
-		},
-		{
-			Name: "success authorized consumer block 1",
-			Msg: *types.NewMsgBlockConsumer(
-				tank1.Id, actors[0], consumer1,
-			),
-			ExpErr: nil,
-		},
-		{
-			Name: "success authorized consumer block 2",
-			Msg: *types.NewMsgBlockConsumer(
-				tank1.Id, actors[1], consumer2,
-			),
-			ExpErr: nil,
-		},
-		{
-			Name: "success authorized consumer block 3",
-			Msg: *types.NewMsgBlockConsumer(
-				tank1.Id, actors[2], consumer3,
 			),
 			ExpErr: nil,
 		},
@@ -470,30 +365,28 @@ func (s *KeeperTestSuite) TestBlockConsumer() {
 func (s *KeeperTestSuite) TestUnblockConsumer() {
 	provider1 := s.addr(1)
 	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
-	actors := []sdk.AccAddress{s.addr(2), s.addr(3), s.addr(4)}
-	s.keeper.AuthorizeActors(s.ctx, types.NewMsgAuthorizeActors(tank1.Id, provider1, actors))
 
-	provider2 := s.addr(5)
+	provider2 := s.addr(2)
 	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	inactiveTank.IsActive = false
 	s.keeper.SetGasTank(s.ctx, inactiveTank)
 
-	consumer1 := s.addr(6)
-	c, err := s.keeper.BlockConsumer(s.ctx, types.NewMsgBlockConsumer(tank1.Id, actors[0], consumer1))
+	consumer1 := s.addr(3)
+	c, err := s.keeper.BlockConsumer(s.ctx, types.NewMsgBlockConsumer(tank1.Id, provider1, consumer1))
 	s.Require().NoError(err)
 	s.Require().True(c.Consumptions[0].IsBlocked)
 	s.Require().Equal(tank1.MaxFeeUsagePerConsumer, c.Consumptions[0].TotalFeeConsumptionAllowed)
 	s.Require().Equal(sdk.ZeroInt(), c.Consumptions[0].TotalFeesConsumed)
 
-	consumer2 := s.addr(7)
-	c, err = s.keeper.BlockConsumer(s.ctx, types.NewMsgBlockConsumer(tank1.Id, actors[1], consumer2))
+	consumer2 := s.addr(4)
+	c, err = s.keeper.BlockConsumer(s.ctx, types.NewMsgBlockConsumer(tank1.Id, provider1, consumer2))
 	s.Require().NoError(err)
 	s.Require().True(c.Consumptions[0].IsBlocked)
 	s.Require().Equal(tank1.MaxFeeUsagePerConsumer, c.Consumptions[0].TotalFeeConsumptionAllowed)
 	s.Require().Equal(sdk.ZeroInt(), c.Consumptions[0].TotalFeesConsumed)
 
-	consumer3 := s.addr(8)
-	c, err = s.keeper.BlockConsumer(s.ctx, types.NewMsgBlockConsumer(tank1.Id, actors[2], consumer3))
+	consumer3 := s.addr(5)
+	c, err = s.keeper.BlockConsumer(s.ctx, types.NewMsgBlockConsumer(tank1.Id, provider1, consumer3))
 	s.Require().NoError(err)
 	s.Require().True(c.Consumptions[0].IsBlocked)
 	s.Require().Equal(tank1.MaxFeeUsagePerConsumer, c.Consumptions[0].TotalFeeConsumptionAllowed)
@@ -514,42 +407,21 @@ func (s *KeeperTestSuite) TestUnblockConsumer() {
 		{
 			Name: "error inactive tank",
 			Msg: *types.NewMsgUnblockConsumer(
-				inactiveTank.Id, provider1, consumer1,
+				inactiveTank.Id, provider2, consumer1,
 			),
 			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive"),
 		},
 		{
-			Name: "error unauthorized actor",
+			Name: "error unauthorized provider",
 			Msg: *types.NewMsgUnblockConsumer(
-				tank1.Id, consumer1, consumer1,
+				tank1.Id, provider2, consumer1,
 			),
-			ExpErr: sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized actor"),
+			ExpErr: sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized provider"),
 		},
 		{
 			Name: "success provider consumer unblock",
 			Msg: *types.NewMsgUnblockConsumer(
 				tank1.Id, provider1, consumer1,
-			),
-			ExpErr: nil,
-		},
-		{
-			Name: "success authorized consumer unblock 1",
-			Msg: *types.NewMsgUnblockConsumer(
-				tank1.Id, actors[0], consumer1,
-			),
-			ExpErr: nil,
-		},
-		{
-			Name: "success authorized consumer unblock 2",
-			Msg: *types.NewMsgUnblockConsumer(
-				tank1.Id, actors[0], consumer2,
-			),
-			ExpErr: nil,
-		},
-		{
-			Name: "success authorized consumer unblock 3",
-			Msg: *types.NewMsgUnblockConsumer(
-				tank1.Id, actors[0], consumer3,
 			),
 			ExpErr: nil,
 		},
@@ -589,31 +461,29 @@ func (s *KeeperTestSuite) TestUnblockConsumer() {
 func (s *KeeperTestSuite) TestUpdateGasConsumerLimit() {
 	provider1 := s.addr(1)
 	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
-	actors := []sdk.AccAddress{s.addr(2), s.addr(3), s.addr(4)}
-	s.keeper.AuthorizeActors(s.ctx, types.NewMsgAuthorizeActors(tank1.Id, provider1, actors))
 
-	provider2 := s.addr(5)
+	provider2 := s.addr(2)
 	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	inactiveTank.IsActive = false
 	s.keeper.SetGasTank(s.ctx, inactiveTank)
 
 	// unblocking consumer, so that a new consumer can be created with default values
-	consumer1 := s.addr(6)
-	c, err := s.keeper.UnblockConsumer(s.ctx, types.NewMsgUnblockConsumer(tank1.Id, actors[0], consumer1))
+	consumer1 := s.addr(3)
+	c, err := s.keeper.UnblockConsumer(s.ctx, types.NewMsgUnblockConsumer(tank1.Id, provider1, consumer1))
 	s.Require().NoError(err)
 	s.Require().False(c.Consumptions[0].IsBlocked)
 	s.Require().Equal(tank1.MaxFeeUsagePerConsumer, c.Consumptions[0].TotalFeeConsumptionAllowed)
 	s.Require().Equal(sdk.ZeroInt(), c.Consumptions[0].TotalFeesConsumed)
 
-	consumer2 := s.addr(7)
-	c, err = s.keeper.UnblockConsumer(s.ctx, types.NewMsgUnblockConsumer(tank1.Id, actors[1], consumer2))
+	consumer2 := s.addr(4)
+	c, err = s.keeper.UnblockConsumer(s.ctx, types.NewMsgUnblockConsumer(tank1.Id, provider1, consumer2))
 	s.Require().NoError(err)
 	s.Require().False(c.Consumptions[0].IsBlocked)
 	s.Require().Equal(tank1.MaxFeeUsagePerConsumer, c.Consumptions[0].TotalFeeConsumptionAllowed)
 	s.Require().Equal(sdk.ZeroInt(), c.Consumptions[0].TotalFeesConsumed)
 
-	consumer3 := s.addr(8)
-	c, err = s.keeper.UnblockConsumer(s.ctx, types.NewMsgUnblockConsumer(tank1.Id, actors[2], consumer3))
+	consumer3 := s.addr(5)
+	c, err = s.keeper.UnblockConsumer(s.ctx, types.NewMsgUnblockConsumer(tank1.Id, provider1, consumer3))
 	s.Require().NoError(err)
 	s.Require().False(c.Consumptions[0].IsBlocked)
 	s.Require().Equal(tank1.MaxFeeUsagePerConsumer, c.Consumptions[0].TotalFeeConsumptionAllowed)

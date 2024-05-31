@@ -38,11 +38,8 @@ message GasTank {
     // usage_identifier allowed to consume gas from this tank
     repeated string usage_identifier = 7;
 
-    // wallet address that can manage blocking/unblocking of consumer on owners behalf
-    repeated string authorized_actors = 8;
-
     // fee denom of the tx supported by the gas tank
-    string fee_denom = 9;
+    string fee_denom = 8;
 }
 ```
 
@@ -113,7 +110,6 @@ message Params {
 The following state transitions are possible:
 
 - Creating a gas tank creates GasTank object in the state, also creates or updates a mapping of gas tank id in the state.
-- Authorizing actor updates the existing gas tank in the state
 - Updating a gas tank status updates the existing gas tank in the state
 - Updating a gas tank config updates the existing gas tank in the state
 - Blocking a consumer updates the GasConsumer state

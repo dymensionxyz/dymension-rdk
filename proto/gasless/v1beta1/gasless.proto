@@ -20,8 +20,7 @@ message GasTank {
     string max_fee_usage_per_consumer = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
     string max_fee_usage_per_tx = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
     repeated string usage_identifiers = 7;
-    repeated string authorized_actors = 8;
-    string fee_denom = 9;
+    string fee_denom = 8;
 }
 
 message Detail {

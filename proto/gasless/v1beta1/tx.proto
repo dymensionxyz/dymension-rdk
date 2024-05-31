@@ -11,9 +11,6 @@ service Msg {
     // CreateGasTank defines a method for creating a new gas tank
     rpc CreateGasTank(MsgCreateGasTank) returns (MsgCreateGasTankResponse);
 
-    // AuthorizeActors defines a method for authorizing accounts to take actions on provider's behalf
-    rpc AuthorizeActors(MsgAuthorizeActors) returns (MsgAuthorizeActorsResponse);
-
     // UpdateGasTankStatus defines a method for marking gas tank as active or inactive
     rpc UpdateGasTankStatus(MsgUpdateGasTankStatus) returns (MsgUpdateGasTankStatusResponse);
 
@@ -54,20 +51,6 @@ message MsgCreateGasTank {
 
 message MsgCreateGasTankResponse {}
 
-// MsgAuthorizeActors defines the SDK message for authorizing accounts to take actions on provider's behalf
-message MsgAuthorizeActors {
-    // gas_tank_id specifies the id of the gas tank
-    uint64 gas_tank_id = 1;
-
-    // provider specifies the bech32-encoded address that is the gas provider.
-    string provider = 2;
-
-    // actors specifies the list of bech32-encoded address allowed to take actions
-    repeated string actors = 3;
-}
-
-message MsgAuthorizeActorsResponse {}
-
 // MsgUpdateGasTankStatus defines an SDK message for updating the status of gas tank.
 message MsgUpdateGasTankStatus {
     // gas_tank_id specifies the id of the gas tank
@@ -104,8 +87,8 @@ message MsgBlockConsumer {
     // gas_tank_id specifies the id of the gas tank
     uint64 gas_tank_id = 1;
 
-    // actor specifies the bech32-encoded address that is the gas provider or authorized actor.
-    string actor = 2;
+    // provider specifies the bech32-encoded address that is the gas provider.
+    string provider = 2;
     
     // consumer specifies the bech32-encoded address of a consumer.
     string consumer = 3;
@@ -118,8 +101,8 @@ message MsgUnblockConsumer {
     // gas_tank_id specifies the id of the gas tank
     uint64 gas_tank_id = 1;
 
-    // actor specifies the bech32-encoded address that is the gas provider or authorized actor.
-    string actor = 2;
+    // provider specifies the bech32-encoded address that is the gas provider.
+    string provider = 2;
     
     // consumer specifies the bech32-encoded address of a consumer.
     string consumer = 3;

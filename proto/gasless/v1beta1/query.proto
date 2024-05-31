@@ -47,8 +47,7 @@ message GasTankResponse {
   string max_fee_usage_per_consumer = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
   string max_fee_usage_per_tx = 7 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
   repeated string supported_usage_identifiers = 8;
-  repeated string authorized_actors = 9;
-  string fee_denom = 10;
+  string fee_denom = 9;
 }
 
 // QueryGasTankRequest is a request type for the Query/GasTank RPC method.

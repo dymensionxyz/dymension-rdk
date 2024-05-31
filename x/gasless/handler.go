@@ -19,9 +19,6 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 		case *types.MsgCreateGasTank:
 			res, err := msgServer.CreateGasTank(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
-		case *types.MsgAuthorizeActors:
-			res, err := msgServer.AuthorizeActors(sdk.WrapSDKContext(ctx), msg)
-			return sdk.WrapServiceResult(ctx, res, err)
 		case *types.MsgUpdateGasTankStatus:
 			res, err := msgServer.UpdateGasTankStatus(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)

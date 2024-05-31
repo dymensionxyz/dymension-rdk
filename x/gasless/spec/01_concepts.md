@@ -34,20 +34,6 @@ In the above tx -
 
 > Note : anyone can create the gastank and whitelist the usage identifier of their own will
 
-### Authorizing Actors
-
-The creator or owner of the gastank can allow other trusted addresses to manage their gas tanks, these actors can block and unblock the specific address/consumers txs going through this tank.
-
-```console
-foo@bar:~$ aibd tx gasless update-authorized-actors [gas-tank-id] [actors]
-```
-
-e.g
-
-```console
-foo@bar:~$ aibd tx gasless update-authorized-actors 1 "rol14hj2tavq8f....,rol14hj2t...." 100000000aaib --from cooluser --chain-id test-1
-```
-
 ### Updating GasTank Status
 
 A GasTank can be disabled and enabled by the owner anytime
@@ -80,7 +66,7 @@ foo@bar:~$ aibd tx gasless update-gas-tank-config 1 10000000 200000000 "rol14hj2
 
 ### Block Consumer
 
-GasTank owner or Authorized Actor can block the specific address, so fee cannot be sponsored for any txs from these addresses.
+GasTank owner i.e provider can block the specific address, so fee cannot be sponsored for any txs from these addresses.
 
 ```console
 foo@bar:~$ aibd tx gasless block-consumer [gas-tank-id] [consumer]
@@ -94,7 +80,7 @@ foo@bar:~$ aibd tx gasless block-consumer 1 rol14hj2tavq8f........ --from coolus
 
 ### Unblock Consumer
 
-GasTank owner or Authorized Actor can unblock a consumer
+GasTank owner i.e provider can unblock a consumer
 
 ```console
 foo@bar:~$ aibd tx gasless unblock-consumer [gas-tank-id] [consumer]

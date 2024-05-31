@@ -9,9 +9,8 @@ import (
 )
 
 const (
-	GasTankAddressPrefix         = "GasTankAddress"
-	ModuleAddressNameSplitter    = "|"
-	MaximumAuthorizedActorsLimit = 5
+	GasTankAddressPrefix      = "GasTankAddress"
+	ModuleAddressNameSplitter = "|"
 )
 
 // gasless module's params default values

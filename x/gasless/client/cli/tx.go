@@ -27,7 +27,6 @@ func GetTxCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		NewCreateGasTankCmd(),
-		NewAuthorizeActorsCmd(),
 		NewUpdateGasTankStatusCmd(),
 		NewUpdateGasTankConfigsCmd(),
 		NewBlockConsumerCmd(),
@@ -92,62 +91,6 @@ $ %s tx %s create-gas-tank stake 25000 5000000 stake1qa4hswlcjmttulj0q9qa46jf64f
 				maxFeeUsagePerConsumer,
 				usageIdentifiers,
 				gasDeposit,
-			)
-			if err = msg.ValidateBasic(); err != nil {
-				return err
-			}
-
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
-		},
-	}
-
-	flags.AddTxFlagsToCmd(cmd)
-
-	return cmd
-}
-
-func NewAuthorizeActorsCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "update-authorized-actors [gas-tank-id] [actors]",
-		Args:  cobra.ExactArgs(2),
-		Short: "Update authorized actors of the gas tank",
-		Long: strings.TrimSpace(
-			fmt.Sprintf(`Update authorized actors of the gas tank.
-Example:
-$ %s tx %s update-authorized-actors 1 stake1...,stake2... --from mykey
-`,
-				version.AppName, types.ModuleName,
-			),
-		),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			gasTankID, err := strconv.ParseUint(args[0], 10, 64)
-			if err != nil {
-				return fmt.Errorf("parse gas-tank-id: %w", err)
-			}
-
-			actors, err := ParseStringSliceFromString(args[1], ",")
-			if err != nil {
-				return err
-			}
-
-			sanitizedActors := []sdk.AccAddress{}
-			for _, actor := range actors {
-				sanitizedActor, err := sdk.AccAddressFromBech32(actor)
-				if err != nil {
-					return err
-				}
-				sanitizedActors = append(sanitizedActors, sanitizedActor)
-			}
-
-			msg := types.NewMsgAuthorizeActors(
-				gasTankID,
-				clientCtx.GetFromAddress(),
-				sanitizedActors,
 			)
 			if err = msg.ValidateBasic(); err != nil {
 				return err

@@ -15,7 +15,6 @@ func NewGasTankResponse(gasTank GasTank, balance sdk.Coin) GasTankResponse {
 		MaxFeeUsagePerConsumer:    gasTank.MaxFeeUsagePerConsumer,
 		MaxFeeUsagePerTx:          gasTank.MaxFeeUsagePerTx,
 		SupportedUsageIdentifiers: gasTank.UsageIdentifiers,
-		AuthorizedActors:          gasTank.AuthorizedActors,
 		FeeDenom:                  gasTank.FeeDenom,
 	}
 }

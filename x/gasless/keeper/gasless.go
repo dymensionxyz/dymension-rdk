@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"slices"
 	"strconv"
 	"strings"
 
@@ -114,52 +113,6 @@ func (k Keeper) CreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) (typ
 	return gasTank, nil
 }
 
-func (k Keeper) ValidateMsgAuthorizeActors(ctx sdk.Context, msg *types.MsgAuthorizeActors) error {
-	gasTank, err := k.GasTankBaseValidation(ctx, msg.GasTankId, msg.Provider)
-	if err != nil {
-		return err
-	}
-
-	if !gasTank.IsActive {
-		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive")
-	}
-
-	msg.Actors = utils.RemoveDuplicates(msg.Actors)
-	if len(msg.Actors) > types.MaximumAuthorizedActorsLimit {
-		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "maximum %d actors can be authorized", types.MaximumAuthorizedActorsLimit)
-	}
-
-	for _, actor := range msg.Actors {
-		if _, err := sdk.AccAddressFromBech32(actor); err != nil {
-			return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid actor address - %s : %v", actor, err)
-		}
-	}
-
-	return nil
-}
-
-func (k Keeper) AuthorizeActors(ctx sdk.Context, msg *types.MsgAuthorizeActors) (types.GasTank, error) {
-	if err := k.ValidateMsgAuthorizeActors(ctx, msg); err != nil {
-		return types.GasTank{}, err
-	}
-
-	gasTank, _ := k.GetGasTank(ctx, msg.GasTankId)
-	gasTank.AuthorizedActors = utils.RemoveDuplicates(msg.Actors)
-
-	k.SetGasTank(ctx, gasTank)
-
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.EventTypeAuthorizeActors,
-			sdk.NewAttribute(types.AttributeKeyProvider, msg.Provider),
-			sdk.NewAttribute(types.AttributeKeyGasTankID, strconv.FormatUint(gasTank.Id, 10)),
-			sdk.NewAttribute(types.AttributeKeyAuthorizedActors, strings.Join(msg.Actors, ",")),
-		),
-	})
-
-	return gasTank, nil
-}
-
 func (k Keeper) ValidatMsgUpdateGasTankStatus(ctx sdk.Context, msg *types.MsgUpdateGasTankStatus) error {
 	_, err := k.GasTankBaseValidation(ctx, msg.GasTankId, msg.Provider)
 	if err != nil {
@@ -262,25 +215,17 @@ func (k Keeper) UpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTank
 }
 
 func (k Keeper) ValidateMsgBlockConsumer(ctx sdk.Context, msg *types.MsgBlockConsumer) error {
-	gasTank, found := k.GetGasTank(ctx, msg.GasTankId)
-	if !found {
-		return sdkerrors.Wrapf(errors.ErrNotFound, "gas tank with id %d not found", msg.GasTankId)
+	gasTank, err := k.GasTankBaseValidation(ctx, msg.GasTankId, msg.Provider)
+	if err != nil {
+		return err
 	}
 
 	if !gasTank.IsActive {
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive")
 	}
 
-	if _, err := sdk.AccAddressFromBech32(msg.Actor); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid actor address: %v", err)
-	}
-
 	if _, err := sdk.AccAddressFromBech32(msg.Consumer); err != nil {
 		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid consumer address: %v", err)
-	}
-
-	if !slices.Contains(append(gasTank.AuthorizedActors, gasTank.Provider), msg.Actor) {
-		return sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized actor")
 	}
 	return nil
 }
@@ -298,7 +243,7 @@ func (k Keeper) BlockConsumer(ctx sdk.Context, msg *types.MsgBlockConsumer) (typ
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeBlockConsumer,
-			sdk.NewAttribute(types.AttributeKeyActor, msg.Actor),
+			sdk.NewAttribute(types.AttributeKeyProvider, msg.Provider),
 			sdk.NewAttribute(types.AttributeKeyConsumer, msg.Consumer),
 			sdk.NewAttribute(types.AttributeKeyGasTankID, strconv.FormatUint(msg.GasTankId, 10)),
 		),
@@ -308,28 +253,17 @@ func (k Keeper) BlockConsumer(ctx sdk.Context, msg *types.MsgBlockConsumer) (typ
 }
 
 func (k Keeper) ValidateMsgUnblockConsumer(ctx sdk.Context, msg *types.MsgUnblockConsumer) error {
-	gasTank, found := k.GetGasTank(ctx, msg.GasTankId)
-	if !found {
-		return sdkerrors.Wrapf(errors.ErrNotFound, "gas tank with id %d not found", msg.GasTankId)
+	gasTank, err := k.GasTankBaseValidation(ctx, msg.GasTankId, msg.Provider)
+	if err != nil {
+		return err
 	}
 
 	if !gasTank.IsActive {
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive")
 	}
 
-	if _, err := sdk.AccAddressFromBech32(msg.Actor); err != nil {
-		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid actor address: %v", err)
-	}
-
 	if _, err := sdk.AccAddressFromBech32(msg.Consumer); err != nil {
 		return sdkerrors.Wrapf(errors.ErrInvalidAddress, "invalid consumer address: %v", err)
-	}
-
-	authorizedActors := gasTank.AuthorizedActors
-	authorizedActors = append(authorizedActors, gasTank.Provider)
-
-	if !slices.Contains(authorizedActors, msg.Actor) {
-		return sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized actor")
 	}
 	return nil
 }
@@ -347,7 +281,7 @@ func (k Keeper) UnblockConsumer(ctx sdk.Context, msg *types.MsgUnblockConsumer) 
 	ctx.EventManager().EmitEvents(sdk.Events{
 		sdk.NewEvent(
 			types.EventTypeUnblockConsumer,
-			sdk.NewAttribute(types.AttributeKeyActor, msg.Actor),
+			sdk.NewAttribute(types.AttributeKeyProvider, msg.Provider),
 			sdk.NewAttribute(types.AttributeKeyConsumer, msg.Consumer),
 			sdk.NewAttribute(types.AttributeKeyGasTankID, strconv.FormatUint(msg.GasTankId, 10)),
 		),

@@ -103,7 +103,6 @@ func NewGasTank(
 		MaxFeeUsagePerConsumer: maxFeeUsagePerConsumer,
 		MaxFeeUsagePerTx:       maxFeeUsagePerTx,
 		UsageIdentifiers:       utils.RemoveDuplicates(usageIdentifiers),
-		AuthorizedActors:       []string{},
 		FeeDenom:               feeDenom,
 	}
 }

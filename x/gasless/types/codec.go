@@ -13,7 +13,6 @@ import (
 // on the provided LegacyAmino codec. These types are used for Amino JSON serialization.
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreateGasTank{}, "gasless/MsgCreateGasTank", nil)
-	cdc.RegisterConcrete(&MsgAuthorizeActors{}, "gasless/MsgAuthorizeActors", nil)
 	cdc.RegisterConcrete(&MsgUpdateGasTankStatus{}, "gasless/MsgUpdateGasTankStatus", nil)
 	cdc.RegisterConcrete(&MsgUpdateGasTankConfig{}, "gasless/MsgUpdateGasTankConfig", nil)
 	cdc.RegisterConcrete(&MsgBlockConsumer{}, "gasless/MsgBlockConsumer", nil)
@@ -31,7 +30,6 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations(
 		(*sdk.Msg)(nil),
 		&MsgCreateGasTank{},
-		&MsgAuthorizeActors{},
 		&MsgUpdateGasTankStatus{},
 		&MsgUpdateGasTankConfig{},
 		&MsgBlockConsumer{},
