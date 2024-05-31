@@ -42,7 +42,9 @@ func ReplayCmd(appCreator types.AppCreator) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer db.Close()
+			defer func() {
+				err = db.Close()
+			}()
 
 			nodeConfig := dymintconf.DefaultConfig("", "")
 			err = nodeConfig.GetViperConfig(cmd, ctx.Viper.GetString(flags.FlagHome))
@@ -107,8 +109,8 @@ func ReplayCmd(appCreator types.AppCreator) *cobra.Command {
 			if err := node.BlockManager.UpdateStateFromApp(); err != nil {
 				return fmt.Errorf("failed to rollback tendermint state: %w", err)
 			}
-			fmt.Printf("RollApp state moved back to height %d successfuly.\n", heightInt)
-			return nil
+			fmt.Printf("RollApp state moved back to height %d successfully.\n", heightInt)
+			return err
 		},
 	}
 
