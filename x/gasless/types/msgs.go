@@ -50,8 +50,7 @@ func NewMsgCreateGasTank(
 	feeDenom string,
 	maxFeeUsagePerTx sdkmath.Int,
 	maxFeeUsagePerConsumer sdkmath.Int,
-	txsAllowed []string,
-	contractsAllowed []string,
+	usageIdentifiers []string,
 	gasDeposit sdk.Coin,
 ) *MsgCreateGasTank {
 	return &MsgCreateGasTank{
@@ -59,8 +58,7 @@ func NewMsgCreateGasTank(
 		FeeDenom:               feeDenom,
 		MaxFeeUsagePerTx:       maxFeeUsagePerTx,
 		MaxFeeUsagePerConsumer: maxFeeUsagePerConsumer,
-		TxsAllowed:             txsAllowed,
-		ContractsAllowed:       contractsAllowed,
+		UsageIdentifiers:       usageIdentifiers,
 		GasDeposit:             gasDeposit,
 	}
 }
@@ -85,8 +83,8 @@ func (msg MsgCreateGasTank) ValidateBasic() error {
 	if !msg.MaxFeeUsagePerConsumer.IsPositive() {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive")
 	}
-	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "at least one tx or contract is required to initialize")
+	if len(msg.UsageIdentifiers) == 0 {
+		return sdkerrors.Wrap(errors.ErrInvalidRequest, "at least one usage identifier is required to initialize")
 	}
 	return nil
 }
@@ -199,16 +197,14 @@ func NewMsgUpdateGasTankConfig(
 	provider sdk.AccAddress,
 	maxFeeUsagePerTx sdkmath.Int,
 	maxFeeUsagePerConsumer sdkmath.Int,
-	txsAllowed []string,
-	contractsAllowed []string,
+	usageIdentifiers []string,
 ) *MsgUpdateGasTankConfig {
 	return &MsgUpdateGasTankConfig{
 		GasTankId:              gasTankID,
 		Provider:               provider.String(),
 		MaxFeeUsagePerTx:       maxFeeUsagePerTx,
 		MaxFeeUsagePerConsumer: maxFeeUsagePerConsumer,
-		TxsAllowed:             txsAllowed,
-		ContractsAllowed:       contractsAllowed,
+		UsageIdentifiers:       usageIdentifiers,
 	}
 }
 
@@ -229,8 +225,8 @@ func (msg MsgUpdateGasTankConfig) ValidateBasic() error {
 	if !msg.MaxFeeUsagePerConsumer.IsPositive() {
 		return sdkerrors.Wrap(errors.ErrInvalidRequest, "max_fee_usage_per_consumer should be positive")
 	}
-	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrap(errors.ErrInvalidRequest, "at least one tx or contract is required to initialize")
+	if len(msg.UsageIdentifiers) == 0 {
+		return sdkerrors.Wrap(errors.ErrInvalidRequest, "at least one usage identifier is required to initialize")
 	}
 	return nil
 }

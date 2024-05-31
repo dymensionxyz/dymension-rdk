@@ -27,17 +27,10 @@ func (k Querier) Params(goCtx context.Context, _ *types.QueryParamsRequest) (*ty
 	return &types.QueryParamsResponse{Params: params}, nil
 }
 
-func (k Querier) MessagesAndContracts(goCtx context.Context, _ *types.QueryMessagesAndContractsRequest) (*types.QueryMessagesAndContractsResponse, error) {
+func (k Querier) AvailableUsageIdentifiers(goCtx context.Context, _ *types.QueryAvailableUsageIdentifiersRequest) (*types.QueryAvailableUsageIdentifiersResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	messages := k.GetAvailableMessages(ctx)
-	contractsDetails := k.GetAllAvailableContracts(ctx)
-	contracts := []*types.ContractDetails{}
-	for _, contract := range contractsDetails {
-		contracts = append(contracts, &contract)
-	}
-	return &types.QueryMessagesAndContractsResponse{
-		Messages:  messages,
-		Contracts: contracts,
+	return &types.QueryAvailableUsageIdentifiersResponse{
+		UsageIdentifiers: k.GetAvailableUsageIdentifiers(ctx),
 	}, nil
 }
 
@@ -216,15 +209,15 @@ func (k Querier) GasConsumersByGasTankID(goCtx context.Context, req *types.Query
 	}, nil
 }
 
-func (k Querier) GasTankIdsForAllTXC(goCtx context.Context, _ *types.QueryGasTankIdsForAllTXC) (*types.QueryGasTankIdsForAllTXCResponse, error) {
+func (k Querier) GasTankIdsForAllUsageIdentifiers(goCtx context.Context, _ *types.QueryGasTankIdsForAllUsageIdentifiersRequest) (*types.QueryGasTankIdsForAllUsageIdentifiersResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	txToGtids := []*types.TxGTIDs{}
-	allTxGtids := k.GetAllTxGTIDs(ctx)
-	for _, val := range allTxGtids {
+	usageIdentifierToGasTankIds := []*types.UsageIdentifierToGasTankIds{}
+	allusageIdentifierToGasTankIds := k.GetAllUsageIdentifierToGasTankIds(ctx)
+	for _, val := range allusageIdentifierToGasTankIds {
 		gtids := val
-		txToGtids = append(txToGtids, &gtids)
+		usageIdentifierToGasTankIds = append(usageIdentifierToGasTankIds, &gtids)
 	}
-	return &types.QueryGasTankIdsForAllTXCResponse{
-		TxToGtIds: txToGtids,
+	return &types.QueryGasTankIdsForAllUsageIdentifiersResponse{
+		UsageIdentifierToGastankIds: usageIdentifierToGasTankIds,
 	}, nil
 }

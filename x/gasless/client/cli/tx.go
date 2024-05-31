@@ -40,15 +40,15 @@ func GetTxCmd() *cobra.Command {
 
 func NewCreateGasTankCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create-gas-tank [fee-denom] [max-fee-usage-per-tx] [max-fee-usage-per-consumer] [txs-allowed] [contracts-allowed] [gas-deposit]",
-		Args:  cobra.ExactArgs(6),
+		Use:   "create-gas-tank [fee-denom] [max-fee-usage-per-tx] [max-fee-usage-per-consumer] [usage-identifiers] [gas-deposit]",
+		Args:  cobra.ExactArgs(5),
 		Short: "Create a gas tank",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Create a gas tank.
 Example:
-$ %s tx %s create-gas-tank aaib 25000 5000000 /cosmos.bank.v1beta1.MsgSend,/cosmos.bank.v1beta1.MsgSend aib1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3,aib1zh9gzcw3j5jd53ulfjx9lj4088plur7xy3jayndwr7jxrdqhg7jqqsfqzx 10000000000aaib --from mykey
-$ %s tx %s create-gas-tank aaib 25000 5000000 /cosmos.bank.v1beta1.MsgSend aib1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3 10000000000aaib --from mykey
-$ %s tx %s create-gas-tank aaib 25000 5000000 /cosmos.bank.v1beta1.MsgSend "" 10000000000aaib --from mykey
+$ %s tx %s create-gas-tank stake 25000 5000000 "/cosmos.bank.v1beta1.MsgSend,stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3" 10000000000stake --from mykey
+$ %s tx %s create-gas-tank stake 25000 5000000 /cosmos.bank.v1beta1.MsgSend 10000000000stake --from mykey
+$ %s tx %s create-gas-tank stake 25000 5000000 stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3 10000000000stake --from mykey
 `,
 				version.AppName, types.ModuleName,
 				version.AppName, types.ModuleName,
@@ -75,17 +75,12 @@ $ %s tx %s create-gas-tank aaib 25000 5000000 /cosmos.bank.v1beta1.MsgSend "" 10
 				return fmt.Errorf("invalid max-fee-usage-per-consumer: %s", args[2])
 			}
 
-			txsAllowed, err := ParseStringSliceFromString(args[3], ",")
+			usageIdentifiers, err := ParseStringSliceFromString(args[3], ",")
 			if err != nil {
 				return err
 			}
 
-			contractsAllowed, err := ParseStringSliceFromString(args[4], ",")
-			if err != nil {
-				return err
-			}
-
-			gasDeposit, err := sdk.ParseCoinNormalized(args[5])
+			gasDeposit, err := sdk.ParseCoinNormalized(args[4])
 			if err != nil {
 				return fmt.Errorf("invalid gas-deposit: %w", err)
 			}
@@ -95,8 +90,7 @@ $ %s tx %s create-gas-tank aaib 25000 5000000 /cosmos.bank.v1beta1.MsgSend "" 10
 				feeDenom,
 				maxFeeUsagePerTx,
 				maxFeeUsagePerConsumer,
-				txsAllowed,
-				contractsAllowed,
+				usageIdentifiers,
 				gasDeposit,
 			)
 			if err = msg.ValidateBasic(); err != nil {
@@ -120,7 +114,7 @@ func NewAuthorizeActorsCmd() *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Update authorized actors of the gas tank.
 Example:
-$ %s tx %s update-authorized-actors 1 aib1...,aib2... --from mykey
+$ %s tx %s update-authorized-actors 1 stake1...,stake2... --from mykey
 `,
 				version.AppName, types.ModuleName,
 			),
@@ -211,15 +205,15 @@ $ %s tx %s update-gas-tank-status 32 --from mykey
 
 func NewUpdateGasTankConfigsCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "update-gas-tank-config [gas-tank-id] [max-fee-usage-per-tx] [max-fee-usage-per-consumer] [txs-allowed] [contracts-allowed]",
-		Args:  cobra.ExactArgs(5),
+		Use:   "update-gas-tank-config [gas-tank-id] [max-fee-usage-per-tx] [max-fee-usage-per-consumer] [usage-identifier]",
+		Args:  cobra.ExactArgs(4),
 		Short: "Update configs of the gas tank",
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Update configs of the gas tank.
 Example:
-$ %s tx %s update-gas-tank-config 1 25000 5000000 /cosmos.bank.v1beta1.MsgSend,/cosmos.bank.v1beta1.MsgSend aib1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3,aib1zh9gzcw3j5jd53ulfjx9lj4088plur7xy3jayndwr7jxrdqhg7jqqsfqzx --from mykey
-$ %s tx %s update-gas-tank-config 1 25000 5000000 /cosmos.bank.v1beta1.MsgSend aib1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3 --from mykey
-$ %s tx %s update-gas-tank-config 1 25000 5000000 /cosmos.bank.v1beta1.MsgSend "" --from mykey
+$ %s tx %s update-gas-tank-config 1 25000 5000000 /cosmos.bank.v1beta1.MsgSend,stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3 --from mykey
+$ %s tx %s update-gas-tank-config 1 25000 5000000 stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3 --from mykey
+$ %s tx %s update-gas-tank-config 1 25000 5000000 /cosmos.bank.v1beta1.MsgSend --from mykey
 `,
 				version.AppName, types.ModuleName,
 				version.AppName, types.ModuleName,
@@ -247,12 +241,7 @@ $ %s tx %s update-gas-tank-config 1 25000 5000000 /cosmos.bank.v1beta1.MsgSend "
 				return fmt.Errorf("invalid max-fee-usage-per-consumer: %s", args[2])
 			}
 
-			txsAllowed, err := ParseStringSliceFromString(args[3], ",")
-			if err != nil {
-				return err
-			}
-
-			contractsAllowed, err := ParseStringSliceFromString(args[4], ",")
+			usageIdentifier, err := ParseStringSliceFromString(args[3], ",")
 			if err != nil {
 				return err
 			}
@@ -262,8 +251,7 @@ $ %s tx %s update-gas-tank-config 1 25000 5000000 /cosmos.bank.v1beta1.MsgSend "
 				clientCtx.GetFromAddress(),
 				maxFeeUsagePerTx,
 				maxFeeUsagePerConsumer,
-				txsAllowed,
-				contractsAllowed,
+				usageIdentifier,
 			)
 			if err = msg.ValidateBasic(); err != nil {
 				return err
@@ -286,7 +274,7 @@ func NewBlockConsumerCmd() *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Block consumer.
 Example:
-$ %s tx %s block-consumer 1 aib1.. --from mykey
+$ %s tx %s block-consumer 1 stake1.. --from mykey
 `,
 				version.AppName, types.ModuleName,
 			),
@@ -333,7 +321,7 @@ func NewUnblockConsumerCmd() *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Unblock consumer.
 Example:
-$ %s tx %s unblock-consumer 1 aib1.. --from mykey
+$ %s tx %s unblock-consumer 1 stake1.. --from mykey
 `,
 				version.AppName, types.ModuleName,
 			),
@@ -380,7 +368,7 @@ func NewUpdateGasConsumerLimitCmd() *cobra.Command {
 		Long: strings.TrimSpace(
 			fmt.Sprintf(`Update consumer consumption limit.
 Example:
-$ %s tx %s update-consumer-limit 1 aib1.. 5000000 --from mykey
+$ %s tx %s update-consumer-limit 1 stake1.. 5000000 --from mykey
 `,
 				version.AppName, types.ModuleName,
 			),

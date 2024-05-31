@@ -18,8 +18,8 @@ func (genState GenesisState) Validate() error {
 		return fmt.Errorf("invalid params: %w", err)
 	}
 
-	for _, txToTankIDs := range genState.TxToGasTankIds {
-		if err := txToTankIDs.Validate(); err != nil {
+	for _, usageIdentifierToTankIDs := range genState.UsageIdentifierToGastankIds {
+		if err := usageIdentifierToTankIDs.Validate(); err != nil {
 			return fmt.Errorf("invalid txToTankIDs: %w", err)
 		}
 	}

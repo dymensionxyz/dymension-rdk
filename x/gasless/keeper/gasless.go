@@ -6,49 +6,10 @@ import (
 	"strings"
 
 	sdkerrors "cosmossdk.io/errors"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
-
-func (k Keeper) GetAvailableMessages(_ sdk.Context) []string {
-	return k.interfaceRegistry.ListImplementations("cosmos.base.v1beta1.Msg")
-}
-
-func (k Keeper) GetAllContractInfos(ctx sdk.Context) (contractInfos []wasmtypes.ContractInfo) {
-	contractInfos = []wasmtypes.ContractInfo{}
-	k.wasmKeeper.IterateContractInfo(ctx, func(aa sdk.AccAddress, ci wasmtypes.ContractInfo) bool {
-		contractInfos = append(contractInfos, ci)
-		return false
-	})
-	return contractInfos
-}
-
-func (k Keeper) GetAllContractsByCode(ctx sdk.Context, codeID uint64) (contracts []string) {
-	contracts = []string{}
-	k.wasmKeeper.IterateContractsByCode(ctx, codeID, func(address sdk.AccAddress) bool {
-		contracts = append(contracts, address.String())
-		return false
-	})
-	return contracts
-}
-
-func (k Keeper) GetAllAvailableContracts(ctx sdk.Context) (contractsDetails []types.ContractDetails) {
-	contractsDetails = []types.ContractDetails{}
-	contractInfos := k.GetAllContractInfos(ctx)
-	for _, ci := range contractInfos {
-		contracts := k.GetAllContractsByCode(ctx, ci.CodeID)
-		for _, c := range contracts {
-			contractsDetails = append(contractsDetails, types.ContractDetails{
-				CodeId:  ci.CodeID,
-				Address: c,
-				Label:   ci.Label,
-			})
-		}
-	}
-	return contractsDetails
-}
 
 func (k Keeper) GetGasTankReserveBalance(ctx sdk.Context, gasTank types.GasTank) sdk.Coin {
 	reserveAddress := gasTank.GetGasTankReserveAddress()
@@ -86,29 +47,16 @@ func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGa
 		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive")
 	}
 
-	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address")
+	if len(msg.UsageIdentifiers) == 0 {
+		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one usage identifier")
 	}
 
-	if len(msg.TxsAllowed) > 0 {
-		allAvailableMessages := k.GetAvailableMessages(ctx)
-		for _, message := range msg.TxsAllowed {
-			if !types.ItemExists(allAvailableMessages, message) {
-				return sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid message - %s", message)
+	if len(msg.UsageIdentifiers) > 0 {
+		for _, identifier := range msg.UsageIdentifiers {
+			if !k.IsValidUsageIdentifier(ctx, identifier) {
+				return sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", identifier)
 			}
-		}
-	}
 
-	if len(msg.ContractsAllowed) > 0 {
-		allAvailableContractsDetails := k.GetAllAvailableContracts(ctx)
-		contracts := []string{}
-		for _, cdetails := range allAvailableContractsDetails {
-			contracts = append(contracts, cdetails.Address)
-		}
-		for _, contract := range msg.ContractsAllowed {
-			if !types.ItemExists(contracts, contract) {
-				return sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid contract address - %s", contract)
-			}
 		}
 	}
 
@@ -134,8 +82,7 @@ func (k Keeper) CreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) (typ
 		sdk.MustAccAddressFromBech32(msg.GetProvider()),
 		msg.MaxFeeUsagePerConsumer,
 		msg.MaxFeeUsagePerTx,
-		msg.TxsAllowed,
-		msg.ContractsAllowed,
+		msg.UsageIdentifiers,
 		msg.FeeDenom,
 	)
 
@@ -148,7 +95,7 @@ func (k Keeper) CreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) (typ
 		return types.GasTank{}, err
 	}
 
-	k.AddToTxGtids(ctx, gasTank.TxsAllowed, gasTank.ContractsAllowed, gasTank.Id)
+	k.AddGasTankIdToUsageIdentifiers(ctx, gasTank.UsageIdentifiers, gasTank.Id)
 	k.SetGasTank(ctx, gasTank)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -159,8 +106,7 @@ func (k Keeper) CreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) (typ
 			sdk.NewAttribute(types.AttributeKeyFeeDenom, msg.FeeDenom),
 			sdk.NewAttribute(types.AttributeKeyMaxFeeUsagePerTx, msg.MaxFeeUsagePerTx.String()),
 			sdk.NewAttribute(types.AttributeKeyMaxFeeUsagePerConsumer, msg.MaxFeeUsagePerConsumer.String()),
-			sdk.NewAttribute(types.AttributeKeyTxsAllowed, strings.Join(gasTank.TxsAllowed, ",")),
-			sdk.NewAttribute(types.AttributeKeyContractsAllowed, strings.Join(gasTank.ContractsAllowed, ",")),
+			sdk.NewAttribute(types.AttributeKeyUsageIdentifiers, strings.Join(gasTank.UsageIdentifiers, ",")),
 		),
 	})
 
@@ -259,29 +205,16 @@ func (k Keeper) ValidateMsgUpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUp
 		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive")
 	}
 
-	if len(msg.TxsAllowed) == 0 && len(msg.ContractsAllowed) == 0 {
-		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address")
+	if len(msg.UsageIdentifiers) == 0 {
+		return sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one usage identifier")
 	}
 
-	if len(msg.TxsAllowed) > 0 {
-		allAvailableMessages := k.GetAvailableMessages(ctx)
-		for _, message := range msg.TxsAllowed {
-			if !types.ItemExists(allAvailableMessages, message) {
-				return sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid message - %s", message)
+	if len(msg.UsageIdentifiers) > 0 {
+		for _, identifier := range msg.UsageIdentifiers {
+			if !k.IsValidUsageIdentifier(ctx, identifier) {
+				return sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", identifier)
 			}
-		}
-	}
 
-	if len(msg.ContractsAllowed) > 0 {
-		allAvailableContractsDetails := k.GetAllAvailableContracts(ctx)
-		contracts := []string{}
-		for _, cdetails := range allAvailableContractsDetails {
-			contracts = append(contracts, cdetails.Address)
-		}
-		for _, contract := range msg.ContractsAllowed {
-			if !types.ItemExists(contracts, contract) {
-				return sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid contract address - %s", contract)
-			}
 		}
 	}
 
@@ -299,18 +232,17 @@ func (k Keeper) UpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTank
 	if !gasTank.MaxFeeUsagePerConsumer.Equal(msg.MaxFeeUsagePerConsumer) {
 		consumerUpdateRequire = true
 	}
-	k.RemoveFromTxGtids(ctx, gasTank.TxsAllowed, gasTank.ContractsAllowed, gasTank.Id)
+	k.RemoveGasTankIdFromUsageIdentifiers(ctx, gasTank.UsageIdentifiers, gasTank.Id)
 
 	gasTank.MaxFeeUsagePerTx = msg.MaxFeeUsagePerTx
 	gasTank.MaxFeeUsagePerConsumer = msg.MaxFeeUsagePerConsumer
 
-	gasTank.TxsAllowed = types.RemoveDuplicates(msg.TxsAllowed)
-	gasTank.ContractsAllowed = types.RemoveDuplicates(msg.ContractsAllowed)
+	gasTank.UsageIdentifiers = types.RemoveDuplicates(msg.UsageIdentifiers)
 
 	if consumerUpdateRequire {
 		k.UpdateConsumerAllowance(ctx, gasTank)
 	}
-	k.AddToTxGtids(ctx, gasTank.TxsAllowed, gasTank.ContractsAllowed, gasTank.Id)
+	k.AddGasTankIdToUsageIdentifiers(ctx, gasTank.UsageIdentifiers, gasTank.Id)
 
 	k.SetGasTank(ctx, gasTank)
 
@@ -321,8 +253,7 @@ func (k Keeper) UpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTank
 			sdk.NewAttribute(types.AttributeKeyGasTankID, strconv.FormatUint(gasTank.Id, 10)),
 			sdk.NewAttribute(types.AttributeKeyMaxFeeUsagePerTx, msg.MaxFeeUsagePerTx.String()),
 			sdk.NewAttribute(types.AttributeKeyMaxFeeUsagePerConsumer, msg.MaxFeeUsagePerConsumer.String()),
-			sdk.NewAttribute(types.AttributeKeyTxsAllowed, strings.Join(gasTank.TxsAllowed, ",")),
-			sdk.NewAttribute(types.AttributeKeyContractsAllowed, strings.Join(gasTank.ContractsAllowed, ",")),
+			sdk.NewAttribute(types.AttributeKeyUsageIdentifiers, strings.Join(gasTank.UsageIdentifiers, ",")),
 		),
 	})
 

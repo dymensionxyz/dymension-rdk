@@ -106,21 +106,19 @@ func (s *KeeperTestSuite) CreateNewGasTank(
 	feeDenom string,
 	maxFeeUsagePerTx sdkmath.Int,
 	maxFeeUsagePerConsumer sdkmath.Int,
-	txsAllowed, contractsAllowed []string,
+	usageIdentifiers []string,
 	deposit string,
 ) types.GasTank {
 	parsedDepositCoin := ParseCoin(deposit)
 	s.fundAddr(provider, sdk.NewCoins(parsedDepositCoin))
 
-	txsAllowed = types.RemoveDuplicates(txsAllowed)
-	contractsAllowed = types.RemoveDuplicates(contractsAllowed)
+	usageIdentifiers = types.RemoveDuplicates(usageIdentifiers)
 	tank, err := s.keeper.CreateGasTank(s.ctx, types.NewMsgCreateGasTank(
 		provider,
 		feeDenom,
 		maxFeeUsagePerTx,
 		maxFeeUsagePerConsumer,
-		txsAllowed,
-		contractsAllowed,
+		usageIdentifiers,
 		parsedDepositCoin,
 	))
 	s.Require().NoError(err)
@@ -128,28 +126,17 @@ func (s *KeeperTestSuite) CreateNewGasTank(
 	s.Require().Equal(feeDenom, tank.FeeDenom)
 	s.Require().Equal(maxFeeUsagePerTx, tank.MaxFeeUsagePerTx)
 	s.Require().Equal(maxFeeUsagePerConsumer, tank.MaxFeeUsagePerConsumer)
-	s.Require().Equal(txsAllowed, tank.TxsAllowed)
-	s.Require().Equal(contractsAllowed, tank.ContractsAllowed)
+	s.Require().Equal(usageIdentifiers, tank.UsageIdentifiers)
 	s.Require().Equal(ParseCoin(deposit), s.getBalance(tank.GetGasTankReserveAddress(), feeDenom))
 
-	for _, tx := range txsAllowed {
-		txGtids, found := s.keeper.GetTxGTIDs(s.ctx, tx)
+	for _, identifier := range usageIdentifiers {
+		uiToGTIDs, found := s.keeper.GetUsageIdentifierToGasTankIds(s.ctx, identifier)
 		s.Require().True(found)
-		s.Require().IsType(types.TxGTIDs{}, txGtids)
-		s.Require().IsType([]uint64{}, txGtids.GasTankIds)
-		s.Require().Equal(txGtids.TxPathOrContractAddress, tx)
-		s.Require().Equal(tank.Id, txGtids.GasTankIds[len(txGtids.GasTankIds)-1])
+		s.Require().IsType(types.UsageIdentifierToGasTankIds{}, uiToGTIDs)
+		s.Require().IsType([]uint64{}, uiToGTIDs.GasTankIds)
+		s.Require().Equal(uiToGTIDs.UsageIdentifier, identifier)
+		s.Require().Equal(tank.Id, uiToGTIDs.GasTankIds[len(uiToGTIDs.GasTankIds)-1])
 	}
-
-	for _, c := range contractsAllowed {
-		txGtids, found := s.keeper.GetTxGTIDs(s.ctx, c)
-		s.Require().True(found)
-		s.Require().IsType(types.TxGTIDs{}, txGtids)
-		s.Require().IsType([]uint64{}, txGtids.GasTankIds)
-		s.Require().Equal(txGtids.TxPathOrContractAddress, c)
-		s.Require().Equal(tank.Id, txGtids.GasTankIds[len(txGtids.GasTankIds)-1])
-	}
-
 	return tank
 }
 

@@ -21,47 +21,47 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 	}{
 		{
 			Name:   "error fee and deposit denom mismatch",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "uatom", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{}, []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "uatom", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, " fee denom %s do not match gas depoit denom %s ", "uatom", "stake"),
 		},
 		{
 			Name:   "error max fee usage per tx should be positive",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(0), sdkmath.NewInt(1000000), []string{}, []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(0), sdkmath.NewInt(1000000), []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_tx should be positive"),
 		},
 		{
 			Name:   "error max fee usage per consumer should be positive",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(0), []string{}, []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(0), []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive"),
 		},
 		{
-			Name:   "error at least one txPath or contract is required",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{}, []string{}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address"),
+			Name:   "error at least one usage identifier is required",
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
+			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one usage identifier"),
 		},
 		{
 			Name:   "error deposit smaller than required min deposit",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, sdk.NewCoin("stake", sdk.NewInt(100))),
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, sdk.NewCoin("stake", sdk.NewInt(100))),
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "minimum required deposit is %s", params.MinimumGasDeposit[0].String()),
 		},
 		{
 			Name:   "error fee denom not allowed",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "uatom", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, sdk.NewCoin("uatom", sdk.NewInt(100))),
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "uatom", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, sdk.NewCoin("uatom", sdk.NewInt(100))),
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, " fee denom %s not allowed ", "uatom"),
 		},
 		{
-			Name:   "error invalid message type URL",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"random message type"}, []string{""}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid message - %s", "random message type"),
+			Name:   "error invalid usage identifier",
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"random usage identifier"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
+			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", "random usage identifier"),
 		},
 		{
-			Name:   "error invalid contract address",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid contract address - %s", "stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"),
+			Name:   "error invalid usage identifier 2",
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
+			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", "stake1qa4hswlcjmttulj0q9qa46jf64f93pecl6tydcsjldfe0hy5ju0s7r3hn3"),
 		},
 		{
 			Name:   "success gas tank creation",
-			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string(nil), sdk.NewCoin("stake", sdk.NewInt(100000000))),
+			Msg:    *types.NewMsgCreateGasTank(s.addr(2), "stake", sdkmath.NewInt(123), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, sdk.NewCoin("stake", sdk.NewInt(100000000))),
 			ExpErr: nil,
 		},
 	}
@@ -84,26 +84,16 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 				s.Require().Equal(tc.Msg.FeeDenom, tank.FeeDenom)
 				s.Require().Equal(tc.Msg.MaxFeeUsagePerTx, tank.MaxFeeUsagePerTx)
 				s.Require().Equal(tc.Msg.MaxFeeUsagePerConsumer, tank.MaxFeeUsagePerConsumer)
-				s.Require().Equal(tc.Msg.TxsAllowed, tank.TxsAllowed)
-				s.Require().Equal(tc.Msg.ContractsAllowed, tank.ContractsAllowed)
+				s.Require().Equal(tc.Msg.UsageIdentifiers, tank.UsageIdentifiers)
 				s.Require().Equal(tc.Msg.GasDeposit, s.getBalance(tank.GetGasTankReserveAddress(), tank.FeeDenom))
 
-				for _, tx := range tc.Msg.TxsAllowed {
-					txGtids, found := s.keeper.GetTxGTIDs(s.ctx, tx)
+				for _, identifier := range tc.Msg.UsageIdentifiers {
+					identifierGTids, found := s.keeper.GetUsageIdentifierToGasTankIds(s.ctx, identifier)
 					s.Require().True(found)
-					s.Require().IsType(types.TxGTIDs{}, txGtids)
-					s.Require().IsType([]uint64{}, txGtids.GasTankIds)
-					s.Require().Equal(txGtids.TxPathOrContractAddress, tx)
-					s.Require().Equal(tank.Id, txGtids.GasTankIds[len(txGtids.GasTankIds)-1])
-				}
-
-				for _, c := range tc.Msg.ContractsAllowed {
-					txGtids, found := s.keeper.GetTxGTIDs(s.ctx, c)
-					s.Require().True(found)
-					s.Require().IsType(types.TxGTIDs{}, txGtids)
-					s.Require().IsType([]uint64{}, txGtids.GasTankIds)
-					s.Require().Equal(txGtids.TxPathOrContractAddress, c)
-					s.Require().Equal(tank.Id, txGtids.GasTankIds[len(txGtids.GasTankIds)-1])
+					s.Require().IsType(types.UsageIdentifierToGasTankIds{}, identifierGTids)
+					s.Require().IsType([]uint64{}, identifierGTids.GasTankIds)
+					s.Require().Equal(identifierGTids.UsageIdentifier, identifier)
+					s.Require().Equal(tank.Id, identifierGTids.GasTankIds[len(identifierGTids.GasTankIds)-1])
 				}
 			}
 		})
@@ -112,10 +102,10 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 
 func (s *KeeperTestSuite) TestAuthorizeActors() {
 	provider1 := s.addr(1)
-	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 
 	provider2 := s.addr(2)
-	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	inactiveTank.IsActive = false
 	s.keeper.SetGasTank(s.ctx, inactiveTank)
 
@@ -191,7 +181,7 @@ func (s *KeeperTestSuite) TestAuthorizeActors() {
 
 func (s *KeeperTestSuite) TestUpdateGasTankStatus() {
 	provider1 := s.addr(1)
-	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 
 	testCases := []struct {
 		Name   string
@@ -248,10 +238,10 @@ func (s *KeeperTestSuite) TestUpdateGasTankStatus() {
 
 func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 	provider1 := s.addr(1)
-	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 
 	provider2 := s.addr(2)
-	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.staking.v1beta1.MsgDelegate"}, []string{}, "100000000stake")
+	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.staking.v1beta1.MsgDelegate"}, "100000000stake")
 	inactiveTank.IsActive = false
 	s.keeper.SetGasTank(s.ctx, inactiveTank)
 
@@ -265,7 +255,6 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				12, provider1, sdk.NewInt(1000), sdk.NewInt(1000000),
 				[]string{"/cosmos.bank.v1beta1.MsgSend"},
-				[]string{},
 			),
 			ExpErr: sdkerrors.Wrapf(errors.ErrNotFound, "gas tank with id %d not found", 12),
 		},
@@ -274,7 +263,6 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				tank1.Id, provider2, sdk.NewInt(1000), sdk.NewInt(1000000),
 				[]string{"/cosmos.bank.v1beta1.MsgSend"},
-				[]string{},
 			),
 			ExpErr: sdkerrors.Wrapf(errors.ErrUnauthorized, "unauthorized provider"),
 		},
@@ -283,7 +271,6 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				inactiveTank.Id, provider2, sdk.NewInt(1000), sdk.NewInt(1000000),
 				[]string{"/cosmos.bank.v1beta1.MsgSend"},
-				[]string{},
 			),
 			ExpErr: sdkerrors.Wrapf(errors.ErrInvalidRequest, "gas tank inactive"),
 		},
@@ -292,7 +279,6 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				tank1.Id, provider1, sdk.ZeroInt(), sdk.NewInt(1000000),
 				[]string{"/cosmos.bank.v1beta1.MsgSend"},
-				[]string{},
 			),
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_tx should be positive"),
 		},
@@ -301,43 +287,38 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				tank1.Id, provider1, sdk.NewInt(1000), sdk.ZeroInt(),
 				[]string{"/cosmos.bank.v1beta1.MsgSend"},
-				[]string{},
 			),
 			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "max_fee_usage_per_consumer should be positive"),
 		},
 		{
-			Name: "error at least one txPath or contract is required",
+			Name: "error at least one usage identifier is required",
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				tank1.Id, provider1, sdk.NewInt(1000), sdk.NewInt(1000000),
 				[]string{},
-				[]string{},
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one tx path or contract address"),
+			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "request should have at least one usage identifier"),
 		},
 		{
-			Name: "error invalid message type URL",
+			Name: "error invalid usage identifier 1",
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				tank1.Id, provider1, sdk.NewInt(1000), sdk.NewInt(1000000),
 				[]string{"random message type"},
-				[]string{"contract address"},
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid message - %s", "random message type"),
+			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", "random message type"),
 		},
 		{
-			Name: "error invalid contract address",
+			Name: "error invalid usage identifier 2",
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				tank1.Id, provider1, sdk.NewInt(1000), sdk.NewInt(1000000),
-				[]string{"/cosmos.bank.v1beta1.MsgSend"},
-				[]string{"invalid contract address"},
+				[]string{"invalid identifier"},
 			),
-			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid contract address - %s", "invalid contract address"),
+			ExpErr: sdkerrors.Wrapf(types.ErrorInvalidrequest, "invalid usage identifier - %s", "invalid identifier"),
 		},
 		{
 			Name: "success tank configs updated",
 			Msg: *types.NewMsgUpdateGasTankConfig(
 				tank1.Id, provider1, sdk.NewInt(25000), sdk.NewInt(150000000),
 				[]string{"/cosmos.bank.v1beta1.MsgMultiSend"},
-				nil,
 			),
 			ExpErr: nil,
 		},
@@ -358,40 +339,23 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 				checkTank, _ := s.keeper.GetGasTank(s.ctx, tc.Msg.GasTankId)
 				s.Require().Equal(tc.Msg.MaxFeeUsagePerTx, checkTank.MaxFeeUsagePerTx)
 				s.Require().Equal(tc.Msg.MaxFeeUsagePerConsumer, checkTank.MaxFeeUsagePerConsumer)
-				slices.Sort(tc.Msg.TxsAllowed)
-				slices.Sort(checkTank.TxsAllowed)
-				slices.Sort(tc.Msg.ContractsAllowed)
-				slices.Sort(checkTank.ContractsAllowed)
-				s.Require().Equal(tc.Msg.TxsAllowed, checkTank.TxsAllowed)
-				s.Require().Equal(tc.Msg.ContractsAllowed, checkTank.ContractsAllowed)
+				slices.Sort(tc.Msg.UsageIdentifiers)
+				slices.Sort(checkTank.UsageIdentifiers)
+				s.Require().Equal(tc.Msg.UsageIdentifiers, checkTank.UsageIdentifiers)
 
-				// validate if new txs and contracts has been added to the index of TxGTIDs
-				for _, tx := range tc.Msg.TxsAllowed {
-					txGtids, found := s.keeper.GetTxGTIDs(s.ctx, tx)
+				// validate if new identifiers has been added to the index of UsageIdentifierToGasTankIds
+				for _, identifier := range tc.Msg.UsageIdentifiers {
+					identifierGTids, found := s.keeper.GetUsageIdentifierToGasTankIds(s.ctx, identifier)
 					s.Require().True(found)
-					s.Require().IsType(types.TxGTIDs{}, txGtids)
-					s.Require().IsType([]uint64{}, txGtids.GasTankIds)
-					s.Require().Equal(txGtids.TxPathOrContractAddress, tx)
-					s.Require().Equal(resp.Id, txGtids.GasTankIds[len(txGtids.GasTankIds)-1])
+					s.Require().IsType(types.UsageIdentifierToGasTankIds{}, identifierGTids)
+					s.Require().IsType([]uint64{}, identifierGTids.GasTankIds)
+					s.Require().Equal(identifierGTids.UsageIdentifier, identifier)
+					s.Require().Equal(resp.Id, identifierGTids.GasTankIds[len(identifierGTids.GasTankIds)-1])
 				}
 
-				for _, c := range tc.Msg.ContractsAllowed {
-					txGtids, found := s.keeper.GetTxGTIDs(s.ctx, c)
-					s.Require().True(found)
-					s.Require().IsType(types.TxGTIDs{}, txGtids)
-					s.Require().IsType([]uint64{}, txGtids.GasTankIds)
-					s.Require().Equal(txGtids.TxPathOrContractAddress, c)
-					s.Require().Equal(resp.Id, txGtids.GasTankIds[len(txGtids.GasTankIds)-1])
-				}
-
-				// validate if old txs and contracts has been removed from the index of TxGTIDs
-				for _, tx := range tank1.TxsAllowed {
-					_, found := s.keeper.GetTxGTIDs(s.ctx, tx)
-					s.Require().False(found)
-				}
-
-				for _, c := range tank1.ContractsAllowed {
-					_, found := s.keeper.GetTxGTIDs(s.ctx, c)
+				// validate if old identifiers has been removed from the index of UsageIdentifierToGasTankIds
+				for _, identifier := range tank1.UsageIdentifiers {
+					_, found := s.keeper.GetUsageIdentifierToGasTankIds(s.ctx, identifier)
 					s.Require().False(found)
 				}
 			}
@@ -401,12 +365,12 @@ func (s *KeeperTestSuite) TestUpdateGasTankConfig() {
 
 func (s *KeeperTestSuite) TestBlockConsumer() {
 	provider1 := s.addr(1)
-	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	actors := []sdk.AccAddress{s.addr(2), s.addr(3), s.addr(4)}
 	s.keeper.AuthorizeActors(s.ctx, types.NewMsgAuthorizeActors(tank1.Id, provider1, actors))
 
 	provider2 := s.addr(5)
-	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	inactiveTank.IsActive = false
 	s.keeper.SetGasTank(s.ctx, inactiveTank)
 
@@ -504,12 +468,12 @@ func (s *KeeperTestSuite) TestBlockConsumer() {
 
 func (s *KeeperTestSuite) TestUnblockConsumer() {
 	provider1 := s.addr(1)
-	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	actors := []sdk.AccAddress{s.addr(2), s.addr(3), s.addr(4)}
 	s.keeper.AuthorizeActors(s.ctx, types.NewMsgAuthorizeActors(tank1.Id, provider1, actors))
 
 	provider2 := s.addr(5)
-	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	inactiveTank.IsActive = false
 	s.keeper.SetGasTank(s.ctx, inactiveTank)
 
@@ -623,12 +587,12 @@ func (s *KeeperTestSuite) TestUnblockConsumer() {
 
 func (s *KeeperTestSuite) TestUpdateGasConsumerLimit() {
 	provider1 := s.addr(1)
-	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	actors := []sdk.AccAddress{s.addr(2), s.addr(3), s.addr(4)}
 	s.keeper.AuthorizeActors(s.ctx, types.NewMsgAuthorizeActors(tank1.Id, provider1, actors))
 
 	provider2 := s.addr(5)
-	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	inactiveTank := s.CreateNewGasTank(provider2, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 	inactiveTank.IsActive = false
 	s.keeper.SetGasTank(s.ctx, inactiveTank)
 
@@ -751,7 +715,7 @@ func (s *KeeperTestSuite) TestUpdateGasConsumerLimit() {
 
 func (s *KeeperTestSuite) TestConsumerUpdateWhenGasTankUpdate() {
 	provider1 := s.addr(1)
-	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{}, "100000000stake")
+	tank1 := s.CreateNewGasTank(provider1, "stake", sdkmath.NewInt(1000), sdkmath.NewInt(1000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, "100000000stake")
 
 	// unblocking consumer, so that a new consumer can be created with default values
 	consumer1 := s.addr(11)
@@ -776,7 +740,7 @@ func (s *KeeperTestSuite) TestConsumerUpdateWhenGasTankUpdate() {
 	s.Require().Equal(sdk.ZeroInt(), c.Consumptions[0].TotalFeesConsumed)
 
 	_, err = s.keeper.UpdateGasTankConfig(s.ctx, types.NewMsgUpdateGasTankConfig(
-		tank1.Id, provider1, sdk.NewInt(33000), sdk.NewInt(120000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{},
+		tank1.Id, provider1, sdk.NewInt(33000), sdk.NewInt(120000000), []string{"/cosmos.bank.v1beta1.MsgSend"},
 	))
 	s.Require().NoError(err)
 
@@ -814,7 +778,7 @@ func (s *KeeperTestSuite) TestConsumerUpdateWhenGasTankUpdate() {
 	s.Require().Equal(sdk.NewInt(9075412), c.Consumptions[0].TotalFeeConsumptionAllowed)
 
 	_, err = s.keeper.UpdateGasTankConfig(s.ctx, types.NewMsgUpdateGasTankConfig(
-		tank1.Id, provider1, sdk.NewInt(34000), sdk.NewInt(110000000), []string{"/cosmos.bank.v1beta1.MsgSend"}, []string{},
+		tank1.Id, provider1, sdk.NewInt(34000), sdk.NewInt(110000000), []string{"/cosmos.bank.v1beta1.MsgSend"},
 	))
 	s.Require().NoError(err)
 

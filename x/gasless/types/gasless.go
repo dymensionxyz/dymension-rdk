@@ -10,27 +10,27 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// MustMarshalTxGTIDs returns the TxGTIDs bytes.
+// MustMarshalUsageIdentifierToGastankIds returns the UsageIdentifierToGasTankIds bytes.
 // It throws panic if it fails.
-func MustMarshalTxGTIDs(cdc codec.BinaryCodec, txGTIDs TxGTIDs) []byte {
-	return cdc.MustMarshal(&txGTIDs)
+func MustMarshalUsageIdentifierToGastankIds(cdc codec.BinaryCodec, usageIdentifierToGastankIds UsageIdentifierToGasTankIds) []byte {
+	return cdc.MustMarshal(&usageIdentifierToGastankIds)
 }
 
-// MustUnmarshalTxGTIDs return the unmarshalled TxGTIDs from bytes.
+// MustUnmarshalUsageIdentifierToGastankIds return the unmarshalled UsageIdentifierToGasTankIds from bytes.
 // It throws panic if it fails.
-func MustUnmarshalTxGTIDs(cdc codec.BinaryCodec, value []byte) TxGTIDs {
-	txGTIDs, err := UnmarshalTxGTIDs(cdc, value)
+func MustUnmarshalUsageIdentifierToGastankIds(cdc codec.BinaryCodec, value []byte) UsageIdentifierToGasTankIds {
+	usageIdentifierToGastankIds, err := UnmarshalUsageIdentifierToGastankIds(cdc, value)
 	if err != nil {
 		panic(err)
 	}
 
-	return txGTIDs
+	return usageIdentifierToGastankIds
 }
 
-// UnmarshalTxGTIDs returns the TxGTIDs from bytes.
-func UnmarshalTxGTIDs(cdc codec.BinaryCodec, value []byte) (txGTIDs TxGTIDs, err error) {
-	err = cdc.Unmarshal(value, &txGTIDs)
-	return txGTIDs, err
+// UnmarshalUsageIdentifierToGastankIds returns the UsageIdentifierToGasTankIds from bytes.
+func UnmarshalUsageIdentifierToGastankIds(cdc codec.BinaryCodec, value []byte) (usageIdentifierToGastankIds UsageIdentifierToGasTankIds, err error) {
+	err = cdc.Unmarshal(value, &usageIdentifierToGastankIds)
+	return usageIdentifierToGastankIds, err
 }
 
 // MustMarshalGasTank returns the GasTank bytes.
@@ -91,8 +91,7 @@ func NewGasTank(
 	provider sdk.AccAddress,
 	maxFeeUsagePerConsumer sdkmath.Int,
 	maxFeeUsagePerTx sdkmath.Int,
-	txsAllowed []string,
-	contractsAllowed []string,
+	usageIdentifiers []string,
 	feeDenom string,
 ) GasTank {
 	return GasTank{
@@ -102,8 +101,7 @@ func NewGasTank(
 		IsActive:               true,
 		MaxFeeUsagePerConsumer: maxFeeUsagePerConsumer,
 		MaxFeeUsagePerTx:       maxFeeUsagePerTx,
-		TxsAllowed:             RemoveDuplicates(txsAllowed),
-		ContractsAllowed:       RemoveDuplicates(contractsAllowed),
+		UsageIdentifiers:       RemoveDuplicates(usageIdentifiers),
 		AuthorizedActors:       []string{},
 		FeeDenom:               feeDenom,
 	}
@@ -133,8 +131,8 @@ func (gasTank GasTank) Validate() error {
 	if !gasTank.MaxFeeUsagePerConsumer.IsPositive() {
 		return fmt.Errorf("max_fee_usage_per_consumer should be positive")
 	}
-	if len(gasTank.TxsAllowed) == 0 && len(gasTank.ContractsAllowed) == 0 {
-		return fmt.Errorf("at least one tx or contract is required to initialize")
+	if len(gasTank.UsageIdentifiers) == 0 {
+		return fmt.Errorf("at least one usage identifier is required to initialize")
 	}
 
 	return nil
@@ -156,13 +154,13 @@ func (gasConsumer GasConsumer) Validate() error {
 	return nil
 }
 
-func NewTxGTIDs(tpoc string) TxGTIDs {
-	return TxGTIDs{
-		TxPathOrContractAddress: tpoc,
-		GasTankIds:              []uint64{},
+func NewUsageIdentifierToGastankIds(usageIdentifier string) UsageIdentifierToGasTankIds {
+	return UsageIdentifierToGasTankIds{
+		UsageIdentifier: usageIdentifier,
+		GasTankIds:      []uint64{},
 	}
 }
 
-func (txGTIDs TxGTIDs) Validate() error {
+func (usageIdentifierToGasTankIds UsageIdentifierToGasTankIds) Validate() error {
 	return nil
 }

@@ -78,17 +78,16 @@ func ShiftToEndUint64(list []uint64, x uint64) []uint64 {
 
 func NewGasTankResponse(gasTank GasTank, balance sdk.Coin) GasTankResponse {
 	return GasTankResponse{
-		Id:                     gasTank.Id,
-		Provider:               gasTank.Provider,
-		Reserve:                gasTank.Reserve,
-		GasTankBalance:         balance,
-		IsActive:               gasTank.IsActive,
-		MaxFeeUsagePerConsumer: gasTank.MaxFeeUsagePerConsumer,
-		MaxFeeUsagePerTx:       gasTank.MaxFeeUsagePerTx,
-		TxsAllowed:             gasTank.TxsAllowed,
-		ContractsAllowed:       gasTank.ContractsAllowed,
-		AuthorizedActors:       gasTank.AuthorizedActors,
-		FeeDenom:               gasTank.FeeDenom,
+		Id:                        gasTank.Id,
+		Provider:                  gasTank.Provider,
+		Reserve:                   gasTank.Reserve,
+		GasTankBalance:            balance,
+		IsActive:                  gasTank.IsActive,
+		MaxFeeUsagePerConsumer:    gasTank.MaxFeeUsagePerConsumer,
+		MaxFeeUsagePerTx:          gasTank.MaxFeeUsagePerTx,
+		SupportedUsageIdentifiers: gasTank.UsageIdentifiers,
+		AuthorizedActors:          gasTank.AuthorizedActors,
+		FeeDenom:                  gasTank.FeeDenom,
 	}
 }
 
@@ -101,19 +100,6 @@ func NewConsumptionDetail(
 		IsBlocked:                  false,
 		TotalFeeConsumptionAllowed: totalFeeConsumptionAllowed,
 		TotalFeesConsumed:          sdk.ZeroInt(),
-		Usage: &Usage{
-			Txs:       []*UsageDetails{},
-			Contracts: []*UsageDetails{},
-		},
-	}
-}
-
-func NewUsageDetails(
-	usageIdentifier string,
-	usageDetail UsageDetail,
-) *UsageDetails {
-	return &UsageDetails{
-		UsageIdentifier: usageIdentifier,
-		Details:         []*UsageDetail{&usageDetail},
+		Usage:                      []*Usage{},
 	}
 }

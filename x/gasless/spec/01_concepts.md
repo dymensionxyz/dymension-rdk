@@ -15,26 +15,24 @@ Clients can then interact with the Messages and Contract normally as usual and t
 There can be multiple gastanks, each of which can be with unique configuration.
 
 ```console
-foo@bar:~$ aibd tx gasless create-gas-tank [fee-denom] [max-fee-usage-per-tx] [max-txs-count-per-consumer] [max-fee-usage-per-consumer] [txs-allowed] [contracts-allowed] [gas-deposit]
+foo@bar:~$ aibd tx gasless create-gas-tank [fee-denom] [max-fee-usage-per-tx] [max-fee-usage-per-consumer] [usage-identifier] [gas-deposit]
 ```
 
 e.g
 
 ```console
-foo@bar:~$ aibd tx gasless create-gas-tank aaib 2000000 100 200000000 "/cosmos.bank.v1beta1.MsgMultiSend,/cosmos.bank.v1beta1.MsgSend" "rol14hj2tavq8f....,rol14hj2t...." 100000000aaib --from cooluser --chain-id test-1
+foo@bar:~$ aibd tx gasless create-gas-tank aaib 2000000 200000000 "/cosmos.bank.v1beta1.MsgMultiSend,stake14hj2tavq8f....,stake14hj2t...." 100000000aaib --from cooluser --chain-id test-1
 ```
 
 In the above tx -
 
 - `fee-denom` - all txs with this fee-denom can consume gas from this gas tank
 - `max-fee-usage-per-tx` - maximum fee a tx can utilize, if the asked tx fee > max-fee-usage-per-tx, then the fee will be deducted for the tx maker.
-- `max-txs-count-per-consumer` - no. of txs allowed for each address
 - `max-fee-usage-per-consumer` - max fee usage for each address
-- `txs-allowed` - list of message types, which are to be whitelisted for gasless tx
-- `contracts-allowed` - list of contract addresses, which are to be whitelisted for gasless tx
+- `usage-identifier` - list of usage identifiers (MessageTypes, Conteacts), which are to be whitelisted for gasless tx
 - `gas-deposit` - initial deposit for the gastank
 
-> Note : anyone can create the gastank and whitelist the contract address or message type of their own will
+> Note : anyone can create the gastank and whitelist the usage identifier of their own will
 
 ### Authorizing Actors
 
@@ -71,13 +69,13 @@ if the GasTank is active, running the above tx will make it as inactive and do v
 Configurations of the gas tank can be updated by the owner of the GasTank
 
 ```console
-foo@bar:~$ aibd tx gasless update-gas-tank-config [gas-tank-id] [max-fee-usage-per-tx] [max-txs-count-per-consumer] [max-fee-usage-per-consumer] [txs-allowed] [contracts-allowed]
+foo@bar:~$ aibd tx gasless update-gas-tank-config [gas-tank-id] [max-fee-usage-per-tx] [max-fee-usage-per-consumer] [usage-identifier]
 ```
 
 e.g
 
 ```console
-foo@bar:~$ aibd tx gasless update-gas-tank-config 1 10000000 20 200000000 "" "rol14hj2tavq8f........" --from cooluser --chain-id test-1
+foo@bar:~$ aibd tx gasless update-gas-tank-config 1 10000000 200000000 "rol14hj2tavq8f........" --from cooluser --chain-id test-1
 ```
 
 ### Block Consumer
@@ -113,13 +111,13 @@ foo@bar:~$ aibd tx gasless unblock-consumer 1 rol14hj2tavq8f........ --from cool
 GasTank owner can increase or decrease the gas consumption limit of the specific user.
 
 ```console
-foo@bar:~$ aibd tx gasless update-consumer-limit [gas-tank-id] [consumer] [total-txs-allowed] [total-fee-consumption-allowed]
+foo@bar:~$ aibd tx gasless update-consumer-limit [gas-tank-id] [consumer] [total-fee-consumption-allowed]
 ```
 
 e.g
 
 ```console
-foo@bar:~$ aibd tx gasless update-consumer-limit 1 rol14hj2tavq8f........ 40 40000000 --from cooluser --chain-id test-1
+foo@bar:~$ aibd tx gasless update-consumer-limit 1 rol14hj2tavq8f........ 40000000 --from cooluser --chain-id test-1
 ```
 
 ### Funding a GasTank

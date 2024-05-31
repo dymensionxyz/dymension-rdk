@@ -18,8 +18,8 @@ enum AddressType {
     ADDRESS_TYPE_20_BYTES = 1 [(gogoproto.enumvalue_customname) = "AddressType20Bytes"];
   }
 
-message TxGTIDs {
-    string tx_path_or_contract_address = 1;
+message UsageIdentifierToGasTankIds {
+    string usage_identifier = 1;
     repeated uint64 gas_tank_ids = 2;
 }
 
@@ -30,25 +30,19 @@ message GasTank {
     bool is_active = 4;
     string max_fee_usage_per_consumer = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
     string max_fee_usage_per_tx = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-    repeated string txs_allowed = 7;
-    repeated string contracts_allowed = 8;
-    repeated string authorized_actors = 9;
-    string fee_denom = 10;
+    repeated string usage_identifiers = 7;
+    repeated string authorized_actors = 8;
+    string fee_denom = 9;
 }
 
-message UsageDetail {
+message Detail {
     google.protobuf.Timestamp timestamp = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
     string gas_consumed = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
 }
 
-message UsageDetails {
-    string usage_identifier = 1;
-    repeated UsageDetail details = 2;
-}
-
 message Usage {
-    repeated UsageDetails txs = 1;
-    repeated UsageDetails contracts = 2;
+    string usage_identifier = 1;
+    repeated Detail details = 2;
 }
 
 message ConsumptionDetail {
@@ -56,7 +50,7 @@ message ConsumptionDetail {
     bool is_blocked = 2;
     string total_fee_consumption_allowed = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
     string total_fees_consumed = 4 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-    Usage usage = 5;
+    repeated Usage usage = 5;
 }
 
 message GasConsumer {
