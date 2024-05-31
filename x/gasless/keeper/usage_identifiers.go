@@ -74,8 +74,8 @@ func (k Keeper) ExtractUsageIdentifierFromTx(ctx sdk.Context, sdkTx sdk.Tx) stri
 
 	usageIdentifier := sdk.MsgTypeURL(msg)
 
-	if executeContractMessage, ok := msg.(*wasmtypes.MsgExecuteContract); ok {
-		usageIdentifier = executeContractMessage.GetContract()
+	if executeContractMessageType, ok := msg.(*wasmtypes.MsgExecuteContract); ok {
+		usageIdentifier = executeContractMessageType.GetContract()
 	}
 	return usageIdentifier
 }

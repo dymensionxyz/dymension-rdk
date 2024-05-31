@@ -15,6 +15,5 @@ This is how it works -
 - If there is no `GasTank` which can satisfy this tx, the original fee source (tx initiator) address is returned.
 - If `GasTank` is found then the reserve address is returned as the fee source of the tx.
 - Then the fee is deducted from the returned fee source address.
-- A small percentage of fee (stored in params) is burned once the fee is deducted.
 
 In the above process, all the incoming txs with fees are being handled by the gasless module for fee consumption, If the transaction is not eligible for the gasless it will fallback in default mode i.e the fee will be deducted from the tx source account.
