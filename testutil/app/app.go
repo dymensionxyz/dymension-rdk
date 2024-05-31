@@ -540,7 +540,7 @@ func NewRollapp(
 		ibctransfer.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper, app.AccountKeeper),
-		gasless.NewAppModule(appCodec, app.GaslessKeeper, app.BankKeeper),
+		gasless.NewAppModule(appCodec, app.GaslessKeeper),
 	}
 
 	app.mm = module.NewManager(modules...)
