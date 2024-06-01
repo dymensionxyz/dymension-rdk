@@ -1,7 +1,6 @@
 package denommetadata
 
 import (
-	"errors"
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
@@ -21,23 +20,27 @@ var _ porttypes.IBCModule = &IBCMiddleware{}
 // IBCMiddleware implements the ICS26 callbacks for the transfer middleware
 type IBCMiddleware struct {
 	porttypes.IBCModule
-	keeper DenomMetadataKeeper
+	keeper Keeper
 }
 
-type DenomMetadataKeeper interface {
+type Keeper interface {
 	HasDenomMetaData(ctx sdk.Context, denom string) bool
 	CreateDenomMetadata(ctx sdk.Context, metadatas ...types.DenomMetadata) error
 }
 
 // NewIBCMiddleware creates a new IBCMiddleware given the keeper and underlying application
-func NewIBCMiddleware(keeper DenomMetadataKeeper, app porttypes.IBCModule) IBCMiddleware {
+func NewIBCMiddleware(keeper Keeper, app porttypes.IBCModule) IBCMiddleware {
 	return IBCMiddleware{
 		IBCModule: app,
 		keeper:    keeper,
 	}
 }
 
-// OnRecvPacket registers the denom metadata if it does not exist
+// OnRecvPacket registers the denom metadata if it does not exist.
+// It will intercept an incoming packet and check if the denom metadata exists.
+// If it does not, it will register the denom metadata.
+// The handler will expect a 'transferinject' object in the memo field of the packet.
+// If the memo is not an object, or does not contain the metadata, it moves on to the next handler.
 func (im IBCMiddleware) OnRecvPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
@@ -45,65 +48,49 @@ func (im IBCMiddleware) OnRecvPacket(
 ) exported.Acknowledgement {
 	packetData := new(transfertypes.FungibleTokenPacketData)
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), packetData); err != nil {
-		err = errorsmod.Wrapf(errortypes.ErrInvalidType, "cannot unmarshal ICS-20 transfer packet data")
+		err = errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet data")
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	if len(packetData.Memo) == 0 {
-		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
-	}
-
-	memoData, err := types.ParseMemoData(packetData.Memo)
-	// if the memo is not an object, or does not contain the metadata, we can skip
-	if errors.Is(err, types.ErrMemoUnmarshal) || errors.Is(err, types.ErrMemoDenomMetadataEmpty) {
-		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
-	}
+	transferInject, err := types.ParsePacketMetadata(packetData.Memo)
 	if err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
-	}
-
-	if memoData.PacketMetadata == nil || memoData.PacketMetadata.DenomMetadata == nil {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	dm := *memoData.PacketMetadata.DenomMetadata
-
-	if err = dm.Validate(); err != nil {
-		return channeltypes.NewErrorAcknowledgement(errortypes.ErrInvalidType)
-	}
-
-	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
-	if denomTrace.Path == "" {
-		denomTrace.Path = fmt.Sprintf("%s/%s", packet.GetDestPort(), packet.GetDestChannel())
-	}
-
-	// set the memo back to the original user memo, if there was any
-	packetData.Memo = memoData.UserMemo
-
+	packetData.Memo = types.PurgePacketMetadata(packetData.Memo)
 	// re-marshal the packet data
 	packet.Data, err = types.ModuleCdc.MarshalJSON(packetData)
 	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	if im.keeper.HasDenomMetaData(ctx, denomTrace.IBCDenom()) {
+	dm := transferInject.DenomMetadata
+	if dm == nil {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	if err = im.createNewDenom(ctx, dm, denomTrace); err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
+	if err = dm.Validate(); err != nil {
+		return channeltypes.NewErrorAcknowledgement(errortypes.ErrInvalidType)
+	}
+
+	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
+	// if denom trace path is empty, construct it from the packet destination port and channel
+	if denomTrace.Path == "" {
+		denomTrace.Path = fmt.Sprintf("%s/%s", packet.GetDestPort(), packet.GetDestChannel())
+	}
+
+	if !im.keeper.HasDenomMetaData(ctx, denomTrace.IBCDenom()) {
+		if err = im.createNewDenom(ctx, dm, denomTrace); err != nil {
+			return channeltypes.NewErrorAcknowledgement(err)
+		}
 	}
 
 	return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 }
 
-func (im IBCMiddleware) createNewDenom(ctx sdk.Context, denonmMetadata banktypes.Metadata, denomTrace transfertypes.DenomTrace) error {
-	denomUnits := make([]*banktypes.DenomUnit, 0, len(denonmMetadata.DenomUnits))
-	for _, du := range denonmMetadata.DenomUnits {
-		// we can skip the exp 0, it's not very useful
-		if du.Exponent == 0 {
-			continue
-		}
+func (im IBCMiddleware) createNewDenom(ctx sdk.Context, denomMetadata *banktypes.Metadata, denomTrace transfertypes.DenomTrace) error {
+	denomUnits := make([]*banktypes.DenomUnit, 0, len(denomMetadata.DenomUnits))
+	for _, du := range denomMetadata.DenomUnits {
 		ndu := &banktypes.DenomUnit{
 			Denom:    du.Denom,
 			Exponent: du.Exponent,
@@ -114,14 +101,14 @@ func (im IBCMiddleware) createNewDenom(ctx sdk.Context, denonmMetadata banktypes
 
 	newDenomMetadata := types.DenomMetadata{
 		TokenMetadata: banktypes.Metadata{
-			Description: denonmMetadata.Description,
+			Description: denomMetadata.Description,
 			DenomUnits:  denomUnits,
 			Base:        denomTrace.IBCDenom(),
-			Display:     denonmMetadata.Display,
-			Name:        denonmMetadata.Name,
-			Symbol:      denonmMetadata.Symbol,
-			URI:         denonmMetadata.URI,
-			URIHash:     denonmMetadata.URIHash,
+			Display:     denomMetadata.Display,
+			Name:        denomMetadata.Name,
+			Symbol:      denomMetadata.Symbol,
+			URI:         denomMetadata.URI,
+			URIHash:     denomMetadata.URIHash,
 		},
 		DenomTrace: denomTrace.GetFullDenomPath(),
 	}

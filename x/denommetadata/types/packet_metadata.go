@@ -9,30 +9,51 @@ import (
 
 // MemoData represents the structure of the memo with user and hub metadata
 type MemoData struct {
-	UserMemo       string          `json:"user_memo"`
-	PacketMetadata *PacketMetadata `json:"packet_metadata"`
+	TransferInject *TransferInject `json:"transferinject,omitempty"`
 }
 
-type PacketMetadata struct {
-	DenomMetadata *types.Metadata `json:"denom_metadata"`
+type TransferInject struct {
+	DenomMetadata *types.Metadata `json:"denom_metadata,omitempty"`
 }
 
-func (p PacketMetadata) ValidateBasic() error {
+func (p TransferInject) ValidateBasic() error {
 	return p.DenomMetadata.Validate()
 }
 
+const memoObjectKeyTransferInject = "transferinject"
+
 var (
-	ErrMemoUnmarshal          = fmt.Errorf("unmarshal memo")
-	ErrMemoDenomMetadataEmpty = fmt.Errorf("memo denom metadata field is missing")
+	ErrMemoUnmarshal           = fmt.Errorf("unmarshal memo")
+	ErrMemoTransferInjectEmpty = fmt.Errorf("memo transfer inject is missing")
 )
 
-func ParseMemoData(input string) (*MemoData, error) {
+func ParsePacketMetadata(input string) (*TransferInject, error) {
 	bz := []byte(input)
+
 	var memo MemoData
-	err := json.Unmarshal(bz, &memo)
-	if err != nil {
+	if err := json.Unmarshal(bz, &memo); err != nil {
 		return nil, ErrMemoUnmarshal
 	}
 
-	return &memo, nil
+	if memo.TransferInject == nil {
+		return nil, ErrMemoTransferInjectEmpty
+	}
+
+	return memo.TransferInject, nil
+}
+
+func PurgePacketMetadata(memo string) string {
+	memoMap := make(map[string]any)
+	err := json.Unmarshal([]byte(memo), &memoMap)
+	if err != nil {
+		return memo
+	}
+
+	delete(memoMap, memoObjectKeyTransferInject)
+	// if map empty, return empty string
+	if len(memoMap) == 0 {
+		return ""
+	}
+	bz, _ := json.Marshal(memoMap)
+	return string(bz)
 }
