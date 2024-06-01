@@ -10,9 +10,18 @@ option (gogoproto.goproto_getters_all) = false;
 
 // GenesisState defines the gasless module's genesis state.
 message GenesisState {
+  // parms defines the parameters of the gasess module
   Params params = 1 [(gogoproto.nullable) = false];
-  repeated TxGTIDs tx_to_gas_tank_ids = 2 [(gogoproto.nullable) = false];
+  
+  // usage_identifier_to_gastank_ids defines maps of all the gas tank ids with the usage identifier
+  repeated UsageIdentifierToGasTankIds usage_identifier_to_gastank_ids = 2 [(gogoproto.nullable) = false];
+  
+  // last_gas_tank_id defines most recent gas tank id within the key store
   uint64 last_gas_tank_id = 3;
+
+  // gas_tanks defines all available gas tanks
   repeated GasTank gas_tanks = 4 [(gogoproto.nullable) = false];
+  
+  // gas_consumers defines all available gas consumer
   repeated GasConsumer gas_consumers = 5 [(gogoproto.nullable) = false];
 }

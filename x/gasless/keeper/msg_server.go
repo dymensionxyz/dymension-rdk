@@ -30,17 +30,6 @@ func (m msgServer) CreateGasTank(goCtx context.Context, msg *types.MsgCreateGasT
 	return &types.MsgCreateGasTankResponse{}, nil
 }
 
-// AuthorizeActors defines a method to update the actors in gas tank
-func (m msgServer) AuthorizeActors(goCtx context.Context, msg *types.MsgAuthorizeActors) (*types.MsgAuthorizeActorsResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	if _, err := m.Keeper.AuthorizeActors(ctx, msg); err != nil {
-		return nil, err
-	}
-
-	return &types.MsgAuthorizeActorsResponse{}, nil
-}
-
 // UpdateGasTankStatus defines a method to update the active status of gas tank
 func (m msgServer) UpdateGasTankStatus(goCtx context.Context, msg *types.MsgUpdateGasTankStatus) (*types.MsgUpdateGasTankStatusResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)

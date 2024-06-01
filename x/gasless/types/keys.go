@@ -20,18 +20,18 @@ const (
 )
 
 var (
-	TxGTIDsKeyPrefix     = []byte{0xa0}
-	LastGasTankIDKey     = []byte{0xa1}
-	GasTankKeyPrefix     = []byte{0xa2}
-	GasConsumerKeyPrefix = []byte{0xa3}
+	UsageIdentifierToGasTankIdsKeyPrefix = []byte{0xa0}
+	LastGasTankIDKey                     = []byte{0xa1}
+	GasTankKeyPrefix                     = []byte{0xa2}
+	GasConsumerKeyPrefix                 = []byte{0xa3}
 )
 
-func GetTxGTIDsKey(txPathOrContractAddress string) []byte {
-	return append(TxGTIDsKeyPrefix, LengthPrefixString(txPathOrContractAddress)...)
+func GetUsageIdentifierToGasTankIdsKey(usageIdentifier string) []byte {
+	return append(UsageIdentifierToGasTankIdsKeyPrefix, LengthPrefixString(usageIdentifier)...)
 }
 
-func GetAllTxGTIDsKey() []byte {
-	return TxGTIDsKeyPrefix
+func GetAllUsageIdentifierToGasTankIdsKey() []byte {
+	return UsageIdentifierToGasTankIdsKeyPrefix
 }
 
 func GetLastGasTankIDKey() []byte {

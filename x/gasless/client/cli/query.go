@@ -27,14 +27,14 @@ func GetQueryCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		NewQueryParamsCmd(),
-		NewQueryMessagesAndContractsCmd(),
+		NewQueryUsageIdentifiersCmd(),
 		NewQueryGasTankCmd(),
 		NewQueryGasTanksCmd(),
 		NewQueryGasTanksByProviderCmd(),
 		NewQueryGasConsumerCmd(),
 		NewQueryGasConsumersCmd(),
 		NewQueryGasConsumersByGasTankIDCmd(),
-		NewQueryTxGtidsCmd(),
+		NewQueryUsageIdentifierToTankIdsCmd(),
 	)
 
 	return cmd
@@ -76,16 +76,16 @@ $ %s query %s params
 	return cmd
 }
 
-// NewQueryMessagesAndContractsCmd implements the messages and contracts query command.
-func NewQueryMessagesAndContractsCmd() *cobra.Command {
+// NewQueryUsageIdentifiersCmd implements the AvailableUsageIdentifiers query command.
+func NewQueryUsageIdentifiersCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mac",
+		Use:   "usage-identifiers",
 		Args:  cobra.NoArgs,
-		Short: "Query all the available messages and contract addresses",
+		Short: "Query all the available usage identifiers",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query all the available messages and contract addresses.
+			fmt.Sprintf(`Query all the available usage identifiers.
 Example:
-$ %s query %s mac
+$ %s query %s usage-identifiers
 `,
 				version.AppName, types.ModuleName,
 			),
@@ -98,9 +98,9 @@ $ %s query %s mac
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			resp, err := queryClient.MessagesAndContracts(
+			resp, err := queryClient.AvailableUsageIdentifiers(
 				cmd.Context(),
-				&types.QueryMessagesAndContractsRequest{},
+				&types.QueryAvailableUsageIdentifiersRequest{},
 			)
 			if err != nil {
 				return err
@@ -385,16 +385,16 @@ $ %s query %s gas-consumers-by-tank-id 1
 	return cmd
 }
 
-// NewQueryTxGtidsCmd implements the tx-gtids query command.
-func NewQueryTxGtidsCmd() *cobra.Command {
+// NewQueryUsageIdentifierToTankIdsCmd implements the GasTankIdsForAllUsageIdentifiers query command.
+func NewQueryUsageIdentifierToTankIdsCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "tx-gtids",
+		Use:   "usage-identifier-tank-ids",
 		Args:  cobra.NoArgs,
-		Short: "Query all the tx type url and contract address along with associcated gas tank ids",
+		Short: "Query all the usage identifiers along with their associated gas tank ids",
 		Long: strings.TrimSpace(
-			fmt.Sprintf(`Query all the tx type url and contract address along with associcated gas tank ids
+			fmt.Sprintf(`Query all the usage identifiers along with their associated gas tank ids
 Example:
-$ %s query %s tx-gtids
+$ %s query %s usage-identifier-tank-ids
 `,
 				version.AppName, types.ModuleName,
 			),
@@ -407,7 +407,7 @@ $ %s query %s tx-gtids
 
 			queryClient := types.NewQueryClient(clientCtx)
 
-			resp, err := queryClient.GasTankIdsForAllTXC(cmd.Context(), &types.QueryGasTankIdsForAllTXC{})
+			resp, err := queryClient.GasTankIdsForAllUsageIdentifiers(cmd.Context(), &types.QueryGasTankIdsForAllUsageIdentifiersRequest{})
 			if err != nil {
 				return err
 			}

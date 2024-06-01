@@ -51,20 +51,20 @@ func local_request_Query_Params_0(ctx context.Context, marshaler runtime.Marshal
 
 }
 
-func request_Query_MessagesAndContracts_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryMessagesAndContractsRequest
+func request_Query_AvailableUsageIdentifiers_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryAvailableUsageIdentifiersRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := client.MessagesAndContracts(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.AvailableUsageIdentifiers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Query_MessagesAndContracts_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryMessagesAndContractsRequest
+func local_request_Query_AvailableUsageIdentifiers_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryAvailableUsageIdentifiersRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := server.MessagesAndContracts(ctx, &protoReq)
+	msg, err := server.AvailableUsageIdentifiers(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -357,20 +357,20 @@ func local_request_Query_GasConsumersByGasTankID_0(ctx context.Context, marshale
 
 }
 
-func request_Query_GasTankIdsForAllTXC_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryGasTankIdsForAllTXC
+func request_Query_GasTankIdsForAllUsageIdentifiers_0(ctx context.Context, marshaler runtime.Marshaler, client QueryClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryGasTankIdsForAllUsageIdentifiersRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := client.GasTankIdsForAllTXC(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GasTankIdsForAllUsageIdentifiers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Query_GasTankIdsForAllTXC_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq QueryGasTankIdsForAllTXC
+func local_request_Query_GasTankIdsForAllUsageIdentifiers_0(ctx context.Context, marshaler runtime.Marshaler, server QueryServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq QueryGasTankIdsForAllUsageIdentifiersRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := server.GasTankIdsForAllTXC(ctx, &protoReq)
+	msg, err := server.GasTankIdsForAllUsageIdentifiers(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -404,7 +404,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 
 	})
 
-	mux.Handle("GET", pattern_Query_MessagesAndContracts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_AvailableUsageIdentifiers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -415,7 +415,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Query_MessagesAndContracts_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Query_AvailableUsageIdentifiers_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -423,7 +423,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Query_MessagesAndContracts_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_AvailableUsageIdentifiers_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -565,7 +565,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 
 	})
 
-	mux.Handle("GET", pattern_Query_GasTankIdsForAllTXC_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_GasTankIdsForAllUsageIdentifiers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -576,7 +576,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Query_GasTankIdsForAllTXC_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_Query_GasTankIdsForAllUsageIdentifiers_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -584,7 +584,7 @@ func RegisterQueryHandlerServer(ctx context.Context, mux *runtime.ServeMux, serv
 			return
 		}
 
-		forward_Query_GasTankIdsForAllTXC_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_GasTankIdsForAllUsageIdentifiers_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -649,7 +649,7 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 
 	})
 
-	mux.Handle("GET", pattern_Query_MessagesAndContracts_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_AvailableUsageIdentifiers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -658,14 +658,14 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Query_MessagesAndContracts_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Query_AvailableUsageIdentifiers_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Query_MessagesAndContracts_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_AvailableUsageIdentifiers_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -789,7 +789,7 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 
 	})
 
-	mux.Handle("GET", pattern_Query_GasTankIdsForAllTXC_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_Query_GasTankIdsForAllUsageIdentifiers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -798,14 +798,14 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Query_GasTankIdsForAllTXC_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_Query_GasTankIdsForAllUsageIdentifiers_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Query_GasTankIdsForAllTXC_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_Query_GasTankIdsForAllUsageIdentifiers_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -815,7 +815,7 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 var (
 	pattern_Query_Params_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"dymensionxyz", "dymension-rdk", "gasless", "v1beta1", "params"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_MessagesAndContracts_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"dymensionxyz", "dymension-rdk", "gasless", "v1beta1", "mac"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_AvailableUsageIdentifiers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"dymensionxyz", "dymension-rdk", "gasless", "v1beta1", "usageidentifiers"}, "", runtime.AssumeColonVerbOpt(false)))
 
 	pattern_Query_GasTank_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 1, 0, 4, 1, 5, 5}, []string{"dymensionxyz", "dymension-rdk", "gasless", "v1beta1", "tank", "gas_tank_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
@@ -829,13 +829,13 @@ var (
 
 	pattern_Query_GasConsumersByGasTankID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4, 2, 5, 1, 0, 4, 1, 5, 6}, []string{"dymensionxyz", "dymension-rdk", "gasless", "v1beta1", "tank", "consumers", "gas_tank_id"}, "", runtime.AssumeColonVerbOpt(false)))
 
-	pattern_Query_GasTankIdsForAllTXC_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"dymensionxyz", "dymension-rdk", "gasless", "v1beta1", "txc"}, "", runtime.AssumeColonVerbOpt(false)))
+	pattern_Query_GasTankIdsForAllUsageIdentifiers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"dymensionxyz", "dymension-rdk", "gasless", "v1beta1", "tankids"}, "", runtime.AssumeColonVerbOpt(false)))
 )
 
 var (
 	forward_Query_Params_0 = runtime.ForwardResponseMessage
 
-	forward_Query_MessagesAndContracts_0 = runtime.ForwardResponseMessage
+	forward_Query_AvailableUsageIdentifiers_0 = runtime.ForwardResponseMessage
 
 	forward_Query_GasTank_0 = runtime.ForwardResponseMessage
 
@@ -849,5 +849,5 @@ var (
 
 	forward_Query_GasConsumersByGasTankID_0 = runtime.ForwardResponseMessage
 
-	forward_Query_GasTankIdsForAllTXC_0 = runtime.ForwardResponseMessage
+	forward_Query_GasTankIdsForAllUsageIdentifiers_0 = runtime.ForwardResponseMessage
 )

@@ -6,8 +6,8 @@ import (
 
 	sdkerrors "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
-	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -39,15 +39,12 @@ func (k Keeper) EmitFeeConsumptionEvent(
 
 func (k Keeper) GetUpdatedGasConsumerAndConsumptionIndex(ctx sdk.Context, consumerAddress sdk.AccAddress, gasTank types.GasTank, feeAmount sdkmath.Int) (types.GasConsumer, uint64) {
 	gasConsumer, consumptionIndex := k.GetOrCreateGasConsumer(ctx, consumerAddress, gasTank)
-	gasConsumer.Consumptions[consumptionIndex].TotalTxsMade = gasConsumer.Consumptions[consumptionIndex].TotalTxsMade + 1
 	gasConsumer.Consumptions[consumptionIndex].TotalFeesConsumed = gasConsumer.Consumptions[consumptionIndex].TotalFeesConsumed.Add(feeAmount)
 	return gasConsumer, consumptionIndex
 }
 
 func (k Keeper) CanGasTankBeUsedAsSource(ctx sdk.Context, gtid uint64, consumer types.GasConsumer, fee sdk.Coin) (gasTank types.GasTank, isValid bool, err error) {
 	gasTank, found := k.GetGasTank(ctx, gtid)
-	// there is no gas tank with given id, likely impossible to happen
-	// exists only as aditional check.
 	if !found {
 		return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "gas tank not found")
 	}
@@ -84,6 +81,9 @@ func (k Keeper) CanGasTankBeUsedAsSource(ctx sdk.Context, gtid uint64, consumer 
 	// no need to check the consumption usage since there is no key available with given gas tank id
 	// i.e the consumer has never used this gas reserve before and the first time visitor for the given gas tank
 	if !consumptionFound {
+		if fee.Amount.GT(gasTank.MaxFeeUsagePerConsumer) {
+			return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "insufficient tank limit")
+		}
 		return gasTank, true, nil
 	}
 
@@ -94,15 +94,10 @@ func (k Keeper) CanGasTankBeUsedAsSource(ctx sdk.Context, gtid uint64, consumer 
 		return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "blocked by gas tank")
 	}
 
-	// consumer exhausted the transaction count limit, hence not eligible with given gas tank
-	if consumptionDetails.TotalTxsMade >= consumptionDetails.TotalTxsAllowed {
-		return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "exhausted tx limit")
-	}
-
-	// if total fees consumed by the consumer is more than or equal to the allowed consumption
+	// if total fees consumed by the consumer is more than the allowed consumption
 	// i.e consumer has exhausted its fee limit and hence is not eligible for the given tank
 	totalFeeConsumption := consumptionDetails.TotalFeesConsumed.Add(fee.Amount)
-	if totalFeeConsumption.GTE(consumptionDetails.TotalFeeConsumptionAllowed) {
+	if totalFeeConsumption.GT(consumptionDetails.TotalFeeConsumptionAllowed) {
 		return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "exhausted total fee usage or pending fee limit insufficient for tx")
 	}
 
@@ -123,26 +118,11 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 
 	fee := fees[0]
 
-	msg := sdkTx.GetMsgs()[0]
-	msgTypeURL := sdk.MsgTypeURL(msg)
+	usageIdentifier := k.ExtractUsageIdentifierFromTx(ctx, sdkTx)
 
-	isContract := false
-	var contractAddress string
-
-	executeContractMessage, ok := msg.(*wasmtypes.MsgExecuteContract)
-	if ok {
-		isContract = true
-		contractAddress = executeContractMessage.GetContract()
-	}
-
-	txIdentifier := msgTypeURL
-	if isContract {
-		txIdentifier = contractAddress
-	}
-
-	// check if there are any gas tansk for given txIdentifier i.e msgTypeURL or Contract address
+	// check if there are any gas tanks for given usageIdentifier
 	// if there is no gas tank for the given identifier, fee source will be original feePayer
-	txGtids, found := k.GetTxGTIDs(ctx, txIdentifier)
+	usageIdentifierToGasTankIds, found := k.GetUsageIdentifierToGasTankIds(ctx, usageIdentifier)
 	if !found {
 		k.EmitFeeConsumptionEvent(ctx, originalFeePayer, []uint64{}, []error{sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "no gas tanks found")}, 0)
 		return originalFeePayer
@@ -161,7 +141,7 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 		err              error
 	)
 
-	gasTankIds := txGtids.GasTankIds
+	gasTankIds := usageIdentifierToGasTankIds.GasTankIds
 	for _, gtid := range gasTankIds {
 		gasTank, isValid, err = k.CanGasTankBeUsedAsSource(ctx, gtid, tempConsumer, fee)
 		if isValid {
@@ -179,60 +159,39 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 	// update the consumption and usage details of the consumer
 	gasConsumer, consumptionIndex := k.GetUpdatedGasConsumerAndConsumptionIndex(ctx, originalFeePayer, gasTank, fee.Amount)
 
-	usage := gasConsumer.Consumptions[consumptionIndex].Usage
-	if isContract {
-		contractUsageFound := false
-		contractUsageIdentifierIndex := 0
+	existingUsage := gasConsumer.Consumptions[consumptionIndex].Usage
 
-		for index, contractUsage := range usage.Contracts {
-			if contractUsage.UsageIdentifier == contractAddress {
-				contractUsageFound = true
-				contractUsageIdentifierIndex = index
-				break
-			}
-		}
+	usageIdentifierFound := false
+	usageIdentifierIndex := 0
 
-		usageDetail := types.UsageDetail{
-			Timestamp:   ctx.BlockTime(),
-			GasConsumed: fee.Amount,
-		}
-
-		if !contractUsageFound {
-			usage.Contracts = append(usage.Contracts, types.NewUsageDetails(contractAddress, usageDetail))
-		} else {
-			usage.Contracts[contractUsageIdentifierIndex].Details = append(usage.Contracts[contractUsageIdentifierIndex].Details, &usageDetail)
-		}
-	} else {
-		messageTypeURLUsageFound := false
-		messageTypeURLUsageIdentifierIndex := 0
-
-		for index, txType := range usage.Txs {
-			if txType.UsageIdentifier == msgTypeURL {
-				messageTypeURLUsageFound = true
-				messageTypeURLUsageIdentifierIndex = index
-				break
-			}
-		}
-
-		usageDetail := types.UsageDetail{
-			Timestamp:   ctx.BlockTime(),
-			GasConsumed: fee.Amount,
-		}
-
-		if !messageTypeURLUsageFound {
-			usage.Txs = append(usage.Txs, types.NewUsageDetails(msgTypeURL, usageDetail))
-		} else {
-			usage.Txs[messageTypeURLUsageIdentifierIndex].Details = append(usage.Txs[messageTypeURLUsageIdentifierIndex].Details, &usageDetail)
+	for index, usageDetail := range existingUsage {
+		if usageDetail.UsageIdentifier == usageIdentifier {
+			usageIdentifierFound = true
+			usageIdentifierIndex = index
 		}
 	}
-	// assign the updated usage and set it to the store
-	gasConsumer.Consumptions[consumptionIndex].Usage = usage
+
+	if !usageIdentifierFound {
+		existingUsage = append(existingUsage, &types.Usage{
+			UsageIdentifier: usageIdentifier,
+			Details:         []*types.Detail{},
+		})
+		usageIdentifierIndex = len(existingUsage) - 1
+	}
+
+	existingUsage[usageIdentifierIndex].Details = append(existingUsage[usageIdentifierIndex].Details, &types.Detail{
+		Timestamp:   ctx.BlockTime(),
+		GasConsumed: fee.Amount,
+	})
+
+	// assign the updated-existingUsage usage and set it to the store
+	gasConsumer.Consumptions[consumptionIndex].Usage = existingUsage
 	k.SetGasConsumer(ctx, gasConsumer)
 
 	// shift the used gas tank at the end of all tanks, so that a different gas tank can be picked
 	// in next cycle if there exists any.
-	txGtids.GasTankIds = types.ShiftToEndUint64(txGtids.GasTankIds, gasTank.Id)
-	k.SetTxGTIDs(ctx, txGtids)
+	usageIdentifierToGasTankIds.GasTankIds = utils.ShiftValueToEnd(usageIdentifierToGasTankIds.GasTankIds, gasTank.Id)
+	k.SetUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 
 	feeSource := gasTank.GetGasTankReserveAddress()
 	k.EmitFeeConsumptionEvent(ctx, feeSource, failedGtids, failedGtidErrors, gasTank.Id)

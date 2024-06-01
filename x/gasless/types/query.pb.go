@@ -32,125 +32,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
-type QueryParamsRequest struct {
-}
-
-func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
-func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryParamsRequest) ProtoMessage()    {}
-func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{0}
-}
-func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
-}
-func (m *QueryParamsRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryParamsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
-
-// QueryParamsResponse is response type for the Query/Params RPC method.
-type QueryParamsResponse struct {
-	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
-}
-
-func (m *QueryParamsResponse) Reset()         { *m = QueryParamsResponse{} }
-func (m *QueryParamsResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryParamsResponse) ProtoMessage()    {}
-func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{1}
-}
-func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
-}
-func (m *QueryParamsResponse) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryParamsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryParamsResponse proto.InternalMessageInfo
-
-func (m *QueryParamsResponse) GetParams() Params {
-	if m != nil {
-		return m.Params
-	}
-	return Params{}
-}
-
-// QueryMessagesAndContractsRequest is a request type for the Query/MessagesAndContracts RPC method.
-type QueryMessagesAndContractsRequest struct {
-}
-
-func (m *QueryMessagesAndContractsRequest) Reset()         { *m = QueryMessagesAndContractsRequest{} }
-func (m *QueryMessagesAndContractsRequest) String() string { return proto.CompactTextString(m) }
-func (*QueryMessagesAndContractsRequest) ProtoMessage()    {}
-func (*QueryMessagesAndContractsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{2}
-}
-func (m *QueryMessagesAndContractsRequest) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *QueryMessagesAndContractsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryMessagesAndContractsRequest.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryMessagesAndContractsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryMessagesAndContractsRequest.Merge(m, src)
-}
-func (m *QueryMessagesAndContractsRequest) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryMessagesAndContractsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryMessagesAndContractsRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryMessagesAndContractsRequest proto.InternalMessageInfo
-
+// ContractDetails defines specific contract details
 type ContractDetails struct {
 	CodeId  uint64 `protobuf:"varint,1,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
 	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
@@ -161,7 +43,7 @@ func (m *ContractDetails) Reset()         { *m = ContractDetails{} }
 func (m *ContractDetails) String() string { return proto.CompactTextString(m) }
 func (*ContractDetails) ProtoMessage()    {}
 func (*ContractDetails) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{3}
+	return fileDescriptor_abd9ac303d0671a5, []int{0}
 }
 func (m *ContractDetails) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -211,24 +93,24 @@ func (m *ContractDetails) GetLabel() string {
 	return ""
 }
 
-// QueryMessagesAndContractsResponse is a response type for the Query/MessagesAndContracts RPC method.
-type QueryMessagesAndContractsResponse struct {
-	Messages  []string           `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
-	Contracts []*ContractDetails `protobuf:"bytes,2,rep,name=contracts,proto3" json:"contracts,omitempty"`
+// UsageIdentifiers defines usage identifiers
+type UsageIdentifiers struct {
+	MessageTypes []string           `protobuf:"bytes,1,rep,name=message_types,json=messageTypes,proto3" json:"message_types,omitempty"`
+	Contracts    []*ContractDetails `protobuf:"bytes,2,rep,name=contracts,proto3" json:"contracts,omitempty"`
 }
 
-func (m *QueryMessagesAndContractsResponse) Reset()         { *m = QueryMessagesAndContractsResponse{} }
-func (m *QueryMessagesAndContractsResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryMessagesAndContractsResponse) ProtoMessage()    {}
-func (*QueryMessagesAndContractsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{4}
+func (m *UsageIdentifiers) Reset()         { *m = UsageIdentifiers{} }
+func (m *UsageIdentifiers) String() string { return proto.CompactTextString(m) }
+func (*UsageIdentifiers) ProtoMessage()    {}
+func (*UsageIdentifiers) Descriptor() ([]byte, []int) {
+	return fileDescriptor_abd9ac303d0671a5, []int{1}
 }
-func (m *QueryMessagesAndContractsResponse) XXX_Unmarshal(b []byte) error {
+func (m *UsageIdentifiers) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryMessagesAndContractsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *UsageIdentifiers) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryMessagesAndContractsResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_UsageIdentifiers.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -238,52 +120,215 @@ func (m *QueryMessagesAndContractsResponse) XXX_Marshal(b []byte, deterministic 
 		return b[:n], nil
 	}
 }
-func (m *QueryMessagesAndContractsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryMessagesAndContractsResponse.Merge(m, src)
+func (m *UsageIdentifiers) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UsageIdentifiers.Merge(m, src)
 }
-func (m *QueryMessagesAndContractsResponse) XXX_Size() int {
+func (m *UsageIdentifiers) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryMessagesAndContractsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryMessagesAndContractsResponse.DiscardUnknown(m)
+func (m *UsageIdentifiers) XXX_DiscardUnknown() {
+	xxx_messageInfo_UsageIdentifiers.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryMessagesAndContractsResponse proto.InternalMessageInfo
+var xxx_messageInfo_UsageIdentifiers proto.InternalMessageInfo
 
-func (m *QueryMessagesAndContractsResponse) GetMessages() []string {
+func (m *UsageIdentifiers) GetMessageTypes() []string {
 	if m != nil {
-		return m.Messages
+		return m.MessageTypes
 	}
 	return nil
 }
 
-func (m *QueryMessagesAndContractsResponse) GetContracts() []*ContractDetails {
+func (m *UsageIdentifiers) GetContracts() []*ContractDetails {
 	if m != nil {
 		return m.Contracts
 	}
 	return nil
 }
 
+// QueryParamsRequest is request type for the Query/Params RPC method.
+type QueryParamsRequest struct {
+}
+
+func (m *QueryParamsRequest) Reset()         { *m = QueryParamsRequest{} }
+func (m *QueryParamsRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryParamsRequest) ProtoMessage()    {}
+func (*QueryParamsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_abd9ac303d0671a5, []int{2}
+}
+func (m *QueryParamsRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryParamsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryParamsRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryParamsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryParamsRequest.Merge(m, src)
+}
+func (m *QueryParamsRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryParamsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryParamsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+type QueryParamsResponse struct {
+	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
+}
+
+func (m *QueryParamsResponse) Reset()         { *m = QueryParamsResponse{} }
+func (m *QueryParamsResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryParamsResponse) ProtoMessage()    {}
+func (*QueryParamsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_abd9ac303d0671a5, []int{3}
+}
+func (m *QueryParamsResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryParamsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryParamsResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryParamsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryParamsResponse.Merge(m, src)
+}
+func (m *QueryParamsResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryParamsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryParamsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryParamsResponse proto.InternalMessageInfo
+
+func (m *QueryParamsResponse) GetParams() Params {
+	if m != nil {
+		return m.Params
+	}
+	return Params{}
+}
+
+// QueryAvailableUsageIdentifiersRequest is a request type for the Query/AvailableUsageIdentifiers RPC method.
+type QueryAvailableUsageIdentifiersRequest struct {
+}
+
+func (m *QueryAvailableUsageIdentifiersRequest) Reset()         { *m = QueryAvailableUsageIdentifiersRequest{} }
+func (m *QueryAvailableUsageIdentifiersRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryAvailableUsageIdentifiersRequest) ProtoMessage()    {}
+func (*QueryAvailableUsageIdentifiersRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_abd9ac303d0671a5, []int{4}
+}
+func (m *QueryAvailableUsageIdentifiersRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAvailableUsageIdentifiersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAvailableUsageIdentifiersRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAvailableUsageIdentifiersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAvailableUsageIdentifiersRequest.Merge(m, src)
+}
+func (m *QueryAvailableUsageIdentifiersRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAvailableUsageIdentifiersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAvailableUsageIdentifiersRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAvailableUsageIdentifiersRequest proto.InternalMessageInfo
+
+// QueryAvailableUsageIdentifiersResponse is a response type for the Query/AvailableUsageIdentifiers RPC method.
+type QueryAvailableUsageIdentifiersResponse struct {
+	UsageIdentifiers UsageIdentifiers `protobuf:"bytes,1,opt,name=usage_identifiers,json=usageIdentifiers,proto3" json:"usage_identifiers"`
+}
+
+func (m *QueryAvailableUsageIdentifiersResponse) Reset() {
+	*m = QueryAvailableUsageIdentifiersResponse{}
+}
+func (m *QueryAvailableUsageIdentifiersResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryAvailableUsageIdentifiersResponse) ProtoMessage()    {}
+func (*QueryAvailableUsageIdentifiersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_abd9ac303d0671a5, []int{5}
+}
+func (m *QueryAvailableUsageIdentifiersResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAvailableUsageIdentifiersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAvailableUsageIdentifiersResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAvailableUsageIdentifiersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAvailableUsageIdentifiersResponse.Merge(m, src)
+}
+func (m *QueryAvailableUsageIdentifiersResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAvailableUsageIdentifiersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAvailableUsageIdentifiersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAvailableUsageIdentifiersResponse proto.InternalMessageInfo
+
+func (m *QueryAvailableUsageIdentifiersResponse) GetUsageIdentifiers() UsageIdentifiers {
+	if m != nil {
+		return m.UsageIdentifiers
+	}
+	return UsageIdentifiers{}
+}
+
 type GasTankResponse struct {
-	Id                     uint64                                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Provider               string                                 `protobuf:"bytes,2,opt,name=provider,proto3" json:"provider,omitempty"`
-	Reserve                string                                 `protobuf:"bytes,3,opt,name=reserve,proto3" json:"reserve,omitempty"`
-	GasTankBalance         types.Coin                             `protobuf:"bytes,4,opt,name=gas_tank_balance,json=gasTankBalance,proto3" json:"gas_tank_balance"`
-	IsActive               bool                                   `protobuf:"varint,5,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
-	MaxTxsCountPerConsumer uint64                                 `protobuf:"varint,6,opt,name=max_txs_count_per_consumer,json=maxTxsCountPerConsumer,proto3" json:"max_txs_count_per_consumer,omitempty"`
-	MaxFeeUsagePerConsumer github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,7,opt,name=max_fee_usage_per_consumer,json=maxFeeUsagePerConsumer,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_fee_usage_per_consumer"`
-	MaxFeeUsagePerTx       github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,8,opt,name=max_fee_usage_per_tx,json=maxFeeUsagePerTx,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_fee_usage_per_tx"`
-	TxsAllowed             []string                               `protobuf:"bytes,9,rep,name=txs_allowed,json=txsAllowed,proto3" json:"txs_allowed,omitempty"`
-	ContractsAllowed       []string                               `protobuf:"bytes,10,rep,name=contracts_allowed,json=contractsAllowed,proto3" json:"contracts_allowed,omitempty"`
-	AuthorizedActors       []string                               `protobuf:"bytes,11,rep,name=authorized_actors,json=authorizedActors,proto3" json:"authorized_actors,omitempty"`
-	FeeDenom               string                                 `protobuf:"bytes,12,opt,name=fee_denom,json=feeDenom,proto3" json:"fee_denom,omitempty"`
+	Id                        uint64                                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Provider                  string                                 `protobuf:"bytes,2,opt,name=provider,proto3" json:"provider,omitempty"`
+	Reserve                   string                                 `protobuf:"bytes,3,opt,name=reserve,proto3" json:"reserve,omitempty"`
+	GasTankBalance            types.Coin                             `protobuf:"bytes,4,opt,name=gas_tank_balance,json=gasTankBalance,proto3" json:"gas_tank_balance"`
+	IsActive                  bool                                   `protobuf:"varint,5,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	MaxFeeUsagePerConsumer    github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=max_fee_usage_per_consumer,json=maxFeeUsagePerConsumer,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_fee_usage_per_consumer"`
+	MaxFeeUsagePerTx          github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,7,opt,name=max_fee_usage_per_tx,json=maxFeeUsagePerTx,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_fee_usage_per_tx"`
+	SupportedUsageIdentifiers []string                               `protobuf:"bytes,8,rep,name=supported_usage_identifiers,json=supportedUsageIdentifiers,proto3" json:"supported_usage_identifiers,omitempty"`
+	FeeDenom                  string                                 `protobuf:"bytes,9,opt,name=fee_denom,json=feeDenom,proto3" json:"fee_denom,omitempty"`
 }
 
 func (m *GasTankResponse) Reset()         { *m = GasTankResponse{} }
 func (m *GasTankResponse) String() string { return proto.CompactTextString(m) }
 func (*GasTankResponse) ProtoMessage()    {}
 func (*GasTankResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{5}
+	return fileDescriptor_abd9ac303d0671a5, []int{6}
 }
 func (m *GasTankResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -347,30 +392,9 @@ func (m *GasTankResponse) GetIsActive() bool {
 	return false
 }
 
-func (m *GasTankResponse) GetMaxTxsCountPerConsumer() uint64 {
+func (m *GasTankResponse) GetSupportedUsageIdentifiers() []string {
 	if m != nil {
-		return m.MaxTxsCountPerConsumer
-	}
-	return 0
-}
-
-func (m *GasTankResponse) GetTxsAllowed() []string {
-	if m != nil {
-		return m.TxsAllowed
-	}
-	return nil
-}
-
-func (m *GasTankResponse) GetContractsAllowed() []string {
-	if m != nil {
-		return m.ContractsAllowed
-	}
-	return nil
-}
-
-func (m *GasTankResponse) GetAuthorizedActors() []string {
-	if m != nil {
-		return m.AuthorizedActors
+		return m.SupportedUsageIdentifiers
 	}
 	return nil
 }
@@ -391,7 +415,7 @@ func (m *QueryGasTankRequest) Reset()         { *m = QueryGasTankRequest{} }
 func (m *QueryGasTankRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryGasTankRequest) ProtoMessage()    {}
 func (*QueryGasTankRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{6}
+	return fileDescriptor_abd9ac303d0671a5, []int{7}
 }
 func (m *QueryGasTankRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -436,7 +460,7 @@ func (m *QueryGasTankResponse) Reset()         { *m = QueryGasTankResponse{} }
 func (m *QueryGasTankResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryGasTankResponse) ProtoMessage()    {}
 func (*QueryGasTankResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{7}
+	return fileDescriptor_abd9ac303d0671a5, []int{8}
 }
 func (m *QueryGasTankResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -481,7 +505,7 @@ func (m *QueryGasTanksRequest) Reset()         { *m = QueryGasTanksRequest{} }
 func (m *QueryGasTanksRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryGasTanksRequest) ProtoMessage()    {}
 func (*QueryGasTanksRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{8}
+	return fileDescriptor_abd9ac303d0671a5, []int{9}
 }
 func (m *QueryGasTanksRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -527,7 +551,7 @@ func (m *QueryGasTanksResponse) Reset()         { *m = QueryGasTanksResponse{} }
 func (m *QueryGasTanksResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryGasTanksResponse) ProtoMessage()    {}
 func (*QueryGasTanksResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{9}
+	return fileDescriptor_abd9ac303d0671a5, []int{10}
 }
 func (m *QueryGasTanksResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -580,7 +604,7 @@ func (m *QueryGasTanksByProviderRequest) Reset()         { *m = QueryGasTanksByP
 func (m *QueryGasTanksByProviderRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryGasTanksByProviderRequest) ProtoMessage()    {}
 func (*QueryGasTanksByProviderRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{10}
+	return fileDescriptor_abd9ac303d0671a5, []int{11}
 }
 func (m *QueryGasTanksByProviderRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -625,7 +649,7 @@ func (m *QueryGasTanksByProviderResponse) Reset()         { *m = QueryGasTanksBy
 func (m *QueryGasTanksByProviderResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryGasTanksByProviderResponse) ProtoMessage()    {}
 func (*QueryGasTanksByProviderResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{11}
+	return fileDescriptor_abd9ac303d0671a5, []int{12}
 }
 func (m *QueryGasTanksByProviderResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -671,7 +695,7 @@ func (m *QueryGasConsumerRequest) Reset()         { *m = QueryGasConsumerRequest
 func (m *QueryGasConsumerRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryGasConsumerRequest) ProtoMessage()    {}
 func (*QueryGasConsumerRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{12}
+	return fileDescriptor_abd9ac303d0671a5, []int{13}
 }
 func (m *QueryGasConsumerRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -716,7 +740,7 @@ func (m *QueryGasConsumerResponse) Reset()         { *m = QueryGasConsumerRespon
 func (m *QueryGasConsumerResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryGasConsumerResponse) ProtoMessage()    {}
 func (*QueryGasConsumerResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{13}
+	return fileDescriptor_abd9ac303d0671a5, []int{14}
 }
 func (m *QueryGasConsumerResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -761,7 +785,7 @@ func (m *QueryGasConsumersRequest) Reset()         { *m = QueryGasConsumersReque
 func (m *QueryGasConsumersRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryGasConsumersRequest) ProtoMessage()    {}
 func (*QueryGasConsumersRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{14}
+	return fileDescriptor_abd9ac303d0671a5, []int{15}
 }
 func (m *QueryGasConsumersRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -807,7 +831,7 @@ func (m *QueryGasConsumersResponse) Reset()         { *m = QueryGasConsumersResp
 func (m *QueryGasConsumersResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryGasConsumersResponse) ProtoMessage()    {}
 func (*QueryGasConsumersResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{15}
+	return fileDescriptor_abd9ac303d0671a5, []int{16}
 }
 func (m *QueryGasConsumersResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -853,18 +877,16 @@ func (m *QueryGasConsumersResponse) GetPagination() *query.PageResponse {
 type GasConsumersByGasTankIDResponse struct {
 	Consumer                   string     `protobuf:"bytes,1,opt,name=consumer,proto3" json:"consumer,omitempty"`
 	IsBlocked                  bool       `protobuf:"varint,2,opt,name=is_blocked,json=isBlocked,proto3" json:"is_blocked,omitempty"`
-	TotalTxsAllowed            uint64     `protobuf:"varint,3,opt,name=total_txs_allowed,json=totalTxsAllowed,proto3" json:"total_txs_allowed,omitempty"`
-	TotalTxsMade               uint64     `protobuf:"varint,4,opt,name=total_txs_made,json=totalTxsMade,proto3" json:"total_txs_made,omitempty"`
-	TotalFeeConsumptionAllowed types.Coin `protobuf:"bytes,5,opt,name=total_fee_consumption_allowed,json=totalFeeConsumptionAllowed,proto3" json:"total_fee_consumption_allowed"`
-	TotalFeesConsumed          types.Coin `protobuf:"bytes,6,opt,name=total_fees_consumed,json=totalFeesConsumed,proto3" json:"total_fees_consumed"`
-	Usage                      *Usage     `protobuf:"bytes,7,opt,name=usage,proto3" json:"usage,omitempty"`
+	TotalFeeConsumptionAllowed types.Coin `protobuf:"bytes,3,opt,name=total_fee_consumption_allowed,json=totalFeeConsumptionAllowed,proto3" json:"total_fee_consumption_allowed"`
+	TotalFeesConsumed          types.Coin `protobuf:"bytes,4,opt,name=total_fees_consumed,json=totalFeesConsumed,proto3" json:"total_fees_consumed"`
+	Usage                      []*Usage   `protobuf:"bytes,5,rep,name=usage,proto3" json:"usage,omitempty"`
 }
 
 func (m *GasConsumersByGasTankIDResponse) Reset()         { *m = GasConsumersByGasTankIDResponse{} }
 func (m *GasConsumersByGasTankIDResponse) String() string { return proto.CompactTextString(m) }
 func (*GasConsumersByGasTankIDResponse) ProtoMessage()    {}
 func (*GasConsumersByGasTankIDResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{16}
+	return fileDescriptor_abd9ac303d0671a5, []int{17}
 }
 func (m *GasConsumersByGasTankIDResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -907,20 +929,6 @@ func (m *GasConsumersByGasTankIDResponse) GetIsBlocked() bool {
 	return false
 }
 
-func (m *GasConsumersByGasTankIDResponse) GetTotalTxsAllowed() uint64 {
-	if m != nil {
-		return m.TotalTxsAllowed
-	}
-	return 0
-}
-
-func (m *GasConsumersByGasTankIDResponse) GetTotalTxsMade() uint64 {
-	if m != nil {
-		return m.TotalTxsMade
-	}
-	return 0
-}
-
 func (m *GasConsumersByGasTankIDResponse) GetTotalFeeConsumptionAllowed() types.Coin {
 	if m != nil {
 		return m.TotalFeeConsumptionAllowed
@@ -935,7 +943,7 @@ func (m *GasConsumersByGasTankIDResponse) GetTotalFeesConsumed() types.Coin {
 	return types.Coin{}
 }
 
-func (m *GasConsumersByGasTankIDResponse) GetUsage() *Usage {
+func (m *GasConsumersByGasTankIDResponse) GetUsage() []*Usage {
 	if m != nil {
 		return m.Usage
 	}
@@ -951,7 +959,7 @@ func (m *QueryGasConsumersByGasTankIDRequest) Reset()         { *m = QueryGasCon
 func (m *QueryGasConsumersByGasTankIDRequest) String() string { return proto.CompactTextString(m) }
 func (*QueryGasConsumersByGasTankIDRequest) ProtoMessage()    {}
 func (*QueryGasConsumersByGasTankIDRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{17}
+	return fileDescriptor_abd9ac303d0671a5, []int{18}
 }
 func (m *QueryGasConsumersByGasTankIDRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -998,7 +1006,7 @@ func (m *QueryGasConsumersByGasTankIDResponse) Reset()         { *m = QueryGasCo
 func (m *QueryGasConsumersByGasTankIDResponse) String() string { return proto.CompactTextString(m) }
 func (*QueryGasConsumersByGasTankIDResponse) ProtoMessage()    {}
 func (*QueryGasConsumersByGasTankIDResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{18}
+	return fileDescriptor_abd9ac303d0671a5, []int{19}
 }
 func (m *QueryGasConsumersByGasTankIDResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -1048,58 +1056,25 @@ func (m *QueryGasConsumersByGasTankIDResponse) GetGasConsumers() []GasConsumersB
 	return nil
 }
 
-type QueryGasTankIdsForAllTXC struct {
+type QueryGasTankIdsForAllUsageIdentifiersRequest struct {
 }
 
-func (m *QueryGasTankIdsForAllTXC) Reset()         { *m = QueryGasTankIdsForAllTXC{} }
-func (m *QueryGasTankIdsForAllTXC) String() string { return proto.CompactTextString(m) }
-func (*QueryGasTankIdsForAllTXC) ProtoMessage()    {}
-func (*QueryGasTankIdsForAllTXC) Descriptor() ([]byte, []int) {
-	return fileDescriptor_abd9ac303d0671a5, []int{19}
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) Reset() {
+	*m = QueryGasTankIdsForAllUsageIdentifiersRequest{}
 }
-func (m *QueryGasTankIdsForAllTXC) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) String() string {
+	return proto.CompactTextString(m)
 }
-func (m *QueryGasTankIdsForAllTXC) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_QueryGasTankIdsForAllTXC.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *QueryGasTankIdsForAllTXC) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryGasTankIdsForAllTXC.Merge(m, src)
-}
-func (m *QueryGasTankIdsForAllTXC) XXX_Size() int {
-	return m.Size()
-}
-func (m *QueryGasTankIdsForAllTXC) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryGasTankIdsForAllTXC.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_QueryGasTankIdsForAllTXC proto.InternalMessageInfo
-
-type QueryGasTankIdsForAllTXCResponse struct {
-	TxToGtIds []*TxGTIDs `protobuf:"bytes,1,rep,name=tx_to_gt_ids,json=txToGtIds,proto3" json:"tx_to_gt_ids,omitempty"`
-}
-
-func (m *QueryGasTankIdsForAllTXCResponse) Reset()         { *m = QueryGasTankIdsForAllTXCResponse{} }
-func (m *QueryGasTankIdsForAllTXCResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryGasTankIdsForAllTXCResponse) ProtoMessage()    {}
-func (*QueryGasTankIdsForAllTXCResponse) Descriptor() ([]byte, []int) {
+func (*QueryGasTankIdsForAllUsageIdentifiersRequest) ProtoMessage() {}
+func (*QueryGasTankIdsForAllUsageIdentifiersRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_abd9ac303d0671a5, []int{20}
 }
-func (m *QueryGasTankIdsForAllTXCResponse) XXX_Unmarshal(b []byte) error {
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *QueryGasTankIdsForAllTXCResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_QueryGasTankIdsForAllTXCResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_QueryGasTankIdsForAllUsageIdentifiersRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -1109,31 +1084,73 @@ func (m *QueryGasTankIdsForAllTXCResponse) XXX_Marshal(b []byte, deterministic b
 		return b[:n], nil
 	}
 }
-func (m *QueryGasTankIdsForAllTXCResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryGasTankIdsForAllTXCResponse.Merge(m, src)
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryGasTankIdsForAllUsageIdentifiersRequest.Merge(m, src)
 }
-func (m *QueryGasTankIdsForAllTXCResponse) XXX_Size() int {
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *QueryGasTankIdsForAllTXCResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryGasTankIdsForAllTXCResponse.DiscardUnknown(m)
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryGasTankIdsForAllUsageIdentifiersRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryGasTankIdsForAllTXCResponse proto.InternalMessageInfo
+var xxx_messageInfo_QueryGasTankIdsForAllUsageIdentifiersRequest proto.InternalMessageInfo
 
-func (m *QueryGasTankIdsForAllTXCResponse) GetTxToGtIds() []*TxGTIDs {
+type QueryGasTankIdsForAllUsageIdentifiersResponse struct {
+	UsageIdentifierToGastankIds []*UsageIdentifierToGasTankIds `protobuf:"bytes,1,rep,name=usage_identifier_to_gastank_ids,json=usageIdentifierToGastankIds,proto3" json:"usage_identifier_to_gastank_ids,omitempty"`
+}
+
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) Reset() {
+	*m = QueryGasTankIdsForAllUsageIdentifiersResponse{}
+}
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) String() string {
+	return proto.CompactTextString(m)
+}
+func (*QueryGasTankIdsForAllUsageIdentifiersResponse) ProtoMessage() {}
+func (*QueryGasTankIdsForAllUsageIdentifiersResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_abd9ac303d0671a5, []int{21}
+}
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryGasTankIdsForAllUsageIdentifiersResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryGasTankIdsForAllUsageIdentifiersResponse.Merge(m, src)
+}
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryGasTankIdsForAllUsageIdentifiersResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryGasTankIdsForAllUsageIdentifiersResponse proto.InternalMessageInfo
+
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) GetUsageIdentifierToGastankIds() []*UsageIdentifierToGasTankIds {
 	if m != nil {
-		return m.TxToGtIds
+		return m.UsageIdentifierToGastankIds
 	}
 	return nil
 }
 
 func init() {
+	proto.RegisterType((*ContractDetails)(nil), "rollapp.gasless.v1beta1.ContractDetails")
+	proto.RegisterType((*UsageIdentifiers)(nil), "rollapp.gasless.v1beta1.UsageIdentifiers")
 	proto.RegisterType((*QueryParamsRequest)(nil), "rollapp.gasless.v1beta1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "rollapp.gasless.v1beta1.QueryParamsResponse")
-	proto.RegisterType((*QueryMessagesAndContractsRequest)(nil), "rollapp.gasless.v1beta1.QueryMessagesAndContractsRequest")
-	proto.RegisterType((*ContractDetails)(nil), "rollapp.gasless.v1beta1.ContractDetails")
-	proto.RegisterType((*QueryMessagesAndContractsResponse)(nil), "rollapp.gasless.v1beta1.QueryMessagesAndContractsResponse")
+	proto.RegisterType((*QueryAvailableUsageIdentifiersRequest)(nil), "rollapp.gasless.v1beta1.QueryAvailableUsageIdentifiersRequest")
+	proto.RegisterType((*QueryAvailableUsageIdentifiersResponse)(nil), "rollapp.gasless.v1beta1.QueryAvailableUsageIdentifiersResponse")
 	proto.RegisterType((*GasTankResponse)(nil), "rollapp.gasless.v1beta1.GasTankResponse")
 	proto.RegisterType((*QueryGasTankRequest)(nil), "rollapp.gasless.v1beta1.QueryGasTankRequest")
 	proto.RegisterType((*QueryGasTankResponse)(nil), "rollapp.gasless.v1beta1.QueryGasTankResponse")
@@ -1148,106 +1165,104 @@ func init() {
 	proto.RegisterType((*GasConsumersByGasTankIDResponse)(nil), "rollapp.gasless.v1beta1.GasConsumersByGasTankIDResponse")
 	proto.RegisterType((*QueryGasConsumersByGasTankIDRequest)(nil), "rollapp.gasless.v1beta1.QueryGasConsumersByGasTankIDRequest")
 	proto.RegisterType((*QueryGasConsumersByGasTankIDResponse)(nil), "rollapp.gasless.v1beta1.QueryGasConsumersByGasTankIDResponse")
-	proto.RegisterType((*QueryGasTankIdsForAllTXC)(nil), "rollapp.gasless.v1beta1.QueryGasTankIdsForAllTXC")
-	proto.RegisterType((*QueryGasTankIdsForAllTXCResponse)(nil), "rollapp.gasless.v1beta1.QueryGasTankIdsForAllTXCResponse")
+	proto.RegisterType((*QueryGasTankIdsForAllUsageIdentifiersRequest)(nil), "rollapp.gasless.v1beta1.QueryGasTankIdsForAllUsageIdentifiersRequest")
+	proto.RegisterType((*QueryGasTankIdsForAllUsageIdentifiersResponse)(nil), "rollapp.gasless.v1beta1.QueryGasTankIdsForAllUsageIdentifiersResponse")
 }
 
 func init() { proto.RegisterFile("gasless/v1beta1/query.proto", fileDescriptor_abd9ac303d0671a5) }
 
 var fileDescriptor_abd9ac303d0671a5 = []byte{
-	// 1460 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x58, 0xcd, 0x6f, 0x1b, 0x45,
-	0x1b, 0xcf, 0x3a, 0x5f, 0xf6, 0xe3, 0xf4, 0x6b, 0x92, 0xbe, 0xd9, 0xba, 0x6f, 0x9d, 0xbc, 0xfb,
-	0x56, 0x25, 0x6a, 0xa9, 0x97, 0xa4, 0x8d, 0xfa, 0xa1, 0x16, 0xb0, 0x93, 0x26, 0x18, 0x14, 0x35,
-	0x18, 0x23, 0xa1, 0x1e, 0xba, 0x1a, 0xef, 0x4e, 0xdd, 0x25, 0xeb, 0x1d, 0x77, 0x67, 0x1d, 0x9c,
-	0x56, 0x95, 0x10, 0x17, 0xae, 0x48, 0x9c, 0x38, 0x71, 0xe1, 0x0a, 0x27, 0x38, 0xc1, 0x89, 0x03,
-	0xea, 0xb1, 0x12, 0x12, 0x42, 0x1c, 0x0a, 0x6a, 0x39, 0xf0, 0x67, 0xa0, 0x9d, 0x9d, 0x59, 0xef,
-	0xfa, 0x23, 0xb1, 0x43, 0x39, 0xc5, 0x33, 0xf3, 0x7c, 0xfc, 0x7e, 0xcf, 0xd7, 0xcc, 0x06, 0x4e,
-	0xd7, 0x31, 0x73, 0x08, 0x63, 0xfa, 0xee, 0x72, 0x8d, 0xf8, 0x78, 0x59, 0x7f, 0xd0, 0x22, 0xde,
-	0x5e, 0xa1, 0xe9, 0x51, 0x9f, 0xa2, 0x79, 0x8f, 0x3a, 0x0e, 0x6e, 0x36, 0x0b, 0x42, 0xa8, 0x20,
-	0x84, 0x72, 0x73, 0x75, 0x5a, 0xa7, 0x5c, 0x46, 0x0f, 0x7e, 0x85, 0xe2, 0xb9, 0xff, 0xd6, 0x29,
-	0xad, 0x3b, 0x44, 0xc7, 0x4d, 0x5b, 0xc7, 0xae, 0x4b, 0x7d, 0xec, 0xdb, 0xd4, 0x65, 0xd1, 0x69,
-	0x97, 0xa7, 0x26, 0xf6, 0x70, 0x43, 0x9e, 0x9e, 0xe9, 0x3e, 0x95, 0x2e, 0xc3, 0xe3, 0xf3, 0x26,
-	0x65, 0x0d, 0xca, 0xf4, 0x1a, 0x66, 0x24, 0x84, 0x18, 0x33, 0x53, 0xb7, 0x5d, 0xee, 0x49, 0xc8,
-	0xe6, 0xe3, 0xb2, 0x52, 0xca, 0xa4, 0xb6, 0x38, 0xd7, 0xe6, 0x00, 0xbd, 0x1b, 0x58, 0xd8, 0xe6,
-	0xfe, 0x2b, 0xe4, 0x41, 0x8b, 0x30, 0x5f, 0xab, 0xc2, 0x6c, 0x62, 0x97, 0x35, 0xa9, 0xcb, 0x08,
-	0xba, 0x09, 0x53, 0x21, 0x4e, 0x55, 0x59, 0x54, 0x96, 0xb2, 0x2b, 0x0b, 0x85, 0x01, 0x31, 0x29,
-	0x84, 0x8a, 0xa5, 0x89, 0x27, 0xcf, 0x16, 0xc6, 0x2a, 0x42, 0x49, 0xd3, 0x60, 0x91, 0x5b, 0xdd,
-	0x22, 0x8c, 0xe1, 0x3a, 0x61, 0x45, 0xd7, 0x5a, 0xa3, 0xae, 0xef, 0x61, 0xd3, 0x8f, 0x3c, 0xdf,
-	0x81, 0x63, 0x72, 0x6f, 0x9d, 0xf8, 0xd8, 0x76, 0x18, 0x9a, 0x87, 0x69, 0x93, 0x5a, 0xc4, 0xb0,
-	0x2d, 0xee, 0x76, 0xa2, 0x32, 0x15, 0x2c, 0xcb, 0x16, 0x52, 0x61, 0x1a, 0x5b, 0x96, 0x47, 0x18,
-	0x53, 0x53, 0x8b, 0xca, 0x52, 0xa6, 0x22, 0x97, 0x68, 0x0e, 0x26, 0x1d, 0x5c, 0x23, 0x8e, 0x3a,
-	0xce, 0xf7, 0xc3, 0x85, 0xf6, 0xa9, 0x02, 0xff, 0xdb, 0x07, 0x80, 0x20, 0x99, 0x83, 0x74, 0x43,
-	0x9c, 0xab, 0xca, 0xe2, 0xf8, 0x52, 0xa6, 0x12, 0xad, 0xd1, 0x06, 0x64, 0x4c, 0xa9, 0xa0, 0xa6,
-	0x16, 0xc7, 0x97, 0xb2, 0x2b, 0x4b, 0x03, 0x63, 0xd0, 0xc5, 0xa3, 0xd2, 0x51, 0xd5, 0x7e, 0x9f,
-	0x80, 0x63, 0x9b, 0x98, 0x55, 0xb1, 0xbb, 0x13, 0xf9, 0x3d, 0x0a, 0xa9, 0x88, 0x61, 0xca, 0xb6,
-	0x02, 0x1c, 0x4d, 0x8f, 0xee, 0xda, 0x16, 0xf1, 0x04, 0xbd, 0x68, 0x1d, 0x30, 0xf7, 0x08, 0x23,
-	0xde, 0x2e, 0x11, 0x0c, 0xe5, 0x12, 0x95, 0xe1, 0x78, 0x1d, 0x33, 0xc3, 0xc7, 0xee, 0x8e, 0x51,
-	0xc3, 0x0e, 0x76, 0x4d, 0xa2, 0x4e, 0xf0, 0x64, 0x9d, 0x2a, 0x84, 0xa5, 0x50, 0x08, 0x4a, 0x21,
-	0x06, 0xd2, 0x76, 0x45, 0x9a, 0x8e, 0xd6, 0x43, 0x44, 0xa5, 0x50, 0x0d, 0x9d, 0x86, 0x8c, 0xcd,
-	0x0c, 0x6c, 0xfa, 0xf6, 0x2e, 0x51, 0x27, 0x17, 0x95, 0xa5, 0x74, 0x25, 0x6d, 0xb3, 0x22, 0x5f,
-	0xa3, 0xeb, 0x90, 0x6b, 0xe0, 0xb6, 0xe1, 0xb7, 0x99, 0x61, 0xd2, 0x96, 0xeb, 0x1b, 0x4d, 0xe2,
-	0x19, 0x26, 0x75, 0x59, 0xab, 0x41, 0x3c, 0x75, 0x8a, 0xb3, 0xf8, 0x4f, 0x03, 0xb7, 0xab, 0x6d,
-	0xb6, 0x16, 0x9c, 0x6f, 0x13, 0x6f, 0x4d, 0x9c, 0xa2, 0x0f, 0x43, 0xdd, 0x7b, 0x84, 0x18, 0xad,
-	0x20, 0xae, 0x49, 0xdd, 0xe9, 0x80, 0x50, 0xa9, 0x10, 0x40, 0xfa, 0xed, 0xd9, 0xc2, 0xb9, 0xba,
-	0xed, 0xdf, 0x6f, 0xd5, 0x0a, 0x26, 0x6d, 0xe8, 0xa2, 0x94, 0xc3, 0x3f, 0x17, 0x99, 0xb5, 0xa3,
-	0xfb, 0x7b, 0x4d, 0xc2, 0x0a, 0x65, 0xd7, 0xe7, 0xbe, 0x36, 0x08, 0x79, 0x3f, 0xb0, 0x17, 0xf7,
-	0x75, 0x17, 0xe6, 0x7a, 0x7d, 0xf9, 0x6d, 0x35, 0x7d, 0x28, 0x2f, 0xc7, 0x93, 0x5e, 0xaa, 0x6d,
-	0xb4, 0x00, 0xd9, 0x20, 0x06, 0xd8, 0x71, 0xe8, 0x47, 0xc4, 0x52, 0x33, 0xbc, 0x60, 0xc0, 0x6f,
-	0xb3, 0x62, 0xb8, 0x83, 0x2e, 0xc0, 0x89, 0x28, 0xef, 0x91, 0x18, 0x70, 0xb1, 0xe3, 0xd1, 0x41,
-	0x4c, 0x18, 0xb7, 0xfc, 0xfb, 0xd4, 0xb3, 0x1f, 0x12, 0x2b, 0x08, 0x3d, 0xf5, 0x98, 0x9a, 0x0d,
-	0x85, 0x3b, 0x07, 0x45, 0xbe, 0x1f, 0xe4, 0x27, 0xa0, 0x65, 0x11, 0x97, 0x36, 0xd4, 0x99, 0xb0,
-	0x42, 0xee, 0x11, 0xb2, 0x1e, 0xac, 0xb5, 0x55, 0xd1, 0xc1, 0x51, 0x95, 0xf1, 0xf6, 0x42, 0x79,
-	0xc8, 0x46, 0xe5, 0x11, 0x55, 0x5b, 0x46, 0x24, 0xbe, 0x6c, 0x69, 0x18, 0xe6, 0x92, 0x6a, 0xa2,
-	0x38, 0xcb, 0x90, 0x96, 0x7a, 0xa2, 0xf7, 0x07, 0xd7, 0x7d, 0x97, 0xae, 0xa8, 0xae, 0x69, 0xe1,
-	0x44, 0xbb, 0x9b, 0x74, 0x21, 0x3b, 0x1f, 0x6d, 0x00, 0x74, 0xa6, 0x97, 0x70, 0x72, 0x2e, 0x51,
-	0xb3, 0xe1, 0x34, 0xee, 0x8c, 0x98, 0x3a, 0x11, 0xba, 0x95, 0x98, 0xa6, 0xf6, 0xb5, 0x02, 0x27,
-	0xbb, 0x1c, 0x08, 0x12, 0xef, 0x40, 0x46, 0x92, 0x08, 0x5b, 0x7b, 0x74, 0x16, 0x69, 0xc1, 0x82,
-	0xa1, 0xcd, 0x04, 0xdc, 0x14, 0x87, 0xfb, 0xca, 0x81, 0x70, 0x43, 0x63, 0x09, 0xbc, 0x37, 0x20,
-	0x9f, 0x80, 0x5b, 0xda, 0xdb, 0x16, 0x6d, 0x2e, 0x23, 0x13, 0x9f, 0x04, 0x4a, 0x72, 0x12, 0x68,
-	0x2e, 0x2c, 0x0c, 0xd4, 0xfe, 0x17, 0x68, 0x6b, 0xab, 0x30, 0x2f, 0xfd, 0xc9, 0x1e, 0x8b, 0xc1,
-	0x8c, 0x9a, 0x58, 0xc0, 0x94, 0x6b, 0xcd, 0x06, 0xb5, 0x57, 0x4d, 0xe0, 0xdb, 0x82, 0x99, 0x00,
-	0x5f, 0x42, 0x37, 0xbb, 0x72, 0x76, 0x3f, 0x88, 0xd2, 0x86, 0x80, 0x17, 0xd4, 0xb4, 0xdc, 0xd2,
-	0x6a, 0xbd, 0xae, 0x5e, 0x7a, 0x8d, 0x7d, 0xa7, 0xc0, 0xa9, 0x3e, 0x4e, 0x04, 0xa1, 0xdb, 0x70,
-	0x24, 0x4e, 0x48, 0x06, 0x7d, 0x14, 0x46, 0x33, 0x31, 0x46, 0x2f, 0xb1, 0xd6, 0xbe, 0x18, 0x87,
-	0x85, 0x38, 0xe4, 0x92, 0xac, 0x9b, 0xf2, 0x7a, 0xfc, 0xfe, 0x1b, 0x94, 0x46, 0x74, 0x06, 0xc0,
-	0x66, 0x46, 0xcd, 0xa1, 0xe6, 0x0e, 0xb1, 0x38, 0x90, 0x74, 0x25, 0x63, 0xb3, 0x52, 0xb8, 0x81,
-	0xce, 0xc3, 0x09, 0x9f, 0xfa, 0xd8, 0x31, 0xe2, 0x23, 0x71, 0x9c, 0xcf, 0x98, 0x63, 0xfc, 0xa0,
-	0xda, 0x99, 0x8b, 0x67, 0xe1, 0x68, 0x47, 0xb6, 0x81, 0xad, 0xf0, 0x9a, 0x9a, 0xa8, 0xcc, 0x48,
-	0xc1, 0x2d, 0x6c, 0x11, 0x54, 0x83, 0x33, 0xa1, 0x54, 0x30, 0xe9, 0x42, 0x18, 0xcd, 0x80, 0x49,
-	0x64, 0x7d, 0x72, 0xb8, 0xbb, 0x2d, 0xc7, 0xad, 0x6c, 0x10, 0xb2, 0xd6, 0xb1, 0x21, 0x91, 0xdc,
-	0x86, 0xd9, 0xc8, 0x47, 0x94, 0x35, 0x8b, 0xdf, 0x61, 0x43, 0x58, 0x3e, 0x21, 0x2d, 0xcb, 0xa8,
-	0x5a, 0xe8, 0x32, 0x4c, 0xf2, 0xbb, 0x86, 0x5f, 0x65, 0xd9, 0x95, 0xfc, 0xc0, 0xbc, 0xf3, 0x7b,
-	0xa4, 0x12, 0x0a, 0x6b, 0xb7, 0xe0, 0xff, 0x3d, 0x25, 0x95, 0xc8, 0xcf, 0x70, 0x13, 0xfc, 0xe3,
-	0x14, 0x9c, 0xdd, 0xdf, 0x8e, 0xc8, 0xf3, 0x01, 0x86, 0xd0, 0x7b, 0x70, 0x92, 0xee, 0x12, 0x0f,
-	0x3b, 0xdd, 0x81, 0x49, 0x0d, 0x17, 0x98, 0x59, 0xa1, 0x9d, 0x08, 0x8d, 0xd9, 0xdd, 0x1a, 0xe3,
-	0xbc, 0x35, 0xae, 0x0e, 0xd3, 0x1a, 0xfd, 0x58, 0xf4, 0x6b, 0x17, 0x2d, 0xd7, 0x99, 0x00, 0x21,
-	0x17, 0xb6, 0x41, 0xbd, 0xa2, 0xe3, 0x54, 0x3f, 0x58, 0xd3, 0x88, 0x78, 0x83, 0xf6, 0x39, 0x8b,
-	0x22, 0x53, 0x84, 0x19, 0xbf, 0x6d, 0xf8, 0xd4, 0xa8, 0xfb, 0x86, 0x6d, 0xc9, 0xf6, 0x5d, 0x1c,
-	0x88, 0xb1, 0xda, 0xde, 0xac, 0x96, 0xd7, 0x59, 0x25, 0xe3, 0xb7, 0xab, 0x74, 0xd3, 0x2f, 0x5b,
-	0x6c, 0xe5, 0xc7, 0x23, 0x30, 0xc9, 0xfd, 0xa0, 0x2f, 0x15, 0x98, 0x0a, 0x5f, 0xc3, 0xe8, 0xc2,
-	0x40, 0x0b, 0xbd, 0x4f, 0xf0, 0xdc, 0xab, 0xc3, 0x09, 0x87, 0x90, 0xb5, 0xeb, 0x9f, 0xfc, 0xfc,
-	0xe7, 0xe7, 0xa9, 0xcb, 0x68, 0x45, 0xb7, 0xf6, 0x1a, 0xc4, 0x65, 0x36, 0x75, 0xdb, 0x7b, 0x0f,
-	0x3b, 0x8b, 0x8b, 0x9e, 0xb5, 0xa3, 0xf7, 0xff, 0xe6, 0x40, 0x3f, 0x29, 0x30, 0xd7, 0xef, 0x45,
-	0x8c, 0xae, 0xed, 0x0f, 0x61, 0x9f, 0x67, 0x7c, 0xee, 0xfa, 0x61, 0x54, 0x05, 0x97, 0x2b, 0x9c,
-	0xcb, 0x32, 0xd2, 0x47, 0xe1, 0xd2, 0xc0, 0x26, 0xfa, 0x46, 0x81, 0x69, 0x91, 0x57, 0x74, 0x40,
-	0xf8, 0x92, 0xcf, 0xa2, 0xdc, 0xc5, 0x21, 0xa5, 0x05, 0xc2, 0x0d, 0x8e, 0xf0, 0x4d, 0xf4, 0xfa,
-	0x28, 0x08, 0x83, 0x46, 0xd3, 0x1f, 0xc5, 0x5a, 0xee, 0x31, 0xfa, 0x4a, 0x81, 0xb4, 0xbc, 0xb8,
-	0xd1, 0x70, 0x18, 0xa2, 0x08, 0x17, 0x86, 0x15, 0x17, 0x98, 0xaf, 0x71, 0xcc, 0x97, 0xd0, 0xf2,
-	0xa8, 0x98, 0x19, 0xfa, 0x45, 0x01, 0xd4, 0xfb, 0xbe, 0x40, 0x57, 0x86, 0x43, 0xd0, 0xf3, 0x9e,
-	0xc9, 0x5d, 0x1d, 0x5d, 0x51, 0x90, 0xd8, 0xe2, 0x24, 0x36, 0xd1, 0xad, 0x91, 0xca, 0x5c, 0x58,
-	0x09, 0xd9, 0xe8, 0x8f, 0xe4, 0xfa, 0x31, 0xfa, 0x5e, 0x81, 0x6c, 0x6c, 0xc0, 0xa0, 0xd7, 0x0e,
-	0x04, 0xd6, 0xf5, 0xe6, 0xc9, 0x2d, 0x8f, 0xa0, 0x21, 0x38, 0x6c, 0x72, 0x0e, 0x45, 0xf4, 0xc6,
-	0x28, 0x1c, 0xe4, 0xc0, 0xd4, 0x1f, 0xc9, 0x5f, 0x8f, 0xd1, 0xb7, 0x0a, 0xcc, 0xc4, 0xc7, 0x23,
-	0x1a, 0x1e, 0x4c, 0x54, 0x45, 0x2b, 0xa3, 0xa8, 0x08, 0x02, 0x37, 0x39, 0x81, 0x2b, 0x68, 0xf5,
-	0x30, 0x04, 0x18, 0xfa, 0x4b, 0x81, 0xf9, 0x01, 0x53, 0x1d, 0xdd, 0x18, 0x1e, 0x4e, 0xef, 0xd5,
-	0x98, 0xbb, 0x79, 0x48, 0x6d, 0xc1, 0x6b, 0x9b, 0xf3, 0x7a, 0x1b, 0xbd, 0x35, 0x72, 0x57, 0x47,
-	0xe4, 0xba, 0xfa, 0xfb, 0x07, 0x05, 0x66, 0xfb, 0x5c, 0x34, 0x43, 0x24, 0xaa, 0x5b, 0x25, 0x77,
-	0x6d, 0x64, 0x95, 0x7f, 0x36, 0x4f, 0xfd, 0xb6, 0x59, 0xba, 0xfd, 0xe4, 0x79, 0x5e, 0x79, 0xfa,
-	0x3c, 0xaf, 0xfc, 0xf1, 0x3c, 0xaf, 0x7c, 0xf6, 0x22, 0x3f, 0xf6, 0xf4, 0x45, 0x7e, 0xec, 0xd7,
-	0x17, 0xf9, 0xb1, 0x3b, 0xab, 0xb1, 0xef, 0xe5, 0x7d, 0x8c, 0xb6, 0x23, 0xb3, 0xfc, 0x13, 0xba,
-	0x36, 0xc5, 0xff, 0xe7, 0x74, 0xe9, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff, 0xa5, 0x94, 0x7b, 0xe0,
-	0x68, 0x13, 0x00, 0x00,
+	// 1429 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x58, 0x4d, 0x6f, 0x1b, 0xc5,
+	0x1b, 0xcf, 0x3a, 0x4d, 0x62, 0x3f, 0x49, 0xdb, 0x74, 0x9a, 0xfe, 0xe3, 0x38, 0xff, 0x3a, 0xd1,
+	0xb6, 0xb4, 0x01, 0x1a, 0x2f, 0x49, 0x1b, 0xb5, 0x40, 0x9b, 0x12, 0x37, 0x75, 0x30, 0xa8, 0x6a,
+	0x30, 0xe1, 0x52, 0xa1, 0xae, 0xc6, 0xde, 0xa9, 0x59, 0xb2, 0xde, 0x71, 0x77, 0xd6, 0x21, 0x69,
+	0x55, 0x81, 0x38, 0x70, 0xae, 0xc4, 0x07, 0xe0, 0xc2, 0x0d, 0xc1, 0x09, 0x4e, 0x7c, 0x00, 0x7a,
+	0xac, 0x84, 0x84, 0x10, 0x87, 0x0a, 0xa5, 0x1c, 0x7a, 0xe2, 0x33, 0xa0, 0x9d, 0x9d, 0x59, 0xef,
+	0xae, 0x63, 0x7b, 0x1d, 0xca, 0x29, 0x9e, 0x99, 0xe7, 0xe5, 0xf7, 0x7b, 0x5e, 0x66, 0x9e, 0x0d,
+	0xcc, 0xd6, 0x31, 0xb3, 0x08, 0x63, 0xda, 0xce, 0x52, 0x95, 0xb8, 0x78, 0x49, 0xbb, 0xdf, 0x22,
+	0xce, 0x5e, 0xa1, 0xe9, 0x50, 0x97, 0xa2, 0x69, 0x87, 0x5a, 0x16, 0x6e, 0x36, 0x0b, 0x42, 0xa8,
+	0x20, 0x84, 0x72, 0x53, 0x75, 0x5a, 0xa7, 0x5c, 0x46, 0xf3, 0x7e, 0xf9, 0xe2, 0xb9, 0xff, 0xd7,
+	0x29, 0xad, 0x5b, 0x44, 0xc3, 0x4d, 0x53, 0xc3, 0xb6, 0x4d, 0x5d, 0xec, 0x9a, 0xd4, 0x66, 0xc1,
+	0x69, 0xcc, 0x53, 0x13, 0x3b, 0xb8, 0x21, 0x4f, 0x4f, 0xc7, 0x4f, 0xa5, 0x4b, 0xff, 0xf8, 0xb5,
+	0x1a, 0x65, 0x0d, 0xca, 0xb4, 0x2a, 0x66, 0xc4, 0x87, 0x18, 0x32, 0x53, 0x37, 0x6d, 0xee, 0x49,
+	0xc8, 0xe6, 0xc3, 0xb2, 0x52, 0xaa, 0x46, 0x4d, 0x71, 0xae, 0xde, 0x81, 0xe3, 0x37, 0xa8, 0xed,
+	0x3a, 0xb8, 0xe6, 0xae, 0x13, 0x17, 0x9b, 0x16, 0x43, 0xd3, 0x30, 0x56, 0xa3, 0x06, 0xd1, 0x4d,
+	0x23, 0xab, 0xcc, 0x2b, 0x0b, 0x47, 0x2a, 0xa3, 0xde, 0xb2, 0x6c, 0xa0, 0x2c, 0x8c, 0x61, 0xc3,
+	0x70, 0x08, 0x63, 0xd9, 0xd4, 0xbc, 0xb2, 0x90, 0xa9, 0xc8, 0x25, 0x9a, 0x82, 0x11, 0x0b, 0x57,
+	0x89, 0x95, 0x1d, 0xe6, 0xfb, 0xfe, 0x42, 0xfd, 0x1c, 0x26, 0x3f, 0x62, 0xb8, 0x4e, 0xca, 0x06,
+	0xb1, 0x5d, 0xf3, 0x9e, 0x49, 0x1c, 0x86, 0xce, 0xc0, 0xd1, 0x06, 0x61, 0xde, 0xae, 0xee, 0xee,
+	0x35, 0x09, 0xcb, 0x2a, 0xf3, 0xc3, 0x0b, 0x99, 0xca, 0x84, 0xd8, 0xdc, 0xf2, 0xf6, 0x50, 0x09,
+	0x32, 0x35, 0x01, 0xca, 0x73, 0x35, 0xbc, 0x30, 0xbe, 0xbc, 0x50, 0xe8, 0x12, 0xfe, 0x42, 0x0c,
+	0x7e, 0xa5, 0xad, 0xaa, 0x4e, 0x01, 0xfa, 0xc0, 0x0b, 0xcf, 0x26, 0x0f, 0x6e, 0x85, 0xdc, 0x6f,
+	0x11, 0xe6, 0xaa, 0x5b, 0x70, 0x32, 0xb2, 0xcb, 0x9a, 0xd4, 0x66, 0x04, 0x5d, 0x83, 0x51, 0x3f,
+	0x09, 0x9c, 0xf5, 0xf8, 0xf2, 0x5c, 0x57, 0x8f, 0xbe, 0x62, 0xf1, 0xc8, 0x93, 0x67, 0x73, 0x43,
+	0x15, 0xa1, 0xa4, 0x9e, 0x87, 0x57, 0xb8, 0xd5, 0xb5, 0x1d, 0x6c, 0x5a, 0xb8, 0x6a, 0x91, 0x38,
+	0x75, 0xe9, 0xfe, 0x2b, 0x05, 0xce, 0xf5, 0x93, 0x14, 0x90, 0x3e, 0x86, 0x13, 0x2d, 0x1e, 0x2a,
+	0xb3, 0x7d, 0x28, 0xd0, 0xbd, 0xda, 0x15, 0x5d, 0xdc, 0x9a, 0xc0, 0x39, 0xd9, 0x8a, 0xed, 0xab,
+	0x2f, 0x86, 0xe1, 0xf8, 0x06, 0x66, 0x5b, 0xd8, 0xde, 0x0e, 0x3c, 0x1e, 0x83, 0x54, 0x90, 0xf6,
+	0x94, 0x69, 0xa0, 0x1c, 0xa4, 0x9b, 0x0e, 0xdd, 0x31, 0x0d, 0xe2, 0x88, 0x9c, 0x07, 0x6b, 0xaf,
+	0x1c, 0x1c, 0xc2, 0x88, 0xb3, 0x43, 0x44, 0xda, 0xe5, 0x12, 0x95, 0x61, 0xb2, 0x8e, 0x99, 0xee,
+	0x62, 0x7b, 0x5b, 0xaf, 0x62, 0x0b, 0xdb, 0x35, 0x92, 0x3d, 0xc2, 0x61, 0xcf, 0x14, 0xfc, 0x7a,
+	0x2c, 0x78, 0xf5, 0x18, 0x4a, 0xa1, 0x69, 0x0b, 0x98, 0xc7, 0xea, 0x3e, 0xa2, 0xa2, 0xaf, 0x86,
+	0x66, 0x21, 0x63, 0x32, 0x1d, 0xd7, 0x5c, 0x73, 0x87, 0x64, 0x47, 0xe6, 0x95, 0x85, 0x74, 0x25,
+	0x6d, 0xb2, 0x35, 0xbe, 0x46, 0x9f, 0x42, 0xae, 0x81, 0x77, 0xf5, 0x7b, 0x84, 0xe8, 0x7e, 0x9c,
+	0x9a, 0xc4, 0xd1, 0x6b, 0xd4, 0x66, 0xad, 0x06, 0x71, 0xb2, 0xa3, 0x1e, 0xa8, 0x62, 0xc1, 0x33,
+	0xfb, 0xc7, 0xb3, 0xb9, 0x73, 0x75, 0xd3, 0xfd, 0xa4, 0x55, 0x2d, 0xd4, 0x68, 0x43, 0x13, 0x3d,
+	0xe1, 0xff, 0x59, 0x64, 0xc6, 0xb6, 0xc6, 0x6b, 0xb1, 0x50, 0xb6, 0xdd, 0xca, 0xff, 0x1a, 0x78,
+	0xb7, 0x44, 0xfc, 0x9c, 0x6c, 0x12, 0xe7, 0x86, 0xb0, 0x86, 0xee, 0xc2, 0x54, 0xa7, 0x2f, 0x77,
+	0x37, 0x3b, 0x76, 0x28, 0x2f, 0x93, 0x51, 0x2f, 0x5b, 0xbb, 0x68, 0x15, 0x66, 0x59, 0xab, 0xd9,
+	0xa4, 0x8e, 0x4b, 0x0c, 0xbd, 0x33, 0xeb, 0x69, 0xde, 0x26, 0x33, 0x81, 0x48, 0x47, 0x63, 0xcd,
+	0x42, 0xc6, 0xc3, 0x66, 0x10, 0x9b, 0x36, 0xb2, 0x19, 0x3f, 0x55, 0xf7, 0x08, 0x59, 0xf7, 0xd6,
+	0xea, 0x8a, 0x28, 0xf9, 0x20, 0xdd, 0xbc, 0x14, 0x51, 0x1e, 0xc6, 0x83, 0x3c, 0x05, 0x69, 0xcf,
+	0x88, 0x0c, 0x94, 0x0d, 0x15, 0xc3, 0x54, 0x54, 0x4d, 0x54, 0x49, 0x19, 0xd2, 0x52, 0x4f, 0x94,
+	0x63, 0xf7, 0xf6, 0x8c, 0xe9, 0x8a, 0x34, 0x8f, 0x09, 0x27, 0xea, 0xdd, 0xa8, 0x0b, 0xd9, 0x25,
+	0xa8, 0x04, 0xd0, 0xbe, 0xcb, 0x84, 0x93, 0x73, 0x91, 0xe2, 0xf1, 0xef, 0xe6, 0x76, 0x4f, 0xd6,
+	0x89, 0xd0, 0xad, 0x84, 0x34, 0xd5, 0xef, 0x15, 0x38, 0x15, 0x73, 0x20, 0x48, 0xbc, 0x0f, 0x19,
+	0x49, 0xc2, 0xbf, 0x85, 0x06, 0x67, 0x91, 0x16, 0x2c, 0x18, 0xda, 0x88, 0xc0, 0x4d, 0x71, 0xb8,
+	0xe7, 0xfb, 0xc2, 0xf5, 0x8d, 0x45, 0xf0, 0x5e, 0x85, 0x7c, 0x04, 0x6e, 0x71, 0x6f, 0x53, 0xf4,
+	0x9b, 0x8c, 0x4c, 0xb8, 0x25, 0x95, 0x68, 0x4b, 0xaa, 0x36, 0xcc, 0x75, 0xd5, 0xfe, 0x0f, 0x68,
+	0xab, 0x2b, 0x30, 0x2d, 0xfd, 0xc9, 0x46, 0x09, 0xc1, 0x0c, 0x3a, 0x51, 0xc0, 0x94, 0x6b, 0xd5,
+	0x84, 0x6c, 0xa7, 0x9a, 0xc0, 0x77, 0x0b, 0x26, 0x3c, 0x7c, 0x11, 0xdd, 0xf1, 0xe5, 0xb3, 0xbd,
+	0x20, 0x4a, 0x1b, 0x02, 0x9e, 0x57, 0xd3, 0x72, 0x4b, 0xad, 0x76, 0xba, 0x7a, 0xe9, 0x35, 0xf6,
+	0x93, 0x02, 0x33, 0x07, 0x38, 0x11, 0x84, 0x6e, 0xc3, 0xd1, 0x30, 0x21, 0x19, 0xf4, 0x41, 0x18,
+	0x4d, 0x84, 0x18, 0xbd, 0xc4, 0x5a, 0xfb, 0x25, 0x05, 0x73, 0x61, 0xc8, 0x45, 0x59, 0x37, 0xe5,
+	0xf5, 0x00, 0x7d, 0x8f, 0x34, 0xa2, 0xd3, 0x00, 0x26, 0xd3, 0xab, 0x16, 0xad, 0x6d, 0x13, 0x83,
+	0x03, 0x49, 0x57, 0x32, 0x26, 0x2b, 0xfa, 0x1b, 0xa8, 0x0a, 0xa7, 0x5d, 0xea, 0x62, 0x8b, 0xdf,
+	0x99, 0xbe, 0x52, 0xd3, 0xf3, 0xab, 0x63, 0xcb, 0xa2, 0x9f, 0x11, 0x83, 0xbf, 0x1a, 0x09, 0x9e,
+	0x84, 0x1c, 0xb7, 0x52, 0x22, 0xe4, 0x46, 0xdb, 0xc6, 0x9a, 0x6f, 0x02, 0xdd, 0x86, 0x93, 0x81,
+	0x8f, 0x20, 0xc6, 0x46, 0xd2, 0xc7, 0xe6, 0x84, 0xb4, 0x2c, 0x63, 0x60, 0xa0, 0x4b, 0x30, 0xc2,
+	0x2f, 0xdf, 0xec, 0x08, 0xcf, 0x52, 0xbe, 0xf7, 0x33, 0x5b, 0xf1, 0x85, 0xd5, 0x9b, 0x70, 0xa6,
+	0xa3, 0x00, 0x22, 0xd1, 0x4c, 0x76, 0xdf, 0x7e, 0x91, 0x82, 0xb3, 0xbd, 0xed, 0x88, 0xac, 0xf4,
+	0x31, 0x84, 0x3e, 0x84, 0x53, 0x74, 0x87, 0x38, 0xd8, 0x8a, 0x07, 0x26, 0x95, 0x2c, 0x30, 0x27,
+	0x85, 0x76, 0x24, 0x34, 0xb5, 0x78, 0x21, 0x0f, 0xf3, 0x10, 0x5d, 0x49, 0x52, 0xc8, 0x07, 0xb1,
+	0x38, 0xa8, 0xb8, 0xd5, 0x02, 0x5c, 0x08, 0xdf, 0x60, 0x65, 0x83, 0x95, 0xa8, 0xb3, 0x66, 0x59,
+	0xdd, 0xa6, 0xa9, 0xef, 0x14, 0x58, 0x4c, 0xa8, 0x20, 0x62, 0xf7, 0x00, 0xe6, 0xe2, 0xcf, 0xab,
+	0xee, 0x52, 0xbd, 0x8e, 0x99, 0x08, 0xa7, 0xec, 0xd0, 0x4b, 0x49, 0x47, 0xac, 0x2d, 0xda, 0x76,
+	0x5e, 0x99, 0x6d, 0x1d, 0x70, 0xe8, 0xfa, 0x87, 0xcb, 0x8f, 0x8f, 0xc1, 0x08, 0x47, 0x8b, 0xbe,
+	0x51, 0x60, 0xd4, 0x9f, 0x23, 0xd1, 0xeb, 0x5d, 0xfd, 0x74, 0x0e, 0xaf, 0xb9, 0x0b, 0xc9, 0x84,
+	0x7d, 0xae, 0xea, 0x5b, 0x5f, 0xfe, 0xfa, 0xd7, 0xd7, 0xa9, 0x4b, 0x68, 0x59, 0x33, 0xf6, 0x1a,
+	0xc4, 0x66, 0x26, 0xb5, 0x77, 0xf7, 0x1e, 0xb4, 0x17, 0x8b, 0x8e, 0xb1, 0xad, 0x1d, 0xfc, 0x29,
+	0x82, 0xf6, 0x15, 0x98, 0xe9, 0x3a, 0xa2, 0xa2, 0xd5, 0xde, 0x38, 0xfa, 0x4d, 0xc1, 0xb9, 0xeb,
+	0x87, 0xd6, 0x17, 0xd4, 0xd6, 0x39, 0xb5, 0x55, 0x74, 0x75, 0x10, 0x6a, 0x3c, 0x37, 0xa1, 0xb1,
+	0x0a, 0xfd, 0xa0, 0xc0, 0x98, 0x48, 0x1e, 0xea, 0x13, 0xda, 0xe8, 0xec, 0x94, 0x5b, 0x4c, 0x28,
+	0x2d, 0xe0, 0x96, 0x38, 0xdc, 0x77, 0xd0, 0xea, 0x20, 0x70, 0xbd, 0xb2, 0xd1, 0x1e, 0x86, 0x3a,
+	0xfd, 0x11, 0xfa, 0x56, 0x81, 0xb4, 0x7c, 0xdd, 0x51, 0x32, 0x0c, 0x41, 0xcc, 0x0b, 0x49, 0xc5,
+	0x05, 0xe6, 0x37, 0x39, 0xe6, 0x8b, 0x68, 0x69, 0x50, 0xcc, 0x0c, 0xfd, 0xa6, 0x00, 0xea, 0x1c,
+	0x42, 0xd0, 0xe5, 0x64, 0x08, 0x3a, 0x86, 0x9e, 0xdc, 0x95, 0xc1, 0x15, 0x05, 0x89, 0x5b, 0x9c,
+	0xc4, 0x06, 0xba, 0x39, 0x50, 0x0b, 0x08, 0x2b, 0x3e, 0x1b, 0xed, 0xa1, 0x5c, 0x3f, 0x42, 0x3f,
+	0x2b, 0x30, 0x1e, 0xba, 0xd7, 0xd0, 0x1b, 0x7d, 0x81, 0xc5, 0x06, 0xa3, 0xdc, 0xd2, 0x00, 0x1a,
+	0x82, 0xc3, 0x06, 0xe7, 0xb0, 0x86, 0xae, 0x0f, 0xc2, 0x41, 0xde, 0xd3, 0xda, 0x43, 0xf9, 0xeb,
+	0x11, 0xfa, 0x51, 0x81, 0x89, 0xf0, 0xad, 0x8c, 0x92, 0x83, 0x09, 0xaa, 0x68, 0x79, 0x10, 0x15,
+	0x41, 0xe0, 0x1a, 0x27, 0x70, 0x19, 0xad, 0x1c, 0x86, 0x00, 0x43, 0x2f, 0x14, 0x98, 0xee, 0xf2,
+	0x98, 0xa0, 0xab, 0xc9, 0xe1, 0x74, 0xbe, 0xc8, 0xb9, 0x6b, 0x87, 0xd4, 0x16, 0xbc, 0x36, 0x39,
+	0xaf, 0xf7, 0xd0, 0xbb, 0x03, 0x77, 0x75, 0x40, 0x2e, 0xd6, 0xdf, 0x7f, 0x2b, 0x30, 0xdf, 0xef,
+	0x29, 0x43, 0x37, 0x13, 0x75, 0x43, 0xbf, 0xb7, 0x33, 0x57, 0xfa, 0xb7, 0x66, 0x44, 0x14, 0xde,
+	0xe6, 0x51, 0x58, 0x41, 0x17, 0x07, 0x8d, 0x82, 0x69, 0xb0, 0xe2, 0xed, 0x27, 0xfb, 0x79, 0xe5,
+	0xe9, 0x7e, 0x5e, 0xf9, 0x73, 0x3f, 0xaf, 0x3c, 0x7e, 0x9e, 0x1f, 0x7a, 0xfa, 0x3c, 0x3f, 0xf4,
+	0xfb, 0xf3, 0xfc, 0xd0, 0x9d, 0x95, 0xd0, 0xb7, 0x74, 0x0f, 0xc3, 0xbb, 0x81, 0x69, 0xfe, 0x79,
+	0x5d, 0x1d, 0xe5, 0xff, 0xd8, 0xba, 0xf8, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xce, 0x0b, 0xbc,
+	0x30, 0xcd, 0x13, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1264,8 +1279,8 @@ const _ = grpc.SupportPackageIsVersion4
 type QueryClient interface {
 	// Params returns parameters of the module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
-	// MessagesAndContracts return all cosmos.base.v1beta1.Msg messages and available contract details
-	MessagesAndContracts(ctx context.Context, in *QueryMessagesAndContractsRequest, opts ...grpc.CallOption) (*QueryMessagesAndContractsResponse, error)
+	// AvailableUsageIdentifiers return all available usage identifiers
+	AvailableUsageIdentifiers(ctx context.Context, in *QueryAvailableUsageIdentifiersRequest, opts ...grpc.CallOption) (*QueryAvailableUsageIdentifiersResponse, error)
 	// GasTank returns gas tank details
 	GasTank(ctx context.Context, in *QueryGasTankRequest, opts ...grpc.CallOption) (*QueryGasTankResponse, error)
 	// GasTanks return details of all the gas tanks
@@ -1278,8 +1293,8 @@ type QueryClient interface {
 	GasConsumers(ctx context.Context, in *QueryGasConsumersRequest, opts ...grpc.CallOption) (*QueryGasConsumersResponse, error)
 	// GasConsumersByGasTankID return details of all the gas consumers for the given tank ID
 	GasConsumersByGasTankID(ctx context.Context, in *QueryGasConsumersByGasTankIDRequest, opts ...grpc.CallOption) (*QueryGasConsumersByGasTankIDResponse, error)
-	// GasTankIdsForAllTXC returns gas tanks ids with all available tx or contracts
-	GasTankIdsForAllTXC(ctx context.Context, in *QueryGasTankIdsForAllTXC, opts ...grpc.CallOption) (*QueryGasTankIdsForAllTXCResponse, error)
+	// GasTankIdsForAllUsageIdentifiers returns gas tanks ids with all available usage identifiers
+	GasTankIdsForAllUsageIdentifiers(ctx context.Context, in *QueryGasTankIdsForAllUsageIdentifiersRequest, opts ...grpc.CallOption) (*QueryGasTankIdsForAllUsageIdentifiersResponse, error)
 }
 
 type queryClient struct {
@@ -1299,9 +1314,9 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
-func (c *queryClient) MessagesAndContracts(ctx context.Context, in *QueryMessagesAndContractsRequest, opts ...grpc.CallOption) (*QueryMessagesAndContractsResponse, error) {
-	out := new(QueryMessagesAndContractsResponse)
-	err := c.cc.Invoke(ctx, "/rollapp.gasless.v1beta1.Query/MessagesAndContracts", in, out, opts...)
+func (c *queryClient) AvailableUsageIdentifiers(ctx context.Context, in *QueryAvailableUsageIdentifiersRequest, opts ...grpc.CallOption) (*QueryAvailableUsageIdentifiersResponse, error) {
+	out := new(QueryAvailableUsageIdentifiersResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.gasless.v1beta1.Query/AvailableUsageIdentifiers", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1362,9 +1377,9 @@ func (c *queryClient) GasConsumersByGasTankID(ctx context.Context, in *QueryGasC
 	return out, nil
 }
 
-func (c *queryClient) GasTankIdsForAllTXC(ctx context.Context, in *QueryGasTankIdsForAllTXC, opts ...grpc.CallOption) (*QueryGasTankIdsForAllTXCResponse, error) {
-	out := new(QueryGasTankIdsForAllTXCResponse)
-	err := c.cc.Invoke(ctx, "/rollapp.gasless.v1beta1.Query/GasTankIdsForAllTXC", in, out, opts...)
+func (c *queryClient) GasTankIdsForAllUsageIdentifiers(ctx context.Context, in *QueryGasTankIdsForAllUsageIdentifiersRequest, opts ...grpc.CallOption) (*QueryGasTankIdsForAllUsageIdentifiersResponse, error) {
+	out := new(QueryGasTankIdsForAllUsageIdentifiersResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.gasless.v1beta1.Query/GasTankIdsForAllUsageIdentifiers", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1375,8 +1390,8 @@ func (c *queryClient) GasTankIdsForAllTXC(ctx context.Context, in *QueryGasTankI
 type QueryServer interface {
 	// Params returns parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	// MessagesAndContracts return all cosmos.base.v1beta1.Msg messages and available contract details
-	MessagesAndContracts(context.Context, *QueryMessagesAndContractsRequest) (*QueryMessagesAndContractsResponse, error)
+	// AvailableUsageIdentifiers return all available usage identifiers
+	AvailableUsageIdentifiers(context.Context, *QueryAvailableUsageIdentifiersRequest) (*QueryAvailableUsageIdentifiersResponse, error)
 	// GasTank returns gas tank details
 	GasTank(context.Context, *QueryGasTankRequest) (*QueryGasTankResponse, error)
 	// GasTanks return details of all the gas tanks
@@ -1389,8 +1404,8 @@ type QueryServer interface {
 	GasConsumers(context.Context, *QueryGasConsumersRequest) (*QueryGasConsumersResponse, error)
 	// GasConsumersByGasTankID return details of all the gas consumers for the given tank ID
 	GasConsumersByGasTankID(context.Context, *QueryGasConsumersByGasTankIDRequest) (*QueryGasConsumersByGasTankIDResponse, error)
-	// GasTankIdsForAllTXC returns gas tanks ids with all available tx or contracts
-	GasTankIdsForAllTXC(context.Context, *QueryGasTankIdsForAllTXC) (*QueryGasTankIdsForAllTXCResponse, error)
+	// GasTankIdsForAllUsageIdentifiers returns gas tanks ids with all available usage identifiers
+	GasTankIdsForAllUsageIdentifiers(context.Context, *QueryGasTankIdsForAllUsageIdentifiersRequest) (*QueryGasTankIdsForAllUsageIdentifiersResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -1400,8 +1415,8 @@ type UnimplementedQueryServer struct {
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-func (*UnimplementedQueryServer) MessagesAndContracts(ctx context.Context, req *QueryMessagesAndContractsRequest) (*QueryMessagesAndContractsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MessagesAndContracts not implemented")
+func (*UnimplementedQueryServer) AvailableUsageIdentifiers(ctx context.Context, req *QueryAvailableUsageIdentifiersRequest) (*QueryAvailableUsageIdentifiersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AvailableUsageIdentifiers not implemented")
 }
 func (*UnimplementedQueryServer) GasTank(ctx context.Context, req *QueryGasTankRequest) (*QueryGasTankResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GasTank not implemented")
@@ -1421,8 +1436,8 @@ func (*UnimplementedQueryServer) GasConsumers(ctx context.Context, req *QueryGas
 func (*UnimplementedQueryServer) GasConsumersByGasTankID(ctx context.Context, req *QueryGasConsumersByGasTankIDRequest) (*QueryGasConsumersByGasTankIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GasConsumersByGasTankID not implemented")
 }
-func (*UnimplementedQueryServer) GasTankIdsForAllTXC(ctx context.Context, req *QueryGasTankIdsForAllTXC) (*QueryGasTankIdsForAllTXCResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GasTankIdsForAllTXC not implemented")
+func (*UnimplementedQueryServer) GasTankIdsForAllUsageIdentifiers(ctx context.Context, req *QueryGasTankIdsForAllUsageIdentifiersRequest) (*QueryGasTankIdsForAllUsageIdentifiersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GasTankIdsForAllUsageIdentifiers not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -1447,20 +1462,20 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_MessagesAndContracts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryMessagesAndContractsRequest)
+func _Query_AvailableUsageIdentifiers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAvailableUsageIdentifiersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).MessagesAndContracts(ctx, in)
+		return srv.(QueryServer).AvailableUsageIdentifiers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rollapp.gasless.v1beta1.Query/MessagesAndContracts",
+		FullMethod: "/rollapp.gasless.v1beta1.Query/AvailableUsageIdentifiers",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).MessagesAndContracts(ctx, req.(*QueryMessagesAndContractsRequest))
+		return srv.(QueryServer).AvailableUsageIdentifiers(ctx, req.(*QueryAvailableUsageIdentifiersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1573,20 +1588,20 @@ func _Query_GasConsumersByGasTankID_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Query_GasTankIdsForAllTXC_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(QueryGasTankIdsForAllTXC)
+func _Query_GasTankIdsForAllUsageIdentifiers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryGasTankIdsForAllUsageIdentifiersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(QueryServer).GasTankIdsForAllTXC(ctx, in)
+		return srv.(QueryServer).GasTankIdsForAllUsageIdentifiers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rollapp.gasless.v1beta1.Query/GasTankIdsForAllTXC",
+		FullMethod: "/rollapp.gasless.v1beta1.Query/GasTankIdsForAllUsageIdentifiers",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(QueryServer).GasTankIdsForAllTXC(ctx, req.(*QueryGasTankIdsForAllTXC))
+		return srv.(QueryServer).GasTankIdsForAllUsageIdentifiers(ctx, req.(*QueryGasTankIdsForAllUsageIdentifiersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1600,8 +1615,8 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_Params_Handler,
 		},
 		{
-			MethodName: "MessagesAndContracts",
-			Handler:    _Query_MessagesAndContracts_Handler,
+			MethodName: "AvailableUsageIdentifiers",
+			Handler:    _Query_AvailableUsageIdentifiers_Handler,
 		},
 		{
 			MethodName: "GasTank",
@@ -1628,12 +1643,100 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Query_GasConsumersByGasTankID_Handler,
 		},
 		{
-			MethodName: "GasTankIdsForAllTXC",
-			Handler:    _Query_GasTankIdsForAllTXC_Handler,
+			MethodName: "GasTankIdsForAllUsageIdentifiers",
+			Handler:    _Query_GasTankIdsForAllUsageIdentifiers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "gasless/v1beta1/query.proto",
+}
+
+func (m *ContractDetails) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ContractDetails) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *ContractDetails) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Label) > 0 {
+		i -= len(m.Label)
+		copy(dAtA[i:], m.Label)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Label)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Address) > 0 {
+		i -= len(m.Address)
+		copy(dAtA[i:], m.Address)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if m.CodeId != 0 {
+		i = encodeVarintQuery(dAtA, i, uint64(m.CodeId))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *UsageIdentifiers) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *UsageIdentifiers) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *UsageIdentifiers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Contracts) > 0 {
+		for iNdEx := len(m.Contracts) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Contracts[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.MessageTypes) > 0 {
+		for iNdEx := len(m.MessageTypes) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.MessageTypes[iNdEx])
+			copy(dAtA[i:], m.MessageTypes[iNdEx])
+			i = encodeVarintQuery(dAtA, i, uint64(len(m.MessageTypes[iNdEx])))
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *QueryParamsRequest) Marshal() (dAtA []byte, err error) {
@@ -1692,7 +1795,7 @@ func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryMessagesAndContractsRequest) Marshal() (dAtA []byte, err error) {
+func (m *QueryAvailableUsageIdentifiersRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1702,12 +1805,12 @@ func (m *QueryMessagesAndContractsRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryMessagesAndContractsRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryAvailableUsageIdentifiersRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryMessagesAndContractsRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryAvailableUsageIdentifiersRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1715,7 +1818,7 @@ func (m *QueryMessagesAndContractsRequest) MarshalToSizedBuffer(dAtA []byte) (in
 	return len(dAtA) - i, nil
 }
 
-func (m *ContractDetails) Marshal() (dAtA []byte, err error) {
+func (m *QueryAvailableUsageIdentifiersResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1725,81 +1828,26 @@ func (m *ContractDetails) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *ContractDetails) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryAvailableUsageIdentifiersResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *ContractDetails) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryAvailableUsageIdentifiersResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.Label) > 0 {
-		i -= len(m.Label)
-		copy(dAtA[i:], m.Label)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Label)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintQuery(dAtA, i, uint64(len(m.Address)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if m.CodeId != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.CodeId))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *QueryMessagesAndContractsResponse) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *QueryMessagesAndContractsResponse) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *QueryMessagesAndContractsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Contracts) > 0 {
-		for iNdEx := len(m.Contracts) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.Contracts[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintQuery(dAtA, i, uint64(size))
-			}
-			i--
-			dAtA[i] = 0x12
+	{
+		size, err := m.UsageIdentifiers.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
+		i -= size
+		i = encodeVarintQuery(dAtA, i, uint64(size))
 	}
-	if len(m.Messages) > 0 {
-		for iNdEx := len(m.Messages) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Messages[iNdEx])
-			copy(dAtA[i:], m.Messages[iNdEx])
-			i = encodeVarintQuery(dAtA, i, uint64(len(m.Messages[iNdEx])))
-			i--
-			dAtA[i] = 0xa
-		}
-	}
+	i--
+	dAtA[i] = 0xa
 	return len(dAtA) - i, nil
 }
 
@@ -1828,33 +1876,15 @@ func (m *GasTankResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		copy(dAtA[i:], m.FeeDenom)
 		i = encodeVarintQuery(dAtA, i, uint64(len(m.FeeDenom)))
 		i--
-		dAtA[i] = 0x62
+		dAtA[i] = 0x4a
 	}
-	if len(m.AuthorizedActors) > 0 {
-		for iNdEx := len(m.AuthorizedActors) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.AuthorizedActors[iNdEx])
-			copy(dAtA[i:], m.AuthorizedActors[iNdEx])
-			i = encodeVarintQuery(dAtA, i, uint64(len(m.AuthorizedActors[iNdEx])))
+	if len(m.SupportedUsageIdentifiers) > 0 {
+		for iNdEx := len(m.SupportedUsageIdentifiers) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.SupportedUsageIdentifiers[iNdEx])
+			copy(dAtA[i:], m.SupportedUsageIdentifiers[iNdEx])
+			i = encodeVarintQuery(dAtA, i, uint64(len(m.SupportedUsageIdentifiers[iNdEx])))
 			i--
-			dAtA[i] = 0x5a
-		}
-	}
-	if len(m.ContractsAllowed) > 0 {
-		for iNdEx := len(m.ContractsAllowed) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.ContractsAllowed[iNdEx])
-			copy(dAtA[i:], m.ContractsAllowed[iNdEx])
-			i = encodeVarintQuery(dAtA, i, uint64(len(m.ContractsAllowed[iNdEx])))
-			i--
-			dAtA[i] = 0x52
-		}
-	}
-	if len(m.TxsAllowed) > 0 {
-		for iNdEx := len(m.TxsAllowed) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.TxsAllowed[iNdEx])
-			copy(dAtA[i:], m.TxsAllowed[iNdEx])
-			i = encodeVarintQuery(dAtA, i, uint64(len(m.TxsAllowed[iNdEx])))
-			i--
-			dAtA[i] = 0x4a
+			dAtA[i] = 0x42
 		}
 	}
 	{
@@ -1866,7 +1896,7 @@ func (m *GasTankResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintQuery(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x42
+	dAtA[i] = 0x3a
 	{
 		size := m.MaxFeeUsagePerConsumer.Size()
 		i -= size
@@ -1876,12 +1906,7 @@ func (m *GasTankResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintQuery(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x3a
-	if m.MaxTxsCountPerConsumer != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.MaxTxsCountPerConsumer))
-		i--
-		dAtA[i] = 0x30
-	}
+	dAtA[i] = 0x32
 	if m.IsActive {
 		i--
 		if m.IsActive {
@@ -2303,17 +2328,19 @@ func (m *GasConsumersByGasTankIDResponse) MarshalToSizedBuffer(dAtA []byte) (int
 	_ = i
 	var l int
 	_ = l
-	if m.Usage != nil {
-		{
-			size, err := m.Usage.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
+	if len(m.Usage) > 0 {
+		for iNdEx := len(m.Usage) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Usage[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
 			}
-			i -= size
-			i = encodeVarintQuery(dAtA, i, uint64(size))
+			i--
+			dAtA[i] = 0x2a
 		}
-		i--
-		dAtA[i] = 0x3a
 	}
 	{
 		size, err := m.TotalFeesConsumed.MarshalToSizedBuffer(dAtA[:i])
@@ -2324,7 +2351,7 @@ func (m *GasConsumersByGasTankIDResponse) MarshalToSizedBuffer(dAtA []byte) (int
 		i = encodeVarintQuery(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x32
+	dAtA[i] = 0x22
 	{
 		size, err := m.TotalFeeConsumptionAllowed.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -2334,17 +2361,7 @@ func (m *GasConsumersByGasTankIDResponse) MarshalToSizedBuffer(dAtA []byte) (int
 		i = encodeVarintQuery(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x2a
-	if m.TotalTxsMade != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.TotalTxsMade))
-		i--
-		dAtA[i] = 0x20
-	}
-	if m.TotalTxsAllowed != 0 {
-		i = encodeVarintQuery(dAtA, i, uint64(m.TotalTxsAllowed))
-		i--
-		dAtA[i] = 0x18
-	}
+	dAtA[i] = 0x1a
 	if m.IsBlocked {
 		i--
 		if m.IsBlocked {
@@ -2445,7 +2462,7 @@ func (m *QueryGasConsumersByGasTankIDResponse) MarshalToSizedBuffer(dAtA []byte)
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryGasTankIdsForAllTXC) Marshal() (dAtA []byte, err error) {
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2455,12 +2472,12 @@ func (m *QueryGasTankIdsForAllTXC) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryGasTankIdsForAllTXC) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryGasTankIdsForAllTXC) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -2468,7 +2485,7 @@ func (m *QueryGasTankIdsForAllTXC) MarshalToSizedBuffer(dAtA []byte) (int, error
 	return len(dAtA) - i, nil
 }
 
-func (m *QueryGasTankIdsForAllTXCResponse) Marshal() (dAtA []byte, err error) {
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -2478,20 +2495,20 @@ func (m *QueryGasTankIdsForAllTXCResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *QueryGasTankIdsForAllTXCResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *QueryGasTankIdsForAllTXCResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.TxToGtIds) > 0 {
-		for iNdEx := len(m.TxToGtIds) - 1; iNdEx >= 0; iNdEx-- {
+	if len(m.UsageIdentifierToGastankIds) > 0 {
+		for iNdEx := len(m.UsageIdentifierToGastankIds) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := m.TxToGtIds[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.UsageIdentifierToGastankIds[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
@@ -2516,35 +2533,6 @@ func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *QueryParamsRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
-func (m *QueryParamsResponse) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = m.Params.Size()
-	n += 1 + l + sovQuery(uint64(l))
-	return n
-}
-
-func (m *QueryMessagesAndContractsRequest) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	return n
-}
-
 func (m *ContractDetails) Size() (n int) {
 	if m == nil {
 		return 0
@@ -2565,14 +2553,14 @@ func (m *ContractDetails) Size() (n int) {
 	return n
 }
 
-func (m *QueryMessagesAndContractsResponse) Size() (n int) {
+func (m *UsageIdentifiers) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.Messages) > 0 {
-		for _, s := range m.Messages {
+	if len(m.MessageTypes) > 0 {
+		for _, s := range m.MessageTypes {
 			l = len(s)
 			n += 1 + l + sovQuery(uint64(l))
 		}
@@ -2583,6 +2571,46 @@ func (m *QueryMessagesAndContractsResponse) Size() (n int) {
 			n += 1 + l + sovQuery(uint64(l))
 		}
 	}
+	return n
+}
+
+func (m *QueryParamsRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *QueryParamsResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Params.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryAvailableUsageIdentifiersRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *QueryAvailableUsageIdentifiersResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.UsageIdentifiers.Size()
+	n += 1 + l + sovQuery(uint64(l))
 	return n
 }
 
@@ -2608,27 +2636,12 @@ func (m *GasTankResponse) Size() (n int) {
 	if m.IsActive {
 		n += 2
 	}
-	if m.MaxTxsCountPerConsumer != 0 {
-		n += 1 + sovQuery(uint64(m.MaxTxsCountPerConsumer))
-	}
 	l = m.MaxFeeUsagePerConsumer.Size()
 	n += 1 + l + sovQuery(uint64(l))
 	l = m.MaxFeeUsagePerTx.Size()
 	n += 1 + l + sovQuery(uint64(l))
-	if len(m.TxsAllowed) > 0 {
-		for _, s := range m.TxsAllowed {
-			l = len(s)
-			n += 1 + l + sovQuery(uint64(l))
-		}
-	}
-	if len(m.ContractsAllowed) > 0 {
-		for _, s := range m.ContractsAllowed {
-			l = len(s)
-			n += 1 + l + sovQuery(uint64(l))
-		}
-	}
-	if len(m.AuthorizedActors) > 0 {
-		for _, s := range m.AuthorizedActors {
+	if len(m.SupportedUsageIdentifiers) > 0 {
+		for _, s := range m.SupportedUsageIdentifiers {
 			l = len(s)
 			n += 1 + l + sovQuery(uint64(l))
 		}
@@ -2792,19 +2805,15 @@ func (m *GasConsumersByGasTankIDResponse) Size() (n int) {
 	if m.IsBlocked {
 		n += 2
 	}
-	if m.TotalTxsAllowed != 0 {
-		n += 1 + sovQuery(uint64(m.TotalTxsAllowed))
-	}
-	if m.TotalTxsMade != 0 {
-		n += 1 + sovQuery(uint64(m.TotalTxsMade))
-	}
 	l = m.TotalFeeConsumptionAllowed.Size()
 	n += 1 + l + sovQuery(uint64(l))
 	l = m.TotalFeesConsumed.Size()
 	n += 1 + l + sovQuery(uint64(l))
-	if m.Usage != nil {
-		l = m.Usage.Size()
-		n += 1 + l + sovQuery(uint64(l))
+	if len(m.Usage) > 0 {
+		for _, e := range m.Usage {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
 	}
 	return n
 }
@@ -2841,7 +2850,7 @@ func (m *QueryGasConsumersByGasTankIDResponse) Size() (n int) {
 	return n
 }
 
-func (m *QueryGasTankIdsForAllTXC) Size() (n int) {
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -2850,14 +2859,14 @@ func (m *QueryGasTankIdsForAllTXC) Size() (n int) {
 	return n
 }
 
-func (m *QueryGasTankIdsForAllTXCResponse) Size() (n int) {
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if len(m.TxToGtIds) > 0 {
-		for _, e := range m.TxToGtIds {
+	if len(m.UsageIdentifierToGastankIds) > 0 {
+		for _, e := range m.UsageIdentifierToGastankIds {
 			l = e.Size()
 			n += 1 + l + sovQuery(uint64(l))
 		}
@@ -2870,189 +2879,6 @@ func sovQuery(x uint64) (n int) {
 }
 func sozQuery(x uint64) (n int) {
 	return sovQuery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryParamsRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryParamsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryParamsResponse: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *QueryMessagesAndContractsRequest) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowQuery
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: QueryMessagesAndContractsRequest: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryMessagesAndContractsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipQuery(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *ContractDetails) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -3187,7 +3013,7 @@ func (m *ContractDetails) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryMessagesAndContractsResponse) Unmarshal(dAtA []byte) error {
+func (m *UsageIdentifiers) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -3210,15 +3036,15 @@ func (m *QueryMessagesAndContractsResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryMessagesAndContractsResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: UsageIdentifiers: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryMessagesAndContractsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: UsageIdentifiers: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Messages", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MessageTypes", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -3246,7 +3072,7 @@ func (m *QueryMessagesAndContractsResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Messages = append(m.Messages, string(dAtA[iNdEx:postIndex]))
+			m.MessageTypes = append(m.MessageTypes, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -3279,6 +3105,272 @@ func (m *QueryMessagesAndContractsResponse) Unmarshal(dAtA []byte) error {
 			}
 			m.Contracts = append(m.Contracts, &ContractDetails{})
 			if err := m.Contracts[len(m.Contracts)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryParamsRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryParamsRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryParamsRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryParamsResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryParamsResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Params", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAvailableUsageIdentifiersRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAvailableUsageIdentifiersRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAvailableUsageIdentifiersRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAvailableUsageIdentifiersResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAvailableUsageIdentifiersResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAvailableUsageIdentifiersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UsageIdentifiers", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.UsageIdentifiers.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -3469,25 +3561,6 @@ func (m *GasTankResponse) Unmarshal(dAtA []byte) error {
 			}
 			m.IsActive = bool(v != 0)
 		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field MaxTxsCountPerConsumer", wireType)
-			}
-			m.MaxTxsCountPerConsumer = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.MaxTxsCountPerConsumer |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxFeeUsagePerConsumer", wireType)
 			}
@@ -3521,7 +3594,7 @@ func (m *GasTankResponse) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 8:
+		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field MaxFeeUsagePerTx", wireType)
 			}
@@ -3555,103 +3628,39 @@ func (m *GasTankResponse) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SupportedUsageIdentifiers", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SupportedUsageIdentifiers = append(m.SupportedUsageIdentifiers, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		case 9:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TxsAllowed", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.TxsAllowed = append(m.TxsAllowed, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		case 10:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ContractsAllowed", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ContractsAllowed = append(m.ContractsAllowed, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		case 11:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AuthorizedActors", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthQuery
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthQuery
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.AuthorizedActors = append(m.AuthorizedActors, string(dAtA[iNdEx:postIndex]))
-			iNdEx = postIndex
-		case 12:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field FeeDenom", wireType)
 			}
@@ -4681,44 +4690,6 @@ func (m *GasConsumersByGasTankIDResponse) Unmarshal(dAtA []byte) error {
 			}
 			m.IsBlocked = bool(v != 0)
 		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TotalTxsAllowed", wireType)
-			}
-			m.TotalTxsAllowed = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TotalTxsAllowed |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TotalTxsMade", wireType)
-			}
-			m.TotalTxsMade = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowQuery
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TotalTxsMade |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TotalFeeConsumptionAllowed", wireType)
 			}
@@ -4751,7 +4722,7 @@ func (m *GasConsumersByGasTankIDResponse) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 6:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TotalFeesConsumed", wireType)
 			}
@@ -4784,7 +4755,7 @@ func (m *GasConsumersByGasTankIDResponse) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 7:
+		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Usage", wireType)
 			}
@@ -4813,10 +4784,8 @@ func (m *GasConsumersByGasTankIDResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Usage == nil {
-				m.Usage = &Usage{}
-			}
-			if err := m.Usage.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.Usage = append(m.Usage, &Usage{})
+			if err := m.Usage[len(m.Usage)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -5046,7 +5015,7 @@ func (m *QueryGasConsumersByGasTankIDResponse) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryGasTankIdsForAllTXC) Unmarshal(dAtA []byte) error {
+func (m *QueryGasTankIdsForAllUsageIdentifiersRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5069,10 +5038,10 @@ func (m *QueryGasTankIdsForAllTXC) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryGasTankIdsForAllTXC: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryGasTankIdsForAllUsageIdentifiersRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryGasTankIdsForAllTXC: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryGasTankIdsForAllUsageIdentifiersRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
@@ -5096,7 +5065,7 @@ func (m *QueryGasTankIdsForAllTXC) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *QueryGasTankIdsForAllTXCResponse) Unmarshal(dAtA []byte) error {
+func (m *QueryGasTankIdsForAllUsageIdentifiersResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -5119,15 +5088,15 @@ func (m *QueryGasTankIdsForAllTXCResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: QueryGasTankIdsForAllTXCResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: QueryGasTankIdsForAllUsageIdentifiersResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: QueryGasTankIdsForAllTXCResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: QueryGasTankIdsForAllUsageIdentifiersResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TxToGtIds", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field UsageIdentifierToGastankIds", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -5154,8 +5123,8 @@ func (m *QueryGasTankIdsForAllTXCResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.TxToGtIds = append(m.TxToGtIds, &TxGTIDs{})
-			if err := m.TxToGtIds[len(m.TxToGtIds)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			m.UsageIdentifierToGastankIds = append(m.UsageIdentifierToGastankIds, &UsageIdentifierToGasTankIds{})
+			if err := m.UsageIdentifierToGastankIds[len(m.UsageIdentifierToGastankIds)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

@@ -10,6 +10,20 @@ import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
 
+
+// ContractDetails defines specific contract details 
+message ContractDetails {
+  uint64 code_id = 1;
+  string address = 2;
+  string label = 3;
+}
+
+// UsageIdentifiers defines usage identifiers
+message UsageIdentifiers {
+  repeated string message_types = 1;
+  repeated ContractDetails contracts = 2;
+}
+
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
@@ -18,19 +32,12 @@ message QueryParamsResponse {
   Params params = 1 [(gogoproto.nullable) = false];
 }
 
-// QueryMessagesAndContractsRequest is a request type for the Query/MessagesAndContracts RPC method.
-message QueryMessagesAndContractsRequest {}
+// QueryAvailableUsageIdentifiersRequest is a request type for the Query/AvailableUsageIdentifiers RPC method.
+message QueryAvailableUsageIdentifiersRequest {}
 
-message ContractDetails {
-  uint64 code_id = 1;
-  string address = 2;
-  string label = 3;
-}
-
-// QueryMessagesAndContractsResponse is a response type for the Query/MessagesAndContracts RPC method.
-message QueryMessagesAndContractsResponse {
-  repeated string messages = 1;
-  repeated ContractDetails contracts = 2;
+// QueryAvailableUsageIdentifiersResponse is a response type for the Query/AvailableUsageIdentifiers RPC method.
+message QueryAvailableUsageIdentifiersResponse {
+  UsageIdentifiers usage_identifiers = 1 [(gogoproto.nullable) = false];
 }
 
 message GasTankResponse {
@@ -39,13 +46,10 @@ message GasTankResponse {
   string reserve = 3;
   cosmos.base.v1beta1.Coin gas_tank_balance = 4 [(gogoproto.nullable) = false];
   bool is_active = 5;
-  uint64 max_txs_count_per_consumer = 6;
-  string max_fee_usage_per_consumer = 7 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-  string max_fee_usage_per_tx = 8 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
-  repeated string txs_allowed = 9;
-  repeated string contracts_allowed = 10;
-  repeated string authorized_actors = 11;
-  string fee_denom = 12;
+  string max_fee_usage_per_consumer = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  string max_fee_usage_per_tx = 7 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  repeated string supported_usage_identifiers = 8;
+  string fee_denom = 9;
 }
 
 // QueryGasTankRequest is a request type for the Query/GasTank RPC method.
@@ -105,11 +109,9 @@ message QueryGasConsumersResponse {
 message GasConsumersByGasTankIDResponse {
   string consumer = 1;
   bool is_blocked = 2;
-  uint64 total_txs_allowed = 3;
-  uint64 total_txs_made = 4;
-  cosmos.base.v1beta1.Coin total_fee_consumption_allowed = 5 [(gogoproto.nullable) = false];
-  cosmos.base.v1beta1.Coin total_fees_consumed = 6 [(gogoproto.nullable) = false];
-  Usage usage = 7;
+  cosmos.base.v1beta1.Coin total_fee_consumption_allowed = 3 [(gogoproto.nullable) = false];
+  cosmos.base.v1beta1.Coin total_fees_consumed = 4 [(gogoproto.nullable) = false];
+  repeated Usage usage = 5;
 }
 
 // QueryGasConsumersByGasTankIDRequest is a request type for the Query/GasConsumersByGasTankID RPC method.
@@ -124,10 +126,10 @@ message QueryGasConsumersByGasTankIDResponse {
   repeated GasConsumersByGasTankIDResponse gas_consumers = 3 [(gogoproto.nullable) = false];
 }
 
-message QueryGasTankIdsForAllTXC {}
+message QueryGasTankIdsForAllUsageIdentifiersRequest {}
 
-message QueryGasTankIdsForAllTXCResponse {
-  repeated TxGTIDs tx_to_gt_ids = 1;
+message QueryGasTankIdsForAllUsageIdentifiersResponse {
+  repeated UsageIdentifierToGasTankIds usage_identifier_to_gastank_ids = 1;
 }
 
 // Query defines the gRPC querier service.
@@ -137,9 +139,9 @@ service Query {
     option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/params";
   }
 
-  // MessagesAndContracts return all cosmos.base.v1beta1.Msg messages and available contract details 
-  rpc MessagesAndContracts(QueryMessagesAndContractsRequest) returns (QueryMessagesAndContractsResponse) {
-    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/mac";
+  // AvailableUsageIdentifiers return all available usage identifiers
+  rpc AvailableUsageIdentifiers(QueryAvailableUsageIdentifiersRequest) returns (QueryAvailableUsageIdentifiersResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/usageidentifiers";
   }
 
   // GasTank returns gas tank details 
@@ -172,8 +174,8 @@ service Query {
     option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/tank/consumers/{gas_tank_id}";
   }
 
-  // GasTankIdsForAllTXC returns gas tanks ids with all available tx or contracts
-  rpc GasTankIdsForAllTXC(QueryGasTankIdsForAllTXC) returns (QueryGasTankIdsForAllTXCResponse) {
-    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/txc";
+  // GasTankIdsForAllUsageIdentifiers returns gas tanks ids with all available usage identifiers
+  rpc GasTankIdsForAllUsageIdentifiers(QueryGasTankIdsForAllUsageIdentifiersRequest) returns (QueryGasTankIdsForAllUsageIdentifiersResponse) {
+    option (google.api.http).get = "/dymensionxyz/dymension-rdk/gasless/v1beta1/tankids";
   }
 }

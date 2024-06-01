@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	"encoding/binary"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -11,8 +11,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
+	"github.com/cosmos/cosmos-sdk/simapp"
+	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	chain "github.com/dymensionxyz/dymension-rdk/testutil/app"
-	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	testutils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
@@ -22,11 +25,12 @@ import (
 type KeeperTestSuite struct {
 	suite.Suite
 
-	app       *chain.App
-	ctx       sdk.Context
-	keeper    keeper.Keeper
-	querier   keeper.Querier
-	msgServer types.MsgServer
+	app            *chain.App
+	ctx            sdk.Context
+	keeper         keeper.Keeper
+	querier        keeper.Querier
+	msgServer      types.MsgServer
+	encodingConfig simappparams.EncodingConfig
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -34,11 +38,12 @@ func TestKeeperTestSuite(t *testing.T) {
 }
 
 func (s *KeeperTestSuite) SetupTest() {
-	s.app = utils.Setup(s.T(), false)
+	s.app = testutils.Setup(s.T(), false)
 	s.ctx = s.app.BaseApp.NewContext(false, tmproto.Header{})
 	s.keeper = s.app.GaslessKeeper
 	s.querier = keeper.Querier{Keeper: s.keeper}
 	s.msgServer = keeper.NewMsgServerImpl(s.keeper)
+	s.encodingConfig = simapp.MakeTestEncodingConfig()
 }
 
 // Below are just shortcuts to frequently-used functions.
@@ -63,9 +68,7 @@ func (s *KeeperTestSuite) nextBlock() {
 
 // Below are useful helpers to write test code easily.
 func (s *KeeperTestSuite) addr(addrNum int) sdk.AccAddress {
-	addr := make(sdk.AccAddress, 20)
-	binary.PutVarint(addr, int64(addrNum))
-	return addr
+	return utils.DeriveAddress(utils.AddressType32Bytes, types.ModuleName, fmt.Sprintf("address-%d", addrNum))
 }
 
 func (s *KeeperTestSuite) fundAddr(addr sdk.AccAddress, amt sdk.Coins) {
@@ -105,54 +108,38 @@ func (s *KeeperTestSuite) CreateNewGasTank(
 	provider sdk.AccAddress,
 	feeDenom string,
 	maxFeeUsagePerTx sdkmath.Int,
-	maxTxsCountsPerConsumer uint64,
 	maxFeeUsagePerConsumer sdkmath.Int,
-	txsAllowed, contractsAllowed []string,
+	usageIdentifiers []string,
 	deposit string,
 ) types.GasTank {
 	parsedDepositCoin := ParseCoin(deposit)
 	s.fundAddr(provider, sdk.NewCoins(parsedDepositCoin))
 
-	txsAllowed = types.RemoveDuplicates(txsAllowed)
-	contractsAllowed = types.RemoveDuplicates(contractsAllowed)
+	usageIdentifiers = utils.RemoveDuplicates(usageIdentifiers)
 	tank, err := s.keeper.CreateGasTank(s.ctx, types.NewMsgCreateGasTank(
 		provider,
 		feeDenom,
 		maxFeeUsagePerTx,
-		maxTxsCountsPerConsumer,
 		maxFeeUsagePerConsumer,
-		txsAllowed,
-		contractsAllowed,
+		usageIdentifiers,
 		parsedDepositCoin,
 	))
 	s.Require().NoError(err)
 	s.Require().IsType(types.GasTank{}, tank)
 	s.Require().Equal(feeDenom, tank.FeeDenom)
 	s.Require().Equal(maxFeeUsagePerTx, tank.MaxFeeUsagePerTx)
-	s.Require().Equal(maxTxsCountsPerConsumer, tank.MaxTxsCountPerConsumer)
 	s.Require().Equal(maxFeeUsagePerConsumer, tank.MaxFeeUsagePerConsumer)
-	s.Require().Equal(txsAllowed, tank.TxsAllowed)
-	s.Require().Equal(contractsAllowed, tank.ContractsAllowed)
+	s.Require().Equal(usageIdentifiers, tank.UsageIdentifiers)
 	s.Require().Equal(ParseCoin(deposit), s.getBalance(tank.GetGasTankReserveAddress(), feeDenom))
 
-	for _, tx := range txsAllowed {
-		txGtids, found := s.keeper.GetTxGTIDs(s.ctx, tx)
+	for _, identifier := range usageIdentifiers {
+		uiToGTIDs, found := s.keeper.GetUsageIdentifierToGasTankIds(s.ctx, identifier)
 		s.Require().True(found)
-		s.Require().IsType(types.TxGTIDs{}, txGtids)
-		s.Require().IsType([]uint64{}, txGtids.GasTankIds)
-		s.Require().Equal(txGtids.TxPathOrContractAddress, tx)
-		s.Require().Equal(tank.Id, txGtids.GasTankIds[len(txGtids.GasTankIds)-1])
+		s.Require().IsType(types.UsageIdentifierToGasTankIds{}, uiToGTIDs)
+		s.Require().IsType([]uint64{}, uiToGTIDs.GasTankIds)
+		s.Require().Equal(uiToGTIDs.UsageIdentifier, identifier)
+		s.Require().Equal(tank.Id, uiToGTIDs.GasTankIds[len(uiToGTIDs.GasTankIds)-1])
 	}
-
-	for _, c := range contractsAllowed {
-		txGtids, found := s.keeper.GetTxGTIDs(s.ctx, c)
-		s.Require().True(found)
-		s.Require().IsType(types.TxGTIDs{}, txGtids)
-		s.Require().IsType([]uint64{}, txGtids.GasTankIds)
-		s.Require().Equal(txGtids.TxPathOrContractAddress, c)
-		s.Require().Equal(tank.Id, txGtids.GasTankIds[len(txGtids.GasTankIds)-1])
-	}
-
 	return tank
 }
 

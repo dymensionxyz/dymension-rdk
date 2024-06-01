@@ -15,6 +15,33 @@ This is how it works -
 - If there is no `GasTank` which can satisfy this tx, the original fee source (tx initiator) address is returned.
 - If `GasTank` is found then the reserve address is returned as the fee source of the tx.
 - Then the fee is deducted from the returned fee source address.
-- A small percentage of fee (stored in params) is burned once the fee is deducted.
 
 In the above process, all the incoming txs with fees are being handled by the gasless module for fee consumption, If the transaction is not eligible for the gasless it will fallback in default mode i.e the fee will be deducted from the tx source account.
+
+
+## Priority And Cross Interaction With FeeGrant
+
+### Priority Order:
+
+When determining the source of transaction fees, the Gasless and Fee Grant modules follow a priority order:
+
+1.  Fee Granter: 
+    - If a fee grant is available for the incoming transaction, the fee is deducted from the fee granter's account.
+
+1.  Gas Tank: 
+    - If no fee grant is available, but a gas tank is configured with adequate funds, the fee is deducted from the gas tank.
+
+1.  Original Fee Source: 
+    - If neither a fee grant nor a gas tank is available for the transaction, the fee is deducted from the original fee source (transaction initiator's account).
+
+### Cross-Interaction:
+
+1. Fee Granter and Gas Tank: 
+    - If both a fee grant and a gas tank are available for the transaction initiator, the fee is deducted from the fee grant's account, bypassing the gas tank entirely.
+
+1. Fee Granter and Original Fee Source: 
+    - If a fee grant exists but no gas tank is configured, the fee is deducted from the fee grant's account, without involving the original fee source.
+
+1.  Gas Tank and Original Fee Source: 
+    - If a gas tank is available but no fee grant exists for the transaction initiator, the fee is deducted from the gas tank, avoiding the need to use the original fee source.
+
