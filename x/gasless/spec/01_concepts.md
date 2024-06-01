@@ -10,6 +10,23 @@ The Gasless module provides functionality for Developers (Native Go and Smart Co
 Developers can setup their MessageTypes and Contracts with Gasless by first creating a GasTank and whitelisting MessageTypes and ContractAddresses with preferred configurations and then funding it with chain's native fee token.
 Clients can then interact with the Messages and Contract normally as usual and the fee for the tx will be deducted from the gastank
 
+### Comparison with Cosmos SDK's FeeGrant Module
+
+Although FeeGrant module allows accounts to grant fee allowances and to use fees from their accounts, and Grantees can execute any transaction without the need to maintain sufficient fees.
+
+A detailed comparision below gives good idea of the features provided by each module.
+
+| Aspect | Gasless Module | FeeGrant Module |
+| ------ | -------------- | --------------- |
+| Purpose                | Provides functionality for covering transaction execution fees for users interacting with messages, contracts or any valid usage identifiers, aiming to improve user experience and facilitate onboarding of wallets with limited or zero native fee tokens. | The fee grant module allows granter to grant fee allowances to specific account, enabling them to execute transactions without having to maintain sufficient fees. |
+| Grant Mechanism        | Allows developers to create GasTanks and whitelist usage identifiers, any address making tx with whitelisted identifier is eligible for fee allowance    | It grants fee allowances, which can have expiration dates, spend limits to specific accounts. |
+| Usage | Once the GasTank is created, it can automatically facilitates Fees for incoming tx with whitelisted UsegeIdentifier (MessageTypes, Contract Addresses, etc)  | Granter needs to grant permission to the specific account/address to facilitate fee allowances. |
+| Fee Source Handling    | The GasTank serves as the fee source for transactions, covering fees.    | Granter's account act as the fee source for executing transactions.|
+| Management & Configuration | GasTanks can be created, and the creator can update and configure the gas tank with specific parameters. | Fee allowances can be granted, revoked, and managed by account holders.  |
+| Flexibility & Use Cases | Suitable for onboarding new users holding little to no native fee tokens for making tx. | Appropriate for use cases requiring predefined fee allowances for specific accounts. |
+| Transparency & Traceability | Provides transparency regarding fee coverage and gas tank usage.         | Offers traceability of granted fee allowances and their utilization.    |
+
+
 ### Creating a GasTank
 
 There can be multiple gastanks, each of which can be with unique configuration.
