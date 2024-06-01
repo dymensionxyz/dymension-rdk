@@ -2,9 +2,10 @@ package utils
 
 import (
 	"encoding/json"
-	"github.com/CosmWasm/wasmd/x/wasm"
 	"testing"
 	"time"
+
+	"github.com/CosmWasm/wasmd/x/wasm"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
