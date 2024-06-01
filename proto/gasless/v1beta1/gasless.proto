@@ -7,42 +7,85 @@ import "google/protobuf/timestamp.proto";
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
 option (gogoproto.goproto_getters_all) = false;
 
+// UsageIdentifierToGasTankIds maps all the gas tank ids with the usage identifier
+// results in faster query of gas tanks based on usage identifier
 message UsageIdentifierToGasTankIds {
+    // usage identifier defines the unique identifier for a tx
     string usage_identifier = 1;
+
+    // all the associated gas tank ids for the usage identifier
     repeated uint64 gas_tank_ids = 2;
 }
 
+// GasTank defines the store for all the configurations of a set by a gas provider
 message GasTank {
+    // id defines the id of gas tank
     uint64 id = 1;
+
+    // provider defines the creator/owner of the gas tank
     string provider = 2;
+
+    // reserve defines the reserve address of the gas tank where deposited funds are stored
     string reserve = 3;
+
+    // status of the gas tank if it is active or not
     bool is_active = 4;
+
+    // max_fee_usage_per_consumer defines the gas cosumption limit which consumer is allowed, beyod this limit gas tank will not sponsor the tx
     string max_fee_usage_per_consumer = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+
+    // max_fee_usage_per_tx defines the maximum limit for the fee ased by the tx, beyond this gastank cannot sponsor the tx
     string max_fee_usage_per_tx = 6 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    
+    // usage_identifiers defines the unique list of MessageTypes,ContractAddress or any valid usage identifier which are whitelisted by gas tank.
     repeated string usage_identifiers = 7;
+    
+    // fee_denom defines the supported fee denom by gas tank.
     string fee_denom = 8;
 }
 
+// GasConsumer > ConsumptionDetail > Usage > Detail stores the consumption activity of the consumer
 message Detail {
+    // timestamp defines the timestamp at which the fee was consumed
     google.protobuf.Timestamp timestamp = 1 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
+    
+    // gas_consumed defines the amount of fee consumed by the tx
     string gas_consumed = 2 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
 }
 
+// GasConsumer > ConsumptionDetail > Usage defines the independent usage of gas by the individual usage identifier
 message Usage {
+    // usage identifier defines the gas consumption/usage identifier of the tx, this identifier is responsible for consuming gas
     string usage_identifier = 1;
+
+    // details defines the list of usage details by the usage identifier along with fee amount and timestamp
     repeated Detail details = 2;
 }
 
+// GasConsumer > ConsumptionDetail defines the usage statistics of the consumer within each gas tank 
 message ConsumptionDetail {
+    // gas_tank_id defines the if of the gas tank
     uint64 gas_tank_id = 1;
+
+    // is_blocked defines if the consumer is blocked or not by the gas tank
     bool is_blocked = 2;
+
+    // total_fee_consumption_allowed defines the maximum fee consumption allowed by the gas tank to the consumer
     string total_fee_consumption_allowed = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    
+    // total_fees_consumed defines the total fee consumed so far by the consumer in this gas tank
     string total_fees_consumed = 4 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+    
+    // usage defines the usage of gas within this gas tank
     repeated Usage usage = 5;
 }
 
+// GasConsumer stores the consumer address and all the gas consumption activities within the gas tank
 message GasConsumer {
+    // bech32 encoded address of the consumer
     string consumer = 1;
+
+    // consumtion statistics of the consumer
     repeated ConsumptionDetail consumptions = 2;
 }
 

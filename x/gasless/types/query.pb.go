@@ -32,6 +32,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// ContractDetails defines specific contract details
 type ContractDetails struct {
 	CodeId  uint64 `protobuf:"varint,1,opt,name=code_id,json=codeId,proto3" json:"code_id,omitempty"`
 	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
@@ -92,6 +93,7 @@ func (m *ContractDetails) GetLabel() string {
 	return ""
 }
 
+// UsageIdentifiers defines usage identifiers
 type UsageIdentifiers struct {
 	MessageTypes []string           `protobuf:"bytes,1,rep,name=message_types,json=messageTypes,proto3" json:"message_types,omitempty"`
 	Contracts    []*ContractDetails `protobuf:"bytes,2,rep,name=contracts,proto3" json:"contracts,omitempty"`

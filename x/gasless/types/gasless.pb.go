@@ -28,9 +28,13 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// UsageIdentifierToGasTankIds maps all the gas tank ids with the usage identifier
+// results in faster query of gas tanks based on usage identifier
 type UsageIdentifierToGasTankIds struct {
-	UsageIdentifier string   `protobuf:"bytes,1,opt,name=usage_identifier,json=usageIdentifier,proto3" json:"usage_identifier,omitempty"`
-	GasTankIds      []uint64 `protobuf:"varint,2,rep,packed,name=gas_tank_ids,json=gasTankIds,proto3" json:"gas_tank_ids,omitempty"`
+	// usage identifier defines the unique identifier for a tx
+	UsageIdentifier string `protobuf:"bytes,1,opt,name=usage_identifier,json=usageIdentifier,proto3" json:"usage_identifier,omitempty"`
+	// all the associated gas tank ids for the usage identifier
+	GasTankIds []uint64 `protobuf:"varint,2,rep,packed,name=gas_tank_ids,json=gasTankIds,proto3" json:"gas_tank_ids,omitempty"`
 }
 
 func (m *UsageIdentifierToGasTankIds) Reset()         { *m = UsageIdentifierToGasTankIds{} }
@@ -66,15 +70,24 @@ func (m *UsageIdentifierToGasTankIds) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_UsageIdentifierToGasTankIds proto.InternalMessageInfo
 
+// GasTank defines the store for all the configurations of a set by a gas provider
 type GasTank struct {
-	Id                     uint64                                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Provider               string                                 `protobuf:"bytes,2,opt,name=provider,proto3" json:"provider,omitempty"`
-	Reserve                string                                 `protobuf:"bytes,3,opt,name=reserve,proto3" json:"reserve,omitempty"`
-	IsActive               bool                                   `protobuf:"varint,4,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	// id defines the id of gas tank
+	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	// provider defines the creator/owner of the gas tank
+	Provider string `protobuf:"bytes,2,opt,name=provider,proto3" json:"provider,omitempty"`
+	// reserve defines the reserve address of the gas tank where deposited funds are stored
+	Reserve string `protobuf:"bytes,3,opt,name=reserve,proto3" json:"reserve,omitempty"`
+	// status of the gas tank if it is active or not
+	IsActive bool `protobuf:"varint,4,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	// max_fee_usage_per_consumer defines the gas cosumption limit which consumer is allowed, beyod this limit gas tank will not sponsor the tx
 	MaxFeeUsagePerConsumer github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=max_fee_usage_per_consumer,json=maxFeeUsagePerConsumer,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_fee_usage_per_consumer"`
-	MaxFeeUsagePerTx       github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=max_fee_usage_per_tx,json=maxFeeUsagePerTx,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_fee_usage_per_tx"`
-	UsageIdentifiers       []string                               `protobuf:"bytes,7,rep,name=usage_identifiers,json=usageIdentifiers,proto3" json:"usage_identifiers,omitempty"`
-	FeeDenom               string                                 `protobuf:"bytes,8,opt,name=fee_denom,json=feeDenom,proto3" json:"fee_denom,omitempty"`
+	// max_fee_usage_per_tx defines the maximum limit for the fee ased by the tx, beyond this gastank cannot sponsor the tx
+	MaxFeeUsagePerTx github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=max_fee_usage_per_tx,json=maxFeeUsagePerTx,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_fee_usage_per_tx"`
+	// usage_identifiers defines the unique list of MessageTypes,ContractAddress or any valid usage identifier which are whitelisted by gas tank.
+	UsageIdentifiers []string `protobuf:"bytes,7,rep,name=usage_identifiers,json=usageIdentifiers,proto3" json:"usage_identifiers,omitempty"`
+	// fee_denom defines the supported fee denom by gas tank.
+	FeeDenom string `protobuf:"bytes,8,opt,name=fee_denom,json=feeDenom,proto3" json:"fee_denom,omitempty"`
 }
 
 func (m *GasTank) Reset()         { *m = GasTank{} }
@@ -110,8 +123,11 @@ func (m *GasTank) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GasTank proto.InternalMessageInfo
 
+// GasConsumer > ConsumptionDetail > Usage > Detail stores the consumption activity of the consumer
 type Detail struct {
-	Timestamp   time.Time                              `protobuf:"bytes,1,opt,name=timestamp,proto3,stdtime" json:"timestamp"`
+	// timestamp defines the timestamp at which the fee was consumed
+	Timestamp time.Time `protobuf:"bytes,1,opt,name=timestamp,proto3,stdtime" json:"timestamp"`
+	// gas_consumed defines the amount of fee consumed by the tx
 	GasConsumed github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=gas_consumed,json=gasConsumed,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"gas_consumed"`
 }
 
@@ -148,9 +164,12 @@ func (m *Detail) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Detail proto.InternalMessageInfo
 
+// GasConsumer > ConsumptionDetail > Usage defines the independent usage of gas by the individual usage identifier
 type Usage struct {
-	UsageIdentifier string    `protobuf:"bytes,1,opt,name=usage_identifier,json=usageIdentifier,proto3" json:"usage_identifier,omitempty"`
-	Details         []*Detail `protobuf:"bytes,2,rep,name=details,proto3" json:"details,omitempty"`
+	// usage identifier defines the gas consumption/usage identifier of the tx, this identifier is responsible for consuming gas
+	UsageIdentifier string `protobuf:"bytes,1,opt,name=usage_identifier,json=usageIdentifier,proto3" json:"usage_identifier,omitempty"`
+	// details defines the list of usage details by the usage identifier along with fee amount and timestamp
+	Details []*Detail `protobuf:"bytes,2,rep,name=details,proto3" json:"details,omitempty"`
 }
 
 func (m *Usage) Reset()         { *m = Usage{} }
@@ -186,12 +205,18 @@ func (m *Usage) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Usage proto.InternalMessageInfo
 
+// GasConsumer > ConsumptionDetail defines the usage statistics of the consumer within each gas tank
 type ConsumptionDetail struct {
-	GasTankId                  uint64                                 `protobuf:"varint,1,opt,name=gas_tank_id,json=gasTankId,proto3" json:"gas_tank_id,omitempty"`
-	IsBlocked                  bool                                   `protobuf:"varint,2,opt,name=is_blocked,json=isBlocked,proto3" json:"is_blocked,omitempty"`
+	// gas_tank_id defines the if of the gas tank
+	GasTankId uint64 `protobuf:"varint,1,opt,name=gas_tank_id,json=gasTankId,proto3" json:"gas_tank_id,omitempty"`
+	// is_blocked defines if the consumer is blocked or not by the gas tank
+	IsBlocked bool `protobuf:"varint,2,opt,name=is_blocked,json=isBlocked,proto3" json:"is_blocked,omitempty"`
+	// total_fee_consumption_allowed defines the maximum fee consumption allowed by the gas tank to the consumer
 	TotalFeeConsumptionAllowed github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,3,opt,name=total_fee_consumption_allowed,json=totalFeeConsumptionAllowed,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"total_fee_consumption_allowed"`
-	TotalFeesConsumed          github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=total_fees_consumed,json=totalFeesConsumed,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"total_fees_consumed"`
-	Usage                      []*Usage                               `protobuf:"bytes,5,rep,name=usage,proto3" json:"usage,omitempty"`
+	// total_fees_consumed defines the total fee consumed so far by the consumer in this gas tank
+	TotalFeesConsumed github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=total_fees_consumed,json=totalFeesConsumed,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"total_fees_consumed"`
+	// usage defines the usage of gas within this gas tank
+	Usage []*Usage `protobuf:"bytes,5,rep,name=usage,proto3" json:"usage,omitempty"`
 }
 
 func (m *ConsumptionDetail) Reset()         { *m = ConsumptionDetail{} }
@@ -227,8 +252,11 @@ func (m *ConsumptionDetail) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ConsumptionDetail proto.InternalMessageInfo
 
+// GasConsumer stores the consumer address and all the gas consumption activities within the gas tank
 type GasConsumer struct {
-	Consumer     string               `protobuf:"bytes,1,opt,name=consumer,proto3" json:"consumer,omitempty"`
+	// bech32 encoded address of the consumer
+	Consumer string `protobuf:"bytes,1,opt,name=consumer,proto3" json:"consumer,omitempty"`
+	// consumtion statistics of the consumer
 	Consumptions []*ConsumptionDetail `protobuf:"bytes,2,rep,name=consumptions,proto3" json:"consumptions,omitempty"`
 }
 

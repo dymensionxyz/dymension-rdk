@@ -25,11 +25,16 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GenesisState defines the gasless module's genesis state.
 type GenesisState struct {
-	Params                      Params                        `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
+	// parms defines the parameters of the gasess module
+	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
+	// usage_identifier_to_gastank_ids defines maps of all the gas tank ids with the usage identifier
 	UsageIdentifierToGastankIds []UsageIdentifierToGasTankIds `protobuf:"bytes,2,rep,name=usage_identifier_to_gastank_ids,json=usageIdentifierToGastankIds,proto3" json:"usage_identifier_to_gastank_ids"`
-	LastGasTankId               uint64                        `protobuf:"varint,3,opt,name=last_gas_tank_id,json=lastGasTankId,proto3" json:"last_gas_tank_id,omitempty"`
-	GasTanks                    []GasTank                     `protobuf:"bytes,4,rep,name=gas_tanks,json=gasTanks,proto3" json:"gas_tanks"`
-	GasConsumers                []GasConsumer                 `protobuf:"bytes,5,rep,name=gas_consumers,json=gasConsumers,proto3" json:"gas_consumers"`
+	// last_gas_tank_id defines most recent gas tank id within the key store
+	LastGasTankId uint64 `protobuf:"varint,3,opt,name=last_gas_tank_id,json=lastGasTankId,proto3" json:"last_gas_tank_id,omitempty"`
+	// gas_tanks defines all available gas tanks
+	GasTanks []GasTank `protobuf:"bytes,4,rep,name=gas_tanks,json=gasTanks,proto3" json:"gas_tanks"`
+	// gas_consumers defines all available gas consumer
+	GasConsumers []GasConsumer `protobuf:"bytes,5,rep,name=gas_consumers,json=gasConsumers,proto3" json:"gas_consumers"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }

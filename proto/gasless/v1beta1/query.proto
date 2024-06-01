@@ -11,12 +11,14 @@ import "cosmos/base/v1beta1/coin.proto";
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
 
 
+// ContractDetails defines specific contract details 
 message ContractDetails {
   uint64 code_id = 1;
   string address = 2;
   string label = 3;
 }
 
+// UsageIdentifiers defines usage identifiers
 message UsageIdentifiers {
   repeated string message_types = 1;
   repeated ContractDetails contracts = 2;

@@ -27,6 +27,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // Params defines the parameters for the module.
 type Params struct {
+	//  minimum_gas_deposit defines the minimum coins required while creating gas tank
 	MinimumGasDeposit github_com_cosmos_cosmos_sdk_types.Coins `protobuf:"bytes,2,rep,name=minimum_gas_deposit,json=minimumGasDeposit,proto3,castrepeated=github.com/cosmos/cosmos-sdk/types.Coins" json:"minimum_gas_deposit"`
 }
 
