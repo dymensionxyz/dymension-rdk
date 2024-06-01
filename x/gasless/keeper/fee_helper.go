@@ -81,6 +81,9 @@ func (k Keeper) CanGasTankBeUsedAsSource(ctx sdk.Context, gtid uint64, consumer 
 	// no need to check the consumption usage since there is no key available with given gas tank id
 	// i.e the consumer has never used this gas reserve before and the first time visitor for the given gas tank
 	if !consumptionFound {
+		if fee.Amount.GT(gasTank.MaxFeeUsagePerConsumer) {
+			return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "insufficient tank limit")
+		}
 		return gasTank, true, nil
 	}
 
@@ -91,10 +94,10 @@ func (k Keeper) CanGasTankBeUsedAsSource(ctx sdk.Context, gtid uint64, consumer 
 		return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "blocked by gas tank")
 	}
 
-	// if total fees consumed by the consumer is more than or equal to the allowed consumption
+	// if total fees consumed by the consumer is more than the allowed consumption
 	// i.e consumer has exhausted its fee limit and hence is not eligible for the given tank
 	totalFeeConsumption := consumptionDetails.TotalFeesConsumed.Add(fee.Amount)
-	if totalFeeConsumption.GTE(consumptionDetails.TotalFeeConsumptionAllowed) {
+	if totalFeeConsumption.GT(consumptionDetails.TotalFeeConsumptionAllowed) {
 		return gasTank, false, sdkerrors.Wrapf(types.ErrorFeeConsumptionFailure, "exhausted total fee usage or pending fee limit insufficient for tx")
 	}
 

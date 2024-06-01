@@ -1,7 +1,7 @@
 package keeper_test
 
 import (
-	"encoding/binary"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -11,6 +11,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
+	"github.com/cosmos/cosmos-sdk/simapp"
+	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	chain "github.com/dymensionxyz/dymension-rdk/testutil/app"
 	testutils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/utils"
@@ -23,11 +25,12 @@ import (
 type KeeperTestSuite struct {
 	suite.Suite
 
-	app       *chain.App
-	ctx       sdk.Context
-	keeper    keeper.Keeper
-	querier   keeper.Querier
-	msgServer types.MsgServer
+	app            *chain.App
+	ctx            sdk.Context
+	keeper         keeper.Keeper
+	querier        keeper.Querier
+	msgServer      types.MsgServer
+	encodingConfig simappparams.EncodingConfig
 }
 
 func TestKeeperTestSuite(t *testing.T) {
@@ -40,6 +43,7 @@ func (s *KeeperTestSuite) SetupTest() {
 	s.keeper = s.app.GaslessKeeper
 	s.querier = keeper.Querier{Keeper: s.keeper}
 	s.msgServer = keeper.NewMsgServerImpl(s.keeper)
+	s.encodingConfig = simapp.MakeTestEncodingConfig()
 }
 
 // Below are just shortcuts to frequently-used functions.
@@ -64,9 +68,7 @@ func (s *KeeperTestSuite) nextBlock() {
 
 // Below are useful helpers to write test code easily.
 func (s *KeeperTestSuite) addr(addrNum int) sdk.AccAddress {
-	addr := make(sdk.AccAddress, 20)
-	binary.PutVarint(addr, int64(addrNum))
-	return addr
+	return utils.DeriveAddress(utils.AddressType32Bytes, types.ModuleName, fmt.Sprintf("address-%d", addrNum))
 }
 
 func (s *KeeperTestSuite) fundAddr(addr sdk.AccAddress, amt sdk.Coins) {
