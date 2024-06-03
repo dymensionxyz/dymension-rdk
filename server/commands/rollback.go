@@ -54,11 +54,6 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 			app := appCreator(ctx.Logger, db, nil, ctx.Viper)
 
-			nodeKey, err := p2p.LoadOrGenNodeKey(cfg.NodeKeyFile())
-			if err != nil {
-				return err
-			}
-
 			privValKey, err := p2p.LoadOrGenNodeKey(cfg.PrivValidatorKeyFile())
 			if err != nil {
 				return err
@@ -66,11 +61,6 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 			genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
 
-			// keys in dymint format
-			p2pKey, err := dymintconv.GetNodeKey(nodeKey)
-			if err != nil {
-				return err
-			}
 			signingKey, err := dymintconv.GetNodeKey(privValKey)
 			if err != nil {
 				return err
@@ -86,10 +76,9 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 			}
 			proxyApp := proxy.NewLocalClientCreator(app)
 			ctx.Logger.Info("starting node with ABCI dymint in-process")
-			node, err := dymintnode.NewNode(
+			node, err := dymintnode.NewLightNode(
 				context.Background(),
 				*nodeConfig,
-				p2pKey,
 				signingKey,
 				proxyApp,
 				genesis,
