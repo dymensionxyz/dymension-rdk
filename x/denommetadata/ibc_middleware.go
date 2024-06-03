@@ -57,13 +57,6 @@ func (im IBCMiddleware) OnRecvPacket(
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	packetData.Memo = types.PurgePacketMetadata(packetData.Memo)
-	// re-marshal the packet data
-	packet.Data, err = types.ModuleCdc.MarshalJSON(packetData)
-	if err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
-	}
-
 	dm := transferInject.DenomMetadata
 	if dm == nil {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
@@ -74,7 +67,8 @@ func (im IBCMiddleware) OnRecvPacket(
 	}
 
 	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
-	// if denom trace path is empty, construct it from the packet destination port and channel
+	// if denom trace path is empty (sending chain's native coin, e.g. 'adym'),
+	// construct it from the packet destination port and channel, so that the ibc denom can be derived
 	if denomTrace.Path == "" {
 		denomTrace.Path = fmt.Sprintf("%s/%s", packet.GetDestPort(), packet.GetDestChannel())
 	}

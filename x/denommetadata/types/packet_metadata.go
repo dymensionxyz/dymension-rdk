@@ -20,8 +20,6 @@ func (p TransferInject) ValidateBasic() error {
 	return p.DenomMetadata.Validate()
 }
 
-const memoObjectKeyTransferInject = "transferinject"
-
 var (
 	ErrMemoUnmarshal           = fmt.Errorf("unmarshal memo")
 	ErrMemoTransferInjectEmpty = fmt.Errorf("memo transfer inject is missing")
@@ -40,20 +38,4 @@ func ParsePacketMetadata(input string) (*TransferInject, error) {
 	}
 
 	return memo.TransferInject, nil
-}
-
-func PurgePacketMetadata(memo string) string {
-	memoMap := make(map[string]any)
-	err := json.Unmarshal([]byte(memo), &memoMap)
-	if err != nil {
-		return memo
-	}
-
-	delete(memoMap, memoObjectKeyTransferInject)
-	// if map empty, return empty string
-	if len(memoMap) == 0 {
-		return ""
-	}
-	bz, _ := json.Marshal(memoMap)
-	return string(bz)
 }
