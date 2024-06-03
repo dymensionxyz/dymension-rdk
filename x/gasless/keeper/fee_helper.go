@@ -128,9 +128,10 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 		return originalFeePayer
 	}
 
+	tempConsumer, found := k.GetGasConsumer(ctx, originalFeePayer)
+
 	// If the address has never consumed a fee from any of the gas tanks, it may not be found in the gas consumer store.
 	// In such cases, a new GasConsumer instance is created for the address.
-	tempConsumer, found := k.GetGasConsumer(ctx, originalFeePayer)
 	if !found {
 		tempConsumer = types.NewGasConsumer(originalFeePayer)
 	}
