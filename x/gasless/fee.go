@@ -37,7 +37,7 @@ import (
 // priority based on gas price. This flexibility is crucial for the intended functionality and optimization of
 // transaction processing within the blockchain.
 //
-// CONTRACT: Tx must implement the FeeTx interface to use DeductFeeDecorator.
+// CONTRACT : Tx must implement the FeeTx interface to use DeductFeeDecorator.
 type DeductFeeDecorator struct {
 	accountKeeper  ante.AccountKeeper
 	bankKeeper     authtypes.BankKeeper
@@ -161,8 +161,8 @@ func DeductFees(bankKeeper authtypes.BankKeeper, ctx sdk.Context, acc authtypes.
 	return nil
 }
 
-// checkTxFeeWithValidatorMinGasPrices implements the default fee logic, where the minimum price per -
-// unit of gas is fixed and set by each validator, can the tx priority is computed from the gas price.
+// checkTxFeeWithValidatorMinGasPrices implements the default fee logic, where the minimum price per unit -
+// of gas is fixed and set by each validator, can the tx priority is computed from the gas price.
 func checkTxFeeWithValidatorMinGasPrices(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
 	feeTx, ok := tx.(sdk.FeeTx)
 	if !ok {

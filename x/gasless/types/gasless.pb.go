@@ -80,7 +80,7 @@ type GasTank struct {
 	Reserve string `protobuf:"bytes,3,opt,name=reserve,proto3" json:"reserve,omitempty"`
 	// status of the gas tank if it is active or not
 	IsActive bool `protobuf:"varint,4,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
-	// max_fee_usage_per_consumer defines the gas cosumption limit which consumer is allowed, beyod this limit gas tank will not sponsor the tx
+	// max_fee_usage_per_consumer defines the gas consumption limit which consumer is allowed, beyod this limit gas tank will not sponsor the tx
 	MaxFeeUsagePerConsumer github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,5,opt,name=max_fee_usage_per_consumer,json=maxFeeUsagePerConsumer,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_fee_usage_per_consumer"`
 	// max_fee_usage_per_tx defines the maximum limit for the fee ased by the tx, beyond this gastank cannot sponsor the tx
 	MaxFeeUsagePerTx github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,6,opt,name=max_fee_usage_per_tx,json=maxFeeUsagePerTx,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_fee_usage_per_tx"`

@@ -29,7 +29,7 @@ message GasTank {
     // status of the gas tank if it is active or not
     bool is_active = 4;
 
-    // max_fee_usage_per_consumer defines the gas cosumption limit which consumer is allowed, beyod this limit gas tank will not sponsor the tx
+    // max_fee_usage_per_consumer defines the gas consumption limit which consumer is allowed, beyod this limit gas tank will not sponsor the tx
     string max_fee_usage_per_consumer = 5 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
 
     // max_fee_usage_per_tx defines the maximum limit for the fee ased by the tx, beyond this gastank cannot sponsor the tx
