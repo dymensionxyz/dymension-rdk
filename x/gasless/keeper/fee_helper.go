@@ -7,7 +7,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/dymension-rdk/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils/sliceutils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -128,6 +128,8 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 		return originalFeePayer
 	}
 
+	// If the address has never consumed a fee from any of the gas tanks, it may not be found in the gas consumer store.
+	// In such cases, a new GasConsumer instance is created for the address.
 	tempConsumer, found := k.GetGasConsumer(ctx, originalFeePayer)
 	if !found {
 		tempConsumer = types.NewGasConsumer(originalFeePayer)
@@ -188,9 +190,10 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 	gasConsumer.Consumptions[consumptionIndex].Usage = existingUsage
 	k.SetGasConsumer(ctx, gasConsumer)
 
-	// shift the used gas tank at the end of all tanks, so that a different gas tank can be picked
-	// in next cycle if there exists any.
-	usageIdentifierToGasTankIds.GasTankIds = utils.ShiftValueToEnd(usageIdentifierToGasTankIds.GasTankIds, gasTank.Id)
+	// Move the used gas tank to the end of the list of all gas tanks. This ensures that in the next cycle,
+	// a different gas tank can be selected for the same usage identifier if available,
+	// spreading out the usage of fees across different tanks.
+	usageIdentifierToGasTankIds.GasTankIds = sliceutils.ShiftValueToEnd(usageIdentifierToGasTankIds.GasTankIds, gasTank.Id)
 	k.SetUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 
 	feeSource := gasTank.GetGasTankReserveAddress()

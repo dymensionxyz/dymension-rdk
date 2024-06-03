@@ -7,7 +7,9 @@ parent:
 
 # `gasless`
 
-## Contents
+## Introduction
+
+The Gasless Module enables transactions on a Cosmos SDK-based blockchain without requiring users to pay gas fees directly. This feature is especially useful for enhancing user experience by abstracting the fee mechanism and allowing providers or sponsors to cover transaction costs. The following documentation outlines the technical flow of transactions incorporating the Gasless Module.
 
 ## Abstract
 

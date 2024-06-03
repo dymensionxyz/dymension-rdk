@@ -1,8 +1,6 @@
-package utils
+package sliceutils
 
-import (
-	"slices"
-)
+import "slices"
 
 // RemoveDuplicates removes duplicates from a slice of any comparable type.
 func RemoveDuplicates[T comparable](input []T) []T {
@@ -17,8 +15,8 @@ func RemoveDuplicates[T comparable](input []T) []T {
 	return uniqueList
 }
 
-// RemoveValueFromSlice removes all occurrences of a specific value from a slice of any comparable type.
-func RemoveValueFromSlice[T comparable](list []T, x T) []T {
+// RemoveValue removes all occurrences of a specific value from a slice of any comparable type.
+func RemoveValue[T comparable](list []T, x T) []T {
 	return slices.DeleteFunc(list, func(v T) bool { return v == x })
 }
 

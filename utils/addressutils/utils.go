@@ -1,4 +1,4 @@
-package utils
+package addressutils
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"

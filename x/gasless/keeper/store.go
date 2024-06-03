@@ -4,7 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogotypes "github.com/cosmos/gogoproto/types"
 
-	"github.com/dymensionxyz/dymension-rdk/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils/sliceutils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -199,7 +199,7 @@ func (k Keeper) GetOrCreateGasConsumer(ctx sdk.Context, consumer sdk.AccAddress,
 		gasTank.MaxFeeUsagePerConsumer,
 	))
 	k.SetGasConsumer(ctx, gasConsumer)
-	// eg. if length of existing consumption is 2, so after adding new consumption the index of appended consuption will also be 2 since sequence begins from 0
+	// eg. if length of existing consumption is 2, so after adding new consumption the index of appended consumption will also be 2 since sequence begins from 0
 	return gasConsumer, consumptionLength
 }
 
@@ -210,7 +210,7 @@ func (k Keeper) AddGasTankIdToUsageIdentifiers(ctx sdk.Context, usageIdentifiers
 			usageIdentifierToGasTankIds = types.NewUsageIdentifierToGastankIds(usageIdentifier)
 		}
 		usageIdentifierToGasTankIds.GasTankIds = append(usageIdentifierToGasTankIds.GasTankIds, gasTankID)
-		usageIdentifierToGasTankIds.GasTankIds = utils.RemoveDuplicates(usageIdentifierToGasTankIds.GasTankIds)
+		usageIdentifierToGasTankIds.GasTankIds = sliceutils.RemoveDuplicates(usageIdentifierToGasTankIds.GasTankIds)
 		k.SetUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 	}
 }
@@ -221,7 +221,7 @@ func (k Keeper) RemoveGasTankIdFromUsageIdentifiers(ctx sdk.Context, usageIdenti
 		if !found {
 			continue
 		}
-		usageIdentifierToGasTankIds.GasTankIds = utils.RemoveValueFromSlice(usageIdentifierToGasTankIds.GasTankIds, gasTankID)
+		usageIdentifierToGasTankIds.GasTankIds = sliceutils.RemoveValue(usageIdentifierToGasTankIds.GasTankIds, gasTankID)
 		if len(usageIdentifierToGasTankIds.GasTankIds) == 0 {
 			k.DeleteUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 			continue
