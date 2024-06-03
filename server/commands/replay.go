@@ -102,12 +102,12 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 			// rollback the app multistore
 			if err := app.CommitMultiStore().RollbackToVersion(heightInt); err != nil {
-				return fmt.Errorf("failed to rollback to version: %w", err)
+				return fmt.Errorf("app rollback to specific height: %w", err)
 			}
 
 			// rollback dymint state according to the app
 			if err := node.BlockManager.UpdateStateFromApp(); err != nil {
-				return fmt.Errorf("failed to rollback tendermint state: %w", err)
+				return fmt.Errorf("updating dymint from app state: %w", err)
 			}
 			fmt.Printf("RollApp state moved back to height %d successfully.\n", heightInt)
 			return err
