@@ -20,11 +20,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ReplayCmd rollbacks the app multistore to specific height and updates dymint state according to it
-func ReplayCmd(appCreator types.AppCreator) *cobra.Command {
+// RollbackCmd rollbacks the app multistore to specific height and updates dymint state according to it
+func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "replay [height]",
-		Short: "replay command used to move a full-node back to the state at the specified height.",
+		Use:   "rollback [height]",
+		Short: "rollback command used to move a full-node back to the state at the specified height.",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := server.GetServerContextFromCmd(cmd)
@@ -35,7 +35,7 @@ func ReplayCmd(appCreator types.AppCreator) *cobra.Command {
 			if len(args) > 0 {
 				heightInt, _ = strconv.ParseInt(args[0], 10, 64)
 			} else {
-				return fmt.Errorf("replay height not specified")
+				return fmt.Errorf("rollback height not specified")
 			}
 
 			db, err := utils.OpenDB(home)
