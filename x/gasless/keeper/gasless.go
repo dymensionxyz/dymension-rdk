@@ -7,7 +7,8 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/dymensionxyz/dymension-rdk/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils/coinsutils"
+	"github.com/dymensionxyz/dymension-rdk/utils/sliceutils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -60,7 +61,7 @@ func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGa
 		}
 	}
 
-	minDepositRequired, found := utils.GetCoinByDenomFromCoins(msg.FeeDenom, params.MinimumGasDeposit)
+	minDepositRequired, found := coinsutils.GetCoinByDenomFromCoins(msg.FeeDenom, params.MinimumGasDeposit)
 	if !found {
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, " fee denom %s not allowed ", msg.FeeDenom)
 	}
@@ -191,7 +192,7 @@ func (k Keeper) UpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTank
 	gasTank.MaxFeeUsagePerTx = msg.MaxFeeUsagePerTx
 	gasTank.MaxFeeUsagePerConsumer = msg.MaxFeeUsagePerConsumer
 
-	gasTank.UsageIdentifiers = utils.RemoveDuplicates(msg.UsageIdentifiers)
+	gasTank.UsageIdentifiers = sliceutils.RemoveDuplicates(msg.UsageIdentifiers)
 
 	if consumerUpdateRequire {
 		k.UpdateConsumerAllowance(ctx, gasTank)

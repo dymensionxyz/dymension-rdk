@@ -45,3 +45,6 @@ When determining the source of transaction fees, the Gasless and Fee Grant modul
 1.  Gas Tank and Original Fee Source: 
     - If a gas tank is available but no fee grant exists for the transaction initiator, the fee is deducted from the gas tank, avoiding the need to use the original fee source.
 
+## Fee Deduction Flow Overview
+
+![Gasless Flow Chart](https://github.com/AllInBetsCom/dymension-rdk/assets/142378743/828c59d2-3b40-4dc7-9fdf-74af71693726)

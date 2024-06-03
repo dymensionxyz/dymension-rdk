@@ -12,7 +12,7 @@ Clients can then interact with the Messages and Contract normally as usual and t
 
 ### Comparison with Cosmos SDK's FeeGrant Module
 
-Although FeeGrant module allows accounts to grant fee allowances and to use fees from their accounts, and Grantees can execute any transaction without the need to maintain sufficient fees.
+FeeGrant module allows accounts to grant fee allowances and to use fees from their accounts, and Grantees can execute any transaction without the need to maintain sufficient fees.
 
 A detailed comparision below gives good idea of the features provided by each module.
 
@@ -20,7 +20,7 @@ A detailed comparision below gives good idea of the features provided by each mo
 | ------ | -------------- | --------------- |
 | Purpose                | Provides functionality for covering transaction execution fees for users interacting with messages, contracts or any valid usage identifiers, aiming to improve user experience and facilitate onboarding of wallets with limited or zero native fee tokens. | The fee grant module allows granter to grant fee allowances to specific account, enabling them to execute transactions without having to maintain sufficient fees. |
 | Grant Mechanism        | Allows developers to create GasTanks and whitelist usage identifiers, any address making tx with whitelisted identifier is eligible for fee allowance    | It grants fee allowances, which can have expiration dates, spend limits to specific accounts. |
-| Usage | Once the GasTank is created, it can automatically facilitates Fees for incoming tx with whitelisted UsegeIdentifier (MessageTypes, Contract Addresses, etc)  | Granter needs to grant permission to the specific account/address to facilitate fee allowances. |
+| Usage | Once the GasTank is created, it can automatically facilitates Fees for incoming tx with whitelisted UsageIdentifier (MessageTypes, Contract Addresses, etc)  | Granter needs to grant permission to the specific account/address to facilitate fee allowances. |
 | Fee Source Handling    | The GasTank serves as the fee source for transactions, covering fees.    | Granter's account act as the fee source for executing transactions.|
 | Management & Configuration | GasTanks can be created, and the creator can update and configure the gas tank with specific parameters. | Fee allowances can be granted, revoked, and managed by account holders.  |
 | Flexibility & Use Cases | Suitable for onboarding new users holding little to no native fee tokens for making tx. | Appropriate for use cases requiring predefined fee allowances for specific accounts. |

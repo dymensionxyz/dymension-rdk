@@ -14,10 +14,30 @@ import (
 	gaslesskeeper "github.com/dymensionxyz/dymension-rdk/x/gasless/keeper"
 )
 
-// DeductFeeDecorator deducts fees from the first signer of the tx
-// If the first signer does not have the funds to pay for the fees, return with InsufficientFunds error
-// Call next AnteHandler if fees successfully deducted
-// CONTRACT: Tx must implement FeeTx interface to use DeductFeeDecorator
+// DeductFeeDecorator deducts fees from the first signer of the transaction.
+// If the first signer does not have the funds to pay for the fees, it returns an InsufficientFunds error.
+// Calls the next AnteHandler if fees are successfully deducted.
+//
+// Original Code - https://github.com/cosmos/cosmos-sdk/blob/v0.46.16/x/auth/ante/fee.go
+//
+// Justification for Custom Implementation:
+// The `DeductFeeDecorator` is implemented instead of wrapping the existing SDK `DeductFeeDecorator` due to
+// the need to access and modify certain unexported (private) fields and methods within the SDK's implementation.
+// Specifically, fields such as `txFeeChecker` in the original `DeductFeeDecorator` are unexported, meaning they
+// are inaccessible outside the package they are defined in. Go's visibility rules restrict access to unexported
+// fields to the same package, making it impractical to extend or wrap the SDK's decorator directly in another
+// package.
+//
+// By re-implementing the `DeductFeeDecorator`, we gain full control over the logic and integration of custom fee
+// deduction mechanisms, such as using fee granters and a gasless keeper. This approach ensures the necessary
+// flexibility and functionality required for our specific use case, while adhering to Go's visibility constraints.
+//
+// Additionally, this implementation allows for custom fee checking logic through the `txFeeChecker` function,
+// enabling the validation of fees against validator-set minimum gas prices and the computation of transaction
+// priority based on gas price. This flexibility is crucial for the intended functionality and optimization of
+// transaction processing within the blockchain.
+//
+// CONTRACT: Tx must implement the FeeTx interface to use DeductFeeDecorator.
 type DeductFeeDecorator struct {
 	accountKeeper  ante.AccountKeeper
 	bankKeeper     authtypes.BankKeeper
@@ -141,7 +161,7 @@ func DeductFees(bankKeeper authtypes.BankKeeper, ctx sdk.Context, acc authtypes.
 	return nil
 }
 
-// checkTxFeeWithValidatorMinGasPrices implements the default fee logic, where the minimum price per
+// checkTxFeeWithValidatorMinGasPrices implements the default fee logic, where the minimum price per -
 // unit of gas is fixed and set by each validator, can the tx priority is computed from the gas price.
 func checkTxFeeWithValidatorMinGasPrices(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
 	feeTx, ok := tx.(sdk.FeeTx)

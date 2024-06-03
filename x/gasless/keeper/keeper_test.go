@@ -15,7 +15,8 @@ import (
 	simappparams "github.com/cosmos/cosmos-sdk/simapp/params"
 	chain "github.com/dymensionxyz/dymension-rdk/testutil/app"
 	testutils "github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	"github.com/dymensionxyz/dymension-rdk/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils/addressutils"
+	"github.com/dymensionxyz/dymension-rdk/utils/sliceutils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
@@ -68,7 +69,7 @@ func (s *KeeperTestSuite) nextBlock() {
 
 // Below are useful helpers to write test code easily.
 func (s *KeeperTestSuite) addr(addrNum int) sdk.AccAddress {
-	return utils.DeriveAddress(utils.AddressType32Bytes, types.ModuleName, fmt.Sprintf("address-%d", addrNum))
+	return addressutils.DeriveAddress(addressutils.AddressType32Bytes, types.ModuleName, fmt.Sprintf("address-%d", addrNum))
 }
 
 func (s *KeeperTestSuite) fundAddr(addr sdk.AccAddress, amt sdk.Coins) {
@@ -115,7 +116,7 @@ func (s *KeeperTestSuite) CreateNewGasTank(
 	parsedDepositCoin := ParseCoin(deposit)
 	s.fundAddr(provider, sdk.NewCoins(parsedDepositCoin))
 
-	usageIdentifiers = utils.RemoveDuplicates(usageIdentifiers)
+	usageIdentifiers = sliceutils.RemoveDuplicates(usageIdentifiers)
 	tank, err := s.keeper.CreateGasTank(s.ctx, types.NewMsgCreateGasTank(
 		provider,
 		feeDenom,
