@@ -104,7 +104,7 @@ func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) 
 	}
 
 	m := memo{}
-	m.GenesisTransfer.Data = d
+	m.Data.Denom = d
 
 	bz, err := json.Marshal(m)
 	if err != nil {
@@ -115,7 +115,7 @@ func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) 
 }
 
 type memo struct {
-	GenesisTransfer struct {
-		Data banktypes.Metadata `json:"data"`
+	Data struct {
+		Denom banktypes.Metadata `json:"denom"`
 	} `json:"genesis_transfer"`
 }
