@@ -33,31 +33,31 @@ func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Kee
 	return &OnChanOpenConfirmInterceptor{next, t, k, d}
 }
 
-func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
+func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	ctx sdk.Context,
 	portID,
 	channelID string,
 ) error {
 	l := ctx.Logger().With("name", "OnChanOpenConfirm middleware", "port id", portID, "channelID", channelID)
 
-	err := i.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
+	err := c.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
 		l.Error("Next middleware: on OnChanOpenConfirm.", "err", err)
 		return err
 	}
 
-	state := i.k.GetState(ctx)
+	state := c.k.GetState(ctx)
 
-	srcAccount := i.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+	srcAccount := c.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress().String()
 
 	var errs []error
 
-	for _, a := range state.GetGenesisAccounts() {
+	for i, a := range state.GetGenesisAccounts() {
 
 		// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
 		// we assume the hub will deduplicate
-		memo, err := i.createMemo(ctx, a.Amount.Denom)
+		memo, err := c.createMemo(ctx, a.Amount.Denom, i, len(state.GetGenesisAccounts()))
 		if err != nil {
 			err = errorsmod.Wrapf(err, "create memo: coin: %s", a.Amount)
 			errs = append(errs, err)
@@ -75,7 +75,7 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 			Memo:             memo,
 		}
 
-		err = i.transfer(ctx, &m)
+		err = c.transfer(ctx, &m)
 		if err != nil {
 			err = errorsmod.Wrapf(err, "transfer: receiver: %s: amt: %s", a.GetAddress(), a.Amount.String())
 			errs = append(errs, err)
@@ -97,14 +97,16 @@ func (i OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 // createMemo creates a memo to go with the transfer. It's used by the hub to confirm
 // that the transfer originated from the chain itself, rather than a user of the chain.
 // It may also contain token metadata.
-func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) (string, error) {
-	d, ok := i.getDenom(ctx, denom)
+func (c OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string, i, n int) (string, error) {
+	d, ok := c.getDenom(ctx, denom)
 	if !ok {
 		return "", errorsmod.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
 	}
 
 	m := memo{}
 	m.Data.Denom = d
+	m.Data.TotalNumTransfers = n
+	m.Data.ThisTransferIx = i
 
 	bz, err := json.Marshal(m)
 	if err != nil {
@@ -117,5 +119,9 @@ func (i OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string) 
 type memo struct {
 	Data struct {
 		Denom banktypes.Metadata `json:"denom"`
+		// How many transfers in total will be sent in the transfer genesis period
+		TotalNumTransfers int `json:"total_num_transfers"`
+		// Which transfer is this? If there are 5 transfers total, they will be numbered 0,1,2,3,4.
+		ThisTransferIx int `json:"this_transfer_ix"`
 	} `json:"genesis_transfer"`
 }
