@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/dymensionxyz/dymint/block"
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
-	dymintmemp "github.com/dymensionxyz/dymint/mempool"
-	dymintnode "github.com/dymensionxyz/dymint/node"
+	daregistry "github.com/dymensionxyz/dymint/da/registry"
+	"github.com/dymensionxyz/dymint/store"
+	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
@@ -33,7 +35,11 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 			var heightInt int64
 			if len(args) > 0 {
-				heightInt, _ = strconv.ParseInt(args[0], 10, 64)
+				height, err := strconv.ParseInt(args[0], 10, 64)
+				if err != nil {
+					return fmt.Errorf("invalid height: %w", err)
+				}
+				heightInt = height
 			} else {
 				return fmt.Errorf("rollback height not specified")
 			}
@@ -54,39 +60,11 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 			app := appCreator(ctx.Logger, db, nil, ctx.Viper)
 
-			privValKey, err := p2p.LoadOrGenNodeKey(cfg.PrivValidatorKeyFile())
-			if err != nil {
-				return err
-			}
-
-			genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
-
-			signingKey, err := dymintconv.GetNodeKey(privValKey)
-			if err != nil {
-				return err
-			}
-			genesis, err := genDocProvider()
-			if err != nil {
-				return err
-			}
-
-			err = dymintconv.GetNodeConfig(nodeConfig, cfg)
-			if err != nil {
-				return err
-			}
 			proxyApp := proxy.NewLocalClientCreator(app)
-			ctx.Logger.Info("starting node with ABCI dymint in-process")
-			node, err := dymintnode.NewLightNode(
-				context.Background(),
-				*nodeConfig,
-				signingKey,
-				proxyApp,
-				genesis,
-				ctx.Logger,
-				dymintmemp.PrometheusMetrics("dymint"),
-			)
+			ctx.Logger.Info("starting block manager with ABCI in-process")
+			blockManager, err := liteBlockManager(context.Background(), cfg, nodeConfig, proxyApp)
 			if err != nil {
-				return err
+				return fmt.Errorf("start lite block manager: %w", err)
 			}
 
 			// rollback the app multistore
@@ -95,7 +73,7 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 			}
 
 			// rollback dymint state according to the app
-			if err := node.BlockManager.UpdateStateFromApp(); err != nil {
+			if err := blockManager.UpdateStateFromApp(); err != nil {
 				return fmt.Errorf("updating dymint from app state: %w", err)
 			}
 			fmt.Printf("RollApp state moved back to height %d successfully.\n", heightInt)
@@ -105,4 +83,70 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 	dymintconf.AddNodeFlags(cmd)
 	return cmd
+}
+
+func liteBlockManager(context context.Context, cfg *config.Config, dymintConf *dymintconf.NodeConfig, clientCreator proxy.ClientCreator) (*block.Manager, error) {
+
+	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
+
+	privValKey, err := p2p.LoadOrGenNodeKey(cfg.PrivValidatorKeyFile())
+	if err != nil {
+		return nil, err
+	}
+	signingKey, err := dymintconv.GetNodeKey(privValKey)
+	if err != nil {
+		return nil, err
+	}
+	genesis, err := genDocProvider()
+	if err != nil {
+		return nil, err
+	}
+
+	err = dymintconv.GetNodeConfig(dymintConf, cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	if dymintConf.SettlementConfig.RollappID != genesis.ChainID {
+		return nil, fmt.Errorf("rollapp ID in settlement config doesn't match chain ID in genesis")
+	}
+	proxyApp := proxy.NewAppConns(clientCreator)
+	if err := proxyApp.Start(); err != nil {
+		return nil, fmt.Errorf("starting proxy app connections: %w", err)
+	}
+
+	var baseKV store.KV
+	if dymintConf.RootDir == "" && dymintConf.DBPath == "" { // this is used for testing
+		baseKV = store.NewDefaultInMemoryKVStore()
+	} else {
+		// TODO(omritoptx): Move dymint to const
+		baseKV = store.NewDefaultKVStore(dymintConf.RootDir, dymintConf.DBPath, "dymint")
+	}
+	mainKV := store.NewPrefixKV(baseKV, []byte{0})
+	s := store.New(mainKV)
+
+	dalc := daregistry.GetClient(dymintConf.DALayer)
+	if dalc == nil {
+		return nil, fmt.Errorf("get data availability client named '%s'", dymintConf.DALayer)
+	}
+
+	blockManager, err := block.NewManager(
+		signingKey,
+		dymintConf.BlockManagerConfig,
+		genesis,
+		s,
+		nil,
+		proxyApp,
+		dalc,
+		nil,
+		nil,
+		nil,
+		nil,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("BlockManager initialization error: %w", err)
+	}
+
+	return blockManager, nil
 }
