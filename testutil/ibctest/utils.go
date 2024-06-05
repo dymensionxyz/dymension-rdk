@@ -3,6 +3,7 @@ package ibctest
 import (
 	"encoding/json"
 
+	"github.com/CosmWasm/wasmd/x/wasm"
 	ibctypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	ibctesting "github.com/cosmos/ibc-go/v6/testing"
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
@@ -26,7 +27,8 @@ func testingApp() (ibctesting.TestingApp, map[string]json.RawMessage) {
 func SetupTestingApp() (*app.App, app.GenesisState) {
 	db := dbm.NewMemDB()
 	encCdc := app.MakeEncodingConfig()
-	newApp := app.NewRollapp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, app.DefaultNodeHome, 5, encCdc, EmptyAppOptions{})
+	var emptyWasmOpts []wasm.Option
+	newApp := app.NewRollapp(log.NewNopLogger(), db, nil, true, map[int64]bool{}, app.DefaultNodeHome, 5, encCdc, app.GetEnabledProposals(), EmptyAppOptions{}, emptyWasmOpts)
 	return newApp, app.NewDefaultGenesisState(encCdc.Codec)
 }
 
