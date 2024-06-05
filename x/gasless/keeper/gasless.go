@@ -116,10 +116,7 @@ func (k Keeper) CreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) (typ
 
 func (k Keeper) ValidatMsgUpdateGasTankStatus(ctx sdk.Context, msg *types.MsgUpdateGasTankStatus) error {
 	_, err := k.GasTankBaseValidation(ctx, msg.GasTankId, msg.Provider)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (k Keeper) UpdateGasTankStatus(ctx sdk.Context, msg *types.MsgUpdateGasTankStatus) (types.GasTank, error) {

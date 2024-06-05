@@ -13,7 +13,7 @@ The Gasless Module enables transactions on a Cosmos SDK-based blockchain without
 
 ## Abstract
 
-`x/gasless` is an implementation of a Cosmos SDK module,  
+`x/gasless` is an implementation of a Cosmos SDK module,
 
 This document specifies the internal `x/gasless` module on the network.
 
