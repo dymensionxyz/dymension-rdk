@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/CosmWasm/wasmd/x/wasm"
+
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -68,8 +70,9 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.Raw
 	db := dbm.NewMemDB()
 
 	encCdc := app.MakeEncodingConfig()
+	var emptyWasmOpts []wasm.Option
 	testApp := app.NewRollapp(
-		log.NewNopLogger(), db, nil, true, map[int64]bool{}, "/tmp", invCheckPeriod, encCdc, EmptyAppOptions{},
+		log.NewNopLogger(), db, nil, true, map[int64]bool{}, "/tmp", invCheckPeriod, encCdc, app.GetEnabledProposals(), EmptyAppOptions{}, emptyWasmOpts,
 	)
 	if withGenesis {
 		return testApp, app.NewDefaultGenesisState(encCdc.Codec)
