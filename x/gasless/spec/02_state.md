@@ -42,6 +42,7 @@ message GasTank {
     string fee_denom = 8;
 }
 ```
+
 #
 
 ```go
@@ -90,7 +91,8 @@ message GasConsumer {
     repeated ConsumptionDetail consumptions = 2;
 }
 ```
-#
+
+---
 
 ```go
 // UsageIdentifierToGasTankIds maps all the gas tank ids with the usage identifier
@@ -128,7 +130,7 @@ message GenesisState {
 }
 ```
 
-#
+---
 
 ```go
 // Params defines the parameters for the module.

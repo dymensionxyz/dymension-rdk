@@ -26,7 +26,6 @@ A detailed comparision below gives good idea of the features provided by each mo
 | Flexibility & Use Cases | Suitable for onboarding new users holding little to no native fee tokens for making tx. | Appropriate for use cases requiring predefined fee allowances for specific accounts. |
 | Transparency & Traceability | Provides transparency regarding fee coverage and gas tank usage.         | Offers traceability of granted fee allowances and their utilization.    |
 
-
 ### Creating a GasTank
 
 There can be multiple gastanks, each of which can be with unique configuration.
