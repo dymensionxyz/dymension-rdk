@@ -39,7 +39,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		dymintCmd,
 		server.ExportCmd(appExport, defaultNodeHome),
 		version.NewVersionCommand(),
-		server.NewRollbackCmd(appCreator, defaultNodeHome),
+		commands.RollbackCmd(appCreator),
 	)
 }
 
