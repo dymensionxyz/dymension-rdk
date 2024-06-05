@@ -7,7 +7,7 @@ import (
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-// StakingKeeper expected staking keeper (noalias)
+// SequencerKeeper expected sequencer keeper (noalias)
 type SequencerKeeper interface {
 	GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (stakingtypes.Validator, bool)
 }
