@@ -105,8 +105,8 @@ func (c OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string, 
 
 	m := memo{}
 	m.Data.Denom = d
-	m.Data.TotalNumTransfers = n
-	m.Data.ThisTransferIx = i
+	m.Data.TotalNumTransfers = uint64(n)
+	m.Data.ThisTransferIx = uint64(i)
 
 	bz, err := json.Marshal(m)
 	if err != nil {
@@ -120,8 +120,8 @@ type memo struct {
 	Data struct {
 		Denom banktypes.Metadata `json:"denom"`
 		// How many transfers in total will be sent in the transfer genesis period
-		TotalNumTransfers int `json:"total_num_transfers"`
+		TotalNumTransfers uint64 `json:"total_num_transfers"`
 		// Which transfer is this? If there are 5 transfers total, they will be numbered 0,1,2,3,4.
-		ThisTransferIx int `json:"this_transfer_ix"`
+		ThisTransferIx uint64 `json:"this_transfer_ix"`
 	} `json:"genesis_transfer"`
 }
