@@ -33,6 +33,7 @@ func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Kee
 	return &OnChanOpenConfirmInterceptor{next, t, k, d}
 }
 
+// OnChanOpenConfirm .. TODO: write a note about exactly-once ness
 func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	ctx sdk.Context,
 	portID,
@@ -46,7 +47,13 @@ func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 		return err
 	}
 
-	l.Debug("OnChanOpenConfirm is happening!")
+	if !isHub(ctx, portID, channelID) {
+		return nil
+	}
+
+	l.Debug("Minting coins and sending transfers.")
+
+	c.k.mintCoins(ctx)
 
 	state := c.k.GetState(ctx)
 
@@ -95,6 +102,11 @@ func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	}
 
 	return err
+}
+
+func isHub(ctx sdk.Context, portID, channelID string) bool {
+	// TODO:
+	return true
 }
 
 // createMemo creates a memo to go with the transfer. It's used by the hub to confirm

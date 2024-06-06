@@ -9,13 +9,13 @@ import (
 
 // InitGenesis new hub-genesis genesis.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
-	/*
-		Mint coins which will later be transferred to the hub
-		TODO: need to not do it if it not height 0 genesis
+	k.SetParams(ctx, genState.Params)
+	k.SetState(ctx, genState.State)
+}
 
-		TODO: move to foo
-	*/
-	for _, ga := range genState.State.GetGenesisAccounts() {
+func (k Keeper) mintCoins(ctx sdk.Context) {
+	state := k.GetState(ctx)
+	for _, ga := range state.GetGenesisAccounts() {
 		coin := ga.GetAmount()
 		err := k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.Coins{coin})
 		if err != nil {
@@ -23,9 +23,6 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 			panic(fmt.Errorf("init genesis mint coins: %w", err))
 		}
 	}
-
-	k.SetParams(ctx, genState.Params)
-	k.SetState(ctx, genState.State)
 }
 
 // ExportGenesis returns a GenesisState for a given context and keeper.
