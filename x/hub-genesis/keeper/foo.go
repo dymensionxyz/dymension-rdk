@@ -77,11 +77,12 @@ func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 		err = c.transfer(ctx, &m)
 		if err != nil {
-			err = errorsmod.Wrapf(err, "transfer: receiver: %s: amt: %s", a.GetAddress(), a.Amount.String())
+			err = errorsmod.Wrapf(err, "transfer: receiver: %s: amt: %s", a.GetAddress(), a.Amount)
 			errs = append(errs, err)
 			continue
 		}
 
+		l.Debug("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "amt", a.Amount)
 	}
 
 	err = errors.Join(err)
