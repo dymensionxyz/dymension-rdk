@@ -12,8 +12,6 @@ message State {
   reserved 2;
   // accounts on the Hub to fund with some bootstrapping transfers
   repeated GenesisAccount genesis_accounts = 3 [(gogoproto.nullable) = false];
-  // did the genesis transfers already get sent?
-  bool sent_transfers = 4;
 }
 /*
 
