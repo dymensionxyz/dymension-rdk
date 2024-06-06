@@ -50,6 +50,17 @@ func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 
 	state := c.k.GetState(ctx)
 
+	if state.GetSentTransfers() {
+		l.Debug("Already sent transfers. Not sending again.")
+		// already done it
+		// TODO: why can this even get reached twice?
+		return nil
+	}
+
+	// TODO: doesn't allow for partial failures...
+	state.SentTransfers = true
+	c.k.SetState(ctx, state)
+
 	srcAccount := c.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress().String()
 
