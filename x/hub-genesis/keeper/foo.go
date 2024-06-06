@@ -38,13 +38,15 @@ func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	l := ctx.Logger().With("name", "OnChanOpenConfirm middleware", "port id", portID, "channelID", channelID)
+	l := ctx.Logger().With("name", "hubgenesis OnChanOpenConfirm middleware", "port id", portID, "channelID", channelID)
 
 	err := c.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
-		l.Error("Next middleware: on OnChanOpenConfirm.", "err", err)
+		l.Error("Next middleware.", "err", err)
 		return err
 	}
+
+	l.Debug("OnChanOpenConfirm is happening!")
 
 	state := c.k.GetState(ctx)
 
