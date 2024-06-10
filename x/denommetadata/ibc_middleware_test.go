@@ -3,6 +3,7 @@ package denommetadata_test
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,6 +13,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 	"github.com/stretchr/testify/require"
+	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
@@ -19,8 +21,11 @@ import (
 
 func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 	tests := []struct {
-		name             string
-		keeper           *mockKeeper
+		name           string
+		bankKeeper     *mockBankKeeper
+		transferKeeper *mockTransferKeeper
+		hooks          *mockERC20Hook
+
 		memoData         *memoData
 		wantAck          exported.Acknowledgement
 		wantSentMemoData *memoData
@@ -28,58 +33,74 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 	}{
 		{
 			name:             "valid packet data with packet metadata",
-			keeper:           &mockKeeper{},
+			bankKeeper:       &mockBankKeeper{},
+			transferKeeper:   &mockTransferKeeper{},
+			hooks:            &mockERC20Hook{},
 			memoData:         validMemoData,
 			wantAck:          emptyResult,
 			wantSentMemoData: nil,
 			wantCreated:      true,
 		}, {
 			name:             "valid packet data with packet metadata and user memo",
-			keeper:           &mockKeeper{},
+			bankKeeper:       &mockBankKeeper{},
+			transferKeeper:   &mockTransferKeeper{},
+			hooks:            &mockERC20Hook{},
 			memoData:         validMemoDataWithUserMemo,
 			wantAck:          emptyResult,
 			wantSentMemoData: validUserMemo,
 			wantCreated:      true,
 		}, {
 			name:             "no memo",
-			keeper:           &mockKeeper{},
+			bankKeeper:       &mockBankKeeper{},
+			transferKeeper:   &mockTransferKeeper{},
+			hooks:            &mockERC20Hook{},
 			memoData:         nil,
 			wantAck:          emptyResult,
 			wantSentMemoData: nil,
 			wantCreated:      false,
 		}, {
 			name:             "custom memo",
-			keeper:           &mockKeeper{},
+			bankKeeper:       &mockBankKeeper{},
+			transferKeeper:   &mockTransferKeeper{},
+			hooks:            &mockERC20Hook{},
 			memoData:         validUserMemo,
 			wantAck:          emptyResult,
 			wantSentMemoData: validUserMemo,
 			wantCreated:      false,
 		}, {
 			name:             "memo has empty packet metadata",
-			keeper:           &mockKeeper{},
+			bankKeeper:       &mockBankKeeper{},
+			transferKeeper:   &mockTransferKeeper{},
+			hooks:            &mockERC20Hook{},
 			memoData:         invalidMemoDataNoTransferInject,
 			wantAck:          emptyResult,
 			wantSentMemoData: invalidMemoDataNoTransferInject,
 			wantCreated:      false,
 		}, {
 			name:             "memo has empty denom metadata",
-			keeper:           &mockKeeper{},
+			bankKeeper:       &mockBankKeeper{},
+			transferKeeper:   &mockTransferKeeper{},
+			hooks:            &mockERC20Hook{},
 			memoData:         invalidMemoDataNoDenomMetadata,
 			wantAck:          emptyResult,
 			wantSentMemoData: nil,
 			wantCreated:      false,
 		}, {
 			name:             "denom metadata already exists in keeper",
-			keeper:           &mockKeeper{hasDenomMetaData: true},
+			bankKeeper:       &mockBankKeeper{hasDenomMetaData: true},
+			transferKeeper:   &mockTransferKeeper{},
+			hooks:            &mockERC20Hook{},
 			memoData:         validMemoData,
 			wantAck:          emptyResult,
 			wantSentMemoData: nil,
 			wantCreated:      false,
 		}, {
-			name:             "keeper error",
-			keeper:           &mockKeeper{err: fmt.Errorf("whatever")},
+			name:             "failed to create erc20 contract",
+			bankKeeper:       &mockBankKeeper{},
+			transferKeeper:   &mockTransferKeeper{},
+			hooks:            &mockERC20Hook{err: fmt.Errorf("failed to create erc20 contract")},
 			memoData:         validMemoData,
-			wantAck:          channeltypes.NewErrorAcknowledgement(fmt.Errorf("whatever")),
+			wantAck:          channeltypes.NewErrorAcknowledgement(fmt.Errorf("failed to create erc20 contract")),
 			wantSentMemoData: nil,
 			wantCreated:      false,
 		},
@@ -87,7 +108,7 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			app := &mockIBCModule{}
-			im := denommetadata.NewIBCMiddleware(tt.keeper, app)
+			im := denommetadata.NewIBCMiddleware(app, tt.bankKeeper, tt.transferKeeper, types.NewMultiDenommetadataHooks(tt.hooks))
 			var memo string
 			if tt.memoData != nil {
 				memo = mustMarshalJSON(tt.memoData)
@@ -104,7 +125,7 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 				wantMemo = mustMarshalJSON(tt.wantSentMemoData)
 			}
 			require.Equal(t, string(packetDataWithMemo(wantMemo)), string(app.sentData))
-			require.Equal(t, tt.wantCreated, tt.keeper.created)
+			require.Equal(t, tt.wantCreated, tt.bankKeeper.created)
 		})
 	}
 }
@@ -190,14 +211,44 @@ func (m *mockIBCModule) OnRecvPacket(_ sdk.Context, p channeltypes.Packet, _ sdk
 	return emptyResult
 }
 
-type mockKeeper struct {
+type mockBankKeeper struct {
 	hasDenomMetaData, created bool
-	err                       error
 }
 
-func (m *mockKeeper) CreateDenomMetadata(sdk.Context, ...types.DenomMetadata) error {
-	m.created = m.err == nil
+func (m *mockBankKeeper) SetDenomMetaData(sdk.Context, banktypes.Metadata) {
+	m.created = true
+}
+
+func (m mockBankKeeper) HasDenomMetaData(sdk.Context, string) bool { return m.hasDenomMetaData }
+
+type mockTransferKeeper struct {
+	hasDT   bool
+	created bool
+}
+
+func (m *mockTransferKeeper) HasDenomTrace(sdk.Context, tmbytes.HexBytes) bool {
+	return m.hasDT
+}
+
+func (m *mockTransferKeeper) SetDenomTrace(sdk.Context, transfertypes.DenomTrace) {
+	m.created = true
+}
+
+func (m *mockTransferKeeper) OnRecvPacket(sdk.Context, channeltypes.Packet, sdk.AccAddress) exported.Acknowledgement {
+	return emptyResult
+}
+
+type mockERC20Hook struct {
+	createCalled bool
+	err          error
+	sync.Mutex
+}
+
+func (m *mockERC20Hook) AfterDenomMetadataCreation(sdk.Context, banktypes.Metadata) error {
+	m.Lock()
+	defer m.Unlock()
+	m.createCalled = m.err == nil
 	return m.err
 }
 
-func (m mockKeeper) HasDenomMetaData(sdk.Context, string) bool { return m.hasDenomMetaData }
+func (m *mockERC20Hook) AfterDenomMetadataUpdate(sdk.Context, banktypes.Metadata) error { return nil }
