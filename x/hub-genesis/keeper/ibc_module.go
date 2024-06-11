@@ -19,8 +19,8 @@ import (
 
 type IBCModule struct {
 	porttypes.IBCModule
-	transfer  Transfer
 	k         Keeper
+	transfer  Transfer
 	getDenom  GetDenomMetaData
 	mintCoins MintCoins
 }
@@ -31,8 +31,8 @@ type (
 	MintCoins        func(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 )
 
-func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins) *IBCModule {
-	return &IBCModule{next, t, k, d, m}
+func NewIBCModule(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins) *IBCModule {
+	return &IBCModule{next, k, t, d, m}
 }
 
 // OnChanOpenConfirm will send any unsent genesis account transfers over the channel.
@@ -65,6 +65,10 @@ func (w IBCModule) OnChanOpenConfirm(
 		}
 		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "amt", a.Amount)
 	}
+
+	state.GenesisAccounts = nil
+
+	w.k.SetState(ctx, state)
 
 	l.Info("Sent all genesis transfers.")
 

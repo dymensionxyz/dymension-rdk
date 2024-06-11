@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"context"
+
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
@@ -15,3 +17,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 }
 
 var _ types.MsgServer = msgServer{}
+
+func (m msgServer) TriggerGenesisEvent(context.Context, *types.MsgHubGenesisEvent) (*types.MsgHubGenesisEventResponse, error) {
+	return &types.MsgHubGenesisEventResponse{}, nil
+}
