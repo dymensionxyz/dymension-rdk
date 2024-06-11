@@ -1,11 +1,8 @@
 package keeper
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
-
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -113,36 +110,4 @@ func (w IBCModule) mintAndTransfer(
 	}
 
 	return nil
-}
-
-// createMemo creates a memo to go with the transfer. It's used by the hub to confirm
-// that the transfer originated from the chain itself, rather than a user of the chain.
-// It may also contain token metadata.
-func (w IBCModule) createMemo(ctx sdk.Context, denom string, i, n int) (string, error) {
-	d, ok := w.getDenom(ctx, denom)
-	if !ok {
-		return "", errorsmod.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
-	}
-
-	m := memo{}
-	m.Data.Denom = d
-	m.Data.TotalNumTransfers = uint64(n)
-	m.Data.ThisTransferIx = uint64(i)
-
-	bz, err := json.Marshal(m)
-	if err != nil {
-		return "", sdkerrors.ErrJSONMarshal
-	}
-
-	return string(bz), nil
-}
-
-type memo struct {
-	Data struct {
-		Denom banktypes.Metadata `json:"denom"`
-		// How many transfers in total will be sent in the transfer genesis period
-		TotalNumTransfers uint64 `json:"total_num_transfers"`
-		// Which transfer is this? If there are 5 transfers total, they will be numbered 0,1,2,3,4.
-		ThisTransferIx uint64 `json:"this_transfer_ix"`
-	} `json:"genesis_transfer"`
 }
