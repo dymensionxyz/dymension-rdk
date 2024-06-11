@@ -19,8 +19,6 @@ type (
 		storeKey   storetypes.StoreKey
 		paramstore paramtypes.Subspace
 
-		channelKeeper types.ChannelKeeper
-		bankKeeper    types.BankKeeper
 		accountKeeper types.AuthAccountKeeper
 	}
 )
@@ -29,8 +27,6 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
-	channelKeeper types.ChannelKeeper,
-	bankKeeper types.BankKeeper,
 	accountKeeper types.AuthAccountKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
@@ -43,8 +39,6 @@ func NewKeeper(
 		cdc:           cdc,
 		storeKey:      storeKey,
 		paramstore:    ps,
-		channelKeeper: channelKeeper,
-		bankKeeper:    bankKeeper,
 		accountKeeper: accountKeeper,
 	}
 }
