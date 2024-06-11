@@ -33,7 +33,11 @@ func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Kee
 	return &OnChanOpenConfirmInterceptor{next, t, k, d}
 }
 
-// OnChanOpenConfirm ..
+// OnChanOpenConfirm will send any unsent genesis account transfers over the channel.
+// It is ASSUMED that the channel is for the Hub. This can be ensured by not exposing
+// the sequencer API until after genesis is complete.
+// Since transfers are only sent once, it does not matter if someone else tries to open
+// a channel in future (it will no-op).
 func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	ctx sdk.Context,
 	portID,
