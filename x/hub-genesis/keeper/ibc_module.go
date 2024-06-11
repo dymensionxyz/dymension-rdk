@@ -17,7 +17,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
-type OnChanOpenConfirmInterceptor struct {
+type IBCModule struct {
 	porttypes.IBCModule
 	transfer  Transfer
 	k         Keeper
@@ -31,8 +31,8 @@ type (
 	MintCoins        func(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 )
 
-func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins) *OnChanOpenConfirmInterceptor {
-	return &OnChanOpenConfirmInterceptor{next, t, k, d, m}
+func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins) *IBCModule {
+	return &IBCModule{next, t, k, d, m}
 }
 
 // OnChanOpenConfirm will send any unsent genesis account transfers over the channel.
@@ -40,7 +40,7 @@ func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Kee
 // the sequencer API until after genesis is complete.
 // Since transfers are only sent once, it does not matter if someone else tries to open
 // a channel in future (it will no-op).
-func (w OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
+func (w IBCModule) OnChanOpenConfirm(
 	ctx sdk.Context,
 	portID,
 	channelID string,
@@ -71,7 +71,7 @@ func (w OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	return nil
 }
 
-func (w OnChanOpenConfirmInterceptor) mintAndTransfer(
+func (w IBCModule) mintAndTransfer(
 	ctx sdk.Context,
 	i, n int,
 	a types.GenesisAccount,
@@ -114,7 +114,7 @@ func (w OnChanOpenConfirmInterceptor) mintAndTransfer(
 // createMemo creates a memo to go with the transfer. It's used by the hub to confirm
 // that the transfer originated from the chain itself, rather than a user of the chain.
 // It may also contain token metadata.
-func (w OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string, i, n int) (string, error) {
+func (w IBCModule) createMemo(ctx sdk.Context, denom string, i, n int) (string, error) {
 	d, ok := w.getDenom(ctx, denom)
 	if !ok {
 		return "", errorsmod.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
