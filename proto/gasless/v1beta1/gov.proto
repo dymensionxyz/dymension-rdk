@@ -1,0 +1,8 @@
+syntax = "proto3";
+package rollapp.gasless.v1beta1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/gasless/types";
+option (gogoproto.equal_all)           = false;
+option (gogoproto.goproto_getters_all) = false;
