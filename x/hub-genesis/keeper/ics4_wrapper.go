@@ -11,11 +11,11 @@ import (
 )
 
 type ICS4Wrapper struct {
-	next porttypes.ICS4Wrapper
+	porttypes.ICS4Wrapper
 }
 
 func NewICS4Wrapper(next porttypes.ICS4Wrapper) *ICS4Wrapper {
-	return &ICS4Wrapper{next: next}
+	return &ICS4Wrapper{next}
 }
 
 // SendPacket prevents anyone from sending a packet with the memo
@@ -34,5 +34,5 @@ func (w ICS4Wrapper) SendPacket(
 	if memoHasKey(transfer.GetMemo()) {
 		return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
 	}
-	return w.next.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }
