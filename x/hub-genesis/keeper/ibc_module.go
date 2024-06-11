@@ -40,26 +40,26 @@ func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Kee
 // the sequencer API until after genesis is complete.
 // Since transfers are only sent once, it does not matter if someone else tries to open
 // a channel in future (it will no-op).
-func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
+func (w OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	ctx sdk.Context,
 	portID,
 	channelID string,
 ) error {
 	l := ctx.Logger().With("name", "hubgenesis OnChanOpenConfirm middleware", "port id", portID, "channelID", channelID)
 
-	err := c.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
+	err := w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
 		l.Error("Next middleware.", "err", err)
 		return err
 	}
 
-	state := c.k.GetState(ctx)
+	state := w.k.GetState(ctx)
 
-	srcAccount := c.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+	srcAccount := w.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress().String()
 
 	for i, a := range state.GetGenesisAccounts() {
-		if err := c.mintAndTransfer(ctx, i, len(state.GetGenesisAccounts()), a, srcAddr, portID, channelID); err != nil {
+		if err := w.mintAndTransfer(ctx, i, len(state.GetGenesisAccounts()), a, srcAddr, portID, channelID); err != nil {
 			// there is no feasible way to recover
 			panic(fmt.Errorf("mint and transfer: %w", err))
 		}
@@ -71,7 +71,7 @@ func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	return nil
 }
 
-func (c OnChanOpenConfirmInterceptor) mintAndTransfer(
+func (w OnChanOpenConfirmInterceptor) mintAndTransfer(
 	ctx sdk.Context,
 	i, n int,
 	a types.GenesisAccount,
@@ -80,14 +80,14 @@ func (c OnChanOpenConfirmInterceptor) mintAndTransfer(
 	channelID string,
 ) error {
 	coin := a.GetAmount()
-	err := c.mintCoins(ctx, types.ModuleName, sdk.Coins{coin})
+	err := w.mintCoins(ctx, types.ModuleName, sdk.Coins{coin})
 	if err != nil {
 		return errorsmod.Wrap(err, "mint coins")
 	}
 
 	// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
 	// we assume the hub will deduplicate
-	memo, err := c.createMemo(ctx, a.Amount.Denom, i, n)
+	memo, err := w.createMemo(ctx, a.Amount.Denom, i, n)
 	if err != nil {
 		return errorsmod.Wrap(err, "create memo")
 	}
@@ -103,7 +103,7 @@ func (c OnChanOpenConfirmInterceptor) mintAndTransfer(
 		Memo:             memo,
 	}
 
-	err = c.transfer(ctx, &m)
+	err = w.transfer(ctx, &m)
 	if err != nil {
 		return errorsmod.Wrap(err, "transfer")
 	}
@@ -114,8 +114,8 @@ func (c OnChanOpenConfirmInterceptor) mintAndTransfer(
 // createMemo creates a memo to go with the transfer. It's used by the hub to confirm
 // that the transfer originated from the chain itself, rather than a user of the chain.
 // It may also contain token metadata.
-func (c OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string, i, n int) (string, error) {
-	d, ok := c.getDenom(ctx, denom)
+func (w OnChanOpenConfirmInterceptor) createMemo(ctx sdk.Context, denom string, i, n int) (string, error) {
+	d, ok := w.getDenom(ctx, denom)
 	if !ok {
 		return "", errorsmod.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
 	}
