@@ -6,6 +6,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
@@ -62,28 +63,22 @@ func (im IBCMiddleware) OnRecvPacket(
 		denomTrace.Path = fmt.Sprintf("%s/%s", packet.GetDestPort(), packet.GetDestChannel())
 	}
 
-	if im.bankKeeper.HasDenomMetaData(ctx, denomTrace.IBCDenom()) {
+	ibcDenom := denomTrace.IBCDenom()
+
+	if im.bankKeeper.HasDenomMetaData(ctx, ibcDenom) {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	transferInject, err := types.ParsePacketMetadata(packetData.Memo)
+	dm, err := denomMetadataFromMemo(packetData.Memo, ibcDenom)
 	if err != nil {
-		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
+		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	dm := transferInject.DenomMetadata
 	if dm == nil {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
+
 	metadata := *dm
-
-	if metadata.Base != denomTrace.IBCDenom() {
-		return channeltypes.NewErrorAcknowledgement(fmt.Errorf("denom metadata base does not match denom trace base. base: %s, expected: %s", dm.Base, denomTrace.IBCDenom()))
-	}
-
-	if err = metadata.Validate(); err != nil {
-		return channeltypes.NewErrorAcknowledgement(errortypes.ErrInvalidType)
-	}
 
 	im.bankKeeper.SetDenomMetaData(ctx, metadata)
 	// set hook after denom metadata creation
@@ -96,4 +91,21 @@ func (im IBCMiddleware) OnRecvPacket(
 	}
 
 	return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
+}
+
+func denomMetadataFromMemo(memo, ibcDenom string) (*banktypes.Metadata, error) {
+	transferInject := types.ParsePacketMetadata(memo)
+	if transferInject == nil || transferInject.DenomMetadata == nil {
+		return nil, nil
+	}
+	dm := transferInject.DenomMetadata
+
+	if err := dm.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid denom metadata: %w", err)
+	}
+
+	dm.Base = ibcDenom
+	dm.DenomUnits[0].Denom = dm.Base
+
+	return dm, nil
 }

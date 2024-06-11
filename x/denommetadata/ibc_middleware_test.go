@@ -114,7 +114,7 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 				memo = mustMarshalJSON(tt.memoData)
 			}
 			packetData := packetDataWithMemo(memo)
-			packet := channeltypes.Packet{Data: packetData}
+			packet := channeltypes.Packet{Data: packetData, SourcePort: "transfer", SourceChannel: "channel-0"}
 			got := im.OnRecvPacket(sdk.Context{}, packet, sdk.AccAddress{})
 			require.Equal(t, tt.wantAck, got)
 			if !tt.wantAck.Success() {

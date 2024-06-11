@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/x/bank/types"
 )
@@ -20,22 +19,9 @@ func (p TransferInject) ValidateBasic() error {
 	return p.DenomMetadata.Validate()
 }
 
-var (
-	ErrMemoUnmarshal           = fmt.Errorf("unmarshal memo")
-	ErrMemoTransferInjectEmpty = fmt.Errorf("memo transfer inject is missing")
-)
-
-func ParsePacketMetadata(input string) (*TransferInject, error) {
+func ParsePacketMetadata(input string) *TransferInject {
 	bz := []byte(input)
-
 	var memo MemoData
-	if err := json.Unmarshal(bz, &memo); err != nil {
-		return nil, ErrMemoUnmarshal
-	}
-
-	if memo.TransferInject == nil {
-		return nil, ErrMemoTransferInjectEmpty
-	}
-
-	return memo.TransferInject, nil
+	_ = json.Unmarshal(bz, &memo) // we don't care about the error
+	return memo.TransferInject
 }
