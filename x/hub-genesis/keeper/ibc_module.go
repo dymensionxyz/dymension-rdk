@@ -33,7 +33,7 @@ func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Kee
 	return &OnChanOpenConfirmInterceptor{next, t, k, d}
 }
 
-// OnChanOpenConfirm .. TODO: write a note about exactly-once ness
+// OnChanOpenConfirm ..
 func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 	ctx sdk.Context,
 	portID,

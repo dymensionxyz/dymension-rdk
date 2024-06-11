@@ -15,7 +15,7 @@ message State {
 }
 /*
 
-TODO: the below is copy pasted, clean up! (Dan: is it??)
+TODO: the below is copy pasted, clean up
  */
 
 // GenesisAccount is a struct for the genesis account for the rollapp
