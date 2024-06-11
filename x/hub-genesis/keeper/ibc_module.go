@@ -2,7 +2,7 @@ package keeper
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"time"
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -19,18 +19,20 @@ import (
 
 type OnChanOpenConfirmInterceptor struct {
 	porttypes.IBCModule
-	transfer Transfer
-	k        Keeper
-	getDenom GetDenomMetaData
+	transfer  Transfer
+	k         Keeper
+	getDenom  GetDenomMetaData
+	mintCoins MintCoins
 }
 
 type (
 	Transfer         func(ctx sdk.Context, transfer *transfertypes.MsgTransfer) error
 	GetDenomMetaData func(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
+	MintCoins        func(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 )
 
-func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData) *OnChanOpenConfirmInterceptor {
-	return &OnChanOpenConfirmInterceptor{next, t, k, d}
+func NewOnChanOpenConfirmInterceptor(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins) *OnChanOpenConfirmInterceptor {
+	return &OnChanOpenConfirmInterceptor{next, t, k, d, m}
 }
 
 // OnChanOpenConfirm will send any unsent genesis account transfers over the channel.
@@ -51,66 +53,62 @@ func (c OnChanOpenConfirmInterceptor) OnChanOpenConfirm(
 		return err
 	}
 
-	if !isHub(ctx, portID, channelID) {
-		return nil
-	}
-
-	l.Debug("Minting coins and sending transfers.")
-
-	c.k.mintCoins(ctx)
-
 	state := c.k.GetState(ctx)
 
 	srcAccount := c.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress().String()
 
-	var errs []error
-
 	for i, a := range state.GetGenesisAccounts() {
-
-		// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
-		// we assume the hub will deduplicate
-		memo, err := c.createMemo(ctx, a.Amount.Denom, i, len(state.GetGenesisAccounts()))
-		if err != nil {
-			err = errorsmod.Wrapf(err, "create memo: coin: %s", a.Amount)
-			errs = append(errs, err)
-			continue
+		if err := c.mintAndTransfer(ctx, i, len(state.GetGenesisAccounts()), a, srcAddr, portID, channelID); err != nil {
+			// there is no feasible way to recover
+			panic(fmt.Errorf("mint and transfer: %w", err))
 		}
-
-		m := transfertypes.MsgTransfer{
-			SourcePort:       portID,
-			SourceChannel:    channelID,
-			Token:            a.Amount,
-			Sender:           srcAddr,
-			Receiver:         a.GetAddress(),
-			TimeoutHeight:    clienttypes.Height{},
-			TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()), // TODO: value?
-			Memo:             memo,
-		}
-
-		err = c.transfer(ctx, &m)
-		if err != nil {
-			err = errorsmod.Wrapf(err, "transfer: receiver: %s: amt: %s", a.GetAddress(), a.Amount)
-			errs = append(errs, err)
-			continue
-		}
-
-		l.Debug("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "amt", a.Amount)
+		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "amt", a.Amount)
 	}
 
-	err = errors.Join(err)
-	if err != nil {
-		l.Error("Genesis transfers.", "err", err) // TODO: don't log(?)
-	} else {
-		l.Info("Sent genesis transfers.")
-	}
+	l.Info("Sent all genesis transfers.")
 
-	return err
+	return nil
 }
 
-func isHub(ctx sdk.Context, portID, channelID string) bool {
-	// TODO:
-	return true
+func (c OnChanOpenConfirmInterceptor) mintAndTransfer(
+	ctx sdk.Context,
+	i, n int,
+	a types.GenesisAccount,
+	srcAddr string,
+	portID string,
+	channelID string,
+) error {
+	coin := a.GetAmount()
+	err := c.mintCoins(ctx, types.ModuleName, sdk.Coins{coin})
+	if err != nil {
+		return errorsmod.Wrap(err, "mint coins")
+	}
+
+	// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
+	// we assume the hub will deduplicate
+	memo, err := c.createMemo(ctx, a.Amount.Denom, i, n)
+	if err != nil {
+		return errorsmod.Wrap(err, "create memo")
+	}
+
+	m := transfertypes.MsgTransfer{
+		SourcePort:       portID,
+		SourceChannel:    channelID,
+		Token:            a.Amount,
+		Sender:           srcAddr,
+		Receiver:         a.GetAddress(),
+		TimeoutHeight:    clienttypes.Height{},
+		TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()), // TODO: value?
+		Memo:             memo,
+	}
+
+	err = c.transfer(ctx, &m)
+	if err != nil {
+		return errorsmod.Wrap(err, "transfer")
+	}
+
+	return nil
 }
 
 // createMemo creates a memo to go with the transfer. It's used by the hub to confirm
