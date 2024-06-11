@@ -104,7 +104,7 @@ func (w IBCModule) mintAndTransfer(
 		Memo:             memo,
 	}
 
-	err = w.transfer(ctx, &m)
+	err = w.transfer(skipContext(ctx), &m)
 	if err != nil {
 		return errorsmod.Wrap(err, "transfer")
 	}

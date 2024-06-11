@@ -10,6 +10,19 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 )
 
+type ctxKeySkip struct{}
+
+// skipContext returns a context which can be passed to ibc SendPacket
+// if passed, the memo guard will not check that call
+func skipContext(ctx sdk.Context) sdk.Context {
+	return ctx.WithValue(ctxKeySkip{}, true)
+}
+
+func skip(ctx sdk.Context) bool {
+	val, ok := ctx.Value(ctxKeySkip{}).(bool)
+	return ok && val
+}
+
 type ICS4Wrapper struct {
 	porttypes.ICS4Wrapper
 }
@@ -31,7 +44,7 @@ func (w ICS4Wrapper) SendPacket(
 ) (sequence uint64, err error) {
 	var transfer transfertypes.FungibleTokenPacketData
 	_ = transfertypes.ModuleCdc.UnmarshalJSON(data, &transfer)
-	if memoHasKey(transfer.GetMemo()) {
+	if !skip(ctx) && memoHasKey(transfer.GetMemo()) {
 		return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
 	}
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
