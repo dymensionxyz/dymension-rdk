@@ -42,7 +42,7 @@ func (w IBCModule) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	l := ctx.Logger().With("name", "hubgenesis OnChanOpenConfirm middleware", "port id", portID, "channelID", channelID)
+	l := ctx.Logger().With("module", "hubgenesis OnChanOpenConfirm middleware", "port id", portID, "channelID", channelID)
 
 	err := w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
@@ -60,7 +60,7 @@ func (w IBCModule) OnChanOpenConfirm(
 			// there is no feasible way to recover
 			panic(fmt.Errorf("mint and transfer: %w", err))
 		}
-		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "amt", a.Amount)
+		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
 	}
 
 	state.GenesisAccounts = nil

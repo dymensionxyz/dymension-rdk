@@ -537,7 +537,7 @@ func NewRollapp(
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
-		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper, app.AccountKeeper),
+		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper),
 		gasless.NewAppModule(appCodec, app.GaslessKeeper),
 	}
 

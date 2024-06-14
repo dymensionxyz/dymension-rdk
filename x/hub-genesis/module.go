@@ -98,16 +98,14 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper     keeper.Keeper
-	authKeeper types.AuthAccountKeeper
+	keeper keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule object.
-func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AuthAccountKeeper) AppModule {
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{cdc: cdc},
 		keeper:         keeper,
-		authKeeper:     ak,
 	}
 }
 
