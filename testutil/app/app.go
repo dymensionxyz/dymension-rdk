@@ -699,25 +699,6 @@ func NewRollapp(
 	return app
 }
 
-// func (app *App) setAnteHandler(txConfig client.TxConfig) {
-// 	anteHandler, err := rollappapp.NewAnteHandler(
-// 		rollappapp.HandlerOptions{
-// 			HandlerOptions: ante.HandlerOptions{
-// 				AuthAccountKeeper:   app.AuthAccountKeeper,
-// 				BankKeeper:      app.BankKeeper,
-// 				SignModeHandler: txConfig.SignModeHandler(),
-// 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
-// 			},
-// 			IBCKeeper: app.IBCKeeper,
-// 		},
-// 	)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	app.SetAnteHandler(anteHandler)
-// }
-
 func (app *App) setPostHandler() {
 	postHandler, err := posthandler.NewPostHandler(
 		posthandler.HandlerOptions{},
