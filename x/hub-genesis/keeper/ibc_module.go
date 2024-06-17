@@ -104,7 +104,7 @@ func (w IBCModule) mintAndTransfer(
 		Sender:           srcAddr,
 		Receiver:         a.GetAddress(),
 		TimeoutHeight:    clienttypes.Height{},
-		TimeoutTimestamp: uint64(ctx.BlockTime().Add(transferTimeout).Unix()),
+		TimeoutTimestamp: uint64(ctx.BlockTime().Add(transferTimeout).UnixNano()),
 		Memo:             memo,
 	}
 
