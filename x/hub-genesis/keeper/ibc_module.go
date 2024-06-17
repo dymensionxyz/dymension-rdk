@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"time"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -11,6 +12,10 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+)
+
+const (
+	transferTimeout = time.Hour * 24 * 14
 )
 
 type IBCModule struct {
@@ -99,7 +104,7 @@ func (w IBCModule) mintAndTransfer(
 		Sender:           srcAddr,
 		Receiver:         a.GetAddress(),
 		TimeoutHeight:    clienttypes.Height{},
-		TimeoutTimestamp: 0,
+		TimeoutTimestamp: uint64(ctx.BlockTime().Add(transferTimeout).Unix()),
 		Memo:             memo,
 	}
 
