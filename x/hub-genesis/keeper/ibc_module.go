@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"fmt"
-	"time"
 
 	errorsmod "cosmossdk.io/errors"
 
@@ -100,7 +99,7 @@ func (w IBCModule) mintAndTransfer(
 		Sender:           srcAddr,
 		Receiver:         a.GetAddress(),
 		TimeoutHeight:    clienttypes.Height{},
-		TimeoutTimestamp: uint64(ctx.BlockTime().Add(time.Hour * 24).UnixNano()), // TODO: value?
+		TimeoutTimestamp: 0,
 		Memo:             memo,
 	}
 
