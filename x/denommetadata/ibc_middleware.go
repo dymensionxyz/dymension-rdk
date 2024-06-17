@@ -12,6 +12,8 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 
+	"github.com/dymensionxyz/dymension-rdk/utils"
+
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
 
@@ -56,13 +58,12 @@ func (im IBCMiddleware) OnRecvPacket(
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
-	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
-	// if denom trace path is empty (sending chain's native coin, e.g. 'adym'),
-	// construct it from the packet destination port and channel, so that the ibc denom can be derived
-	if denomTrace.Path == "" {
-		denomTrace.Path = fmt.Sprintf("%s/%s", packet.GetDestPort(), packet.GetDestChannel())
+	if packetData.Memo == "" {
+		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
+	// at this point it's safe to assume that we are not handling a native token of the rollapp
+	denomTrace := utils.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
 	ibcDenom := denomTrace.IBCDenom()
 
 	if im.bankKeeper.HasDenomMetaData(ctx, ibcDenom) {
