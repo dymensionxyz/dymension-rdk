@@ -6,8 +6,12 @@ import (
 	"cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/types"
-	errors2 "github.com/cosmos/cosmos-sdk/types/errors"
-	types2 "github.com/cosmos/cosmos-sdk/x/bank/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+)
+
+const (
+	memoNamespaceKey = "genesis_transfer"
 )
 
 func memoHasKey(memo string) bool {
@@ -15,7 +19,7 @@ func memoHasKey(memo string) bool {
 	if err := json.Unmarshal([]byte(memo), &m); err != nil {
 		return false
 	}
-	_, ok := m["genesis_transfer"]
+	_, ok := m[memoNamespaceKey]
 	return ok
 }
 
@@ -25,7 +29,7 @@ func memoHasKey(memo string) bool {
 func (w IBCModule) createMemo(ctx types.Context, denom string, i, n int) (string, error) {
 	d, ok := w.getDenom(ctx, denom)
 	if !ok {
-		return "", errors.Wrap(errors2.ErrNotFound, "get denom metadata")
+		return "", errors.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
 	}
 
 	m := memo{}
@@ -35,7 +39,7 @@ func (w IBCModule) createMemo(ctx types.Context, denom string, i, n int) (string
 
 	bz, err := json.Marshal(m)
 	if err != nil {
-		return "", errors2.ErrJSONMarshal
+		return "", sdkerrors.ErrJSONMarshal
 	}
 
 	return string(bz), nil
@@ -43,7 +47,7 @@ func (w IBCModule) createMemo(ctx types.Context, denom string, i, n int) (string
 
 type memo struct {
 	Data struct {
-		Denom types2.Metadata `json:"denom"`
+		Denom banktypes.Metadata `json:"denom"`
 		// How many transfers in total will be sent in the transfer genesis period
 		TotalNumTransfers uint64 `json:"total_num_transfers"`
 		// Which transfer is this? If there are 5 transfers total, they will be numbered 0,1,2,3,4.
