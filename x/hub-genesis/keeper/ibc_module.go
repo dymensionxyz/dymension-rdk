@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	transferTimeout = time.Hour * 24 * 14
+	transferTimeout = time.Hour * 24 * 365
 )
 
 type IBCModule struct {
