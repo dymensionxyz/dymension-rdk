@@ -26,14 +26,17 @@ func memoHasKey(memo string) bool {
 // createMemo creates a memo to go with the transfer. It's used by the hub to confirm
 // that the transfer originated from the chain itself, rather than a user of the chain.
 // It may also contain token metadata.
-func (w IBCModule) createMemo(ctx types.Context, denom string, i, n int) (string, error) {
-	d, ok := w.getDenom(ctx, denom)
-	if !ok {
-		return "", errors.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
+func (w IBCModule) createMemo(ctx types.Context, denom *string, i, n int) (string, error) {
+	m := memo{}
+
+	if denom != nil {
+		d, ok := w.getDenom(ctx, *denom)
+		if !ok {
+			return "", errors.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
+		}
+		m.Data.Denom = d
 	}
 
-	m := memo{}
-	m.Data.Denom = d
 	m.Data.TotalNumTransfers = uint64(n)
 	m.Data.ThisTransferIx = uint64(i)
 

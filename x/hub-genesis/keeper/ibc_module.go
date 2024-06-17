@@ -59,8 +59,9 @@ func (w IBCModule) OnChanOpenConfirm(
 	srcAccount := w.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress().String()
 
+	denomsIncludedInMemo := map[string]struct{}{}
 	for i, a := range state.GetGenesisAccounts() {
-		if err := w.mintAndTransfer(ctx, i, len(state.GetGenesisAccounts()), a, srcAddr, portID, channelID); err != nil {
+		if err := w.mintAndTransfer(ctx, i, len(state.GetGenesisAccounts()), a, srcAddr, portID, channelID, denomsIncludedInMemo); err != nil {
 			// there is no feasible way to recover
 			panic(fmt.Errorf("mint and transfer: %w", err))
 		}
@@ -76,6 +77,9 @@ func (w IBCModule) OnChanOpenConfirm(
 	return nil
 }
 
+// mints and transfers tokens. Will not include the denom metadata
+// if the denom is already included in skipDenoms.
+// This func adds to skipDenoms.
 func (w IBCModule) mintAndTransfer(
 	ctx sdk.Context,
 	i, n int,
@@ -83,6 +87,7 @@ func (w IBCModule) mintAndTransfer(
 	srcAddr string,
 	portID string,
 	channelID string,
+	skipDenoms map[string]struct{},
 ) error {
 	coin := a.GetAmount()
 	err := w.mintCoins(ctx, types.ModuleName, sdk.Coins{coin})
@@ -90,9 +95,16 @@ func (w IBCModule) mintAndTransfer(
 		return errorsmod.Wrap(err, "mint coins")
 	}
 
-	// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
-	// we assume the hub will deduplicate
-	memo, err := w.createMemo(ctx, a.Amount.Denom, i, n)
+	/*
+		Since the number of genesis transfers may be large,
+		we optimise to only send the denom data once.
+	*/
+	var denom *string
+	if _, ok := skipDenoms[a.Amount.Denom]; !ok {
+		skipDenoms[a.Amount.Denom] = struct{}{}
+		denom = &a.Amount.Denom
+	}
+	memo, err := w.createMemo(ctx, denom, i, n)
 	if err != nil {
 		return errorsmod.Wrap(err, "create memo")
 	}
