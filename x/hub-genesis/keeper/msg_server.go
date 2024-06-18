@@ -8,7 +8,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	tenderminttypes "github.com/cosmos/ibc-go/v6/modules/light-clients/07-tendermint/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 type msgServer struct {
@@ -58,6 +60,12 @@ func (m msgServer) TriggerGenesisEvent(goCtx context.Context, msg *types.MsgHubG
 
 	state.IsLocked = true
 	m.SetState(ctx, state)
+
+	hub := hubtypes.Hub{
+		Id:        msg.HubId,
+		ChannelId: msg.ChannelId,
+	}
+	m.hubKeeper.SetHub(ctx, hub)
 
 	return &types.MsgHubGenesisEventResponse{}, nil
 }

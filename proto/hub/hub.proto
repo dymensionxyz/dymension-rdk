@@ -1,0 +1,18 @@
+syntax = "proto3";
+package rollapp.hub;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub/types";
+
+// Hub is a proto message that represents the metadata of the hub
+message Hub {
+  // id is the unique identifier of the hub
+  string id = 1;
+
+  // channel_id is the unique identifier of the channel that the hub is connected to
+  string channel_id = 2;
+
+  // registeredDenoms is a list of registered denom bases on the hub
+  repeated string registeredDenoms = 3;
+}

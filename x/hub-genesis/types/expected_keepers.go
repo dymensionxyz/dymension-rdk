@@ -4,6 +4,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
+
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 // AccountKeeper defines the contract required for account APIs.
@@ -22,4 +24,8 @@ type BankKeeper interface {
 
 type ChannelKeeper interface {
 	GetChannelClientState(ctx sdk.Context, portID, channelID string) (string, exported.ClientState, error)
+}
+
+type HubKeeper interface {
+	SetHub(ctx sdk.Context, hub hubtypes.Hub)
 }

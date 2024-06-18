@@ -6,11 +6,13 @@ import (
 
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ibctypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
-	"github.com/dymensionxyz/dymension-rdk/testutil/keepers"
-	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/dymensionxyz/dymension-rdk/testutil/keepers"
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/ibctest"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
@@ -190,12 +192,14 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 				expectedBalance       sdk.Coin
 				expectedEscrowBalance sdk.Coin
 				expectedState         bool
+				expectedHub           bool
 			)
 
 			if tc.expErr == nil {
 				expectedBalance = sdk.NewCoin(rollappDenom, sdk.NewInt(0))
 				expectedEscrowBalance = tc.rollappBalanceBefore
 				expectedState = true
+				expectedHub = true
 			} else {
 				expectedBalance = tc.rollappBalanceBefore
 				expectedEscrowBalance = sdk.NewCoin(rollappDenom, sdk.NewInt(0))
@@ -205,6 +209,10 @@ func (suite *HubGenesisMsgServerTestSuite) TestTriggerGenesisEvent() {
 			// check the hub genesis state
 			stateState := suite.k.GetState(suite.ctx)
 			suite.Require().Equal(expectedState, stateState.IsLocked, tc.name)
+
+			// check the hub creation
+			_, ok := suite.app.HubKeeper.GetHub(suite.ctx, path.EndpointB.Chain.ChainID)
+			suite.Require().Equal(expectedHub, ok)
 
 			// check the module balance after the genesis event
 			rollappBalanceAfter := suite.app.BankKeeper.GetBalance(suite.ctx, moduleAddr, rollappDenom)

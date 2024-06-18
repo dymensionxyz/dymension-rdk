@@ -13,6 +13,9 @@ import (
 	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
+
+	hubkeeper "github.com/dymensionxyz/dymension-rdk/x/hub/keeper"
 
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/gorilla/mux"
@@ -134,7 +137,7 @@ var kvstorekeys = []string{
 	minttypes.StoreKey, distrtypes.StoreKey,
 	govtypes.StoreKey, paramstypes.StoreKey,
 	ibchost.StoreKey, upgradetypes.StoreKey,
-	epochstypes.StoreKey, hubgentypes.StoreKey,
+	epochstypes.StoreKey, hubgentypes.StoreKey, hubtypes.StoreKey,
 	ibctransfertypes.StoreKey, capabilitytypes.StoreKey, gaslesstypes.StoreKey, wasmtypes.StoreKey,
 }
 
@@ -226,6 +229,7 @@ type App struct {
 	DistrKeeper      distrkeeper.Keeper
 	GaslessKeeper    gaslesskeeper.Keeper
 	GovKeeper        govkeeper.Keeper
+	HubKeeper        hubkeeper.Keeper
 	HubGenesisKeeper hubgenkeeper.Keeper
 	UpgradeKeeper    upgradekeeper.Keeper
 	ParamsKeeper     paramskeeper.Keeper
@@ -417,12 +421,23 @@ func NewRollapp(
 		),
 	)
 
+	app.HubKeeper = hubkeeper.NewKeeper(
+		appCodec,
+		keys[hubtypes.StoreKey],
+	)
+
+	denomMetadataMiddleware := denommetadata.NewIBCSendMiddleware(
+		app.IBCKeeper.ChannelKeeper,
+		app.HubKeeper,
+		app.BankKeeper,
+	)
+
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
+		denomMetadataMiddleware,
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -432,10 +447,11 @@ func NewRollapp(
 
 	var transferStack ibcporttypes.IBCModule
 	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
-	transferStack = denommetadata.NewIBCMiddleware(
+	transferStack = denommetadata.NewIBCRecvMiddleware(
 		transferStack,
 		app.BankKeeper,
 		app.TransferKeeper,
+		app.HubKeeper,
 		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
 	)
 
@@ -446,6 +462,7 @@ func NewRollapp(
 		app.IBCKeeper.ChannelKeeper,
 		app.BankKeeper,
 		app.AccountKeeper,
+		app.HubKeeper,
 	)
 
 	app.GaslessKeeper = gaslesskeeper.NewKeeper(
@@ -683,25 +700,6 @@ func NewRollapp(
 
 	return app
 }
-
-// func (app *App) setAnteHandler(txConfig client.TxConfig) {
-// 	anteHandler, err := rollappapp.NewAnteHandler(
-// 		rollappapp.HandlerOptions{
-// 			HandlerOptions: ante.HandlerOptions{
-// 				AccountKeeper:   app.AccountKeeper,
-// 				BankKeeper:      app.BankKeeper,
-// 				SignModeHandler: txConfig.SignModeHandler(),
-// 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
-// 			},
-// 			IBCKeeper: app.IBCKeeper,
-// 		},
-// 	)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	app.SetAnteHandler(anteHandler)
-// }
 
 func (app *App) setPostHandler() {
 	postHandler, err := posthandler.NewPostHandler(
