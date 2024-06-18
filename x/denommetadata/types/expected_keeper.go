@@ -9,7 +9,6 @@ import (
 
 // BankKeeper defines the expected interface needed to retrieve account balances.
 type BankKeeper interface {
-	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
 	HasDenomMetaData(ctx sdk.Context, denom string) bool
 	SetDenomMetaData(ctx sdk.Context, denomMetaData banktypes.Metadata)
 }

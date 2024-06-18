@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
@@ -23,8 +24,8 @@ func (k Keeper) GenesisTriggererAllowlist(ctx sdk.Context) (res []types.GenesisT
 }
 
 func (k Keeper) IsAddressInGenesisTriggererAllowList(ctx sdk.Context, address string) bool {
-	Allowlist := k.GenesisTriggererAllowlist(ctx)
-	for _, item := range Allowlist {
+	allowlist := k.GenesisTriggererAllowlist(ctx)
+	for _, item := range allowlist {
 		if item.Address == address {
 			return true
 		}
