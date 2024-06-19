@@ -34,7 +34,6 @@ func (w IBCModule) createMemo(ctx types.Context, denom string, n int) (string, e
 
 	m := memo{}
 	m.Data.Denom = d
-	m.Data.TotalNumTransfers = uint64(n)
 
 	bz, err := json.Marshal(m)
 	if err != nil {
@@ -47,7 +46,5 @@ func (w IBCModule) createMemo(ctx types.Context, denom string, n int) (string, e
 type memo struct {
 	Data struct {
 		Denom banktypes.Metadata `json:"denom"`
-		// How many transfers in total will be sent in the transfer genesis period
-		TotalNumTransfers uint64 `json:"total_num_transfers"`
 	} `json:"genesis_transfer"`
 }
