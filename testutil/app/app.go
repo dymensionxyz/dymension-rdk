@@ -424,6 +424,7 @@ func NewRollapp(
 	app.HubKeeper = hubkeeper.NewKeeper(
 		appCodec,
 		keys[hubtypes.StoreKey],
+		app.IBCKeeper.ChannelKeeper,
 	)
 
 	denomMetadataMiddleware := denommetadata.NewIBCSendMiddleware(
@@ -443,16 +444,6 @@ func NewRollapp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		scopedTransferKeeper,
-	)
-
-	var transferStack ibcporttypes.IBCModule
-	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
-	transferStack = denommetadata.NewIBCRecvMiddleware(
-		transferStack,
-		app.BankKeeper,
-		app.TransferKeeper,
-		app.HubKeeper,
-		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
 	)
 
 	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
@@ -511,6 +502,16 @@ func NewRollapp(
 	)
 
 	wasmStack := wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
+
+	var transferStack ibcporttypes.IBCModule
+	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
+	transferStack = denommetadata.NewIBCRecvMiddleware(
+		transferStack,
+		app.BankKeeper,
+		app.TransferKeeper,
+		app.HubKeeper,
+		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
+	)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
