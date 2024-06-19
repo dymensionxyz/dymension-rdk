@@ -264,15 +264,11 @@ var (
 	validUserData = userData{Data: "data"}
 	validMemoData = &memoData{
 		MemoData: types.MemoData{
-			TransferInject: &types.TransferInject{
-				DenomMetadata: &validDenomMetadata,
-			},
+			DenomMetadata: &validDenomMetadata,
 		},
 	}
 	invalidMemoDataNoDenomMetadata = &memoData{
-		MemoData: types.MemoData{
-			TransferInject: &types.TransferInject{},
-		},
+		MemoData: types.MemoData{},
 	}
 	invalidMemoDataNoTransferInject = &memoData{
 		MemoData: types.MemoData{},

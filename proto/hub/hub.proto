@@ -14,5 +14,5 @@ message Hub {
   string channel_id = 2;
 
   // registeredDenoms is a list of registered denom bases on the hub
-  repeated string registeredDenoms = 3;
+  repeated string registered_denoms = 3;
 }

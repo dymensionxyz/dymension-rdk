@@ -10,14 +10,10 @@ import (
 
 // MemoData represents the structure of the memo with user and hub metadata
 type MemoData struct {
-	DenomMetadata *DenomMetadata `json:"denom_metadata,omitempty"`
-}
-
-type DenomMetadata struct {
 	DenomMetadata *types.Metadata `json:"denom_metadata,omitempty"`
 }
 
-func (p DenomMetadata) ValidateBasic() error {
+func (p MemoData) ValidateBasic() error {
 	return p.DenomMetadata.Validate()
 }
 
@@ -25,7 +21,7 @@ const memoObjectKeyDenomMetadata = "denom_metadata"
 
 var ErrMemoDenomMetadataAlreadyExists = errorsmod.Wrapf(errortypes.ErrUnauthorized, "'denom_metadata' already exists in memo")
 
-func ParsePacketMetadata(input string) *DenomMetadata {
+func ParsePacketMetadata(input string) *types.Metadata {
 	bz := []byte(input)
 	var memo MemoData
 	_ = json.Unmarshal(bz, &memo) // we don't care about the error
@@ -52,7 +48,7 @@ func AddDenomMetadataToMemo(memo string, denomMetadata types.Metadata) (string, 
 		return "", ErrMemoDenomMetadataAlreadyExists
 	}
 
-	memoMap[memoObjectKeyDenomMetadata] = DenomMetadata{DenomMetadata: &denomMetadata}
+	memoMap[memoObjectKeyDenomMetadata] = &denomMetadata
 	bz, err := json.Marshal(memoMap)
 	if err != nil {
 		return memo, err

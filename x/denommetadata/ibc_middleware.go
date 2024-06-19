@@ -1,13 +1,11 @@
 package denommetadata
 
 import (
-	"fmt"
 	. "slices"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
@@ -64,7 +62,7 @@ func (m *IBCSendMiddleware) SendPacket(
 
 	hub, err := m.hubKeeper.ExtractHubFromChannel(ctx, destinationPort, destinationChannel)
 	if err != nil {
-		return 0, errorsmod.Wrapf(errortypes.ErrInvalidRequest, "extract hub from packet: %s", err.Error())
+		return 0, errorsmod.Wrapf(errortypes.ErrInvalidRequest, "extract hub from channel: %s", err.Error())
 	}
 
 	if hub == nil {
@@ -151,19 +149,14 @@ func (im IBCRecvMiddleware) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	packetMetadata := types.ParsePacketMetadata(data.Memo)
-	if packetMetadata == nil {
-		return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
-	}
-
-	dm := packetMetadata.DenomMetadata
+	dm := types.ParsePacketMetadata(data.Memo)
 	if dm == nil {
 		return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
 
 	hub, err := im.hubKeeper.ExtractHubFromChannel(ctx, packet.SourcePort, packet.SourceChannel)
 	if err != nil {
-		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "extract hub from packet: %s", err.Error())
+		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "extract hub from channel: %s", err.Error())
 	}
 	if hub == nil {
 		return errorsmod.Wrapf(errortypes.ErrNotFound, "hub not found")
@@ -207,20 +200,21 @@ func (im IBCRecvMiddleware) OnRecvPacket(
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	dm, err := denomMetadataFromMemo(packetData.Memo, ibcDenom)
-	if err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
-	}
-
+	dm := types.ParsePacketMetadata(packetData.Memo)
 	if dm == nil {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	metadata := *dm
+	if err := dm.Validate(); err != nil {
+		return channeltypes.NewErrorAcknowledgement(err)
+	}
 
-	im.bankKeeper.SetDenomMetaData(ctx, metadata)
+	dm.Base = ibcDenom
+	dm.DenomUnits[0].Denom = dm.Base
+
+	im.bankKeeper.SetDenomMetaData(ctx, *dm)
 	// set hook after denom metadata creation
-	if err = im.hooks.AfterDenomMetadataCreation(ctx, metadata); err != nil {
+	if err := im.hooks.AfterDenomMetadataCreation(ctx, *dm); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
 	}
 
@@ -229,21 +223,4 @@ func (im IBCRecvMiddleware) OnRecvPacket(
 	}
 
 	return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
-}
-
-func denomMetadataFromMemo(memo, ibcDenom string) (*banktypes.Metadata, error) {
-	denom_metadata := types.ParsePacketMetadata(memo)
-	if denom_metadata == nil || denom_metadata.DenomMetadata == nil {
-		return nil, nil
-	}
-	dm := denom_metadata.DenomMetadata
-
-	if err := dm.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid denom metadata: %w", err)
-	}
-
-	dm.Base = ibcDenom
-	dm.DenomUnits[0].Denom = dm.Base
-
-	return dm, nil
 }
