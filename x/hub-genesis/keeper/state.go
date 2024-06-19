@@ -5,13 +5,13 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
-// SetState sets the state state.
+// SetState sets the state.
 func (k Keeper) SetState(ctx sdk.Context, state types.State) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.StateKey, k.cdc.MustMarshal(&state))
 }
 
-// GetState returns the state state.
+// GetState returns the state.
 func (k Keeper) GetState(ctx sdk.Context) types.State {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.StateKey)
