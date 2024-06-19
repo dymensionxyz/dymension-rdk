@@ -8,31 +8,35 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 type ctxKeySkip struct{}
 
-// skipContext returns a context which can be passed to ibc SendPacket
+// skipAuthorizationCheckContext returns a context which can be passed to ibc SendPacket
 // if passed, the memo guard will not check that call
-func skipContext(ctx sdk.Context) sdk.Context {
+func skipAuthorizationCheckContext(ctx sdk.Context) sdk.Context {
 	return ctx.WithValue(ctxKeySkip{}, true)
 }
 
-func skip(ctx sdk.Context) bool {
+func skipAuthorizationCheck(ctx sdk.Context) bool {
 	val, ok := ctx.Value(ctxKeySkip{}).(bool)
 	return ok && val
 }
 
 type ICS4Wrapper struct {
 	porttypes.ICS4Wrapper
+	k Keeper
 }
 
-func NewICS4Wrapper(next porttypes.ICS4Wrapper) *ICS4Wrapper {
-	return &ICS4Wrapper{next}
+func NewICS4Wrapper(next porttypes.ICS4Wrapper, k Keeper) *ICS4Wrapper {
+	return &ICS4Wrapper{next, k}
 }
 
 // SendPacket prevents anyone from sending a packet with the memo
 // The app should be wired to allow the middleware to circumvent this
+// It also prevents anyone from sending a transfer before all the genesis transfers
+// have had successull acks come back.
 func (w ICS4Wrapper) SendPacket(
 	ctx sdk.Context,
 	chanCap *capabilitytypes.Capability,
@@ -42,10 +46,25 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
+	if !w.k.genesisIsFinished(ctx) {
+		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
+	}
+
 	var transfer transfertypes.FungibleTokenPacketData
 	_ = transfertypes.ModuleCdc.UnmarshalJSON(data, &transfer)
-	if !skip(ctx) && memoHasKey(transfer.GetMemo()) {
-		return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
+
+	if memoHasKey(transfer.GetMemo()) {
+		if !skipAuthorizationCheck(ctx) {
+			return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
+		}
+
+		// record the sequence number because we need to tick them off as they get acked
+
+		seq, err := w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+		if err != nil {
+			return seq, err
+		}
+		return seq, w.k.saveSequenceNumber(ctx, seq)
 	}
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }

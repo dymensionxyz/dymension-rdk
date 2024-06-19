@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -73,7 +74,17 @@ func (w IBCModule) OnChanOpenConfirm(
 
 	l.Info("Sent all genesis transfers.")
 
-	return nil
+	return w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
+}
+
+func (w IBCModule) OnAcknowledgementPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	acknowledgement []byte,
+	relayer sdk.AccAddress,
+) error {
+	w.k.delSequenceNumber(ctx, packet.Sequence)
+	return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }
 
 func (w IBCModule) mintAndTransfer(
@@ -111,7 +122,7 @@ func (w IBCModule) mintAndTransfer(
 		Memo:             memo,
 	}
 
-	err = w.transfer(skipContext(ctx), &m)
+	err = w.transfer(skipAuthorizationCheckContext(ctx), &m)
 	if err != nil {
 		return errorsmod.Wrap(err, "transfer")
 	}

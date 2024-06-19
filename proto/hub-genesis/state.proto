@@ -12,11 +12,9 @@ message State {
   reserved 2;
   // accounts on the Hub to fund with some bootstrapping transfers
   repeated GenesisAccount genesis_accounts = 3 [(gogoproto.nullable) = false];
+  // the sequence numbers of all transfers for genesis accounts for which an ack has not yet come back
+  repeated uint64 GenesisTransferSeqs  = 4 [(gogoproto.nullable) = false];
 }
-/*
-
-TODO: the below is copy pasted, clean up
- */
 
 // GenesisAccount is a struct for the genesis account for the rollapp
 message GenesisAccount {

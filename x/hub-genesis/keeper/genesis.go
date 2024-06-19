@@ -16,6 +16,5 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis := types.DefaultGenesisState()
 	genesis.Params = k.GetParams(ctx)
 	genesis.State = k.GetState(ctx)
-
 	return genesis
 }
