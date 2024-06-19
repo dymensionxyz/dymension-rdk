@@ -60,7 +60,7 @@ func (w IBCModule) OnChanOpenConfirm(
 	srcAddr := srcAccount.GetAddress().String()
 
 	for i, a := range state.GetGenesisAccounts() {
-		if err := w.mintAndTransfer(ctx, i, len(state.GetGenesisAccounts()), a, srcAddr, portID, channelID); err != nil {
+		if err := w.mintAndTransfer(ctx, len(state.GetGenesisAccounts()), a, srcAddr, portID, channelID); err != nil {
 			// there is no feasible way to recover
 			panic(fmt.Errorf("mint and transfer: %w", err))
 		}
@@ -78,7 +78,7 @@ func (w IBCModule) OnChanOpenConfirm(
 
 func (w IBCModule) mintAndTransfer(
 	ctx sdk.Context,
-	i, n int,
+	n int,
 	a types.GenesisAccount,
 	srcAddr string,
 	portID string,
@@ -95,7 +95,7 @@ func (w IBCModule) mintAndTransfer(
 	// or commit anyway, so the packet will be cleared up.
 	// (Actually, since transfers may arrive out of order, we must include the
 	// denom metadata anyway).
-	memo, err := w.createMemo(ctx, a.Amount.Denom, i, n)
+	memo, err := w.createMemo(ctx, a.Amount.Denom, n)
 	if err != nil {
 		return errorsmod.Wrap(err, "create memo")
 	}
