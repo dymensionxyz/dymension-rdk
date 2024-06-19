@@ -195,7 +195,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		hubgentypes.ModuleName:         {authtypes.Burner},
+		hubgentypes.ModuleName:         {authtypes.Minter},
 		gaslesstypes.ModuleName:        nil,
 		wasmtypes.ModuleName:           {authtypes.Burner},
 	}
@@ -450,8 +450,6 @@ func NewRollapp(
 		appCodec,
 		keys[hubgentypes.StoreKey],
 		app.GetSubspace(hubgentypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
-		app.BankKeeper,
 		app.AccountKeeper,
 		app.HubKeeper,
 	)
@@ -543,7 +541,7 @@ func NewRollapp(
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
-		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper, app.AccountKeeper),
+		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper),
 		gasless.NewAppModule(appCodec, app.GaslessKeeper),
 	}
 
@@ -873,7 +871,7 @@ func (app *App) GetStakingKeeper() ibctestingtypes.StakingKeeper {
 	return app.StakingKeeper
 }
 
-// GetStakingKeeper implements the TestingApp interface.
+// GetStakingKeeperSDK implements the TestingApp interface.
 func (app *App) GetStakingKeeperSDK() stakingkeeper.Keeper {
 	return app.StakingKeeper
 }
@@ -903,15 +901,6 @@ func RegisterSwaggerAPI(_ client.Context, rtr *mux.Router) {
 
 	staticServer := http.FileServer(statikFS)
 	rtr.PathPrefix("/swagger/").Handler(http.StripPrefix("/swagger/", staticServer))
-}
-
-// GetMaccPerms returns a copy of the module account permissions
-func GetMaccPerms() map[string][]string {
-	dupMaccPerms := make(map[string][]string)
-	for k, v := range maccPerms {
-		dupMaccPerms[k] = v
-	}
-	return dupMaccPerms
 }
 
 // initParamsKeeper init params keeper and its subspaces

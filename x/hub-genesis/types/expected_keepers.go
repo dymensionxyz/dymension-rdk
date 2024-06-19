@@ -8,11 +8,8 @@ import (
 	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
-// AccountKeeper defines the contract required for account APIs.
-type AccountKeeper interface {
-	GetModuleAddress(name string) sdk.AccAddress
-	HasAccount(ctx sdk.Context, addr sdk.AccAddress) bool
-
+// AuthAccountKeeper defines the contract required for account APIs.
+type AuthAccountKeeper interface {
 	GetModuleAccount(ctx sdk.Context, moduleName string) types.ModuleAccountI
 }
 
