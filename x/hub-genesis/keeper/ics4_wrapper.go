@@ -46,6 +46,13 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
+	/*
+		Rethinking how this can work:
+		- block transfers if the genesis accounts list is not empty, that means they weren't all sent
+		- record the highest seq num, always
+		- on a transfer attempt, check for any of those seq nums, save the result when it's good, to amortize
+	*/
+
 	if !w.k.genesisIsFinished(ctx) {
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
@@ -64,7 +71,7 @@ func (w ICS4Wrapper) SendPacket(
 		if err != nil {
 			return seq, err
 		}
-		return seq, w.k.saveSequenceNumber(ctx, seq)
+		return seq, w.k.saveLastSequenceNumber(ctx, seq)
 	}
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }

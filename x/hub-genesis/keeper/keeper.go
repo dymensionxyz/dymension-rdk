@@ -13,6 +13,10 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
+type ChannelKeeper interface {
+	GetPacketCommitment(ctx sdk.Context, portID, channelID string, sequence uint64) []byte
+}
+
 type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
@@ -20,6 +24,7 @@ type (
 		paramstore paramtypes.Subspace
 
 		accountKeeper types.AuthAccountKeeper
+		channelKeeper ChannelKeeper
 	}
 )
 

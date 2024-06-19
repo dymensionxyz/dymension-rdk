@@ -16,25 +16,19 @@ func seqNumKey(seq uint64) []byte {
 	return key
 }
 
-func seqCntKey() []byte {
-	var key []byte
-	key = append(key, []byte("seqcnt")...)
-	return key
+// NOTE: assumes monotically increasing
+func (k Keeper) saveLastSequenceNumber(ctx sdk.Context, seq uint64) {
+	seqBz := make([]byte, 8)
+	binary.BigEndian.PutUint64(seqBz, seq)
+	ctx.KVStore(k.storeKey).Set([]byte("seqnum"), seqBz)
 }
 
-func (k Keeper) saveSequenceNumber(ctx sdk.Context, seq uint64) error {
-	store := ctx.KVStore(k.storeKey)
-	ctx.KVStore(k.storeKey).Set(seqNumKey(seq), []byte{})
-	cntBz := store.Get(seqCntKey())
-	cnt := binary.BigEndian.Uint64(cntBz)
-	cnt++
-	if !ok
-}
-
-func (k Keeper) delSequenceNumber(ctx sdk.Context, seq uint64) error {
-	store := ctx.KVStore(k.storeKey).
-		store.Set(seqNumKey(seq), nil)
-}
-
-func (k Keeper) genesisIsFinished(ctx sdk.Context) bool {
+func (k Keeper) genesisIsFinished(ctx sdk.Context, port, channel string) bool {
+	seqBz := ctx.KVStore(k.storeKey).Get([]byte("seqnum"))
+	seq := binary.BigEndian.Uint64(seqBz)
+	bz := k.channelKeeper.GetPacketCommitment(ctx, port, channel, seq)
+	if len(bz) == 0 {
+		// TODO: need to loop through all of them and save a convenience value
+	}
+	return false
 }
