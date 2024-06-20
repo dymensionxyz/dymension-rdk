@@ -22,40 +22,10 @@ func GetQueryCmd() *cobra.Command {
 	}
 
 	hubGenQueryCmd.AddCommand(
-		GetCmdQueryParams(),
 		GetCmdQueryState(),
 	)
 
 	return hubGenQueryCmd
-}
-
-// GetCmdQueryParams implements a command to return the current hub-genesis
-// parameters.
-func GetCmdQueryParams() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "params",
-		Short: "Query the current hub-genesis parameters",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientQueryContext(cmd)
-			if err != nil {
-				return err
-			}
-			queryClient := types.NewQueryClient(clientCtx)
-
-			params := &types.QueryParamsRequest{}
-			res, err := queryClient.Params(context.Background(), params)
-			if err != nil {
-				return err
-			}
-
-			return clientCtx.PrintProto(&res.Params)
-		},
-	}
-
-	flags.AddQueryFlagsToCmd(cmd)
-
-	return cmd
 }
 
 // GetCmdQueryState implements a command to return the current hub-genesis
