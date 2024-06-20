@@ -33,6 +33,7 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	accountKeeper types.AuthAccountKeeper,
+	channelKeeper ChannelKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -45,6 +46,7 @@ func NewKeeper(
 		storeKey:      storeKey,
 		paramstore:    ps,
 		accountKeeper: accountKeeper,
+		channelKeeper: channelKeeper,
 	}
 }
 
