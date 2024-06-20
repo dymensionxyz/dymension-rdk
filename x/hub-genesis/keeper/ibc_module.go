@@ -9,6 +9,7 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
@@ -105,4 +106,20 @@ func (w IBCModule) mintAndTransfer(ctx sdk.Context, account types.GenesisAccount
 	}
 
 	return nil
+}
+
+func (w IBCModule) OnAcknowledgementPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	acknowledgement []byte,
+	relayer sdk.AccAddress,
+) error {
+	var data transfertypes.FungibleTokenPacketData
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil {
+		var ack channeltypes.Acknowledgement
+		if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err == nil {
+			w.k.ackSeqNum(ctx, packet.SourcePort, packet.SourceChannel, packet.Sequence, ack.Success())
+		}
+	}
+	return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }

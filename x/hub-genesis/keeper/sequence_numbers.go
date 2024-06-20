@@ -7,15 +7,24 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+/*
+Whenever a genesis transfer is sent, we record the sequence number. We do not allow transfers until
+all acks have been received with success.
+*/
+
 func seqNumKey(port, channel string) []byte {
 	return []byte(fmt.Sprintf("seqnum/%s/%s", port, channel))
 }
 
 // NOTE: assumes monotonically increasing
-func (k Keeper) saveLastSequenceNumber(ctx sdk.Context, port, channel string, seq uint64) {
+func (k Keeper) saveSeqNum(ctx sdk.Context, port, channel string, seq uint64) {
 	seqBz := make([]byte, 8)
 	binary.BigEndian.PutUint64(seqBz, seq)
 	ctx.KVStore(k.storeKey).Set(seqNumKey(port, channel), seqBz)
+}
+
+// ackSeqNum handles the inbound acknowledgement of an outbound genesis transfer
+func (k Keeper) ackSeqNum(ctx sdk.Context, port, channel string, seq uint64, success bool) {
 }
 
 func (k Keeper) getLastSequenceNumber(ctx sdk.Context, port, channel string) uint64 {

@@ -17,4 +17,7 @@ func init() {
 	amino.Seal()
 }
 
-var amino = codec.NewLegacyAmino()
+var (
+	amino     = codec.NewLegacyAmino()
+	ModuleCdc = codec.NewProtoCodec(cdctypes.NewInterfaceRegistry())
+)

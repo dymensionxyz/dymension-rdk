@@ -45,10 +45,6 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
-	if !w.k.genesisIsFinished(ctx, sourcePort, sourceChannel) {
-		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
-	}
-
 	var transfer transfertypes.FungibleTokenPacketData
 	_ = transfertypes.ModuleCdc.UnmarshalJSON(data, &transfer)
 
@@ -57,15 +53,17 @@ func (w ICS4Wrapper) SendPacket(
 			return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
 		}
 
-		// this is a genesis transfer, we record the sequence number
-		// record the sequence number because we need to tick them off as they get acked
+		// This is a genesis transfer, we record the sequence number.
+		// Record the sequence number because we need to tick them off as they get acked.
 
 		seq, err := w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 		if err != nil {
 			return seq, err
 		}
-		w.k.saveLastSequenceNumber(ctx, sourcePort, sourceChannel, seq)
+		w.k.saveSeqNum(ctx, sourcePort, sourceChannel, seq)
 		return seq, nil
+	} else if !w.k.genesisIsFinished(ctx, sourcePort, sourceChannel) {
+		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }
