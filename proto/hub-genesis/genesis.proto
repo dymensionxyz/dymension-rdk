@@ -10,4 +10,5 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 message GenesisState {
   reserved 1;
   State state = 2 [(gogoproto.nullable) = false];
+  repeated uint64 unacked_transfer_seq_nums = 3 [(gogoproto.nullable) = false];
 }
