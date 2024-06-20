@@ -12,8 +12,11 @@ Whenever a genesis transfer is sent, we record the sequence number. We do not al
 all acks have been received with success.
 */
 
+var UnackedTransferSeqNumsPrefix = []byte("unacked_seqs")
+
 func seqNumKey(seq uint64) []byte {
-	bz := []byte(fmt.Sprintf("seqnumval/"))
+	bz := make([]byte, len(UnackedTransferSeqNumsPrefix))
+	copy(bz, UnackedTransferSeqNumsPrefix)
 	bz = append(bz, sdk.Uint64ToBigEndian(seq)...)
 	return bz
 }
@@ -31,7 +34,13 @@ func (k Keeper) getAllSeqNums(ctx sdk.Context) []uint64 {
 	state := k.GetState(ctx)
 	n := state.NumUnackedTransfers
 	ret := make([]uint64, n)
-	// TODO:
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, UnackedTransferSeqNumsPrefix)
+	defer iterator.Close() // nolint: errcheck
+	for ; iterator.Valid(); iterator.Next() {
+		ret = append(ret, sdk.BigEndianToUint64(iterator.Key()))
+	}
+	return ret
 }
 
 // ackSeqNum handles the inbound acknowledgement of an outbound genesis transfer

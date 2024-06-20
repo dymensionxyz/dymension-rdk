@@ -50,11 +50,14 @@ func (w IBCModule) OnChanOpenConfirm(
 
 	err := w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
-		l.Error("Next middleware.", "err", err)
 		return err
 	}
 
 	state := w.k.GetState(ctx)
+
+	if state.CanonicalHubTransferChannelHasBeenSet() {
+		return nil
+	}
 
 	state.HubPortAndChannel = &types.PortAndChannel{
 		Port:    portID,
@@ -78,7 +81,7 @@ func (w IBCModule) OnChanOpenConfirm(
 
 	l.Info("Sent all genesis transfers.")
 
-	return w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
+	return nil
 }
 
 func (w IBCModule) mintAndTransfer(ctx sdk.Context, account types.GenesisAccount, srcAddr string, portID string, channelID string) error {

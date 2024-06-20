@@ -21,3 +21,7 @@ func (s State) Validate() error {
 func (s State) IsCanonicalHubTransferChannel(port, channel string) bool {
 	return s.HubPortAndChannel.Port == port && s.HubPortAndChannel.Channel == channel
 }
+
+func (s State) CanonicalHubTransferChannelHasBeenSet() bool {
+	return s.HubPortAndChannel.Port != "" || s.HubPortAndChannel.Channel != ""
+}
