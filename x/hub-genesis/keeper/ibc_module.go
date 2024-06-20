@@ -59,42 +59,31 @@ func (w IBCModule) OnChanOpenConfirm(
 	srcAddr := srcAccount.GetAddress().String()
 
 	for i, a := range state.GetGenesisAccounts() {
-		if err := w.mintAndTransfer(ctx, len(state.GetGenesisAccounts()), a, srcAddr, portID, channelID); err != nil {
+		if err := w.mintAndTransfer(ctx, a, srcAddr, portID, channelID); err != nil {
 			// there is no feasible way to recover
 			panic(fmt.Errorf("mint and transfer: %w", err))
 		}
 		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
 	}
 
-	state.GenesisAccounts = nil
-
-	w.k.SetState(ctx, state)
-
 	l.Info("Sent all genesis transfers.")
 
 	return w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 }
 
-func (w IBCModule) mintAndTransfer(
-	ctx sdk.Context,
-	n int,
-	a types.GenesisAccount,
-	srcAddr string,
-	portID string,
-	channelID string,
-) error {
-	coin := a.GetAmount()
+func (w IBCModule) mintAndTransfer(ctx sdk.Context, account types.GenesisAccount, srcAddr string, portID string, channelID string) error {
+	coin := account.GetAmount()
 	err := w.mintCoins(ctx, types.ModuleName, sdk.Coins{coin})
 	if err != nil {
 		return errorsmod.Wrap(err, "mint coins")
 	}
 
 	// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
-	// we assume the hub will deduplicate. We expect to eventually get a timeout
+	// we assume the hub will deduplicate. We expect to eventually get account timeout
 	// or commit anyway, so the packet will be cleared up.
 	// (Actually, since transfers may arrive out of order, we must include the
 	// denom metadata anyway).
-	memo, err := w.createMemo(ctx, a.Amount.Denom, n)
+	memo, err := w.createMemo(ctx, account.Amount.Denom)
 	if err != nil {
 		return errorsmod.Wrap(err, "create memo")
 	}
@@ -102,9 +91,9 @@ func (w IBCModule) mintAndTransfer(
 	m := transfertypes.MsgTransfer{
 		SourcePort:       portID,
 		SourceChannel:    channelID,
-		Token:            a.Amount,
+		Token:            account.Amount,
 		Sender:           srcAddr,
-		Receiver:         a.GetAddress(),
+		Receiver:         account.GetAddress(),
 		TimeoutHeight:    clienttypes.Height{},
 		TimeoutTimestamp: uint64(ctx.BlockTime().Add(transferTimeout).UnixNano()),
 		Memo:             memo,
