@@ -28,6 +28,12 @@ func (k Keeper) getLastSequenceNumber(ctx sdk.Context, port, channel string) uin
 // allowed to send regular transfers. The first regular transfer received on the Hub marks
 // the end of the protocol from the Hub's perspective.
 func (k Keeper) genesisIsFinished(ctx sdk.Context, port, channel string) bool {
+	state := k.GetState(ctx)
+	if state.GetFinished() {
+		return true
+	}
+	// This operation may not be super cheap, but once the genesis phase is finished, it won't be necessary.
+	// Much simpler than using a map to check off each seq num.
 	for seq := range k.getLastSequenceNumber(ctx, port, channel) + 1 {
 		bz := k.channelKeeper.GetPacketCommitment(ctx, port, channel, seq)
 		if len(bz) != 0 {
@@ -36,5 +42,7 @@ func (k Keeper) genesisIsFinished(ctx sdk.Context, port, channel string) bool {
 			return false
 		}
 	}
+	state.Finished = true
+	k.SetState(ctx, state)
 	return true
 }
