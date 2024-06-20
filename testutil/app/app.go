@@ -417,7 +417,14 @@ func NewRollapp(
 		),
 	)
 
-	genesisTransfersMemoBlocker := hubgenkeeper.NewICS4Wrapper(app.IBCKeeper.ChannelKeeper)
+	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
+		appCodec,
+		keys[hubgentypes.StoreKey],
+		app.GetSubspace(hubgentypes.ModuleName),
+		app.AccountKeeper,
+	)
+
+	genesisTransfersMemoBlocker := hubgenkeeper.NewICS4Wrapper(app.IBCKeeper.ChannelKeeper, app.HubGenesisKeeper)
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
@@ -449,14 +456,6 @@ func NewRollapp(
 		app.HubGenesisKeeper,
 		app.BankKeeper.GetDenomMetaData,
 		app.BankKeeper.MintCoins,
-	)
-
-	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
-		appCodec,
-		keys[hubgentypes.StoreKey],
-		app.GetSubspace(hubgentypes.ModuleName),
-		app.AccountKeeper,
-		app.IBCKeeper.ChannelKeeper,
 	)
 
 	app.GaslessKeeper = gaslesskeeper.NewKeeper(
