@@ -123,11 +123,15 @@ func (w IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	state := w.k.GetState(ctx)
+	if !state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) {
+		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	}
 	var data transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil {
 		var ack channeltypes.Acknowledgement
 		if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err == nil {
-			w.k.ackSeqNum(ctx, packet.SourcePort, packet.SourceChannel, packet.Sequence, ack.Success())
+			w.k.ackSeqNum(ctx, packet.Sequence, ack.Success())
 		}
 	}
 	return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)

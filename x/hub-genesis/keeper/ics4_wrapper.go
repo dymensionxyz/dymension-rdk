@@ -45,6 +45,11 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
+	state := w.k.GetState(ctx)
+	if !state.IsCanonicalHubTransferChannel(sourcePort, sourceChannel) {
+		return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+	}
+
 	var transfer transfertypes.FungibleTokenPacketData
 	_ = transfertypes.ModuleCdc.UnmarshalJSON(data, &transfer)
 
@@ -60,7 +65,7 @@ func (w ICS4Wrapper) SendPacket(
 		if err != nil {
 			return seq, err
 		}
-		w.k.saveSeqNum(ctx, sourcePort, sourceChannel, seq)
+		w.k.saveSeqNum(ctx, seq)
 		return seq, nil
 	} else if !w.k.outboundTransfersEnabled(ctx) {
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")

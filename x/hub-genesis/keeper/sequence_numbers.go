@@ -12,26 +12,26 @@ Whenever a genesis transfer is sent, we record the sequence number. We do not al
 all acks have been received with success.
 */
 
-func seqNumKey(port, channel string, seq uint64) []byte {
-	bz := []byte(fmt.Sprintf("seqnumval/%s/%s/", port, channel))
+func seqNumKey(seq uint64) []byte {
+	bz := []byte(fmt.Sprintf("seqnumval/"))
 	bz = append(bz, sdk.Uint64ToBigEndian(seq)...)
 	return bz
 }
 
-func (k Keeper) saveSeqNum(ctx sdk.Context, port, channel string, seq uint64) {
-	ctx.KVStore(k.storeKey).Set(seqNumKey(port, channel, seq), []byte{})
+func (k Keeper) saveSeqNum(ctx sdk.Context, seq uint64) {
+	ctx.KVStore(k.storeKey).Set(seqNumKey(seq), []byte{})
 }
 
-func (k Keeper) delSeqNum(ctx sdk.Context, port, channel string, seq uint64) {
-	ctx.KVStore(k.storeKey).Delete(seqNumKey(port, channel, seq))
+func (k Keeper) delSeqNum(ctx sdk.Context, seq uint64) {
+	ctx.KVStore(k.storeKey).Delete(seqNumKey(seq))
 }
 
 // ackSeqNum handles the inbound acknowledgement of an outbound genesis transfer
-func (k Keeper) ackSeqNum(ctx sdk.Context, port, channel string, seq uint64, success bool) {
+func (k Keeper) ackSeqNum(ctx sdk.Context, seq uint64, success bool) {
 	if !success {
-		panic(fmt.Sprintf("genesis transfer unsuccessful, port: %s, channel: %s: seq: %d", port, channel, seq))
+		panic(fmt.Sprintf("genesis transfer unsuccessful seq: %d", seq))
 	}
-	k.delSeqNum(ctx, port, channel, seq)
+	k.delSeqNum(ctx, seq)
 	state := k.GetState(ctx)
 	state.NumUnackedTransfers--
 	if state.NumUnackedTransfers == 0 {
