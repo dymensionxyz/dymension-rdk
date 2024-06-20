@@ -18,8 +18,6 @@ type Keeper struct {
 	storeKey   storetypes.StoreKey
 	paramstore paramtypes.Subspace
 
-	channelKeeper types.ChannelKeeper
-	bankKeeper    types.BankKeeper
 	accountKeeper types.AuthAccountKeeper
 	hubKeeper     types.HubKeeper
 }

@@ -70,15 +70,6 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 			wantSentMemoData: validUserMemo,
 			wantCreated:      false,
 		}, {
-			name:             "memo has empty packet metadata",
-			bankKeeper:       &mockBankKeeper{},
-			transferKeeper:   &mockTransferKeeper{},
-			hooks:            &mockERC20Hook{},
-			memoData:         invalidMemoDataNoTransferInject,
-			wantAck:          emptyResult,
-			wantSentMemoData: invalidMemoDataNoTransferInject,
-			wantCreated:      false,
-		}, {
 			name:             "memo has empty denom metadata",
 			bankKeeper:       &mockBankKeeper{},
 			transferKeeper:   &mockTransferKeeper{},
@@ -268,9 +259,6 @@ var (
 		},
 	}
 	invalidMemoDataNoDenomMetadata = &memoData{
-		MemoData: types.MemoData{},
-	}
-	invalidMemoDataNoTransferInject = &memoData{
 		MemoData: types.MemoData{},
 	}
 	validDenomMetadata = banktypes.Metadata{

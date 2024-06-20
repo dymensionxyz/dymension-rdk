@@ -11,7 +11,9 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 const (
@@ -24,6 +26,7 @@ type IBCModule struct {
 	transfer  Transfer
 	getDenom  GetDenomMetaData
 	mintCoins MintCoins
+	hubKeeper types.HubKeeper
 }
 
 type (
@@ -32,8 +35,8 @@ type (
 	MintCoins        func(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 )
 
-func NewIBCModule(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins) *IBCModule {
-	return &IBCModule{next, k, t, d, m}
+func NewIBCModule(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins, hk types.HubKeeper) *IBCModule {
+	return &IBCModule{next, k, t, d, m, hk}
 }
 
 // OnChanOpenConfirm will send any unsent genesis account transfers over the channel.
@@ -70,6 +73,17 @@ func (w IBCModule) OnChanOpenConfirm(
 	state.GenesisAccounts = nil
 
 	w.k.SetState(ctx, state)
+
+	hubID, err := w.hubKeeper.ExtractChainIDFromChannel(ctx, portID, channelID)
+	if err != nil {
+		return errorsmod.Wrap(err, "extract hub id from channel")
+	}
+
+	hub := hubtypes.Hub{
+		Id:        hubID,
+		ChannelId: channelID,
+	}
+	w.hubKeeper.SetHub(ctx, hub)
 
 	l.Info("Sent all genesis transfers.")
 
