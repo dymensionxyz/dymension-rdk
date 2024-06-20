@@ -57,35 +57,16 @@ func (k Keeper) ackSeqNum(ctx sdk.Context, port, channel string, seq uint64, suc
 		cnt := k.getNumUnackedSeqNums(ctx, port, channel)
 		cnt--
 		k.saveNumUnackedSeqNums(ctx, port, channel, cnt)
-	}
-}
-
-func (k Keeper) numUnackedSeqNums(ctx sdk.Context, port, channel string) uint64 {
-	if !success {
-		panic(fmt.Sprintf("genesis transfer unsuccessful, port: %s, channel: %s: seq: %d", port, channel, seq))
-	}
-}
-
-// genesisIsFinished returns if the genesis bridge protocol phase is finished. It is finished
-// when all genesis transfers sent from the RA to the Hub have been acked. After this you're
-// allowed to send regular transfers. The first regular transfer received on the Hub marks
-// the end of the protocol from the Hub's perspective.
-func (k Keeper) genesisIsFinished(ctx sdk.Context, port, channel string) bool {
-	state := k.GetState(ctx)
-	if state.GetFinished() {
-		return true
-	}
-	// This operation may not be super cheap, but once the genesis phase is finished, it won't be necessary.
-	// Much simpler than using a map to check off each seq num.
-	for seq := range k.getLastSequenceNumber(ctx, port, channel) + 1 {
-		bz := k.channelKeeper.GetPacketCommitment(ctx, port, channel, seq)
-		if len(bz) != 0 {
-			// there is still a sequence number for which we didn't get an ack back yet
-			// so we still need to wait some more.
-			return false
+		if cnt == 0 {
+			// all acks have come back successfully
+			state := k.GetState(ctx)
+			state.OutboundTransfersEnabled = true
+			k.SetState(ctx, state)
 		}
 	}
-	state.Finished = true
-	k.SetState(ctx, state)
-	return true
+}
+
+func (k Keeper) outboundTransfersEnabled(ctx sdk.Context) bool {
+	state := k.GetState(ctx)
+	return state.OutboundTransfersEnabled
 }

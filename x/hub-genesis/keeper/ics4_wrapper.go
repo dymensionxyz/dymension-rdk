@@ -62,7 +62,7 @@ func (w ICS4Wrapper) SendPacket(
 		}
 		w.k.saveSeqNum(ctx, sourcePort, sourceChannel, seq)
 		return seq, nil
-	} else if !w.k.genesisIsFinished(ctx, sourcePort, sourceChannel) {
+	} else if !w.k.outboundTransfersEnabled(ctx) {
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
