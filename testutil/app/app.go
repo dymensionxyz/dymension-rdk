@@ -444,6 +444,7 @@ func NewRollapp(
 		keys[hubgentypes.StoreKey],
 		app.GetSubspace(hubgentypes.ModuleName),
 		app.AccountKeeper,
+		app.IBCKeeper.ChannelKeeper,
 	)
 
 	app.GaslessKeeper = gaslesskeeper.NewKeeper(
