@@ -66,6 +66,7 @@ func (k Keeper) ackSeqNum(ctx sdk.Context, port, channel string, seq uint64, suc
 }
 
 func (k Keeper) outboundTransfersEnabled(ctx sdk.Context) bool {
+	k.Logger(ctx).With("module", types.ModuleName).Debug("outbound transfers enabled")
 	state := k.GetState(ctx)
 	return state.OutboundTransfersEnabled
 }
