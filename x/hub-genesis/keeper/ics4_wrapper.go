@@ -64,7 +64,7 @@ func (w ICS4Wrapper) SendPacket(
 		if err != nil {
 			return seq, err
 		}
-		w.k.saveLastSequenceNumber(ctx, seq)
+		w.k.saveLastSequenceNumber(ctx, sourcePort, sourceChannel, seq)
 		return seq, nil
 	}
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)

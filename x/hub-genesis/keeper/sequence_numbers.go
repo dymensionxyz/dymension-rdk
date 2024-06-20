@@ -18,12 +18,15 @@ func (k Keeper) saveLastSequenceNumber(ctx sdk.Context, port, channel string, se
 	ctx.KVStore(k.storeKey).Set(seqNumKey(port, channel), seqBz)
 }
 
-// NOTE: assumes monotonically increasing
 func (k Keeper) getLastSequenceNumber(ctx sdk.Context, port, channel string) uint64 {
 	bz := ctx.KVStore(k.storeKey).Get(seqNumKey(port, channel))
 	return sdk.BigEndianToUint64(bz)
 }
 
+// genesisIsFinished returns if the genesis bridge protocol phase is finished. It is finished
+// when all genesis transfers sent from the RA to the Hub have been acked. After this you're
+// allowed to send regular transfers. The first regular transfer received on the Hub marks
+// the end of the protocol from the Hub's perspective.
 func (k Keeper) genesisIsFinished(ctx sdk.Context, port, channel string) bool {
 	for seq := range k.getLastSequenceNumber(ctx, port, channel) + 1 {
 		bz := k.channelKeeper.GetPacketCommitment(ctx, port, channel, seq)
