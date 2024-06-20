@@ -12,7 +12,7 @@ all acks have been received with success.
 */
 
 func seqNumKey(port, channel string, seq uint64) []byte {
-	bz := []byte(fmt.Sprintf("seqnumval/%s/%s", port, channel))
+	bz := []byte(fmt.Sprintf("seqnumval/%s/%s/", port, channel))
 	bz = append(bz, sdk.Uint64ToBigEndian(seq)...)
 	return bz
 }
