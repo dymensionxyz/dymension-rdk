@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
 /*
@@ -59,9 +60,7 @@ func (k Keeper) ackSeqNum(ctx sdk.Context, port, channel string, seq uint64, suc
 		k.saveNumUnackedSeqNums(ctx, port, channel, cnt)
 		if cnt == 0 {
 			// all acks have come back successfully
-			state := k.GetState(ctx)
-			state.OutboundTransfersEnabled = true
-			k.SetState(ctx, state)
+			k.enableOutboundTransfers(ctx)
 		}
 	}
 }
@@ -69,4 +68,11 @@ func (k Keeper) ackSeqNum(ctx sdk.Context, port, channel string, seq uint64, suc
 func (k Keeper) outboundTransfersEnabled(ctx sdk.Context) bool {
 	state := k.GetState(ctx)
 	return state.OutboundTransfersEnabled
+}
+
+func (k Keeper) enableOutboundTransfers(ctx sdk.Context) {
+	state := k.GetState(ctx)
+	state.OutboundTransfersEnabled = true
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
+	k.SetState(ctx, state)
 }
