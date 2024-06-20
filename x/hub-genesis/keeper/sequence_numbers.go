@@ -18,11 +18,6 @@ func seqNumKey(port, channel string, seq uint64) []byte {
 	return bz
 }
 
-func numUnackedSeqNumsKey(port, channel string) []byte {
-	bz := []byte(fmt.Sprintf("seqnumcnt/%s/%s", port, channel))
-	return bz
-}
-
 func (k Keeper) saveSeqNum(ctx sdk.Context, port, channel string, seq uint64) {
 	ctx.KVStore(k.storeKey).Set(seqNumKey(port, channel, seq), []byte{})
 	cnt := k.getNumUnackedSeqNums(ctx, port, channel)
