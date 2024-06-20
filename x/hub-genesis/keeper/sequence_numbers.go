@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
 func seqNumKey(port, channel string) []byte {
@@ -14,15 +13,6 @@ func seqNumKey(port, channel string) []byte {
 
 // NOTE: assumes monotonically increasing
 func (k Keeper) saveLastSequenceNumber(ctx sdk.Context, port, channel string, seq uint64) {
-	if existing := k.getLastSequenceNumber(ctx, port, channel); seq < existing {
-		/*
-			Proof that this will never happen:
-			All transfers
-		*/
-		panic(
-			fmt.Sprintf(
-				"%s: a higher sequence number has already been set: existing: %d: new: %d: port: %s, channel: %s", hubgentypes.ModuleName, existing, seq, port, channel))
-	}
 	seqBz := make([]byte, 8)
 	binary.BigEndian.PutUint64(seqBz, seq)
 	ctx.KVStore(k.storeKey).Set(seqNumKey(port, channel), seqBz)
