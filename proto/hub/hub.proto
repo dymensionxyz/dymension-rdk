@@ -5,14 +5,27 @@ import "gogoproto/gogo.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub/types";
 
-// Hub is a proto message that represents the metadata of the hub
+// Hub is a proto message that represents the metadata of the Hub
 message Hub {
-  // id is the unique identifier of the hub
+  // id is the unique identifier of the Hub
   string id = 1;
 
-  // channel_id is the unique identifier of the channel that the hub is connected to
+  // channel_id is the unique identifier of the channel that the Hub is connected to
   string channel_id = 2;
 
-  // registeredDenoms is a list of registered denom bases on the hub
-  repeated string registered_denoms = 3;
+  // registeredDenoms is a list of registered denoms on the Hub
+  repeated RegisteredDenom registered_denoms = 3;
+}
+
+message RegisteredDenom {
+  // base is the base of the denom
+  string base = 1;
+
+  enum Status {
+    PENDING = 0;
+    ACTIVE = 1;
+    INACTIVE = 2;
+  }
+  // status is the status of the denom registration in the Hub
+  Status status = 2;
 }

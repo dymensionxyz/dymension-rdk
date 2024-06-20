@@ -14,6 +14,7 @@ import (
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 
 	"github.com/dymensionxyz/dymension-rdk/utils"
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 )
@@ -77,7 +78,10 @@ func (m *IBCSendMiddleware) SendPacket(
 	// At the first match, we assume that the hub already contains the metadata.
 	// It would be technically possible to have a race condition where the denom metadata is added to the hub
 	// from another packet before this packet is acknowledged.
-	if Contains(hub.RegisteredDenoms, packet.Denom) {
+	// If the denom metadata exists but is either PENDING or ACTIVE, proceed to the next middleware in the chain.
+	if ContainsFunc(hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
+		return denom.Base == packet.Denom && denom.Status != hubtypes.RegisteredDenom_INACTIVE
+	}) {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
 
@@ -96,6 +100,13 @@ func (m *IBCSendMiddleware) SendPacket(
 	if err != nil {
 		return 0, errorsmod.Wrapf(errortypes.ErrJSONMarshal, "marshal ICS-20 transfer packet data: %s", err.Error())
 	}
+
+	registeredDenom := &hubtypes.RegisteredDenom{
+		Base:   denomMetadata.Base,
+		Status: hubtypes.RegisteredDenom_PENDING,
+	}
+	hub.RegisteredDenoms = append(hub.RegisteredDenoms, registeredDenom)
+	m.hubKeeper.SetHub(ctx, *hub)
 
 	return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 }
@@ -140,10 +151,6 @@ func (im IBCRecvMiddleware) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet acknowledgement: %v", err)
 	}
 
-	if !ack.Success() {
-		return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
-	}
-
 	var data transfertypes.FungibleTokenPacketData
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet data: %s", err.Error())
@@ -162,12 +169,32 @@ func (im IBCRecvMiddleware) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errortypes.ErrNotFound, "hub not found")
 	}
 
-	if !Contains(hub.RegisteredDenoms, dm.Base) {
-		// add the new token denom base to the list of hub's registered denoms
-		hub.RegisteredDenoms = append(hub.RegisteredDenoms, dm.Base)
-
-		im.hubKeeper.SetHub(ctx, *hub)
+	// find the denom from the list by matching the base
+	// if it exists, update the status
+	// if the ack is error or timeout, update the status to INACTIVE
+	// otherwise, update the status to ACTIVE
+	// if it doesn't exist, add it to the list
+	registeredDenom := &hubtypes.RegisteredDenom{
+		Base: dm.Base,
+		Status: map[bool]hubtypes.RegisteredDenom_Status{
+			true:  hubtypes.RegisteredDenom_ACTIVE,
+			false: hubtypes.RegisteredDenom_INACTIVE,
+		}[ack.Success()],
 	}
+
+	found := false
+	for i, denom := range hub.RegisteredDenoms {
+		if denom.Base == dm.Base {
+			hub.RegisteredDenoms[i] = registeredDenom
+			found = true
+			break
+		}
+	}
+	if !found {
+		hub.RegisteredDenoms = append(hub.RegisteredDenoms, registeredDenom)
+	}
+
+	im.hubKeeper.SetHub(ctx, *hub)
 
 	return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }

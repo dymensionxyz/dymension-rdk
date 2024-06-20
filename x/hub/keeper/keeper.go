@@ -42,6 +42,11 @@ func (k Keeper) ExtractHubFromChannel(
 	if err != nil {
 		return nil, err
 	}
+	k.SetHub(ctx, types.Hub{
+		Id:               chainID,
+		ChannelId:        hubChannelOnRollapp,
+		RegisteredDenoms: nil,
+	})
 
 	hub, found := k.GetHub(ctx, chainID)
 	if !found {
