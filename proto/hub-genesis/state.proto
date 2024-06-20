@@ -12,8 +12,8 @@ message State {
   reserved 2;
   // accounts on the Hub to fund with some bootstrapping transfers
   repeated GenesisAccount genesis_accounts = 3 [(gogoproto.nullable) = false];
-  // the number size of unacked_seq_nums
-  uint64  num_unacked_seq_nums = 5;
+  // the number of genesis transfers for which an ack has not yet been received
+  uint64  num_unacked_transfers = 5;
   // are outboundTransfersEnabled? This is only true if the genesis protocol has finished
   bool outboundTransfersEnabled = 6;
 }
