@@ -56,6 +56,15 @@ func (w IBCModule) OnChanOpenConfirm(
 
 	state := w.k.GetState(ctx)
 
+	state.HubPortAndChannel = &types.PortAndChannel{
+		Port:    portID,
+		Channel: channelID,
+	}
+
+	state.NumUnackedTransfers = uint64(len(state.GetGenesisAccounts()))
+
+	w.k.SetState(ctx, state)
+
 	srcAccount := w.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress().String()
 
