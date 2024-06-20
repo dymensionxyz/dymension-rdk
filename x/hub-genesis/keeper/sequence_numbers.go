@@ -26,6 +26,14 @@ func (k Keeper) delSeqNum(ctx sdk.Context, seq uint64) {
 	ctx.KVStore(k.storeKey).Delete(seqNumKey(seq))
 }
 
+// returns all seq nums, only intended for genesis export
+func (k Keeper) getAllSeqNums(ctx sdk.Context) []uint64 {
+	state := k.GetState(ctx)
+	n := state.NumUnackedTransfers
+	ret := make([]uint64, n)
+	// TODO:
+}
+
 // ackSeqNum handles the inbound acknowledgement of an outbound genesis transfer
 func (k Keeper) ackSeqNum(ctx sdk.Context, seq uint64, success bool) {
 	if !success {
