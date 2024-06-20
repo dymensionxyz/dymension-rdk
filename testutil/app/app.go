@@ -417,12 +417,14 @@ func NewRollapp(
 		),
 	)
 
+	genesisTransfersMemoBlocker := hubgenkeeper.NewICS4Wrapper(app.IBCKeeper.ChannelKeeper)
+
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		app.IBCKeeper.ChannelKeeper,
+		genesisTransfersMemoBlocker,
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -437,6 +439,16 @@ func NewRollapp(
 		app.BankKeeper,
 		app.TransferKeeper,
 		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
+	)
+	transferStack = hubgenkeeper.NewIBCModule(
+		transferStack,
+		func(ctx sdk.Context, transfer *ibctransfertypes.MsgTransfer) error {
+			_, err := app.TransferKeeper.Transfer(sdk.WrapSDKContext(ctx), transfer)
+			return err
+		},
+		app.HubGenesisKeeper,
+		app.BankKeeper.GetDenomMetaData,
+		app.BankKeeper.MintCoins,
 	)
 
 	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
@@ -739,10 +751,11 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 }
 
 // BlockedModuleAccountAddrs returns all the app's blocked module account
-// addresses.
+// addresses. A true value means blocked. Absent or false means not blocked.
 func (app *App) BlockedModuleAccountAddrs() map[string]bool {
 	modAccAddrs := app.ModuleAccountAddrs()
 	delete(modAccAddrs, authtypes.NewModuleAddress(govtypes.ModuleName).String())
+	delete(modAccAddrs, authtypes.NewModuleAddress(hubgentypes.ModuleName).String())
 
 	return modAccAddrs
 }
