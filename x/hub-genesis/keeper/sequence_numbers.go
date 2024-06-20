@@ -16,8 +16,13 @@ func seqNumKey(port, channel string) []byte {
 	return []byte(fmt.Sprintf("seqnum/%s/%s", port, channel))
 }
 
-// NOTE: assumes monotonically increasing
 func (k Keeper) saveSeqNum(ctx sdk.Context, port, channel string, seq uint64) {
+	seqBz := make([]byte, 8)
+	binary.BigEndian.PutUint64(seqBz, seq)
+	ctx.KVStore(k.storeKey).Set(seqNumKey(port, channel), seqBz)
+}
+
+func (k Keeper) delSeqNum(ctx sdk.Context, port, channel string, seq uint64) {
 	seqBz := make([]byte, 8)
 	binary.BigEndian.PutUint64(seqBz, seq)
 	ctx.KVStore(k.storeKey).Set(seqNumKey(port, channel), seqBz)
@@ -25,6 +30,9 @@ func (k Keeper) saveSeqNum(ctx sdk.Context, port, channel string, seq uint64) {
 
 // ackSeqNum handles the inbound acknowledgement of an outbound genesis transfer
 func (k Keeper) ackSeqNum(ctx sdk.Context, port, channel string, seq uint64, success bool) {
+	if !success {
+		panic(fmt.Sprintf("genesis transfer unsuccessful, port: %s, channel: %s: seq: %d", port, channel, seq))
+	}
 }
 
 func (k Keeper) getLastSequenceNumber(ctx sdk.Context, port, channel string) uint64 {
