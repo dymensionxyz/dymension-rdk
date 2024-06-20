@@ -33,10 +33,9 @@ func NewICS4Wrapper(next porttypes.ICS4Wrapper, k Keeper) *ICS4Wrapper {
 	return &ICS4Wrapper{next, k}
 }
 
-// SendPacket prevents anyone from sending a packet with the memo
-// The app should be wired to allow the middleware to circumvent this
-// It also prevents anyone from sending a transfer before all the genesis transfers
-// have had successull acks come back.
+// SendPacket does two things:
+// 1. It stops anyone from sending a packet with the special memo. Only the module itself is allowed to do so.
+// 2. It stops anyone from sending a regular transfer until the genesis phase is finished.
 func (w ICS4Wrapper) SendPacket(
 	ctx sdk.Context,
 	chanCap *capabilitytypes.Capability,
@@ -46,14 +45,7 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
-	/*
-		Rethinking how this can work:
-		- block transfers if the genesis accounts list is not empty, that means they weren't all sent
-		- record the highest seq num, always
-		- on a transfer attempt, check for any of those seq nums, save the result when it's good, to amortize
-	*/
-
-	if !w.k.genesisIsFinished(ctx) {
+	if !w.k.genesisIsFinished(ctx, sourcePort, sourceChannel) {
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
 
@@ -65,13 +57,15 @@ func (w ICS4Wrapper) SendPacket(
 			return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
 		}
 
+		// this is a genesis transfer, we record the sequence number
 		// record the sequence number because we need to tick them off as they get acked
 
 		seq, err := w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 		if err != nil {
 			return seq, err
 		}
-		return seq, w.k.saveLastSequenceNumber(ctx, seq)
+		w.k.saveLastSequenceNumber(ctx, seq)
+		return seq, nil
 	}
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }
