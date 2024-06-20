@@ -1,0 +1,13 @@
+syntax = "proto3";
+package rollapp.hub_genesis;
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
+
+import "gogoproto/gogo.proto";
+
+// Params holds parameters for the hub-genesis module.
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  reserved 1;
+}
+

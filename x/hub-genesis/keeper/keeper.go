@@ -13,10 +13,6 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-type ChannelKeeper interface {
-	GetPacketCommitment(ctx sdk.Context, portID, channelID string, sequence uint64) []byte
-}
-
 type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
@@ -24,7 +20,6 @@ type (
 		paramstore paramtypes.Subspace
 
 		accountKeeper types.AuthAccountKeeper
-		channelKeeper ChannelKeeper
 	}
 )
 
@@ -33,7 +28,6 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	accountKeeper types.AuthAccountKeeper,
-	channelKeeper ChannelKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -46,7 +40,6 @@ func NewKeeper(
 		storeKey:      storeKey,
 		paramstore:    ps,
 		accountKeeper: accountKeeper,
-		channelKeeper: channelKeeper,
 	}
 }
 
