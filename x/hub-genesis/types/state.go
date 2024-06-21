@@ -12,7 +12,7 @@ func (s *State) Validate() error {
 		if err := a.GetAmount().Validate(); err != nil {
 			return errorsmod.Wrap(err, "amount")
 		}
-		// TODO: validate to make sure no ibc denom attac possible https://github.com/dymensionxyz/dymension-rdk/issues/462
+		// TODO: validate to make sure no ibc denom attack possible https://github.com/dymensionxyz/dymension-rdk/issues/462
 		_, err := sdk.AccAddressFromBech32(a.GetAddress())
 		if err != nil {
 			return errorsmod.Wrap(err, "address from bech 32")
