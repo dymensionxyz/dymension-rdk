@@ -1,6 +1,8 @@
 package types
 
 import (
+	"reflect"
+
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -19,9 +21,9 @@ func (s State) Validate() error {
 }
 
 func (s State) IsCanonicalHubTransferChannel(port, channel string) bool {
-	return s.HubPortAndChannel.Port == port && s.HubPortAndChannel.Channel == channel
+	return s.CanonicalHubTransferChannelHasBeenSet() && s.HubPortAndChannel.Port == port && s.HubPortAndChannel.Channel == channel
 }
 
 func (s State) CanonicalHubTransferChannelHasBeenSet() bool {
-	return s.HubPortAndChannel.Port != "" || s.HubPortAndChannel.Channel != ""
+	return s.HubPortAndChannel != nil && !reflect.ValueOf(s.GetHubPortAndChannel).IsZero()
 }
