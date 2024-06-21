@@ -47,6 +47,7 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
+	w.k.Logger("")
 	state := w.k.GetState(ctx)
 	if !state.IsCanonicalHubTransferChannel(sourcePort, sourceChannel) {
 		return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
