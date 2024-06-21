@@ -55,30 +55,27 @@ func (w ICS4Wrapper) SendPacket(
 	l := w.logger(ctx)
 
 	state := w.k.GetState(ctx)
-	if !state.IsCanonicalHubTransferChannel(sourcePort, sourceChannel) {
-		return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+	if !state.OutboundTransfersEnabled {
+		l.Debug("Transfer rejected: outbound transfers are disabled.")
+		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
 
 	var transfer transfertypes.FungibleTokenPacketData
 	_ = transfertypes.ModuleCdc.UnmarshalJSON(data, &transfer)
 
-	if memoHasKey(transfer.GetMemo()) {
+	saveSeq := false
+	if memoHasKey(transfer.GetMemo()) && state.IsCanonicalHubTransferChannel(sourcePort, sourceChannel) {
 		if !skipAuthorizationCheck(ctx) {
 			return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
 		}
-
 		// This is a genesis transfer, we record the sequence number.
 		// Record the sequence number because we need to tick them off as they get acked.
-
-		seq, err := w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
-		if err != nil {
-			return seq, err
-		}
-		w.k.saveUnackedTransferSeqNum(ctx, seq)
-		return seq, nil
-	} else if !state.OutboundTransfersEnabled {
-		l.Debug("Transfer rejected: outbound transfers are disabled.")
-		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
+		saveSeq = true
 	}
-	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+
+	seq, err := w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
+	if saveSeq && err == nil {
+		w.k.saveUnackedTransferSeqNum(ctx, seq)
+	}
+	return seq, err
 }
