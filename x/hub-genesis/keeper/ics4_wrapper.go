@@ -10,6 +10,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 type ctxKeySkip struct{}
@@ -34,6 +35,10 @@ func NewICS4Wrapper(next porttypes.ICS4Wrapper, k Keeper) *ICS4Wrapper {
 	return &ICS4Wrapper{next, k}
 }
 
+func (w ICS4Wrapper) logger(ctx sdk.Context) log.Logger {
+	return w.k.Logger(ctx).With("module", types.ModuleName, "component", "ics4 middleware")
+}
+
 // SendPacket does two things:
 //  1. It stops anyone from sending a packet with the special memo. Only the module itself is allowed to do so.
 //  2. It stops anyone from sending a regular transfer until the genesis phase is finished. To help with this,
@@ -47,7 +52,7 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
-	w.k.Logger(ctx).With("module", types.ModuleName).Debug("ICS4 Wrapper: send packet.")
+	l := w.logger(ctx)
 
 	state := w.k.GetState(ctx)
 	if !state.IsCanonicalHubTransferChannel(sourcePort, sourceChannel) {
@@ -72,7 +77,7 @@ func (w ICS4Wrapper) SendPacket(
 		w.k.saveUnackedTransferSeqNum(ctx, seq)
 		return seq, nil
 	} else if !state.OutboundTransfersEnabled {
-		w.k.Logger(ctx).With("module", types.ModuleName).Debug("Transfer rejected: outbound transfers are disabled.")
+		l.Debug("Transfer rejected: outbound transfers are disabled.")
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
