@@ -53,14 +53,17 @@ func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64, success bool) {
 	state.NumUnackedTransfers--
 	if state.NumUnackedTransfers == 0 {
 		// all acks have come back successfully
-		state.OutboundTransfersEnabled = true
-		ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
+		k.enableOutboundTransfers(ctx)
 	}
 	k.SetState(ctx, state)
 }
 
-func (k Keeper) outboundTransfersEnabled(ctx sdk.Context) bool {
-	k.Logger(ctx).With("module", types.ModuleName).Debug("outbound transfers enabled")
+func (k Keeper) enableOutboundTransfers(ctx sdk.Context) {
 	state := k.GetState(ctx)
-	return state.OutboundTransfersEnabled
+	state.OutboundTransfersEnabled = true
+	k.SetState(ctx, state)
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
+	k.Logger(ctx).With("module", types.ModuleName).Debug("outbound transfers enabled")
+}
+
 }

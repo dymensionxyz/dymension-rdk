@@ -79,7 +79,13 @@ func (w IBCModule) OnChanOpenConfirm(
 		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
 	}
 
-	l.Info("Sent all genesis transfers.")
+	l.Info("Sent all genesis transfers.", "n", len(state.GetGenesisAccounts()))
+
+	if len(state.GetGenesisAccounts()) == 0 {
+		// we want to handle the case where the rollapp doesn't have genesis transfers
+		// normally we would enable outbound transfers on an ack, but in this case we won't have an ack
+		w.k.enableOutboundTransfers(ctx)
+	}
 
 	return nil
 }
