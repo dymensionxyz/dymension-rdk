@@ -25,5 +25,5 @@ func (s State) IsCanonicalHubTransferChannel(port, channel string) bool {
 }
 
 func (s State) CanonicalHubTransferChannelHasBeenSet() bool {
-	return s.HubPortAndChannel != nil && !reflect.ValueOf(s.GetHubPortAndChannel).IsZero()
+	return !reflect.ValueOf(s.HubPortAndChannel).IsZero()
 }
