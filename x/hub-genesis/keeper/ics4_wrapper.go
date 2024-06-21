@@ -15,13 +15,13 @@ import (
 
 type ctxKeySkip struct{}
 
-// skipAuthorizationCheckContext returns a context which can be passed to ibc SendPacket
+// allowSpecialMemoCtx returns a context which can be passed to ibc SendPacket
 // if passed, the memo guard will not check that call
-func skipAuthorizationCheckContext(ctx sdk.Context) sdk.Context {
+func allowSpecialMemoCtx(ctx sdk.Context) sdk.Context {
 	return ctx.WithValue(ctxKeySkip{}, true)
 }
 
-func skipAuthorizationCheck(ctx sdk.Context) bool {
+func allowSpecialMemo(ctx sdk.Context) bool {
 	val, ok := ctx.Value(ctxKeySkip{}).(bool)
 	return ok && val
 }
@@ -55,26 +55,20 @@ func (w ICS4Wrapper) SendPacket(
 	l := w.logger(ctx)
 
 	state := w.k.GetState(ctx)
-	if !state.OutboundTransfersEnabled {
+	var transfer transfertypes.FungibleTokenPacketData
+	_ = transfertypes.ModuleCdc.UnmarshalJSON(data, &transfer)
+	specialMemo := memoHasKey(transfer.GetMemo())
+
+	if specialMemo && !allowSpecialMemo(ctx) {
+		return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
+	}
+	if !(specialMemo || state.OutboundTransfersEnabled) {
 		l.Debug("Transfer rejected: outbound transfers are disabled.")
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
 
-	var transfer transfertypes.FungibleTokenPacketData
-	_ = transfertypes.ModuleCdc.UnmarshalJSON(data, &transfer)
-
-	saveSeq := false
-	if memoHasKey(transfer.GetMemo()) && state.IsCanonicalHubTransferChannel(sourcePort, sourceChannel) {
-		if !skipAuthorizationCheck(ctx) {
-			return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
-		}
-		// This is a genesis transfer, we record the sequence number.
-		// Record the sequence number because we need to tick them off as they get acked.
-		saveSeq = true
-	}
-
 	seq, err := w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
-	if saveSeq && err == nil {
+	if specialMemo && err == nil {
 		w.k.saveUnackedTransferSeqNum(ctx, seq)
 	}
 	return seq, err

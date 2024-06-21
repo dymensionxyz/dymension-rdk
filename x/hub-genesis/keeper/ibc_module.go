@@ -122,7 +122,7 @@ func (w IBCModule) mintAndTransfer(ctx sdk.Context, account types.GenesisAccount
 		Memo:             memo,
 	}
 
-	err = w.transfer(skipAuthorizationCheckContext(ctx), &m)
+	err = w.transfer(allowSpecialMemoCtx(ctx), &m)
 	if err != nil {
 		return errorsmod.Wrap(err, "transfer")
 	}
