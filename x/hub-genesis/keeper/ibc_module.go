@@ -137,7 +137,6 @@ func (w IBCModule) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) error {
 	l := w.logger(ctx)
-	l.Debug("ack", "seq", packet.Sequence, "src port", packet.SourcePort, "src chan", packet.SourceChannel)
 	state := w.k.GetState(ctx)
 	if !state.OutboundTransfersEnabled && // still in genesis protocol
 		state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) { // not some other unrelated channel
@@ -150,7 +149,6 @@ func (w IBCModule) OnAcknowledgementPacket(
 					l.Error("Processing ack from transfer.", "err", err)
 					return err
 				}
-				l.Debug("Got ack", "seq", packet.Sequence)
 			} else {
 				panic(fmt.Errorf("must get ack from in OnAcknowledgementPacket: %w", err))
 			}
