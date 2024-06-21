@@ -67,6 +67,9 @@ func (w IBCModule) OnChanOpenConfirm(
 	}
 
 	state.SetCanonicalTransferChannel(portID, channelID)
+	if !state.CanonicalHubTransferChannelHasBeenSet() { // TODO: remove
+		panic("why tho")
+	}
 
 	state.NumUnackedTransfers = uint64(len(state.GetGenesisAccounts()))
 
@@ -141,11 +144,16 @@ func (w IBCModule) OnAcknowledgementPacket(
 	state := w.k.GetState(ctx)
 	if !state.OutboundTransfersEnabled && // still in genesis protocol
 		state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) { // not some other unrelated channel
+		l.Debug("in the ack processing") // TODO: del
 		var data transfertypes.FungibleTokenPacketData
 		if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil { // it's a transfer
 			var ack channeltypes.Acknowledgement
 			if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err == nil {
-				w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
+				err := w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
+				if err != nil {
+					l.Error("Processing ack from transfer.", "err", err)
+					return err
+				}
 				l.Debug("Got ack", "seq", packet.Sequence)
 			} else {
 				panic(fmt.Errorf("must get ack from in OnAcknowledgementPacket: %w", err))
