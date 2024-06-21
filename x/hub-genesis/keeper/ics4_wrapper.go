@@ -8,6 +8,7 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
@@ -69,6 +70,7 @@ func (w ICS4Wrapper) SendPacket(
 		w.k.saveUnackedTransferSeqNum(ctx, seq)
 		return seq, nil
 	} else if !state.OutboundTransfersEnabled {
+		w.k.Logger(ctx).With("module", types.ModuleName).Debug("Transfer rejected: outbound transfers are disabled.")
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
