@@ -67,9 +67,5 @@ func (w ICS4Wrapper) SendPacket(
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
 
-	seq, err := w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
-	if specialMemo && err == nil {
-		w.k.saveUnackedTransferSeqNum(ctx, seq)
-	}
-	return seq, err
+	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -21,20 +22,22 @@ const (
 
 type IBCModule struct {
 	porttypes.IBCModule
-	k         Keeper
-	transfer  Transfer
-	getDenom  GetDenomMetaData
-	mintCoins MintCoins
+	k        Keeper
+	transfer TransferKeeper
+	bank     BankKeeper
 }
 
-type (
-	Transfer         func(ctx sdk.Context, transfer *transfertypes.MsgTransfer) error
-	GetDenomMetaData func(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
-	MintCoins        func(ctx sdk.Context, moduleName string, amt sdk.Coins) error
-)
+type TransferKeeper interface {
+	Transfer(goCtx context.Context, msg *transfertypes.MsgTransfer) (*transfertypes.MsgTransferResponse, error)
+}
 
-func NewIBCModule(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins) *IBCModule {
-	return &IBCModule{next, k, t, d, m}
+type BankKeeper interface {
+	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
+	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
+}
+
+func NewIBCModule(next porttypes.IBCModule, t TransferKeeper, k Keeper, bank BankKeeper) *IBCModule {
+	return &IBCModule{next, k, t, bank}
 }
 
 func (w IBCModule) logger(ctx sdk.Context) log.Logger {
@@ -96,7 +99,7 @@ func (w IBCModule) OnChanOpenConfirm(
 
 func (w IBCModule) mintAndTransfer(ctx sdk.Context, account types.GenesisAccount, srcAddr string, portID string, channelID string) error {
 	coin := account.GetAmount()
-	err := w.mintCoins(ctx, types.ModuleName, sdk.Coins{coin})
+	err := w.bank.MintCoins(ctx, types.ModuleName, sdk.Coins{coin})
 	if err != nil {
 		return errorsmod.Wrap(err, "mint coins")
 	}
@@ -122,11 +125,11 @@ func (w IBCModule) mintAndTransfer(ctx sdk.Context, account types.GenesisAccount
 		Memo:             memo,
 	}
 
-	err = w.transfer(allowSpecialMemoCtx(ctx), &m)
+	res, err := w.transfer.Transfer(sdk.WrapSDKContext(allowSpecialMemoCtx(ctx)), &m)
 	if err != nil {
 		return errorsmod.Wrap(err, "transfer")
 	}
-
+	w.k.saveUnackedTransferSeqNum(ctx, res.Sequence)
 	return nil
 }
 

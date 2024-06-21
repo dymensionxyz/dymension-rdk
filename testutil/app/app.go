@@ -449,13 +449,9 @@ func NewRollapp(
 	)
 	transferStack = hubgenkeeper.NewIBCModule(
 		transferStack,
-		func(ctx sdk.Context, transfer *ibctransfertypes.MsgTransfer) error {
-			_, err := app.TransferKeeper.Transfer(sdk.WrapSDKContext(ctx), transfer)
-			return err
-		},
+		app.TransferKeeper,
 		app.HubGenesisKeeper,
-		app.BankKeeper.GetDenomMetaData,
-		app.BankKeeper.MintCoins,
+		app.BankKeeper,
 	)
 
 	app.GaslessKeeper = gaslesskeeper.NewKeeper(
