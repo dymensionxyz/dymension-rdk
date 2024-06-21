@@ -28,3 +28,10 @@ func (s State) IsCanonicalHubTransferChannel(port, channel string) bool {
 func (s State) CanonicalHubTransferChannelHasBeenSet() bool {
 	return !reflect.ValueOf(s.HubPortAndChannel).IsZero()
 }
+
+func (s State) SetCanonicalTransferChannel(port, channel string) {
+	s.HubPortAndChannel = &PortAndChannel{
+		Port:    port,
+		Channel: channel,
+	}
+}

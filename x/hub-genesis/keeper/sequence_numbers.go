@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
@@ -48,9 +49,10 @@ func (k Keeper) getAllUnackedTransferSeqNums(ctx sdk.Context) []uint64 {
 }
 
 // ackTransferSeqNum handles the inbound acknowledgement of an outbound genesis transfer
-func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64, success bool) {
-	if !success {
-		panic(fmt.Sprintf("genesis transfer unsuccessful seq: %d", seq))
+func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64, ack channeltypes.Acknowledgement) {
+	if !ack.Success() {
+		res := ack.Response.(*channeltypes.Acknowledgement_Error)
+		panic(fmt.Sprintf("genesis transfer unsuccessful seq: %d: err: %s", seq, res.Error))
 	}
 	k.delUnackedTransferSeqNum(ctx, seq)
 	state := k.GetState(ctx)
@@ -67,5 +69,5 @@ func (k Keeper) enableOutboundTransfers(ctx sdk.Context) {
 	state.OutboundTransfersEnabled = true
 	k.SetState(ctx, state)
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
-	k.Logger(ctx).With("module", types.ModuleName).Debug("outbound transfers enabled")
+	k.Logger(ctx).With("module", types.ModuleName).Debug("Enabled outbound transfers.")
 }

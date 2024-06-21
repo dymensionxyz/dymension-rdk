@@ -61,33 +61,30 @@ func (w IBCModule) OnChanOpenConfirm(
 		return nil
 	}
 
-	state.HubPortAndChannel = &types.PortAndChannel{
-		Port:    portID,
-		Channel: channelID,
-	}
+	state.SetCanonicalTransferChannel(portID, channelID)
 
 	state.NumUnackedTransfers = uint64(len(state.GetGenesisAccounts()))
 
 	w.k.SetState(ctx, state)
 
-	srcAccount := w.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-	srcAddr := srcAccount.GetAddress().String()
-
-	for i, a := range state.GetGenesisAccounts() {
-		if err := w.mintAndTransfer(ctx, a, srcAddr, portID, channelID); err != nil {
-			// there is no feasible way to recover
-			panic(fmt.Errorf("mint and transfer: %w", err))
-		}
-		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
-	}
-
-	l.Info("Sent all genesis transfers.", "n", len(state.GetGenesisAccounts()))
-
 	if len(state.GetGenesisAccounts()) == 0 {
 		// we want to handle the case where the rollapp doesn't have genesis transfers
 		// normally we would enable outbound transfers on an ack, but in this case we won't have an ack
 		w.k.enableOutboundTransfers(ctx)
+	} else {
+		srcAccount := w.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+		srcAddr := srcAccount.GetAddress().String()
+
+		for i, a := range state.GetGenesisAccounts() {
+			if err := w.mintAndTransfer(ctx, a, srcAddr, portID, channelID); err != nil {
+				// there is no feasible way to recover
+				panic(fmt.Errorf("mint and transfer: %w", err))
+			}
+			l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
+		}
 	}
+
+	l.Info("Sent all genesis transfers.", "n", len(state.GetGenesisAccounts()))
 
 	return nil
 }
@@ -135,14 +132,17 @@ func (w IBCModule) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) error {
 	state := w.k.GetState(ctx)
-	if !state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) {
+	if state.OutboundTransfersEnabled || // we're done already, this is not an ack for a genesis transfer
+		!state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) { // not related to genesis protocol with the hub
 		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
 	var data transfertypes.FungibleTokenPacketData
-	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil {
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil { // it's a transfer
 		var ack channeltypes.Acknowledgement
 		if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err == nil {
-			w.k.ackTransferSeqNum(ctx, packet.Sequence, ack.Success())
+			w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
+		} else {
+			panic(fmt.Errorf("must get ack from in OnAcknowledgementPacket: %w", err))
 		}
 	}
 	return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
