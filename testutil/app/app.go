@@ -424,14 +424,14 @@ func NewRollapp(
 		app.AccountKeeper,
 	)
 
-	genesisTransfersMemoBlocker := hubgenkeeper.NewICS4Wrapper(app.IBCKeeper.ChannelKeeper, app.HubGenesisKeeper)
+	genesisTransfersBlocker := hubgenkeeper.NewICS4Wrapper(app.IBCKeeper.ChannelKeeper, app.HubGenesisKeeper)
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		genesisTransfersMemoBlocker,
+		genesisTransfersBlocker,
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
