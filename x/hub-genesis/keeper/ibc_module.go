@@ -92,7 +92,7 @@ func (w IBCModule) mintAndTransfer(ctx sdk.Context, account types.GenesisAccount
 	}
 
 	// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
-	// we assume the hub will deduplicate. We expect to eventually get account timeout
+	// we assume the hub will deduplicate. We expect to eventually get a timeout
 	// or commit anyway, so the packet will be cleared up.
 	// (Actually, since transfers may arrive out of order, we must include the
 	// denom metadata anyway).
@@ -134,7 +134,7 @@ func (w IBCModule) OnAcknowledgementPacket(
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil {
 		var ack channeltypes.Acknowledgement
 		if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err == nil {
-			w.k.ackSeqNum(ctx, packet.Sequence, ack.Success())
+			w.k.ackTransferSeqNum(ctx, packet.Sequence, ack.Success())
 		}
 	}
 	return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)

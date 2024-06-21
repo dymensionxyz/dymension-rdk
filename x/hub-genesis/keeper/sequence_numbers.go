@@ -21,16 +21,16 @@ func seqNumKey(seq uint64) []byte {
 	return bz
 }
 
-func (k Keeper) saveSeqNum(ctx sdk.Context, seq uint64) {
+func (k Keeper) saveUnackedTransferSeqNum(ctx sdk.Context, seq uint64) {
 	ctx.KVStore(k.storeKey).Set(seqNumKey(seq), []byte{})
 }
 
-func (k Keeper) delSeqNum(ctx sdk.Context, seq uint64) {
+func (k Keeper) delUnackeTransferSeqNum(ctx sdk.Context, seq uint64) {
 	ctx.KVStore(k.storeKey).Delete(seqNumKey(seq))
 }
 
 // returns all seq nums, only intended for genesis export
-func (k Keeper) getAllSeqNums(ctx sdk.Context) []uint64 {
+func (k Keeper) getAllUnackedTransferSeqNums(ctx sdk.Context) []uint64 {
 	state := k.GetState(ctx)
 	n := state.NumUnackedTransfers
 	ret := make([]uint64, n)
@@ -43,12 +43,12 @@ func (k Keeper) getAllSeqNums(ctx sdk.Context) []uint64 {
 	return ret
 }
 
-// ackSeqNum handles the inbound acknowledgement of an outbound genesis transfer
-func (k Keeper) ackSeqNum(ctx sdk.Context, seq uint64, success bool) {
+// ackTransferSeqNum handles the inbound acknowledgement of an outbound genesis transfer
+func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64, success bool) {
 	if !success {
 		panic(fmt.Sprintf("genesis transfer unsuccessful seq: %d", seq))
 	}
-	k.delSeqNum(ctx, seq)
+	k.delUnackeTransferSeqNum(ctx, seq)
 	state := k.GetState(ctx)
 	state.NumUnackedTransfers--
 	if state.NumUnackedTransfers == 0 {

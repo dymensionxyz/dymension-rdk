@@ -10,7 +10,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 	k.SetState(ctx, genState.State)
 	for _, seq := range genState.UnackedTransferSeqNums {
-		k.saveSeqNum(ctx, seq)
+		k.saveUnackedTransferSeqNum(ctx, seq)
 	}
 }
 
@@ -19,6 +19,6 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis := types.DefaultGenesisState()
 	genesis.Params = k.GetParams(ctx)
 	genesis.State = k.GetState(ctx)
-	genesis.UnackedTransferSeqNums = k.getAllSeqNums(ctx)
+	genesis.UnackedTransferSeqNums = k.getAllUnackedTransferSeqNums(ctx)
 	return genesis
 }

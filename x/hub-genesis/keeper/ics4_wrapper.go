@@ -65,7 +65,7 @@ func (w ICS4Wrapper) SendPacket(
 		if err != nil {
 			return seq, err
 		}
-		w.k.saveSeqNum(ctx, seq)
+		w.k.saveUnackedTransferSeqNum(ctx, seq)
 		return seq, nil
 	} else if !w.k.outboundTransfersEnabled(ctx) {
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
