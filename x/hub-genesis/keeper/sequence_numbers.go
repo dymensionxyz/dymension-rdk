@@ -51,7 +51,10 @@ func (k Keeper) getAllUnackedTransferSeqNums(ctx sdk.Context) []uint64 {
 // ackTransferSeqNum handles the inbound acknowledgement of an outbound genesis transfer
 func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64, ack channeltypes.Acknowledgement) error {
 	if !ack.Success() {
-		res := ack.Response.(*channeltypes.Acknowledgement_Error)
+		res, ok := ack.Response.(*channeltypes.Acknowledgement_Error)
+		if !ok {
+			return errorsmod.WithType(gerrc.ErrInvalidArgument, ack)
+		}
 		return errorsmod.Wrapf(gerrc.ErrUnknown, "ack is not success: %s", res.Error)
 	}
 	k.delUnackedTransferSeqNum(ctx, seq)
