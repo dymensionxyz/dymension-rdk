@@ -67,9 +67,6 @@ func (w IBCModule) OnChanOpenConfirm(
 	}
 
 	state.SetCanonicalTransferChannel(portID, channelID)
-	if !state.CanonicalHubTransferChannelHasBeenSet() { // TODO: remove
-		panic("why tho")
-	}
 
 	state.NumUnackedTransfers = uint64(len(state.GetGenesisAccounts()))
 
