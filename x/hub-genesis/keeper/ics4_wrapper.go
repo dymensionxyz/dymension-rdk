@@ -34,8 +34,9 @@ func NewICS4Wrapper(next porttypes.ICS4Wrapper, k Keeper) *ICS4Wrapper {
 }
 
 // SendPacket does two things:
-// 1. It stops anyone from sending a packet with the special memo. Only the module itself is allowed to do so.
-// 2. It stops anyone from sending a regular transfer until the genesis phase is finished.
+//  1. It stops anyone from sending a packet with the special memo. Only the module itself is allowed to do so.
+//  2. It stops anyone from sending a regular transfer until the genesis phase is finished. To help with this,
+//     it tracks all acks which arrive from genesis transfers.
 func (w ICS4Wrapper) SendPacket(
 	ctx sdk.Context,
 	chanCap *capabilitytypes.Capability,

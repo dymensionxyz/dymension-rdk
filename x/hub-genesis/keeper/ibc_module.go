@@ -56,6 +56,8 @@ func (w IBCModule) OnChanOpenConfirm(
 	state := w.k.GetState(ctx)
 
 	if state.CanonicalHubTransferChannelHasBeenSet() {
+		// We only set the canonical channel in this function, so if it's already been set, we don't need
+		// to send the transfers again.
 		return nil
 	}
 

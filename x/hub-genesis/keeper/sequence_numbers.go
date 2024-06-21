@@ -65,5 +65,3 @@ func (k Keeper) enableOutboundTransfers(ctx sdk.Context) {
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
 	k.Logger(ctx).With("module", types.ModuleName).Debug("outbound transfers enabled")
 }
-
-}
