@@ -21,6 +21,10 @@ func seqNumKey(seq uint64) []byte {
 	return bz
 }
 
+func seqNumFromKey(key []byte) uint64 {
+	return sdk.BigEndianToUint64(key[len(UnackedTransferSeqNumsPrefix):])
+}
+
 func (k Keeper) saveUnackedTransferSeqNum(ctx sdk.Context, seq uint64) {
 	ctx.KVStore(k.storeKey).Set(seqNumKey(seq), []byte{})
 }
@@ -33,12 +37,12 @@ func (k Keeper) delUnackedTransferSeqNum(ctx sdk.Context, seq uint64) {
 func (k Keeper) getAllUnackedTransferSeqNums(ctx sdk.Context) []uint64 {
 	state := k.GetState(ctx)
 	n := state.NumUnackedTransfers
-	ret := make([]uint64, n)
+	ret := make([]uint64, 0, n)
 	store := ctx.KVStore(k.storeKey)
 	iterator := sdk.KVStorePrefixIterator(store, UnackedTransferSeqNumsPrefix)
 	defer iterator.Close() // nolint: errcheck
 	for ; iterator.Valid(); iterator.Next() {
-		ret = append(ret, sdk.BigEndianToUint64(iterator.Key()))
+		ret = append(ret, seqNumFromKey(iterator.Key()))
 	}
 	return ret
 }
