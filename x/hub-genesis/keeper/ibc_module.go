@@ -144,7 +144,6 @@ func (w IBCModule) OnAcknowledgementPacket(
 	state := w.k.GetState(ctx)
 	if !state.OutboundTransfersEnabled && // still in genesis protocol
 		state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) { // not some other unrelated channel
-		l.Debug("in the ack processing") // TODO: del
 		var data transfertypes.FungibleTokenPacketData
 		if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil { // it's a transfer
 			var ack channeltypes.Acknowledgement

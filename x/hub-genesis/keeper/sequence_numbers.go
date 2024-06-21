@@ -57,11 +57,11 @@ func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64, ack channeltypes.
 	k.delUnackedTransferSeqNum(ctx, seq)
 	state := k.GetState(ctx)
 	state.NumUnackedTransfers--
+	k.SetState(ctx, state)
 	if state.NumUnackedTransfers == 0 {
 		// all acks have come back successfully
 		k.enableOutboundTransfers(ctx)
 	}
-	k.SetState(ctx, state)
 	return nil
 }
 
