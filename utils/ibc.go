@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"strings"
+
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 )
 
@@ -12,4 +14,8 @@ func GetForeignDenomTrace(channelId string, denom string) transfertypes.DenomTra
 	prefixedDenom := sourcePrefix + denom
 	// construct the denomination trace from the full raw denomination
 	return transfertypes.ParseDenomTrace(prefixedDenom)
+}
+
+func IsIBCDenom(denom string) bool {
+	return strings.HasPrefix(denom, "ibc")
 }

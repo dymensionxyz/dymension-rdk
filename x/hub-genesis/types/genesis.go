@@ -19,7 +19,6 @@ func ValidateGenesis(data GenesisState) error {
 	if err := data.Params.Validate(); err != nil {
 		return err
 	}
-
 	if err := data.State.Validate(); err != nil {
 		return err
 	}
