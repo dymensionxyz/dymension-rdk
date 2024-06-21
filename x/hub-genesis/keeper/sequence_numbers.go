@@ -25,7 +25,7 @@ func (k Keeper) saveUnackedTransferSeqNum(ctx sdk.Context, seq uint64) {
 	ctx.KVStore(k.storeKey).Set(seqNumKey(seq), []byte{})
 }
 
-func (k Keeper) delUnackeTransferSeqNum(ctx sdk.Context, seq uint64) {
+func (k Keeper) delUnackedTransferSeqNum(ctx sdk.Context, seq uint64) {
 	ctx.KVStore(k.storeKey).Delete(seqNumKey(seq))
 }
 
@@ -48,7 +48,7 @@ func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64, success bool) {
 	if !success {
 		panic(fmt.Sprintf("genesis transfer unsuccessful seq: %d", seq))
 	}
-	k.delUnackeTransferSeqNum(ctx, seq)
+	k.delUnackedTransferSeqNum(ctx, seq)
 	state := k.GetState(ctx)
 	state.NumUnackedTransfers--
 	if state.NumUnackedTransfers == 0 {
