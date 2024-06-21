@@ -137,19 +137,19 @@ func (w IBCModule) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) error {
 	l := w.logger(ctx)
+	l.Debug("ack", "seq", packet.Sequence, "src port", packet.SourcePort, "src chan", packet.SourceChannel)
 	state := w.k.GetState(ctx)
-	if state.OutboundTransfersEnabled || // we're done already, this is not an ack for a genesis transfer
-		!state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) { // not related to genesis protocol with the hub
-		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
-	}
-	var data transfertypes.FungibleTokenPacketData
-	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil { // it's a transfer
-		var ack channeltypes.Acknowledgement
-		if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err == nil {
-			w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
-			l.Debug("Got ack", "seq", packet.Sequence)
-		} else {
-			panic(fmt.Errorf("must get ack from in OnAcknowledgementPacket: %w", err))
+	if !state.OutboundTransfersEnabled && // still in genesis protocol
+		state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) { // not some other unrelated channel
+		var data transfertypes.FungibleTokenPacketData
+		if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil { // it's a transfer
+			var ack channeltypes.Acknowledgement
+			if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err == nil {
+				w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
+				l.Debug("Got ack", "seq", packet.Sequence)
+			} else {
+				panic(fmt.Errorf("must get ack from in OnAcknowledgementPacket: %w", err))
+			}
 		}
 	}
 	return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
