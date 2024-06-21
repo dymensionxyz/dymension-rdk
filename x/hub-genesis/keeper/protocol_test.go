@@ -8,6 +8,14 @@ import (
 )
 
 func TestProtocol(t *testing.T) {
-	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestHubGenesisKeeperFromApp(app)
+	/*
+		Cases:
+		1. Transfers are enabled if genesis accounts is zero
+	*/
+
+	t.Run("transfers are enabled immediately if there are no genesis accounts", func(t *testing.T) {
+		app := utils.Setup(t, false)
+		k, ctx := testkeepers.NewTestHubGenesisKeeperFromApp(app)
+		k.on
+	})
 }
