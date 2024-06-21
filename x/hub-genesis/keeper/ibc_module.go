@@ -12,6 +12,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 const (
@@ -34,6 +35,10 @@ type (
 
 func NewIBCModule(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins) *IBCModule {
 	return &IBCModule{next, k, t, d, m}
+}
+
+func (w IBCModule) logger(ctx sdk.Context) log.Logger {
+	return w.k.Logger(ctx).With("module", types.ModuleName, "component", "ibc module")
 }
 
 // OnChanOpenConfirm will send any unsent genesis account transfers over the channel.
@@ -131,6 +136,7 @@ func (w IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+	l := w.logger(ctx)
 	state := w.k.GetState(ctx)
 	if state.OutboundTransfersEnabled || // we're done already, this is not an ack for a genesis transfer
 		!state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) { // not related to genesis protocol with the hub
@@ -141,6 +147,7 @@ func (w IBCModule) OnAcknowledgementPacket(
 		var ack channeltypes.Acknowledgement
 		if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err == nil {
 			w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
+			l.Debug("Got ack", "seq", packet.Sequence)
 		} else {
 			panic(fmt.Errorf("must get ack from in OnAcknowledgementPacket: %w", err))
 		}
