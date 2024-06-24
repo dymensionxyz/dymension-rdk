@@ -27,7 +27,7 @@ func memoHasKey(memo string) bool {
 // that the transfer originated from the chain itself, rather than a user of the chain.
 // It may also contain token metadata.
 func (w IBCModule) createMemo(ctx types.Context, denom string) (string, error) {
-	d, ok := w.getDenom(ctx, denom)
+	d, ok := w.bank.GetDenomMetaData(ctx, denom)
 	if !ok {
 		return "", errors.Wrap(sdkerrors.ErrNotFound, "get denom metadata")
 	}
