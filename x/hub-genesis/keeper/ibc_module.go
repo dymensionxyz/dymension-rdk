@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	"github.com/tendermint/tendermint/libs/log"
 )
 
@@ -142,21 +144,31 @@ func (w IBCModule) OnAcknowledgementPacket(
 ) error {
 	l := w.logger(ctx)
 	state := w.k.GetState(ctx)
-	if !state.OutboundTransfersEnabled && // still in genesis protocol
-		state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) { // not some other unrelated channel
-		var data transfertypes.FungibleTokenPacketData
-		if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err == nil { // it's a transfer
-			var ack channeltypes.Acknowledgement
-			if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err == nil {
-				err := w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
-				if err != nil {
-					l.Error("Processing ack from transfer.", "err", err)
-					return err
-				}
-			} else {
-				panic(fmt.Errorf("must get ack from in OnAcknowledgementPacket: %w", err))
-			}
-		}
+
+	if !state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) {
+		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	}
+
+	if state.OutboundTransfersEnabled {
+		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	}
+
+	var data transfertypes.FungibleTokenPacketData
+	err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data)
+	if err != nil {
+		return err
+	}
+
+	var ack channeltypes.Acknowledgement
+	err = types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack)
+	if err != nil {
+		return err
+	}
+
+	err = w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
+	if err != nil {
+		l.Error("Processing ack from transfer.", "err", err)
+		return errorsmod.Wrap(errors.Join(err, gerrc.ErrUnknown), "ack transfer seq num")
 	}
 	return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }
