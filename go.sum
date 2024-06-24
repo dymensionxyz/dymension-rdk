@@ -551,8 +551,6 @@ github.com/dymensionxyz/go-libp2p-pubsub v0.0.0-20231219183151-4504d4995913 h1:s
 github.com/dymensionxyz/go-libp2p-pubsub v0.0.0-20231219183151-4504d4995913/go.mod h1:1OxbaT/pFRO5h+Dpze8hdHQ63R0ke55XTs6b6NwLLkw=
 github.com/dymensionxyz/rpc v1.3.1 h1:7EXWIobaBes5zldRvTIg7TmNsEKjicrWA/OjCc0NaGs=
 github.com/dymensionxyz/rpc v1.3.1/go.mod h1:f+WpX8ysy8wt95iGc6auYlHcnHj2bUkhiRVkkKNys8c=
-github.com/dymensionxyz/sdk-utils v0.1.1 h1:QX/4S0t+wUhbRlAw34fz2kEF+RP1D+tEVQ/S5QRa5X0=
-github.com/dymensionxyz/sdk-utils v0.1.1/go.mod h1:5fmenxP75quS5D1gPynbmh5qE6vla64Kks2O/hM+gi4=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
