@@ -470,8 +470,8 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/cyberdelia/templates v0.0.0-20141128023046-ca7fffd4298c/go.mod h1:GyV+0YP4qX0UQ7r2MoYZ+AvYDp12OF5yg4q8rGnyNh4=
 github.com/danieljoos/wincred v1.1.2 h1:QLdCxFs1/Yl4zduvBdcHB8goaYk9RARS2SgLLRuAyr0=
 github.com/danieljoos/wincred v1.1.2/go.mod h1:GijpziifJoIBfYh+S7BbkdUTU4LfM+QnGqR5Vl2tAx0=
-github.com/danwt/gerr v0.1.5 h1:5s3G3cnftZG7Rq0+k+taMVteTmwKU66/g47kH6hY1js=
-github.com/danwt/gerr v0.1.5/go.mod h1:tIj6P8ZPBLAbr64HdWqKHGUXbWJT6HenD08Fn98oAnE=
+github.com/danwt/gerr v1.0.0 h1:v3Do0h1r+uctQQVYJfOTCo8uigp8oIaY4OL/wUU8LzI=
+github.com/danwt/gerr v1.0.0/go.mod h1:tIj6P8ZPBLAbr64HdWqKHGUXbWJT6HenD08Fn98oAnE=
 github.com/dave/jennifer v1.2.0/go.mod h1:fIb+770HOpJ2fmN9EPPKOqm1vMGhB+TwXKMZhrIygKg=
 github.com/davecgh/go-spew v0.0.0-20171005155431-ecdeabc65495/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -545,12 +545,14 @@ github.com/dymensionxyz/dymint v1.1.3-rc04 h1:RqDF8bxB73mYmxHKnVNGeTnTsZihAwV6AE
 github.com/dymensionxyz/dymint v1.1.3-rc04/go.mod h1:e04A2OxeowtxMC9jl4JJj/7fmcYrHEWVIbYAlEd/Byo=
 github.com/dymensionxyz/evmos/v12 v12.1.6-dymension-v0.3 h1:vmAdUGUc4rTIiO3Phezr7vGq+0uPDVKSA4WAe8+yl6w=
 github.com/dymensionxyz/evmos/v12 v12.1.6-dymension-v0.3/go.mod h1:LfPv2O1HXMgETpka81Pg3nXy+U/7urq8dn85ZnSXK5Y=
-github.com/dymensionxyz/gerr-cosmos v0.1.2 h1:4NiB9psF6swnWTCDYnHgHKtVEaRHuuNRuqvPGDw1BI8=
-github.com/dymensionxyz/gerr-cosmos v0.1.2/go.mod h1:tXIhx3WdryAnYRISC3Weh+2xeXwaf1l4Yb1zjDUsT7k=
+github.com/dymensionxyz/gerr-cosmos v1.0.0 h1:oi91rgOkpJWr41oX9JOyjvvBnhGY54tj513x8VlDAEc=
+github.com/dymensionxyz/gerr-cosmos v1.0.0/go.mod h1:n+0olxPogzWqFKba45mCpvrHLGmeS8W9UZjggHnWk6c=
 github.com/dymensionxyz/go-libp2p-pubsub v0.0.0-20231219183151-4504d4995913 h1:sR3nGYRlktL2Xfj5pcOhgG2bvlBOZ14meqdu2TKkSCU=
 github.com/dymensionxyz/go-libp2p-pubsub v0.0.0-20231219183151-4504d4995913/go.mod h1:1OxbaT/pFRO5h+Dpze8hdHQ63R0ke55XTs6b6NwLLkw=
 github.com/dymensionxyz/rpc v1.3.1 h1:7EXWIobaBes5zldRvTIg7TmNsEKjicrWA/OjCc0NaGs=
 github.com/dymensionxyz/rpc v1.3.1/go.mod h1:f+WpX8ysy8wt95iGc6auYlHcnHj2bUkhiRVkkKNys8c=
+github.com/dymensionxyz/sdk-utils v0.1.1 h1:QX/4S0t+wUhbRlAw34fz2kEF+RP1D+tEVQ/S5QRa5X0=
+github.com/dymensionxyz/sdk-utils v0.1.1/go.mod h1:5fmenxP75quS5D1gPynbmh5qE6vla64Kks2O/hM+gi4=
 github.com/eapache/go-resiliency v1.1.0/go.mod h1:kFI+JgMyC7bLPUVY133qvEBtVayf5mFgVsvEsIPBvNs=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFPTqq+I=
