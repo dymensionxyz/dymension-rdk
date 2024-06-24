@@ -12,11 +12,10 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
-
-	"github.com/dymensionxyz/dymension-rdk/utils"
-	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
+	"github.com/dymensionxyz/sdk-utils/utils/uibc"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 type IBCSendMiddleware struct {
@@ -220,7 +219,7 @@ func (im IBCRecvMiddleware) OnRecvPacket(
 	}
 
 	// at this point it's safe to assume that we are not handling a native token of the hub
-	denomTrace := utils.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
+	denomTrace := uibc.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
 	ibcDenom := denomTrace.IBCDenom()
 
 	if _, exist := im.bankKeeper.GetDenomMetaData(ctx, ibcDenom); exist {
