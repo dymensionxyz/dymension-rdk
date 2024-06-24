@@ -79,17 +79,18 @@ func (w IBCModule) OnChanOpenConfirm(
 		// we want to handle the case where the rollapp doesn't have genesis transfers
 		// normally we would enable outbound transfers on an ack, but in this case we won't have an ack
 		w.k.enableOutboundTransfers(ctx)
-	} else {
-		srcAccount := w.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-		srcAddr := srcAccount.GetAddress().String()
+		return nil
+	}
 
-		for i, a := range state.GetGenesisAccounts() {
-			if err := w.mintAndTransfer(ctx, a, srcAddr, portID, channelID); err != nil {
-				// there is no feasible way to recover
-				panic(fmt.Errorf("mint and transfer: %w", err))
-			}
-			l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
+	srcAccount := w.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
+	srcAddr := srcAccount.GetAddress().String()
+
+	for i, a := range state.GetGenesisAccounts() {
+		if err := w.mintAndTransfer(ctx, a, srcAddr, portID, channelID); err != nil {
+			// there is no feasible way to recover
+			panic(fmt.Errorf("mint and transfer: %w", err))
 		}
+		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
 	}
 
 	l.Info("Sent all genesis transfers.", "n", len(state.GetGenesisAccounts()))
