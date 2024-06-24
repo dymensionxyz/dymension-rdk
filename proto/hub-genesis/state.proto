@@ -12,11 +12,20 @@ message State {
   reserved 2;
   // accounts on the Hub to fund with some bootstrapping transfers
   repeated GenesisAccount genesis_accounts = 3 [(gogoproto.nullable) = false];
+  // the number of genesis transfers for which an ack has not yet been received
+  uint64  num_unacked_transfers = 5;
+  // are outboundTransfersEnabled? This is only true if the genesis protocol has finished
+  bool outbound_transfers_enabled = 6;
+  // the canonical transfer port and channel for the hub
+  PortAndChannel hub_port_and_channel= 7;
 }
-/*
 
-TODO: the below is copy pasted, clean up
- */
+message PortAndChannel {
+  // port
+  string port = 1;
+  // channel
+  string channel = 2;
+}
 
 // GenesisAccount is a struct for the genesis account for the rollapp
 message GenesisAccount {
