@@ -1,17 +1,21 @@
 package keeper
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 const (
@@ -20,20 +24,26 @@ const (
 
 type IBCModule struct {
 	porttypes.IBCModule
-	k         Keeper
-	transfer  Transfer
-	getDenom  GetDenomMetaData
-	mintCoins MintCoins
+	k        Keeper
+	transfer TransferKeeper
+	bank     BankKeeper
 }
 
-type (
-	Transfer         func(ctx sdk.Context, transfer *transfertypes.MsgTransfer) error
-	GetDenomMetaData func(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
-	MintCoins        func(ctx sdk.Context, moduleName string, amt sdk.Coins) error
-)
+type TransferKeeper interface {
+	Transfer(goCtx context.Context, msg *transfertypes.MsgTransfer) (*transfertypes.MsgTransferResponse, error)
+}
 
-func NewIBCModule(next porttypes.IBCModule, t Transfer, k Keeper, d GetDenomMetaData, m MintCoins) *IBCModule {
-	return &IBCModule{next, k, t, d, m}
+type BankKeeper interface {
+	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
+	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
+}
+
+func NewIBCModule(next porttypes.IBCModule, t TransferKeeper, k Keeper, bank BankKeeper) *IBCModule {
+	return &IBCModule{next, k, t, bank}
+}
+
+func (w IBCModule) logger(ctx sdk.Context) log.Logger {
+	return w.k.Logger(ctx).With("module", types.ModuleName, "component", "ibc module")
 }
 
 // OnChanOpenConfirm will send any unsent genesis account transfers over the channel.
@@ -50,42 +60,49 @@ func (w IBCModule) OnChanOpenConfirm(
 
 	err := w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
-		l.Error("Next middleware.", "err", err)
 		return err
 	}
 
 	state := w.k.GetState(ctx)
 
+	if state.CanonicalHubTransferChannelHasBeenSet() {
+		// We only set the canonical channel in this function, so if it's already been set, we don't need
+		// to send the transfers again.
+		return nil
+	}
+
+	state.SetCanonicalTransferChannel(portID, channelID)
+
+	state.NumUnackedTransfers = uint64(len(state.GetGenesisAccounts()))
+
+	w.k.SetState(ctx, state)
+
+	if len(state.GetGenesisAccounts()) == 0 {
+		// we want to handle the case where the rollapp doesn't have genesis transfers
+		// normally we would enable outbound transfers on an ack, but in this case we won't have an ack
+		w.k.enableOutboundTransfers(ctx)
+		return nil
+	}
+
 	srcAccount := w.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
 	srcAddr := srcAccount.GetAddress().String()
 
 	for i, a := range state.GetGenesisAccounts() {
-		if err := w.mintAndTransfer(ctx, len(state.GetGenesisAccounts()), a, srcAddr, portID, channelID); err != nil {
+		if err := w.mintAndTransfer(ctx, a, srcAddr, portID, channelID); err != nil {
 			// there is no feasible way to recover
 			panic(fmt.Errorf("mint and transfer: %w", err))
 		}
 		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
 	}
 
-	state.GenesisAccounts = nil
-
-	w.k.SetState(ctx, state)
-
-	l.Info("Sent all genesis transfers.")
+	l.Info("Sent all genesis transfers.", "n", len(state.GetGenesisAccounts()))
 
 	return nil
 }
 
-func (w IBCModule) mintAndTransfer(
-	ctx sdk.Context,
-	n int,
-	a types.GenesisAccount,
-	srcAddr string,
-	portID string,
-	channelID string,
-) error {
-	coin := a.GetAmount()
-	err := w.mintCoins(ctx, types.ModuleName, sdk.Coins{coin})
+func (w IBCModule) mintAndTransfer(ctx sdk.Context, account types.GenesisAccount, srcAddr string, portID string, channelID string) error {
+	coin := account.GetAmount()
+	err := w.bank.MintCoins(ctx, types.ModuleName, sdk.Coins{coin})
 	if err != nil {
 		return errorsmod.Wrap(err, "mint coins")
 	}
@@ -95,7 +112,7 @@ func (w IBCModule) mintAndTransfer(
 	// or commit anyway, so the packet will be cleared up.
 	// (Actually, since transfers may arrive out of order, we must include the
 	// denom metadata anyway).
-	memo, err := w.createMemo(ctx, a.Amount.Denom, n)
+	memo, err := w.createMemo(ctx, account.Amount.Denom)
 	if err != nil {
 		return errorsmod.Wrap(err, "create memo")
 	}
@@ -103,18 +120,55 @@ func (w IBCModule) mintAndTransfer(
 	m := transfertypes.MsgTransfer{
 		SourcePort:       portID,
 		SourceChannel:    channelID,
-		Token:            a.Amount,
+		Token:            account.Amount,
 		Sender:           srcAddr,
-		Receiver:         a.GetAddress(),
+		Receiver:         account.GetAddress(),
 		TimeoutHeight:    clienttypes.Height{},
 		TimeoutTimestamp: uint64(ctx.BlockTime().Add(transferTimeout).UnixNano()),
 		Memo:             memo,
 	}
 
-	err = w.transfer(skipContext(ctx), &m)
+	res, err := w.transfer.Transfer(sdk.WrapSDKContext(allowSpecialMemoCtx(ctx)), &m)
 	if err != nil {
 		return errorsmod.Wrap(err, "transfer")
 	}
-
+	w.k.saveUnackedTransferSeqNum(ctx, res.Sequence)
 	return nil
+}
+
+func (w IBCModule) OnAcknowledgementPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	acknowledgement []byte,
+	relayer sdk.AccAddress,
+) error {
+	l := w.logger(ctx)
+	state := w.k.GetState(ctx)
+
+	if !state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) {
+		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	}
+
+	if state.OutboundTransfersEnabled {
+		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	}
+
+	var data transfertypes.FungibleTokenPacketData
+	err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data)
+	if err != nil {
+		return err
+	}
+
+	var ack channeltypes.Acknowledgement
+	err = types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack)
+	if err != nil {
+		return err
+	}
+
+	err = w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
+	if err != nil {
+		l.Error("Processing ack from transfer.", "err", err)
+		return errorsmod.Wrap(errors.Join(err, gerrc.ErrUnknown), "ack transfer seq num")
+	}
+	return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }
