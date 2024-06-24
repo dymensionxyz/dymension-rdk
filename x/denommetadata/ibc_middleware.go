@@ -1,6 +1,7 @@
 package denommetadata
 
 import (
+	"errors"
 	. "slices"
 
 	errorsmod "cosmossdk.io/errors"
@@ -12,38 +13,42 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	"github.com/dymensionxyz/sdk-utils/utils/uibc"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
-type IBCSendMiddleware struct {
+// ICS4Wrapper intercepts outgoing IBC packets and adds token metadata to the memo if the hub doesn't have it.
+// This is a solution for adding token metadata to fungible tokens transferred over IBC,
+// in case the Hub doesn't have the token metadata for the token being transferred.
+// More info here: https://www.notion.so/dymension/ADR-x-IBC-Denom-Metadata-Transfer-From-Rollapp-to-Hub-54e74e50adeb4d77b1f8777c05a73390?pvs=4
+type ICS4Wrapper struct {
 	porttypes.ICS4Wrapper
 
-	hubKeeper  types.HubKeeper
-	bankKeeper types.BankKeeper
+	hubKeeper                     types.HubKeeper
+	bankKeeper                    types.BankKeeper
+	isCanonicalHubTransferChannel func(port, channel string) bool
 }
 
-// NewIBCSendMiddleware creates a new ICS4Wrapper.
-// It intercepts outgoing IBC packets and adds token metadata to the memo if the hub doesn't have it.
-// This is a solution for adding token metadata to fungible tokens transferred over IBC,
-// targeted at hubs that don't have the token metadata for the token being transferred.
-// More info here: https://www.notion.so/dymension/ADR-x-IBC-Denom-Metadata-Transfer-From-Rollapp-to-Hub-54e74e50adeb4d77b1f8777c05a73390?pvs=4
-func NewIBCSendMiddleware(
+// NewICS4Wrapper creates a new ICS4Wrapper.
+func NewICS4Wrapper(
 	ics porttypes.ICS4Wrapper,
 	hubKeeper types.HubKeeper,
 	bankKeeper types.BankKeeper,
-) *IBCSendMiddleware {
-	return &IBCSendMiddleware{
-		ICS4Wrapper: ics,
-		hubKeeper:   hubKeeper,
-		bankKeeper:  bankKeeper,
+	isCanonicalHubTransferChannel func(port, channel string) bool,
+) *ICS4Wrapper {
+	return &ICS4Wrapper{
+		ICS4Wrapper:                   ics,
+		hubKeeper:                     hubKeeper,
+		bankKeeper:                    bankKeeper,
+		isCanonicalHubTransferChannel: isCanonicalHubTransferChannel,
 	}
 }
 
 // SendPacket wraps IBC ChannelKeeper's SendPacket function
-func (m *IBCSendMiddleware) SendPacket(
+func (m *ICS4Wrapper) SendPacket(
 	ctx sdk.Context,
 	chanCap *capabilitytypes.Capability,
 	destinationPort string, destinationChannel string,
@@ -56,13 +61,17 @@ func (m *IBCSendMiddleware) SendPacket(
 		return 0, errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	if types.MemoAlreadyHasPacketMetadata(packet.Memo) {
-		return 0, types.ErrMemoDenomMetadataAlreadyExists
+	if !m.isCanonicalHubTransferChannel(destinationPort, destinationChannel) {
+		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
+	}
+
+	if types.MemoHasPacketMetadata(packet.Memo) {
+		return 0, gerrc.ErrAlreadyExists
 	}
 
 	hub, err := m.hubKeeper.ExtractHubFromChannel(ctx, destinationPort, destinationChannel)
 	if err != nil {
-		return 0, errorsmod.Wrapf(errortypes.ErrInvalidRequest, "extract hub from channel: %s", err.Error())
+		return 0, errorsmod.Wrapf(errors.Join(errortypes.ErrInvalidRequest, err), "extract hub from channel")
 	}
 
 	if hub == nil {
@@ -84,7 +93,6 @@ func (m *IBCSendMiddleware) SendPacket(
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
 
-	// get the denom metadata from the bank keeper, if it doesn't exist, move on to the next middleware in the chain
 	denomMetadata, ok := m.bankKeeper.GetDenomMetaData(ctx, packet.Denom)
 	if !ok {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
@@ -92,12 +100,12 @@ func (m *IBCSendMiddleware) SendPacket(
 
 	packet.Memo, err = types.AddDenomMetadataToMemo(packet.Memo, denomMetadata)
 	if err != nil {
-		return 0, errorsmod.Wrapf(errortypes.ErrUnauthorized, "add denom metadata to memo: %s", err.Error())
+		return 0, errorsmod.Wrapf(errors.Join(errortypes.ErrInvalidRequest, err), "add denom metadata to memo")
 	}
 
 	data, err = types.ModuleCdc.MarshalJSON(packet)
 	if err != nil {
-		return 0, errorsmod.Wrapf(errortypes.ErrJSONMarshal, "marshal ICS-20 transfer packet data: %s", err.Error())
+		return 0, errorsmod.Wrapf(errors.Join(errortypes.ErrJSONMarshal, err), "marshal ICS-20 transfer packet data")
 	}
 
 	registeredDenom := &hubtypes.RegisteredDenom{
@@ -110,10 +118,10 @@ func (m *IBCSendMiddleware) SendPacket(
 	return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 }
 
-var _ porttypes.IBCModule = &IBCRecvMiddleware{}
+var _ porttypes.IBCModule = &IBCModule{}
 
-// IBCRecvMiddleware implements the ICS26 callbacks for the transfer middleware
-type IBCRecvMiddleware struct {
+// IBCModule implements the ICS26 callbacks for the transfer middleware
+type IBCModule struct {
 	porttypes.IBCModule
 	bankKeeper     types.BankKeeper
 	transferKeeper types.TransferKeeper
@@ -121,15 +129,15 @@ type IBCRecvMiddleware struct {
 	hooks          types.MultiDenomMetadataHooks
 }
 
-// NewIBCRecvMiddleware creates a new IBCRecvMiddleware given the keeper and underlying application
-func NewIBCRecvMiddleware(
+// NewIBCModule creates a new IBCModule given the keepers and underlying application
+func NewIBCModule(
 	app porttypes.IBCModule,
 	bankKeeper types.BankKeeper,
 	transferKeeper types.TransferKeeper,
 	hubKeeper types.HubKeeper,
 	hooks types.MultiDenomMetadataHooks,
-) IBCRecvMiddleware {
-	return IBCRecvMiddleware{
+) IBCModule {
+	return IBCModule{
 		IBCModule:      app,
 		bankKeeper:     bankKeeper,
 		transferKeeper: transferKeeper,
@@ -139,7 +147,7 @@ func NewIBCRecvMiddleware(
 }
 
 // OnAcknowledgementPacket adds the token metadata to the hub if it doesn't exist
-func (im IBCRecvMiddleware) OnAcknowledgementPacket(
+func (im IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
@@ -147,12 +155,12 @@ func (im IBCRecvMiddleware) OnAcknowledgementPacket(
 ) error {
 	var ack channeltypes.Acknowledgement
 	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
-		return errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet acknowledgement: %v", err)
+		return errorsmod.Wrapf(errors.Join(errortypes.ErrJSONUnmarshal, err), "unmarshal ICS-20 transfer acknowledgement")
 	}
 
 	var data transfertypes.FungibleTokenPacketData
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
-		return errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet data: %s", err.Error())
+		return errorsmod.Wrapf(errors.Join(errortypes.ErrJSONUnmarshal, err), "unmarshal ICS-20 transfer packet data")
 	}
 
 	dm := types.ParsePacketMetadata(data.Memo)
@@ -162,38 +170,26 @@ func (im IBCRecvMiddleware) OnAcknowledgementPacket(
 
 	hub, err := im.hubKeeper.ExtractHubFromChannel(ctx, packet.SourcePort, packet.SourceChannel)
 	if err != nil {
-		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "extract hub from channel: %s", err.Error())
+		return errorsmod.Wrapf(errors.Join(errortypes.ErrInvalidRequest, err), "extract hub from channel")
 	}
 	if hub == nil {
-		return errorsmod.Wrapf(errortypes.ErrNotFound, "hub not found")
+		return errorsmod.Wrapf(errors.Join(errortypes.ErrInvalidRequest, err), "hub not found")
 	}
 
 	// find the denom from the list by matching the base
 	// if it exists, update the status
 	// if the ack is error or timeout, update the status to INACTIVE
 	// otherwise, update the status to ACTIVE
-	// if it doesn't exist, add it to the list
-	registeredDenom := &hubtypes.RegisteredDenom{
-		Base: dm.Base,
-		Status: map[bool]hubtypes.RegisteredDenom_Status{
-			true:  hubtypes.RegisteredDenom_ACTIVE,
-			false: hubtypes.RegisteredDenom_INACTIVE,
-		}[ack.Success()],
-	}
-
-	found := false
 	for i, denom := range hub.RegisteredDenoms {
 		if denom.Base == dm.Base {
-			hub.RegisteredDenoms[i] = registeredDenom
-			found = true
+			hub.RegisteredDenoms[i].Status = map[bool]hubtypes.RegisteredDenom_Status{
+				true:  hubtypes.RegisteredDenom_ACTIVE,
+				false: hubtypes.RegisteredDenom_INACTIVE,
+			}[ack.Success()]
+			im.hubKeeper.SetHub(ctx, *hub)
 			break
 		}
 	}
-	if !found {
-		hub.RegisteredDenoms = append(hub.RegisteredDenoms, registeredDenom)
-	}
-
-	im.hubKeeper.SetHub(ctx, *hub)
 
 	return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }
@@ -203,7 +199,7 @@ func (im IBCRecvMiddleware) OnAcknowledgementPacket(
 // If it does not, it will register the denom metadata.
 // The handler will expect a 'denom_metadata' object in the memo field of the packet.
 // If the memo is not an object, or does not contain the metadata, it moves on to the next handler.
-func (im IBCRecvMiddleware) OnRecvPacket(
+func (im IBCModule) OnRecvPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
@@ -218,14 +214,6 @@ func (im IBCRecvMiddleware) OnRecvPacket(
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
-	// at this point it's safe to assume that we are not handling a native token of the hub
-	denomTrace := uibc.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
-	ibcDenom := denomTrace.IBCDenom()
-
-	if _, exist := im.bankKeeper.GetDenomMetaData(ctx, ibcDenom); exist {
-		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
-	}
-
 	dm := types.ParsePacketMetadata(packetData.Memo)
 	if dm == nil {
 		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
@@ -233,6 +221,15 @@ func (im IBCRecvMiddleware) OnRecvPacket(
 
 	if err := dm.Validate(); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
+	}
+
+	// at this point it's safe to assume that we are not handling a native token of the rollapp,
+	// as the Hub, before including the denom metadata in the packet, should have checked if the receiver chain is the source.
+	denomTrace := uibc.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
+	ibcDenom := denomTrace.IBCDenom()
+
+	if _, ok := im.bankKeeper.GetDenomMetaData(ctx, ibcDenom); ok {
+		return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
 	dm.Base = ibcDenom

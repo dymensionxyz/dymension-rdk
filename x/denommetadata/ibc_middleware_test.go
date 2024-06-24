@@ -101,7 +101,7 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			app := &mockIBCModule{}
-			im := denommetadata.NewIBCRecvMiddleware(
+			im := denommetadata.NewIBCModule(
 				app,
 				tt.bankKeeper,
 				tt.transferKeeper,
@@ -226,7 +226,7 @@ func TestIBCRecvMiddleware_OnAcknowledgementPacket(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			im := denommetadata.NewIBCRecvMiddleware(
+			im := denommetadata.NewIBCModule(
 				tt.fields.IBCModule,
 				tt.fields.bankKeeper,
 				tt.fields.transferKeeper,

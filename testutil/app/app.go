@@ -427,11 +427,13 @@ func NewRollapp(
 		app.IBCKeeper.ChannelKeeper,
 	)
 
-	denomMetadataMiddleware := denommetadata.NewIBCSendMiddleware(
+	denomMetadataMiddleware := denommetadata.NewICS4Wrapper(
 		app.IBCKeeper.ChannelKeeper,
 		app.HubKeeper,
 		app.BankKeeper,
-	)
+		func(string, string) bool {
+			return true // TODO: replace when Dan's PR is merged
+		})
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
@@ -503,7 +505,7 @@ func NewRollapp(
 
 	var transferStack ibcporttypes.IBCModule
 	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
-	transferStack = denommetadata.NewIBCRecvMiddleware(
+	transferStack = denommetadata.NewIBCModule(
 		transferStack,
 		app.BankKeeper,
 		app.TransferKeeper,

@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 
-	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -42,26 +41,10 @@ func (k Keeper) ExtractHubFromChannel(
 	if err != nil {
 		return nil, err
 	}
-	k.SetHub(ctx, types.Hub{
-		Id:               chainID,
-		ChannelId:        hubChannelOnRollapp,
-		RegisteredDenoms: nil,
-	})
 
 	hub, found := k.GetHub(ctx, chainID)
 	if !found {
 		return nil, nil
-	}
-
-	if hub.ChannelId == "" {
-		return nil, errorsmod.Wrapf(types.ErrGenesisEventNotTriggered, "empty channel id: hub id: %s", chainID)
-	}
-	// check if the channelID matches the hubID's channelID
-	if hub.ChannelId != hubChannelOnRollapp {
-		return nil, errorsmod.Wrapf(
-			types.ErrMismatchedChannelID,
-			"channel id mismatch: expect: %s: got: %s", hub.ChannelId, hubChannelOnRollapp,
-		)
 	}
 
 	return &hub, nil
