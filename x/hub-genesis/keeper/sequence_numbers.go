@@ -11,6 +11,8 @@ import (
 /*
 Whenever a genesis transfer is sent, we record the sequence number. We do not allow transfers until
 all acks have been received with success.
+
+We use an O(1) access pattern, because we don't place a limit on the number of genesis accounts.
 */
 
 var UnackedTransferSeqNumsPrefix = []byte("unacked_seqs")
