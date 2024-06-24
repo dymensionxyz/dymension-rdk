@@ -17,5 +17,5 @@ func GetForeignDenomTrace(channelId string, denom string) transfertypes.DenomTra
 }
 
 func IsIBCDenom(denom string) bool {
-	return strings.HasPrefix(denom, "ibc")
+	return strings.HasPrefix(denom, "ibc/")
 }
