@@ -435,12 +435,22 @@ func NewRollapp(
 			return true // TODO: replace when Dan's PR is merged
 		})
 
+	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
+		appCodec,
+		keys[hubgentypes.StoreKey],
+		app.GetSubspace(hubgentypes.ModuleName),
+		app.AccountKeeper,
+		app.HubKeeper,
+	)
+
+	genesisTransfersBlocker := hubgenkeeper.NewICS4Wrapper(denomMetadataMiddleware, app.HubGenesisKeeper)
+
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
-		denomMetadataMiddleware,
+		genesisTransfersBlocker,
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		app.AccountKeeper,
@@ -448,11 +458,21 @@ func NewRollapp(
 		scopedTransferKeeper,
 	)
 
-	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
-		appCodec,
-		keys[hubgentypes.StoreKey],
-		app.GetSubspace(hubgentypes.ModuleName),
-		app.AccountKeeper,
+	var transferStack ibcporttypes.IBCModule
+	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
+	transferStack = denommetadata.NewIBCModule(
+		transferStack,
+		app.BankKeeper,
+		app.TransferKeeper,
+		app.HubKeeper,
+		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
+	)
+	transferStack = hubgenkeeper.NewIBCModule(
+		transferStack,
+		app.BankKeeper,
+		app.HubGenesisKeeper,
+		transferStack,
+		app.IBCKeeper,
 		app.HubKeeper,
 	)
 
@@ -502,16 +522,6 @@ func NewRollapp(
 	)
 
 	wasmStack := wasm.NewIBCHandler(app.WasmKeeper, app.IBCKeeper.ChannelKeeper, app.IBCKeeper.ChannelKeeper)
-
-	var transferStack ibcporttypes.IBCModule
-	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
-	transferStack = denommetadata.NewIBCModule(
-		transferStack,
-		app.BankKeeper,
-		app.TransferKeeper,
-		app.HubKeeper,
-		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
-	)
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -758,10 +768,11 @@ func (app *App) ModuleAccountAddrs() map[string]bool {
 }
 
 // BlockedModuleAccountAddrs returns all the app's blocked module account
-// addresses.
+// addresses. A true value means blocked. Absent or false means not blocked.
 func (app *App) BlockedModuleAccountAddrs() map[string]bool {
 	modAccAddrs := app.ModuleAccountAddrs()
 	delete(modAccAddrs, authtypes.NewModuleAddress(govtypes.ModuleName).String())
+	delete(modAccAddrs, authtypes.NewModuleAddress(hubgentypes.ModuleName).String())
 
 	return modAccAddrs
 }
