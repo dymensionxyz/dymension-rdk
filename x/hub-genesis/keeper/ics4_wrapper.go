@@ -8,31 +8,41 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 type ctxKeySkip struct{}
 
-// skipContext returns a context which can be passed to ibc SendPacket
+// allowSpecialMemoCtx returns a context which can be passed to ibc SendPacket
 // if passed, the memo guard will not check that call
-func skipContext(ctx sdk.Context) sdk.Context {
+func allowSpecialMemoCtx(ctx sdk.Context) sdk.Context {
 	return ctx.WithValue(ctxKeySkip{}, true)
 }
 
-func skip(ctx sdk.Context) bool {
+func allowSpecialMemo(ctx sdk.Context) bool {
 	val, ok := ctx.Value(ctxKeySkip{}).(bool)
 	return ok && val
 }
 
 type ICS4Wrapper struct {
 	porttypes.ICS4Wrapper
+	k Keeper
 }
 
-func NewICS4Wrapper(next porttypes.ICS4Wrapper) *ICS4Wrapper {
-	return &ICS4Wrapper{next}
+func NewICS4Wrapper(next porttypes.ICS4Wrapper, k Keeper) *ICS4Wrapper {
+	return &ICS4Wrapper{next, k}
 }
 
-// SendPacket prevents anyone from sending a packet with the memo
-// The app should be wired to allow the middleware to circumvent this
+func (w ICS4Wrapper) logger(ctx sdk.Context) log.Logger {
+	return w.k.Logger(ctx).With("module", types.ModuleName, "component", "ics4 middleware")
+}
+
+// SendPacket does two things:
+//  1. It stops anyone from sending a packet with the special memo. Only the module itself is allowed to do so.
+//  2. It stops anyone from sending a regular transfer until the genesis phase is finished. To help with this,
+//     it tracks all acks which arrive from genesis transfers.
 func (w ICS4Wrapper) SendPacket(
 	ctx sdk.Context,
 	chanCap *capabilitytypes.Capability,
@@ -42,10 +52,20 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
+	l := w.logger(ctx)
+
+	state := w.k.GetState(ctx)
 	var transfer transfertypes.FungibleTokenPacketData
 	_ = transfertypes.ModuleCdc.UnmarshalJSON(data, &transfer)
-	if !skip(ctx) && memoHasKey(transfer.GetMemo()) {
+	specialMemo := memoHasKey(transfer.GetMemo())
+
+	if specialMemo && !allowSpecialMemo(ctx) {
 		return 0, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "cannot use transfer genesis memo")
 	}
+	if !(specialMemo || state.OutboundTransfersEnabled) {
+		l.Debug("Transfer rejected: outbound transfers are disabled.")
+		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
+	}
+
 	return w.ICS4Wrapper.SendPacket(ctx, chanCap, sourcePort, sourceChannel, timeoutHeight, timeoutTimestamp, data)
 }

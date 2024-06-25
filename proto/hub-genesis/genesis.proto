@@ -12,4 +12,5 @@ message GenesisState {
   // params defines all the parameters of the module.
   Params params = 1 [ (gogoproto.nullable) = false ];
   State state = 2 [(gogoproto.nullable) = false];
+  repeated uint64 unacked_transfer_seq_nums = 3 [(gogoproto.nullable) = false];
 }
