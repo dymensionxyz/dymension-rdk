@@ -9,6 +9,7 @@ import (
 
 	epochkeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
+	hubkeeper "github.com/dymensionxyz/dymension-rdk/x/hub/keeper"
 	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 
@@ -36,5 +37,11 @@ func NewTestMintKeeperFromApp(app *app.App) (*mintkeeper.Keeper, sdk.Context) {
 func NewTestHubGenesisKeeperFromApp(app *app.App) (*hubgenkeeper.Keeper, sdk.Context) {
 	k := &app.HubGenesisKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
+	return k, ctx
+}
+
+func NewTestHubKeeperFromApp(app *app.App) (*hubkeeper.Keeper, sdk.Context) {
+	k := &app.HubKeeper
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-]1", Time: time.Now().UTC()})
 	return k, ctx
 }

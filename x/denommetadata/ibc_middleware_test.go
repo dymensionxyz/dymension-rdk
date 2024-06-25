@@ -17,6 +17,7 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata"
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
@@ -24,6 +25,7 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 		name           string
 		bankKeeper     *mockBankKeeper
 		transferKeeper *mockTransferKeeper
+		hubKeeper      *mockHubKeeper
 		hooks          *mockERC20Hook
 
 		memoData         *memoData
@@ -68,15 +70,6 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 			wantSentMemoData: validUserMemo,
 			wantCreated:      false,
 		}, {
-			name:             "memo has empty packet metadata",
-			bankKeeper:       &mockBankKeeper{},
-			transferKeeper:   &mockTransferKeeper{},
-			hooks:            &mockERC20Hook{},
-			memoData:         invalidMemoDataNoTransferInject,
-			wantAck:          emptyResult,
-			wantSentMemoData: invalidMemoDataNoTransferInject,
-			wantCreated:      false,
-		}, {
 			name:             "memo has empty denom metadata",
 			bankKeeper:       &mockBankKeeper{},
 			transferKeeper:   &mockTransferKeeper{},
@@ -108,7 +101,13 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			app := &mockIBCModule{}
-			im := denommetadata.NewIBCMiddleware(app, tt.bankKeeper, tt.transferKeeper, types.NewMultiDenommetadataHooks(tt.hooks))
+			im := denommetadata.NewIBCModule(
+				app,
+				tt.bankKeeper,
+				tt.transferKeeper,
+				tt.hubKeeper,
+				types.NewMultiDenommetadataHooks(tt.hooks),
+			)
 			var memo string
 			if tt.memoData != nil {
 				memo = mustMarshalJSON(tt.memoData)
@@ -130,6 +129,113 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 	}
 }
 
+func TestIBCRecvMiddleware_OnAcknowledgementPacket(t *testing.T) {
+	type fields struct {
+		IBCModule      porttypes.IBCModule
+		bankKeeper     *mockBankKeeper
+		transferKeeper *mockTransferKeeper
+		hubKeeper      *mockHubKeeper
+		hooks          *mockERC20Hook
+	}
+	type args struct {
+		ctx             sdk.Context
+		packet          channeltypes.Packet
+		acknowledgement []byte
+		relayer         sdk.AccAddress
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "valid packet data with packet metadata",
+			fields: fields{
+				IBCModule:      &mockIBCModule{},
+				bankKeeper:     &mockBankKeeper{},
+				transferKeeper: &mockTransferKeeper{},
+				hooks:          &mockERC20Hook{},
+				hubKeeper: &mockHubKeeper{
+					hub: hubtypes.Hub{},
+				},
+			},
+			args: args{
+				ctx:             sdk.Context{},
+				packet:          channeltypes.Packet{Data: packetDataWithMemo(mustMarshalJSON(validMemoData)), SourcePort: "transfer", SourceChannel: "channel-0"},
+				acknowledgement: emptyResult.Acknowledgement(),
+				relayer:         sdk.AccAddress{},
+			},
+			wantErr: false,
+		}, {
+			name: "valid packet data with packet metadata and user memo",
+			fields: fields{
+				IBCModule:      &mockIBCModule{},
+				bankKeeper:     &mockBankKeeper{},
+				transferKeeper: &mockTransferKeeper{},
+				hooks:          &mockERC20Hook{},
+				hubKeeper:      &mockHubKeeper{},
+			},
+			args: args{
+				ctx:             sdk.Context{},
+				packet:          channeltypes.Packet{Data: packetDataWithMemo(mustMarshalJSON(validMemoDataWithUserMemo)), SourcePort: "transfer", SourceChannel: "channel-0"},
+				acknowledgement: emptyResult.Acknowledgement(),
+				relayer:         sdk.AccAddress{},
+			},
+			wantErr: false,
+		}, {
+			name: "no memo",
+			fields: fields{
+				IBCModule:      &mockIBCModule{},
+				bankKeeper:     &mockBankKeeper{},
+				transferKeeper: &mockTransferKeeper{},
+				hooks:          &mockERC20Hook{},
+				hubKeeper:      &mockHubKeeper{},
+			},
+			args: args{
+				ctx:             sdk.Context{},
+				packet:          channeltypes.Packet{Data: packetDataWithMemo(""), SourcePort: "transfer", SourceChannel: "channel-0"},
+				acknowledgement: emptyResult.Acknowledgement(),
+				relayer:         sdk.AccAddress{},
+			},
+			wantErr: false,
+		}, {
+			name: "custom memo",
+			fields: fields{
+				IBCModule:      &mockIBCModule{},
+				bankKeeper:     &mockBankKeeper{},
+				transferKeeper: &mockTransferKeeper{},
+				hooks:          &mockERC20Hook{},
+				hubKeeper:      &mockHubKeeper{},
+			},
+			args: args{
+				ctx:             sdk.Context{},
+				packet:          channeltypes.Packet{Data: packetDataWithMemo(mustMarshalJSON(validUserMemo)), SourcePort: "transfer", SourceChannel: "channel-0"},
+				acknowledgement: emptyResult.Acknowledgement(),
+				relayer:         sdk.AccAddress{},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			im := denommetadata.NewIBCModule(
+				tt.fields.IBCModule,
+				tt.fields.bankKeeper,
+				tt.fields.transferKeeper,
+				tt.fields.hubKeeper,
+				types.NewMultiDenommetadataHooks(tt.fields.hooks),
+			)
+			err := im.OnAcknowledgementPacket(tt.args.ctx, tt.args.packet, tt.args.acknowledgement, tt.args.relayer)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+		})
+	}
+}
+
 var (
 	emptyResult   = channeltypes.Acknowledgement{}
 	validUserMemo = &memoData{
@@ -142,17 +248,10 @@ var (
 	validUserData = userData{Data: "data"}
 	validMemoData = &memoData{
 		MemoData: types.MemoData{
-			TransferInject: &types.TransferInject{
-				DenomMetadata: &validDenomMetadata,
-			},
+			DenomMetadata: &validDenomMetadata,
 		},
 	}
 	invalidMemoDataNoDenomMetadata = &memoData{
-		MemoData: types.MemoData{
-			TransferInject: &types.TransferInject{},
-		},
-	}
-	invalidMemoDataNoTransferInject = &memoData{
 		MemoData: types.MemoData{},
 	}
 	validDenomMetadata = banktypes.Metadata{
@@ -211,6 +310,10 @@ func (m *mockIBCModule) OnRecvPacket(_ sdk.Context, p channeltypes.Packet, _ sdk
 	return emptyResult
 }
 
+func (m *mockIBCModule) OnAcknowledgementPacket(sdk.Context, channeltypes.Packet, []byte, sdk.AccAddress) error {
+	return nil
+}
+
 type mockBankKeeper struct {
 	hasDenomMetaData, created bool
 }
@@ -219,7 +322,9 @@ func (m *mockBankKeeper) SetDenomMetaData(sdk.Context, banktypes.Metadata) {
 	m.created = true
 }
 
-func (m mockBankKeeper) HasDenomMetaData(sdk.Context, string) bool { return m.hasDenomMetaData }
+func (m *mockBankKeeper) GetDenomMetaData(sdk.Context, string) (banktypes.Metadata, bool) {
+	return banktypes.Metadata{}, m.hasDenomMetaData
+}
 
 type mockTransferKeeper struct {
 	hasDT   bool
@@ -236,6 +341,18 @@ func (m *mockTransferKeeper) SetDenomTrace(sdk.Context, transfertypes.DenomTrace
 
 func (m *mockTransferKeeper) OnRecvPacket(sdk.Context, channeltypes.Packet, sdk.AccAddress) exported.Acknowledgement {
 	return emptyResult
+}
+
+type mockHubKeeper struct {
+	hub hubtypes.Hub
+}
+
+func (m *mockHubKeeper) SetState(ctx sdk.Context, state hubtypes.State) {
+	m.hub = state.Hub
+}
+
+func (m *mockHubKeeper) GetState(ctx sdk.Context) hubtypes.State {
+	return hubtypes.State{Hub: m.hub}
 }
 
 type mockERC20Hook struct {

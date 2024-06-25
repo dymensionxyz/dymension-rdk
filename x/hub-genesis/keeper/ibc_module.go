@@ -13,9 +13,10 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	"github.com/tendermint/tendermint/libs/log"
+
+	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
 const (
