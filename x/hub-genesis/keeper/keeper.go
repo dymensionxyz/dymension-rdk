@@ -19,7 +19,6 @@ type Keeper struct {
 	paramstore paramtypes.Subspace
 
 	accountKeeper types.AuthAccountKeeper
-	hubKeeper     types.HubKeeper
 }
 
 func NewKeeper(
@@ -27,7 +26,6 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	accountKeeper types.AuthAccountKeeper,
-	hubKeeper types.HubKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -40,7 +38,6 @@ func NewKeeper(
 		storeKey:      storeKey,
 		paramstore:    ps,
 		accountKeeper: accountKeeper,
-		hubKeeper:     hubKeeper,
 	}
 }
 

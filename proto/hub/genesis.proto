@@ -1,0 +1,13 @@
+syntax = "proto3";
+package rollapp.hub;
+
+import "gogoproto/gogo.proto";
+import "hub/state.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub/types";
+
+// GenesisState defines the hub module's genesis state.
+message GenesisState {
+  // state defines the hub state
+  State state = 1 [(gogoproto.nullable) = false];
+}

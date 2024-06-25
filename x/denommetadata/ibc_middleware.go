@@ -17,6 +17,7 @@ import (
 	"github.com/dymensionxyz/sdk-utils/utils/uibc"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
+	hgtypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
@@ -27,9 +28,9 @@ import (
 type ICS4Wrapper struct {
 	porttypes.ICS4Wrapper
 
-	hubKeeper                     types.HubKeeper
-	bankKeeper                    types.BankKeeper
-	isCanonicalHubTransferChannel func(port, channel string) bool
+	hubKeeper      types.HubKeeper
+	bankKeeper     types.BankKeeper
+	getHubGenState func(ctx sdk.Context) hgtypes.State
 }
 
 // NewICS4Wrapper creates a new ICS4Wrapper.
@@ -37,13 +38,13 @@ func NewICS4Wrapper(
 	ics porttypes.ICS4Wrapper,
 	hubKeeper types.HubKeeper,
 	bankKeeper types.BankKeeper,
-	isCanonicalHubTransferChannel func(port, channel string) bool,
+	getState func(ctx sdk.Context) hgtypes.State,
 ) *ICS4Wrapper {
 	return &ICS4Wrapper{
-		ICS4Wrapper:                   ics,
-		hubKeeper:                     hubKeeper,
-		bankKeeper:                    bankKeeper,
-		isCanonicalHubTransferChannel: isCanonicalHubTransferChannel,
+		ICS4Wrapper:    ics,
+		hubKeeper:      hubKeeper,
+		bankKeeper:     bankKeeper,
+		getHubGenState: getState,
 	}
 }
 
@@ -61,7 +62,7 @@ func (m *ICS4Wrapper) SendPacket(
 		return 0, errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
-	if !m.isCanonicalHubTransferChannel(destinationPort, destinationChannel) {
+	if hubGenState := m.getHubGenState(ctx); !hubGenState.IsCanonicalHubTransferChannel(destinationPort, destinationChannel) {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
 
@@ -69,25 +70,18 @@ func (m *ICS4Wrapper) SendPacket(
 		return 0, gerrc.ErrAlreadyExists
 	}
 
-	hub, err := m.hubKeeper.ExtractHubFromChannel(ctx, destinationPort, destinationChannel)
-	if err != nil {
-		return 0, errorsmod.Wrapf(errors.Join(errortypes.ErrInvalidRequest, err), "extract hub from channel")
-	}
-
-	if hub == nil {
-		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
-	}
-
 	if transfertypes.ReceiverChainIsSource(destinationPort, destinationChannel, packet.Denom) {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
+
+	state := m.hubKeeper.GetState(ctx)
 
 	// Check if the hub already contains the denom metadata by matching the base of the denom metadata.
 	// At the first match, we assume that the hub already contains the metadata.
 	// It would be technically possible to have a race condition where the denom metadata is added to the hub
 	// from another packet before this packet is acknowledged.
 	// If the denom metadata exists but is either PENDING or ACTIVE, proceed to the next middleware in the chain.
-	if ContainsFunc(hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
+	if ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
 		return denom.Base == packet.Denom && denom.Status != hubtypes.RegisteredDenom_INACTIVE
 	}) {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
@@ -112,8 +106,8 @@ func (m *ICS4Wrapper) SendPacket(
 		Base:   denomMetadata.Base,
 		Status: hubtypes.RegisteredDenom_PENDING,
 	}
-	hub.RegisteredDenoms = append(hub.RegisteredDenoms, registeredDenom)
-	m.hubKeeper.SetHub(ctx, *hub)
+	state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, registeredDenom)
+	m.hubKeeper.SetState(ctx, state)
 
 	return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 }
@@ -168,25 +162,19 @@ func (im IBCModule) OnAcknowledgementPacket(
 		return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
 
-	hub, err := im.hubKeeper.ExtractHubFromChannel(ctx, packet.SourcePort, packet.SourceChannel)
-	if err != nil {
-		return errorsmod.Wrapf(errors.Join(errortypes.ErrInvalidRequest, err), "extract hub from channel")
-	}
-	if hub == nil {
-		return errorsmod.Wrapf(errors.Join(errortypes.ErrInvalidRequest, err), "hub not found")
-	}
+	state := im.hubKeeper.GetState(ctx)
 
 	// find the denom from the list by matching the base
 	// if it exists, update the status
 	// if the ack is error or timeout, update the status to INACTIVE
 	// otherwise, update the status to ACTIVE
-	for i, denom := range hub.RegisteredDenoms {
+	for i, denom := range state.Hub.RegisteredDenoms {
 		if denom.Base == dm.Base {
-			hub.RegisteredDenoms[i].Status = map[bool]hubtypes.RegisteredDenom_Status{
+			state.Hub.RegisteredDenoms[i].Status = map[bool]hubtypes.RegisteredDenom_Status{
 				true:  hubtypes.RegisteredDenom_ACTIVE,
 				false: hubtypes.RegisteredDenom_INACTIVE,
 			}[ack.Success()]
-			im.hubKeeper.SetHub(ctx, *hub)
+			im.hubKeeper.SetState(ctx, state)
 			break
 		}
 	}
@@ -239,10 +227,6 @@ func (im IBCModule) OnRecvPacket(
 	// set hook after denom metadata creation
 	if err := im.hooks.AfterDenomMetadataCreation(ctx, *dm); err != nil {
 		return channeltypes.NewErrorAcknowledgement(err)
-	}
-
-	if !im.transferKeeper.HasDenomTrace(ctx, denomTrace.Hash()) {
-		im.transferKeeper.SetDenomTrace(ctx, denomTrace)
 	}
 
 	return im.IBCModule.OnRecvPacket(ctx, packet, relayer)

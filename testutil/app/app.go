@@ -424,23 +424,20 @@ func NewRollapp(
 	app.HubKeeper = hubkeeper.NewKeeper(
 		appCodec,
 		keys[hubtypes.StoreKey],
-		app.IBCKeeper.ChannelKeeper,
 	)
 
 	denomMetadataMiddleware := denommetadata.NewICS4Wrapper(
 		app.IBCKeeper.ChannelKeeper,
 		app.HubKeeper,
 		app.BankKeeper,
-		func(string, string) bool {
-			return true // TODO: replace when Dan's PR is merged
-		})
+		app.HubGenesisKeeper.GetState,
+	)
 
 	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
 		appCodec,
 		keys[hubgentypes.StoreKey],
 		app.GetSubspace(hubgentypes.ModuleName),
 		app.AccountKeeper,
-		app.HubKeeper,
 	)
 
 	genesisTransfersBlocker := hubgenkeeper.NewICS4Wrapper(denomMetadataMiddleware, app.HubGenesisKeeper)
@@ -469,11 +466,9 @@ func NewRollapp(
 	)
 	transferStack = hubgenkeeper.NewIBCModule(
 		transferStack,
-		app.BankKeeper,
+		app.TransferKeeper,
 		app.HubGenesisKeeper,
-		transferStack,
-		app.IBCKeeper,
-		app.HubKeeper,
+		app.BankKeeper,
 	)
 
 	app.GaslessKeeper = gaslesskeeper.NewKeeper(

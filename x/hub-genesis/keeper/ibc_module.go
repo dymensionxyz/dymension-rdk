@@ -17,7 +17,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 const (
@@ -29,7 +28,6 @@ type IBCModule struct {
 	k        Keeper
 	transfer TransferKeeper
 	bank     BankKeeper
-	hubKeeper types.HubKeeper
 }
 
 type TransferKeeper interface {
@@ -41,8 +39,8 @@ type BankKeeper interface {
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 }
 
-func NewIBCModule(next porttypes.IBCModule, t TransferKeeper, k Keeper, bank BankKeeper, hub types.HubKeeper) *IBCModule {
-	return &IBCModule{next, k, t, bank, hub}
+func NewIBCModule(next porttypes.IBCModule, t TransferKeeper, k Keeper, bank BankKeeper) *IBCModule {
+	return &IBCModule{next, k, t, bank}
 }
 
 func (w IBCModule) logger(ctx sdk.Context) log.Logger {
@@ -97,21 +95,6 @@ func (w IBCModule) OnChanOpenConfirm(
 		}
 		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
 	}
-
-	state.GenesisAccounts = nil
-
-	w.k.SetState(ctx, state)
-
-	hubID, err := w.hubKeeper.ExtractChainIDFromChannel(ctx, portID, channelID)
-	if err != nil {
-		return errorsmod.Wrap(err, "extract hub id from channel")
-	}
-
-	hub := hubtypes.Hub{
-		Id:        hubID,
-		ChannelId: channelID,
-	}
-	w.hubKeeper.SetHub(ctx, hub)
 
 	l.Info("Sent all genesis transfers.", "n", len(state.GetGenesisAccounts()))
 

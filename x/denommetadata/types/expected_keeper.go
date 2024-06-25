@@ -22,6 +22,6 @@ type TransferKeeper interface {
 }
 
 type HubKeeper interface {
-	SetHub(ctx sdk.Context, hub hubtypes.Hub)
-	ExtractHubFromChannel(ctx sdk.Context, portID, channelID string) (*hubtypes.Hub, error)
+	SetState(ctx sdk.Context, state hubtypes.State)
+	GetState(ctx sdk.Context) hubtypes.State
 }

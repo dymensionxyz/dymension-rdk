@@ -157,10 +157,7 @@ func TestIBCRecvMiddleware_OnAcknowledgementPacket(t *testing.T) {
 				transferKeeper: &mockTransferKeeper{},
 				hooks:          &mockERC20Hook{},
 				hubKeeper: &mockHubKeeper{
-					hub: &hubtypes.Hub{
-						Id:        "hub",
-						ChannelId: "channel-0",
-					},
+					hub: hubtypes.Hub{},
 				},
 			},
 			args: args{
@@ -177,11 +174,7 @@ func TestIBCRecvMiddleware_OnAcknowledgementPacket(t *testing.T) {
 				bankKeeper:     &mockBankKeeper{},
 				transferKeeper: &mockTransferKeeper{},
 				hooks:          &mockERC20Hook{},
-				hubKeeper: &mockHubKeeper{
-					hub: &hubtypes.Hub{
-						Id:        "hub",
-						ChannelId: "channel-0",
-					}},
+				hubKeeper:      &mockHubKeeper{},
 			},
 			args: args{
 				ctx:             sdk.Context{},
@@ -351,15 +344,15 @@ func (m *mockTransferKeeper) OnRecvPacket(sdk.Context, channeltypes.Packet, sdk.
 }
 
 type mockHubKeeper struct {
-	hub *hubtypes.Hub
+	hub hubtypes.Hub
 }
 
-func (m *mockHubKeeper) SetHub(_ sdk.Context, hub hubtypes.Hub) {
-	m.hub = &hub
+func (m *mockHubKeeper) SetState(ctx sdk.Context, state hubtypes.State) {
+	m.hub = state.Hub
 }
 
-func (m *mockHubKeeper) ExtractHubFromChannel(sdk.Context, string, string) (*hubtypes.Hub, error) {
-	return m.hub, nil
+func (m *mockHubKeeper) GetState(ctx sdk.Context) hubtypes.State {
+	return hubtypes.State{Hub: m.hub}
 }
 
 type mockERC20Hook struct {

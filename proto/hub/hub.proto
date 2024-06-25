@@ -7,14 +7,8 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub/types";
 
 // Hub is a proto message that represents the metadata of the Hub
 message Hub {
-  // id is the unique identifier of the Hub
-  string id = 1;
-
-  // channel_id is the unique identifier of the channel that the Hub is connected to
-  string channel_id = 2;
-
   // registeredDenoms is a list of registered denoms on the Hub
-  repeated RegisteredDenom registered_denoms = 3;
+  repeated RegisteredDenom registered_denoms = 1;
 }
 
 message RegisteredDenom {
