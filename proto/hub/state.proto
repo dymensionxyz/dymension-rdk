@@ -1,0 +1,13 @@
+syntax = "proto3";
+package rollapp.hub;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "hub/hub.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub/types";
+
+// State holds the state of the hub
+message State {
+  Hub hub = 1 [(gogoproto.nullable) = false];
+}

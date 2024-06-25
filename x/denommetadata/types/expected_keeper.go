@@ -5,11 +5,13 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
+
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 // BankKeeper defines the expected interface needed to retrieve account balances.
 type BankKeeper interface {
-	HasDenomMetaData(ctx sdk.Context, denom string) bool
+	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
 	SetDenomMetaData(ctx sdk.Context, denomMetaData banktypes.Metadata)
 }
 
@@ -17,4 +19,9 @@ type BankKeeper interface {
 type TransferKeeper interface {
 	HasDenomTrace(ctx sdk.Context, denomTraceHash tmbytes.HexBytes) bool
 	SetDenomTrace(ctx sdk.Context, denomTrace transfertypes.DenomTrace)
+}
+
+type HubKeeper interface {
+	SetState(ctx sdk.Context, state hubtypes.State)
+	GetState(ctx sdk.Context) hubtypes.State
 }

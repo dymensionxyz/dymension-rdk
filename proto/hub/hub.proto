@@ -1,0 +1,31 @@
+syntax = "proto3";
+package rollapp.hub;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub/types";
+
+// Hub is a proto message that represents the metadata of the Hub
+message Hub {
+  // registeredDenoms is a list of registered denoms on the Hub
+  repeated RegisteredDenom registered_denoms = 1;
+}
+
+message RegisteredDenom {
+  // base is the base of the denom
+  string base = 1;
+
+  enum Status {
+    // PENDING is the status of the denom registration in the Hub
+    // when the denom has been sent to the Hub, but the dispute period has not yet ended.
+    PENDING = 0;
+    // ACTIVE is the status of the denom registration in the Hub
+    // when the denom has been sent to the Hub and the dispute period has ended.
+    ACTIVE = 1;
+    // INACTIVE is the status of the denom registration in the Hub
+    // when the denom registration had failed for whatever reason (malicious denom, timeout error, ack error, etc.)
+    INACTIVE = 2;
+  }
+  // status is the status of the denom registration in the Hub
+  Status status = 2;
+}

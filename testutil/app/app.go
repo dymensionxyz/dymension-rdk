@@ -13,6 +13,9 @@ import (
 	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
+
+	hubkeeper "github.com/dymensionxyz/dymension-rdk/x/hub/keeper"
 
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/gorilla/mux"
@@ -134,7 +137,7 @@ var kvstorekeys = []string{
 	minttypes.StoreKey, distrtypes.StoreKey,
 	govtypes.StoreKey, paramstypes.StoreKey,
 	ibchost.StoreKey, upgradetypes.StoreKey,
-	epochstypes.StoreKey, hubgentypes.StoreKey,
+	epochstypes.StoreKey, hubgentypes.StoreKey, hubtypes.StoreKey,
 	ibctransfertypes.StoreKey, capabilitytypes.StoreKey, gaslesstypes.StoreKey, wasmtypes.StoreKey,
 }
 
@@ -226,6 +229,7 @@ type App struct {
 	DistrKeeper      distrkeeper.Keeper
 	GaslessKeeper    gaslesskeeper.Keeper
 	GovKeeper        govkeeper.Keeper
+	HubKeeper        hubkeeper.Keeper
 	HubGenesisKeeper hubgenkeeper.Keeper
 	UpgradeKeeper    upgradekeeper.Keeper
 	ParamsKeeper     paramskeeper.Keeper
@@ -417,6 +421,18 @@ func NewRollapp(
 		),
 	)
 
+	app.HubKeeper = hubkeeper.NewKeeper(
+		appCodec,
+		keys[hubtypes.StoreKey],
+	)
+
+	denomMetadataMiddleware := denommetadata.NewICS4Wrapper(
+		app.IBCKeeper.ChannelKeeper,
+		app.HubKeeper,
+		app.BankKeeper,
+		app.HubGenesisKeeper.GetState,
+	)
+
 	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
 		appCodec,
 		keys[hubgentypes.StoreKey],
@@ -424,7 +440,7 @@ func NewRollapp(
 		app.AccountKeeper,
 	)
 
-	genesisTransfersBlocker := hubgenkeeper.NewICS4Wrapper(app.IBCKeeper.ChannelKeeper, app.HubGenesisKeeper)
+	genesisTransfersBlocker := hubgenkeeper.NewICS4Wrapper(denomMetadataMiddleware, app.HubGenesisKeeper)
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(
@@ -441,10 +457,11 @@ func NewRollapp(
 
 	var transferStack ibcporttypes.IBCModule
 	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
-	transferStack = denommetadata.NewIBCMiddleware(
+	transferStack = denommetadata.NewIBCModule(
 		transferStack,
 		app.BankKeeper,
 		app.TransferKeeper,
+		app.HubKeeper,
 		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
 	)
 	transferStack = hubgenkeeper.NewIBCModule(

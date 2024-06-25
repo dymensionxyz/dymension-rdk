@@ -13,15 +13,13 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-type (
-	Keeper struct {
-		cdc        codec.BinaryCodec
-		storeKey   storetypes.StoreKey
-		paramstore paramtypes.Subspace
+type Keeper struct {
+	cdc        codec.BinaryCodec
+	storeKey   storetypes.StoreKey
+	paramstore paramtypes.Subspace
 
-		accountKeeper types.AuthAccountKeeper
-	}
-)
+	accountKeeper types.AuthAccountKeeper
+}
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
