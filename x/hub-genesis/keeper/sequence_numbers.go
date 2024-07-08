@@ -36,6 +36,10 @@ func (k Keeper) delUnackedTransferSeqNum(ctx sdk.Context, seq uint64) {
 	ctx.KVStore(k.storeKey).Delete(seqNumKey(seq))
 }
 
+func (k Keeper) hasUnackedTransferSeqNum(ctx sdk.Context, seq uint64) bool {
+	return ctx.KVStore(k.storeKey).Has(seqNumKey(seq))
+}
+
 // returns all seq nums, only intended for genesis export
 func (k Keeper) getAllUnackedTransferSeqNums(ctx sdk.Context) []uint64 {
 	state := k.GetState(ctx)
@@ -59,13 +63,15 @@ func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64, ack channeltypes.
 		}
 		return errorsmod.Wrapf(gerrc.ErrUnknown, "ack is not success: %s", res.Error)
 	}
-	k.delUnackedTransferSeqNum(ctx, seq)
-	state := k.GetState(ctx)
-	state.NumUnackedTransfers--
-	k.SetState(ctx, state)
-	if state.NumUnackedTransfers == 0 {
-		// all acks have come back successfully
-		k.enableOutboundTransfers(ctx)
+	if k.hasUnackedTransferSeqNum(ctx, seq) {
+		k.delUnackedTransferSeqNum(ctx, seq)
+		state := k.GetState(ctx)
+		state.NumUnackedTransfers--
+		k.SetState(ctx, state)
+		if state.NumUnackedTransfers == 0 {
+			// all acks have come back successfully
+			k.enableOutboundTransfers(ctx)
+		}
 	}
 	return nil
 }
