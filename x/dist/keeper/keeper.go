@@ -19,15 +19,19 @@ type Keeper struct {
 	stakingKeeper types.StakingKeeper
 	seqKeeper     types.SequencerKeeper
 
-	blockedAddrs     map[string]bool
 	feeCollectorName string
 }
 
 // NewKeeper creates a new distribution Keeper instance
 func NewKeeper(
-	cdc codec.BinaryCodec, key storetypes.StoreKey, paramSpace paramtypes.Subspace,
-	ak disttypes.AccountKeeper, bk disttypes.BankKeeper, sk types.StakingKeeper, seqk types.SequencerKeeper,
-	feeCollectorName string, blockedAddrs map[string]bool,
+	cdc codec.BinaryCodec,
+	key storetypes.StoreKey,
+	paramSpace paramtypes.Subspace,
+	ak disttypes.AccountKeeper,
+	bk disttypes.BankKeeper,
+	sk types.StakingKeeper,
+	seqk types.SequencerKeeper,
+	feeCollectorName string,
 ) Keeper {
 	k := distkeeper.NewKeeper(cdc, key, paramSpace, ak, bk, sk, feeCollectorName)
 	return Keeper{
@@ -36,7 +40,6 @@ func NewKeeper(
 		bankKeeper:       bk,
 		stakingKeeper:    sk,
 		seqKeeper:        seqk,
-		blockedAddrs:     blockedAddrs,
 		feeCollectorName: feeCollectorName,
 	}
 }
