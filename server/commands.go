@@ -5,17 +5,19 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/cosmos/cosmos-sdk/client/pruning"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
 	"github.com/cosmos/cosmos-sdk/version"
 
-	"github.com/dymensionxyz/dymension-rdk/server/commands"
-	"github.com/dymensionxyz/dymint/conv"
 	"github.com/libp2p/go-libp2p"
 	"github.com/spf13/cobra"
 	tmcmd "github.com/tendermint/tendermint/cmd/cometbft/commands"
 	cmtos "github.com/tendermint/tendermint/libs/os"
 	"github.com/tendermint/tendermint/p2p"
+
+	"github.com/dymensionxyz/dymension-rdk/server/commands"
+	"github.com/dymensionxyz/dymint/conv"
 )
 
 // add Rollapp commands
@@ -40,6 +42,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		server.ExportCmd(appExport, defaultNodeHome),
 		version.NewVersionCommand(),
 		server.NewRollbackCmd(appCreator, defaultNodeHome),
+		pruning.Cmd(appCreator, defaultNodeHome),
 	)
 }
 
