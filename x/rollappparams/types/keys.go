@@ -2,7 +2,7 @@ package types
 
 const (
 	// ModuleName defines the module name.
-	ModuleName = "rollappparams"
+	ModuleName = "rollapp_params"
 	// StoreKey defines the primary store key.
 	StoreKey = ModuleName
 )
