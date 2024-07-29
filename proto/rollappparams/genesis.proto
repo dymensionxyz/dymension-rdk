@@ -1,0 +1,13 @@
+syntax = "proto3";
+package rollapp.params.types;
+
+import "gogoproto/gogo.proto";
+import "rollappparams/params.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types";
+
+// GenesisState defines the test module's genesis state.
+message GenesisState {
+  // params are all parameters for the module
+  Params params = 1 [ (gogoproto.nullable) = false ];
+}

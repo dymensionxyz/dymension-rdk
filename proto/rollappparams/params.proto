@@ -1,0 +1,13 @@
+syntax = "proto3";
+package rollapp.params.types;
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types";
+
+// Params defines the parameters for the module.
+message Params {
+  // allowed_addresses defines the list of addresses authorized to use the
+  // module
+  string da = 1;
+  string version = 2;
+}
