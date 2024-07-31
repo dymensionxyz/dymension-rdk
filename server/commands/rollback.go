@@ -8,7 +8,6 @@ import (
 	"github.com/dymensionxyz/dymint/block"
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
-	daregistry "github.com/dymensionxyz/dymint/da/registry"
 	"github.com/dymensionxyz/dymint/store"
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/node"
@@ -52,7 +51,7 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 				err = db.Close()
 			}()
 
-			nodeConfig := dymintconf.DefaultConfig("", "")
+			nodeConfig := dymintconf.DefaultConfig("")
 			err = nodeConfig.GetViperConfig(cmd, ctx.Viper.GetString(flags.FlagHome))
 			if err != nil {
 				return err
@@ -107,9 +106,6 @@ func liteBlockManager(context context.Context, cfg *config.Config, dymintConf *d
 		return nil, err
 	}
 
-	if dymintConf.SettlementConfig.RollappID != genesis.ChainID {
-		return nil, fmt.Errorf("rollapp ID in settlement config doesn't match chain ID in genesis")
-	}
 	proxyApp := proxy.NewAppConns(clientCreator)
 	if err := proxyApp.Start(); err != nil {
 		return nil, fmt.Errorf("starting proxy app connections: %w", err)
@@ -125,19 +121,13 @@ func liteBlockManager(context context.Context, cfg *config.Config, dymintConf *d
 	mainKV := store.NewPrefixKV(baseKV, []byte{0})
 	s := store.New(mainKV)
 
-	dalc := daregistry.GetClient(dymintConf.DALayer)
-	if dalc == nil {
-		return nil, fmt.Errorf("get data availability client named '%s'", dymintConf.DALayer)
-	}
-
 	blockManager, err := block.NewManager(
 		signingKey,
-		dymintConf.BlockManagerConfig,
+		*dymintConf,
 		genesis,
 		s,
 		nil,
 		proxyApp,
-		dalc,
 		nil,
 		nil,
 		nil,
