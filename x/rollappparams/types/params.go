@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/dymensionxyz/dymint/da"
 	"github.com/dymensionxyz/dymint/da/registry"
@@ -58,6 +60,9 @@ func assertValidDa(i any) error {
 }
 
 func assertValidVersion(i any) error {
+	if i.(string) == "" {
+		return fmt.Errorf("Invalid version")
+	}
 	return nil
 }
 
