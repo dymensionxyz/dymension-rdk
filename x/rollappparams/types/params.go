@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	DefaultDA      = "celestia"
-	DefaultVersion = ""
-	KeyDa          = []byte("da")
-	KeyVersion     = []byte("version")
+	DefaultDA     = "celestia"
+	DefaultCommit = ""
+	KeyDa         = []byte("da")
+	KeyVersion    = []byte("version")
 )
 
 // ParamKeyTable for minting module.
@@ -23,19 +23,19 @@ func ParamKeyTable() paramtypes.KeyTable {
 // NewParams creates a new Params object
 func NewParams(
 	da string,
-	version string,
+	commit string,
 ) Params {
 	return Params{
-		Da:      da,
-		Version: version,
+		Da:     da,
+		Commit: commit,
 	}
 }
 
 // DefaultParams returns default x/denommetadata module parameters.
 func DefaultParams() Params {
 	return Params{
-		Da:      DefaultDA,
-		Version: DefaultVersion,
+		Da:     DefaultDA,
+		Commit: DefaultCommit,
 	}
 }
 
@@ -44,7 +44,7 @@ func (p Params) Validate() error {
 	if err != nil {
 		return err
 	}
-	err = assertValidVersion(p.Version)
+	err = assertValidCommit(p.Commit)
 	if err != nil {
 		return err
 	}
@@ -59,9 +59,9 @@ func assertValidDa(i any) error {
 
 }
 
-func assertValidVersion(i any) error {
+func assertValidCommit(i any) error {
 	if i.(string) == "" {
-		return fmt.Errorf("Invalid version")
+		return fmt.Errorf("invalid commit")
 	}
 	return nil
 }
@@ -70,6 +70,6 @@ func assertValidVersion(i any) error {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, assertValidDa),
-		paramtypes.NewParamSetPair(KeyVersion, &p.Version, assertValidVersion),
+		paramtypes.NewParamSetPair(KeyVersion, &p.Commit, assertValidCommit),
 	}
 }
