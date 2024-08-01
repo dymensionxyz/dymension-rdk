@@ -12,7 +12,7 @@ var (
 	DefaultDA     = "celestia"
 	DefaultCommit = ""
 	KeyDa         = []byte("da")
-	KeyVersion    = []byte("version")
+	KeyVersion    = []byte("commit")
 )
 
 // ParamKeyTable for minting module.
