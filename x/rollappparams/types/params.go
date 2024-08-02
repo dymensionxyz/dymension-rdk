@@ -10,7 +10,7 @@ import (
 
 var (
 	DefaultDA     = "celestia"
-	DefaultCommit = ""
+	DefaultCommit = "abcde"
 	KeyDa         = []byte("da")
 	KeyVersion    = []byte("commit")
 )

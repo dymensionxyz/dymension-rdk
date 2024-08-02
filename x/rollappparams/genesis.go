@@ -10,7 +10,7 @@ import (
 // InitGenesis initializes the gasless module's state from a provided genesis
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
-	k.InitGenesis(ctx, genState)
+	k.InitGenesis(ctx, &genState)
 }
 
 // ExportGenesis returns the gasless module's exported genesis.
