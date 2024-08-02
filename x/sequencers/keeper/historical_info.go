@@ -35,7 +35,7 @@ func (k Keeper) DeleteHistoricalInfo(ctx sdk.Context, height int64) {
 	store.Delete(key)
 }
 
-// IterateHistoricalInfo provides an interator over all stored HistoricalInfo
+// IterateHistoricalInfo provides an iterator over all stored HistoricalInfo
 //
 //	objects. For each HistoricalInfo object, cb will be called. If the cb returns
 //
