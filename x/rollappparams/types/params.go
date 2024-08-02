@@ -12,6 +12,7 @@ var (
 	DefaultCommit = "abcde"
 	KeyDa         = []byte("da")
 	KeyVersion    = []byte("commit")
+	CommitLength  = 40
 )
 
 // ParamKeyTable for minting module.
@@ -59,7 +60,12 @@ func assertValidDa(i any) error {
 }
 
 func assertValidCommit(i any) error {
-	if i.(string) == "" {
+
+	_, ok := i.(string)
+	if !ok {
+		return fmt.Errorf("invalid commit")
+	}
+	if len(i.(string)) != CommitLength {
 		return fmt.Errorf("invalid commit")
 	}
 	return nil
