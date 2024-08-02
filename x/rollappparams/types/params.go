@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/dymensionxyz/dymint/da"
 	"github.com/dymensionxyz/dymint/da/registry"
 )
 
@@ -53,7 +52,7 @@ func (p Params) Validate() error {
 
 func assertValidDa(i any) error {
 	if registry.GetClient(i.(string)) == nil {
-		return da.ErrNonexistentDA
+		return ErrDANotSupported
 	}
 	return nil
 
