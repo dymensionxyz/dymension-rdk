@@ -68,7 +68,7 @@ func (s *KeeperTestSuite) TestCreateGasTank() {
 
 	for _, tc := range testCases {
 		s.Run(tc.Name, func() {
-			// add funds to acount for valid case
+			// add funds to account for valid case
 			if tc.ExpErr == nil {
 				s.fundAddr(sdk.MustAccAddressFromBech32(tc.Msg.Provider), sdk.NewCoins(tc.Msg.GasDeposit))
 			}

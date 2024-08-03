@@ -14,7 +14,7 @@ Clients can then interact with the Messages and Contract normally as usual and t
 
 FeeGrant module allows accounts to grant fee allowances and to use fees from their accounts, and Grantees can execute any transaction without the need to maintain sufficient fees.
 
-A detailed comparision below gives good idea of the features provided by each module.
+A detailed comparison below gives good idea of the features provided by each module.
 
 | Aspect | Gasless Module | FeeGrant Module |
 | ------ | -------------- | --------------- |
