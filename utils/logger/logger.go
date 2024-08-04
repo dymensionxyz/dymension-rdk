@@ -3,6 +3,7 @@ package logger
 import (
 	"os"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	tmlog "github.com/tendermint/tendermint/libs/log"
@@ -37,33 +38,33 @@ func NewLogger(path string, maxSize int, level string, moduleOverrideLevel ...ma
 }
 
 func (l Logger) setupLogger(path string, maxSize int, level string) *log.Logger {
-    logger := log.New()
-    // Set log file path
-    if path != "" {
-        logger.SetOutput(
-            &lumberjack.Logger{
-                Filename:   path,
-                MaxSize:    maxSize, // megabytes
-                MaxBackups: defaultMaxBackups,
-                MaxAge:     defaultMaxAgeDays, // days
-                Compress:   true,              // disabled by default
-            },
-        )
-    } else {
-        logger.SetOutput(os.Stdout)
-    }
-    logLevel, err := log.ParseLevel(level)
-    if err != nil {
-        logger.Error("failed to parse log level", "error", err, "level", level)
-    } else {
-        logger.SetLevel(logLevel)
-    }
-    logger.SetFormatter(
-        &log.TextFormatter{
-            TimestampFormat: time.StampMilli,
-        },
-    )
-    return logger
+	logger := log.New()
+	// Set log file path
+	if path != "" {
+		logger.SetOutput(
+			&lumberjack.Logger{
+				Filename:   path,
+				MaxSize:    maxSize, // megabytes
+				MaxBackups: defaultMaxBackups,
+				MaxAge:     defaultMaxAgeDays, // days
+				Compress:   true,              // disabled by default
+			},
+		)
+	} else {
+		logger.SetOutput(os.Stdout)
+	}
+	logLevel, err := log.ParseLevel(level)
+	if err != nil {
+		logger.Error("failed to parse log level", "error", err, "level", level)
+	} else {
+		logger.SetLevel(logLevel)
+	}
+	logger.SetFormatter(
+		&log.TextFormatter{
+			TimestampFormat: time.StampMilli,
+		},
+	)
+	return logger
 }
 
 func (l Logger) Debug(msg string, keyvals ...interface{}) {
