@@ -8,14 +8,18 @@ import (
 )
 
 var (
-	DefaultDA     = "celestia"
-	DefaultCommit = "abcde"
-	KeyDa         = []byte("da")
-	KeyVersion    = []byte("commit")
-	CommitLength  = 40
+	DefaultDA               = "celestia"
+	DefaultCommit           = "74fad6a00713cba62352c2451c6b7ab73571c515"
+	DefaultMaxBlockGas      = 400000000
+	DefaultMaxBlockSize     = 500000
+	MinAcceptedMaxBlockSize = 100000
+	KeyDa                   = []byte("da")
+	KeyCommit               = []byte("commit")
+	KeyBlockMaxGas          = []byte("blockmaxgas")
+	KeyBlockMaxSize         = []byte("blockmaxsize")
+	CommitLength            = 40
 )
 
-// ParamKeyTable for minting module.
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
@@ -24,18 +28,24 @@ func ParamKeyTable() paramtypes.KeyTable {
 func NewParams(
 	da string,
 	commit string,
+	blockMaxGas uint32,
+	blockMaxSize uint32,
 ) Params {
 	return Params{
-		Da:     da,
-		Commit: commit,
+		Da:           da,
+		Commit:       commit,
+		Blockmaxgas:  blockMaxGas,
+		Blockmaxsize: blockMaxSize,
 	}
 }
 
-// DefaultParams returns default x/denommetadata module parameters.
+// DefaultParams returns default x/rollappparams module parameters.
 func DefaultParams() Params {
 	return Params{
-		Da:     DefaultDA,
-		Commit: DefaultCommit,
+		Da:           DefaultDA,
+		Commit:       DefaultCommit,
+		Blockmaxgas:  uint32(DefaultMaxBlockGas),
+		Blockmaxsize: uint32(DefaultMaxBlockSize),
 	}
 }
 
@@ -48,6 +58,14 @@ func (p Params) Validate() error {
 	if err != nil {
 		return err
 	}
+	err = assertValidBlockMaxGas(p.Blockmaxgas)
+	if err != nil {
+		return err
+	}
+	err = assertValidBlockMaxSize(p.Blockmaxsize)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -55,6 +73,7 @@ func assertValidDa(i any) error {
 	if registry.GetClient(i.(string)) == nil {
 		return ErrDANotSupported
 	}
+
 	return nil
 
 }
@@ -71,10 +90,36 @@ func assertValidCommit(i any) error {
 	return nil
 }
 
+func assertValidBlockMaxGas(i any) error {
+	_, ok := i.(uint32)
+	if !ok {
+		return fmt.Errorf("invalid block max gas")
+	}
+
+	return nil
+}
+
+func assertValidBlockMaxSize(i any) error {
+	size, ok := i.(uint32)
+	if !ok {
+		return fmt.Errorf("invalid block max size")
+	}
+	if size < uint32(MinAcceptedMaxBlockSize) {
+		return fmt.Errorf("block max size cannot be smaller than %d", MinAcceptedMaxBlockSize)
+	}
+	if size > uint32(DefaultMaxBlockSize) {
+		return fmt.Errorf("block max size cannot be greater than %d", DefaultMaxBlockSize)
+	}
+	return nil
+}
+
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
+	fmt.Println(p)
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, assertValidDa),
-		paramtypes.NewParamSetPair(KeyVersion, &p.Commit, assertValidCommit),
+		paramtypes.NewParamSetPair(KeyCommit, &p.Commit, assertValidCommit),
+		paramtypes.NewParamSetPair(KeyBlockMaxGas, &p.Blockmaxgas, assertValidBlockMaxGas),
+		paramtypes.NewParamSetPair(KeyBlockMaxSize, &p.Blockmaxsize, assertValidBlockMaxSize),
 	}
 }

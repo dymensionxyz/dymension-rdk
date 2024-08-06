@@ -10,4 +10,6 @@ message Params {
   // module
   string da = 1;
   string commit = 2;
+  uint32 blockmaxgas = 3;
+  uint32 blockmaxsize = 4;
 }
