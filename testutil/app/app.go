@@ -124,6 +124,10 @@ import (
 	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
+	"github.com/dymensionxyz/dymension-rdk/x/rollappparams"
+	rollappparamskeeper "github.com/dymensionxyz/dymension-rdk/x/rollappparams/keeper"
+	rollappparamstypes "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types"
 )
 
 const (
@@ -139,6 +143,7 @@ var kvstorekeys = []string{
 	ibchost.StoreKey, upgradetypes.StoreKey,
 	epochstypes.StoreKey, hubgentypes.StoreKey, hubtypes.StoreKey,
 	ibctransfertypes.StoreKey, capabilitytypes.StoreKey, gaslesstypes.StoreKey, wasmtypes.StoreKey,
+	rollappparamstypes.StoreKey,
 }
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -184,6 +189,7 @@ var (
 		hubgenesis.AppModuleBasic{},
 		gasless.AppModuleBasic{},
 		wasm.AppModuleBasic{},
+		rollappparams.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -198,6 +204,7 @@ var (
 		hubgentypes.ModuleName:         {authtypes.Minter},
 		gaslesstypes.ModuleName:        nil,
 		wasmtypes.ModuleName:           {authtypes.Burner},
+		rollappparamstypes.ModuleName:  nil,
 	}
 )
 
@@ -219,23 +226,24 @@ type App struct {
 	memKeys map[string]*storetypes.MemoryStoreKey
 
 	// keepers
-	AccountKeeper    authkeeper.AccountKeeper
-	BankKeeper       bankkeeper.Keeper
-	CapabilityKeeper *capabilitykeeper.Keeper
-	StakingKeeper    stakingkeeper.Keeper
-	SequencersKeeper seqkeeper.Keeper
-	MintKeeper       mintkeeper.Keeper
-	EpochsKeeper     epochskeeper.Keeper
-	DistrKeeper      distrkeeper.Keeper
-	GaslessKeeper    gaslesskeeper.Keeper
-	GovKeeper        govkeeper.Keeper
-	HubKeeper        hubkeeper.Keeper
-	HubGenesisKeeper hubgenkeeper.Keeper
-	UpgradeKeeper    upgradekeeper.Keeper
-	ParamsKeeper     paramskeeper.Keeper
-	IBCKeeper        *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	TransferKeeper   ibctransferkeeper.Keeper
-	WasmKeeper       wasmkeeper.Keeper
+	AccountKeeper       authkeeper.AccountKeeper
+	BankKeeper          bankkeeper.Keeper
+	CapabilityKeeper    *capabilitykeeper.Keeper
+	StakingKeeper       stakingkeeper.Keeper
+	SequencersKeeper    seqkeeper.Keeper
+	MintKeeper          mintkeeper.Keeper
+	EpochsKeeper        epochskeeper.Keeper
+	DistrKeeper         distrkeeper.Keeper
+	GaslessKeeper       gaslesskeeper.Keeper
+	GovKeeper           govkeeper.Keeper
+	HubKeeper           hubkeeper.Keeper
+	HubGenesisKeeper    hubgenkeeper.Keeper
+	RollappParamsKeeper rollappparamskeeper.Keeper
+	UpgradeKeeper       upgradekeeper.Keeper
+	ParamsKeeper        paramskeeper.Keeper
+	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
+	TransferKeeper      ibctransferkeeper.Keeper
+	WasmKeeper          wasmkeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -376,6 +384,10 @@ func NewRollapp(
 		&stakingKeeper,
 		&app.SequencersKeeper,
 		authtypes.FeeCollectorName,
+	)
+
+	app.RollappParamsKeeper = rollappparamskeeper.NewKeeper(
+		app.GetSubspace(rollappparamstypes.ModuleName),
 	)
 
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp, authtypes.NewModuleAddress(govtypes.ModuleName).String())
@@ -556,6 +568,7 @@ func NewRollapp(
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper),
 		gasless.NewAppModule(appCodec, app.GaslessKeeper),
+		rollappparams.NewAppModule(appCodec, app.RollappParamsKeeper),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -584,6 +597,7 @@ func NewRollapp(
 		hubgentypes.ModuleName,
 		wasm.ModuleName,
 		gaslesstypes.ModuleName,
+		rollappparamstypes.ModuleName,
 	}
 	app.mm.SetOrderBeginBlockers(beginBlockersList...)
 
@@ -606,6 +620,7 @@ func NewRollapp(
 		hubgentypes.ModuleName,
 		wasm.ModuleName,
 		gaslesstypes.ModuleName,
+		rollappparamstypes.ModuleName,
 	}
 	app.mm.SetOrderEndBlockers(endBlockersList...)
 
@@ -634,6 +649,7 @@ func NewRollapp(
 		hubgentypes.ModuleName,
 		wasm.ModuleName,
 		gaslesstypes.ModuleName,
+		rollappparamstypes.ModuleName,
 	}
 	app.mm.SetOrderInitGenesis(initGenesisList...)
 
@@ -934,6 +950,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(hubgentypes.ModuleName)
 	paramsKeeper.Subspace(gaslesstypes.ModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
+	paramsKeeper.Subspace(rollappparamstypes.ModuleName)
 
 	return paramsKeeper
 }
