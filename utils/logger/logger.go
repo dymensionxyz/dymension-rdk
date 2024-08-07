@@ -3,6 +3,7 @@ package logger
 import (
 	"os"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	tmlog "github.com/tendermint/tendermint/libs/log"
@@ -40,13 +41,15 @@ func (l Logger) setupLogger(path string, maxSize int, level string) *log.Logger 
 	logger := log.New()
 	// Set log file path
 	if path != "" {
-		logger.SetOutput(&lumberjack.Logger{
-			Filename:   path,
-			MaxSize:    maxSize, // megabytes
-			MaxBackups: defaultMaxBackups,
-			MaxAge:     defaultMaxAgeDays, // days
-			Compress:   true,              // disabled by default
-		})
+		logger.SetOutput(
+			&lumberjack.Logger{
+				Filename:   path,
+				MaxSize:    maxSize, // megabytes
+				MaxBackups: defaultMaxBackups,
+				MaxAge:     defaultMaxAgeDays, // days
+				Compress:   true,              // disabled by default
+			},
+		)
 	} else {
 		logger.SetOutput(os.Stdout)
 	}
@@ -56,7 +59,11 @@ func (l Logger) setupLogger(path string, maxSize int, level string) *log.Logger 
 	} else {
 		logger.SetLevel(logLevel)
 	}
-	logger.SetFormatter(&log.TextFormatter{})
+	logger.SetFormatter(
+		&log.TextFormatter{
+			TimestampFormat: time.StampMilli,
+		},
+	)
 	return logger
 }
 
