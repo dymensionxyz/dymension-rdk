@@ -20,7 +20,7 @@ require (
 	github.com/libp2p/go-libp2p v0.33.1
 	github.com/rakyll/statik v0.1.7
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cast v1.5.1
+	github.com/spf13/cast v1.7.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tendermint/tendermint v0.34.29
