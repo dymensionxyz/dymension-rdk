@@ -20,7 +20,7 @@ type peerInfo struct {
 	connectionDuration time.Duration
 }
 
-// ShowNodeIDCmd dumps node's ID to the standard output.
+// ShowP2PInfoCmd dumps node's ID to the standard output.
 func ShowP2PInfoCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:     "show-p2p-info",
