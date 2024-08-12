@@ -43,7 +43,7 @@ func (k Keeper) CalcMintedCoins(ctx sdk.Context, totalAmt math.Int) sdk.Dec {
 	return mintAmount
 }
 
-// DistributeMintedCoins implements distribution of minted coins from mint to external modules.
+// DistributeMintedCoin implements distribution of minted coins from mint to external modules.
 func (k Keeper) DistributeMintedCoin(ctx sdk.Context, mintedCoins sdk.Coins) error {
 	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, k.feeCollectorName, mintedCoins)
 	if err != nil {
