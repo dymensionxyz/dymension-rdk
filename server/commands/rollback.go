@@ -124,11 +124,12 @@ func liteBlockManager(context context.Context, cfg *config.Config, dymintConf *d
 
 	blockManager, err := block.NewManager(
 		signingKey,
-		dymintConf.BlockManagerConfig,
+		*dymintConf,
 		genesis,
 		s,
 		nil,
 		proxyApp,
+		nil,
 		nil,
 		nil,
 		nil,
