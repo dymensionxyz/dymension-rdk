@@ -13,7 +13,7 @@ const (
 	DefaultCommit           = "74fad6a00713cba62352c2451c6b7ab73571c515"
 	DefaultBlockMaxGas      = 400000000
 	DefaultBlockMaxSize     = 500000
-	MinAcceptedBlockMaxSize = 100000
+	MinBlockMaxSize = 100000
 	MinAcceptedBlockMaxGas  = 10000000
 	CommitLength            = 40
 )
