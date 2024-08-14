@@ -9,13 +9,13 @@ import (
 )
 
 const (
-	DefaultDA               = "celestia"
-	DefaultCommit           = "74fad6a00713cba62352c2451c6b7ab73571c515"
-	DefaultBlockMaxGas      = 400000000
-	DefaultBlockMaxSize     = 500000
-	MinBlockMaxSize = 100000
-	MinAcceptedBlockMaxGas  = 10000000
-	CommitLength            = 40
+	DefaultDA           = "celestia"
+	DefaultCommit       = "74fad6a00713cba62352c2451c6b7ab73571c515"
+	DefaultBlockMaxGas  = 400000000
+	DefaultBlockMaxSize = 500000
+	MinBlockMaxSize     = 100000
+	MinBlockMaxGas      = 10000000
+	CommitLength        = 40
 )
 
 // Parameter store keys.
@@ -106,8 +106,8 @@ func ValidateBlockMaxGas(i any) error {
 	if !ok {
 		return fmt.Errorf("invalid block max gas")
 	}
-	if gas < uint32(MinAcceptedBlockMaxGas) {
-		return fmt.Errorf("block max gas cannot be smaller than %d", MinAcceptedBlockMaxGas)
+	if gas < uint32(MinBlockMaxGas) {
+		return fmt.Errorf("block max gas cannot be smaller than %d", MinBlockMaxGas)
 	}
 	return nil
 }
@@ -117,8 +117,8 @@ func ValidateBlockMaxSize(i any) error {
 	if !ok {
 		return fmt.Errorf("invalid block max size")
 	}
-	if size < uint32(MinAcceptedBlockMaxSize) {
-		return fmt.Errorf("block max size cannot be smaller than %d", MinAcceptedBlockMaxSize)
+	if size < uint32(MinBlockMaxSize) {
+		return fmt.Errorf("block max size cannot be smaller than %d", MinBlockMaxSize)
 	}
 	if size > uint32(DefaultBlockMaxSize) {
 		return fmt.Errorf("block max size cannot be greater than %d", DefaultBlockMaxSize)
