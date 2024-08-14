@@ -14,7 +14,7 @@ const (
 	DefaultBlockMaxGas      = 400000000
 	DefaultBlockMaxSize     = 500000
 	MinAcceptedBlockMaxSize = 100000
-	MinAcceptedBlockMaxGas  = 1000000
+	MinAcceptedBlockMaxGas  = 10000000
 	CommitLength            = 40
 )
 
