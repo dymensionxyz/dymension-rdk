@@ -40,6 +40,7 @@ func (k Keeper) SetSequencer(ctx sdk.Context, sequencer stakingtypes.Validator) 
 	store := ctx.KVStore(k.storeKey)
 	bz := stakingtypes.MustMarshalValidator(k.cdc, &sequencer)
 	store.Set(types.GetSequencerKey(sequencer.GetOperator()), bz)
+	k.MustSetSequencerByConsAddr(ctx, sequencer)
 }
 
 // DeleteSequencer delete the main record holding sequencer details
@@ -48,15 +49,13 @@ func (k Keeper) DeleteSequencer(ctx sdk.Context, sequencer stakingtypes.Validato
 	store.Delete(types.GetSequencerKey(sequencer.GetOperator()))
 }
 
-func (k Keeper) SetSequencerByConsAddr(ctx sdk.Context, sequencer stakingtypes.Validator) error {
+func (k Keeper) MustSetSequencerByConsAddr(ctx sdk.Context, sequencer stakingtypes.Validator) {
 	consAddr, err := sequencer.GetConsAddr()
 	if err != nil {
-		return err
+		panic(err)
 	}
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.GetSequencerByConsAddrKey(consAddr), sequencer.GetOperator())
-
-	return nil
 }
 
 // GetAllSequencers get the set of all sequencers with no limits, used during genesis dump
