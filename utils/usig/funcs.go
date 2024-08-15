@@ -1,8 +1,22 @@
 package usig
 
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+)
+
 // TODO: move this package to https://github.com/dymensionxyz/sdk-utils after we figure out sdk version mismatch
 
-func ED25519() {
+type AuthAccountKeeper interface {
+	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
+}
+
+func Foo(ctx sdk.Context, ak AuthAccountKeeper, addr sdk.AccAddress) bool {
+	acc := ak.GetAccount(ctx, addr)
+	acc.GetSequence() // TODO: is sequence necessary, is addr necessary?
+	acc.GetAccountNumber()
+	acc.GetAddress()
+	ctx.ChainID()
 }
 
 /*
@@ -42,6 +56,5 @@ Design
 			payload bz
 			chain id
 			accNum
-			seqNum
 		Then you know payload was signed by the pub key
 */

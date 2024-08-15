@@ -20,10 +20,20 @@ service Msg {
     rpc UpdateSequencer(MsgUpdateSequencer) returns (MsgUpdateSequencerResponse);
 }
 
+// PayloadToSign is marshalled and signed
+message PayloadToSign {
+    // PayloadApp is application specific signed data
+    bytes payload_app = 1;
+    // ChainId will be verified against processing chain
+    string chain_id = 2;
+    // AccountNumber is the auth account keeper account number, it is verified against the message creator
+    uint64 account_number = 3;
+}
+
 message KeyAndSig {
     google.protobuf.Any pub_key = 1;
 //    tendermint.crypto.PublicKey pub_key = 1 [(gogoproto.nullable) = false];
-    bytes signature = 2; // signature for some <payload, chain id, account number, account addr, sequence num>
+    bytes signature = 2; // signature for some <payload, chain id, account number, account addr, sequence num> // TODO: not seq num
 }
 
 message CreateSequencerPayload {
