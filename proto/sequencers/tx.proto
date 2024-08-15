@@ -6,7 +6,10 @@ import "cosmos/staking/v1beta1/staking.proto";
 import "types/tendermint/crypto/keys.proto";
 import "cosmos/msg/v1/msg.proto";
 
-
+// TODO: use sequencer object?
+// Sequencer - only the
+// cosmos.staking.v1beta1.Validator sequencer = 1
+// [ (gogoproto.nullable) = false ];
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 
@@ -16,31 +19,41 @@ service Msg {
     rpc UpdateSequencer(MsgUpdateSequencer) returns (MsgUpdateSequencerResponse);
 }
 
+message KeyAndSig {
+    tendermint.crypto.PublicKey pub_key = 1 [(gogoproto.nullable) = false];
+    bytes signature = 2; // signature for some <payload, chain id, account number, account addr, sequence num>
+}
+
+message CreateSequencerPayload {
+    string operator_addr = 1; // TODO: document
+}
 
 message MsgCreateSequencer {
-
-    tendermint.crypto.PublicKey pub_key = 1 [(gogoproto.nullable) = false];
-
-    optional MsgUpdateSequencer update = 2;
-
-    // TODO: need to make signer like this
     option (cosmos.msg.v1.signer) = "creator";
-    // creator is the bech32-encoded address of the sequencer sending the update
-    string creator = 3;
-
-    // TODO: also require operator addr? because the current store is using it as the lookup key
-
-    // TODO: use sequencer object?
-    // Sequencer - only the
-    // cosmos.staking.v1beta1.Validator sequencer = 1
-    // [ (gogoproto.nullable) = false ];
+    // Creator is the bech32-encoded address of the actor sending the update
+    string creator = 1;
+    // KeyAndSig has the cons key of the sequencer, as well as a sig over the payload and some replay protection metadata
+    KeyAndSig key_and_sig = 2;
+    // Payload - signature is in key and sig
+    CreateSequencerPayload payload = 3;
 }
 
 message MsgCreateSequencerResponse {
 
 }
 
+message UpdateSequencerPayload {
+    string reward_addr = 1;
+}
+
 message MsgUpdateSequencer {
+    option (cosmos.msg.v1.signer) = "creator";
+    // Creator is the bech32-encoded address of the actor sending the update
+    string creator = 1;
+    // KeyAndSig has the cons key of the sequencer, as well as a sig over the payload and some replay protection metadata
+    KeyAndSig key_and_sig = 2;
+    // Payload - signature is in key and sig
+    UpdateSequencerPayload payload = 3;
 }
 
 message MsgUpdateSequencerResponse {
