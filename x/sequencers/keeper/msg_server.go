@@ -43,6 +43,12 @@ var _ types.MsgServer = msgServer{}
 // CheckSig return true iff the key and sig contains a key and signature where the signature was produced by the key, and the signature
 // is over the account from the provided address, and the app payload data.
 func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
+	acc := k.authAccountKeeper.GetAccount(ctx, addr)
+	return k.checkSigAccNumber(ctx, acc.GetAccountNumber(), keyAndSig, payloadApp)
+}
+
+// a more easily testable helper for check sig
+func (k Keeper) checkSigAccNumber(ctx sdk.Context, acc uint64, keyAndSig types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
 	pubKey, ok := keyAndSig.PubKey.GetCachedValue().(cryptotypes.PubKey)
 	if !ok {
 		return false, errorsmod.WithType(errorsmod.Wrap(gerrc.ErrInvalidArgument, "could not assert cryptotypes pub key"), keyAndSig.PubKey.GetCachedValue())
@@ -53,12 +59,10 @@ func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig types.K
 		return false, err
 	}
 
-	acc := k.authAccountKeeper.GetAccount(ctx, addr)
-
 	payload := &types.PayloadToSign{
 		PayloadApp:    payloadAppBz,
 		ChainId:       ctx.ChainID(),
-		AccountNumber: acc.GetAccountNumber(),
+		AccountNumber: acc,
 	}
 
 	payloadBz, err := payload.Marshal()
