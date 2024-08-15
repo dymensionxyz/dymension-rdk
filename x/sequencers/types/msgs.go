@@ -6,6 +6,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
@@ -75,9 +76,14 @@ func (m *KeyAndSig) GetSdkPubKey() (cryptotypes.PubKey, error) {
 
 
 func (m *KeyAndSig) MustGetConsAddr() sdk.ConsAddress{
+
 	pk, err := m.GetSdkPubKey()
 	if err!=nil{
 		panic(err)
 	}
 	return pk.
+}
+
+func (m *KeyAndSig) Validator() stakingtypes.Validator{
+	return stakingtypes.Validator{ConsensusPubkey: m.PubKey}
 }

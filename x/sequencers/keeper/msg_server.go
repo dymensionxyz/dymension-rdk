@@ -25,6 +25,8 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	if !allow {
 		return nil, gerrc.ErrUnauthenticated
 	}
+
+	seq := stakingtypes.NewSequencer()
 	operAddr := msg.GetPayload().GetOperatorAddr()
 	_ = operAddr
 
