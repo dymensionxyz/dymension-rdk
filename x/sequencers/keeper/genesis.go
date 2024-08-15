@@ -8,50 +8,15 @@ import (
 )
 
 // InitGenesis initializes the sequencers module's state from a provided genesis state.
-// We return the for ValidatorUpdate only the sequencers set by dymint
+// We return the ValidatorUpdate set by init chain
 func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) []abci.ValidatorUpdate {
-	var updates []abci.ValidatorUpdate
 	k.SetParams(ctx, genState.Params)
 
-	operatorAddr, err := sdk.ValAddressFromBech32(genState.GenesisOperatorAddress)
-	if err != nil {
-		panic(err)
-	}
-
-	// get the sequencer we set on InitChain. and delete it as it's not needed in store anymore
-	seq, ok := k.GetSequencer(ctx, sdk.ValAddress(types.InitChainStubAddr))
-	if !ok {
-		panic("genesis sequencer not found")
-	}
-	k.DeleteSequencer(ctx, seq)
-
-	pubkey, err := seq.ConsPubKey()
-	if err != nil {
-		panic(err)
-	}
-	power := seq.ConsensusPower(sdk.DefaultPowerReduction)
-
-	sequencer, err := types.NewSequencer(operatorAddr, pubkey, power)
-	if err != nil {
-		panic(err)
-	}
-
-	k.SetSequencer(ctx, sequencer)
-	err = k.SetSequencerByConsAddr(ctx, sequencer)
-	if err != nil {
-		panic(err)
-	}
-
-	tmPubkey, err := seq.TmConsPublicKey()
-	if err != nil {
-		panic(err)
-	}
-	updateConsPubkey := abci.ValidatorUpdate{
-		PubKey: tmPubkey,
-		Power:  power,
-	}
-	updates = append(updates, updateConsPubkey)
-
+	var updates []abci.ValidatorUpdate
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.ValidatorUpdateKey)
+	k.cdc.MustUnmarshal(bz, &updates[0])
+	store.Delete(types.ValidatorUpdateKey)
 	return updates
 }
 
@@ -61,10 +26,8 @@ func (k *Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis.Params = k.GetParams(ctx)
 
 	sequencers := k.GetAllSequencers(ctx)
-	// other cases are not supported. will be handled by the sequencer switch feature
-	if len(sequencers) == 1 {
-		genesis.GenesisOperatorAddress = sequencers[0].OperatorAddress
-	}
+	// TODO:
+	_ = sequencers
 
 	return genesis
 }

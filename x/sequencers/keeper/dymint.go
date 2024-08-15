@@ -3,52 +3,19 @@ package keeper
 import (
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
-
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	tmcrypto "github.com/tendermint/tendermint/crypto/encoding"
 )
 
-// SetDymintSequencers sets the sequencers set by dymint on InitChain.
-// As currently we're using the abci InitChain, there are obstacle(s) we need to face, unlike when creating a validator:
-// 1. InitChain expected the validatorUpdate it gets in return to be the same as it sends
-// To overcome those obstacles, we do the following:
-//  1. Upon InitChain, call SetDymintSequencers and create a dummy sequencer object with the consensus pubkey and power we get from the validatorUpdate.
-//  2. Afterwards, upon initGenesis, we build a validator-like object where the operator address is the one we set in the genesis file and the
-//     consensus pubkey and power are the ones we set in the dummy sequencer object.
-//
-// At the end we delete the dummy sequencer object.
-func (k Keeper) SetDymintSequencers(ctx sdk.Context, sequencers []abci.ValidatorUpdate) {
-	if len := len(sequencers); len != 1 {
-		switch len {
-		case 0:
-			panic(types.ErrNoSequencerOnInitChain)
-		default:
-			panic(types.ErrMultipleDymintSequencers)
-		}
+// SetDymintValidatorUpdates  - ABCI expects the result of init genesis to return the same value as passed in InitChainer,
+// so we save it to return later.
+func (k Keeper) SetDymintValidatorUpdates(ctx sdk.Context, updates []abci.ValidatorUpdate) {
+	if len(updates) != 1 {
+		panic(errorsmod.Wrapf(gerrc.ErrOutOfRange, "expect 1 abci validator update: got: %d", len(updates)))
 	}
-	seq := sequencers[0]
-
-	tmkey, err := tmcrypto.PubKeyFromProto(seq.PubKey)
-	if err != nil {
-		panic(err)
-	}
-	pubKey, err := cryptocodec.FromTmPubKeyInterface(tmkey)
-	if err != nil {
-		panic(err)
-	}
-
-	// On InitChain we only have the consensus pubkey, so we set the operator address to a dummy value
-	sequencer, err := types.NewSequencer(sdk.ValAddress(types.InitChainStubAddr), pubKey, seq.Power)
-	if err != nil {
-		panic(err)
-	}
-
-	if _, err := sequencer.GetConsAddr(); err != nil {
-		panic(errorsmod.Wrap(err, "get cons addr"))
-	}
-
-	k.SetSequencer(ctx, sequencer)
+	u := updates[0]
+	k.cdc.MustMarshal(&u)
+	ctx.KVStore(k.storeKey).Set(types.ValidatorUpdateKey, k.cdc.MustMarshal(&u))
 }
