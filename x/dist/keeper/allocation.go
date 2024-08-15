@@ -31,25 +31,26 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	// calculate and pay proposer reward
 	proposer, found := k.seqKeeper.GetSequencerByConsAddr(ctx, blockProposer)
 	if !found {
-		logger.Error("failed to find the validator for this block. reward not allocated")
+		logger.Error("Finding the validator for this block. Reward not allocated.")
 	} else {
 		proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
 		proposerCoins, proposerRemainder := proposerReward.TruncateDecimal()
-
-		err := k.AllocateTokensToSequencer(ctx, proposer, proposerCoins)
-		if err != nil {
-			logger.Error("failed to reward proposer", "error", err, "proposer", proposer.GetOperator())
-		} else {
-			remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
-
-			// update outstanding rewards
-			ctx.EventManager().EmitEvent(
-				sdk.NewEvent(
-					disttypes.EventTypeDistSequencerRewards,
-					sdk.NewAttribute(sdk.AttributeKeyAmount, proposerCoins.String()),
-					sdk.NewAttribute(disttypes.AttributeKeySequencer, proposer.GetOperator().String()),
-				),
-			)
+		if !proposerCoins.IsZero() {
+			addr := sdk.AccAddress(proposer.GetOperator())
+			err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, proposerCoins)
+			if err != nil {
+				logger.Error("Send rewards to proposer.", "err", err, "proposer", proposer.GetOperator())
+			} else {
+				remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
+				// update outstanding rewards
+				ctx.EventManager().EmitEvent(
+					sdk.NewEvent(
+						disttypes.EventTypeDistSequencerRewards,
+						sdk.NewAttribute(sdk.AttributeKeyAmount, proposerCoins.String()),
+						sdk.NewAttribute(disttypes.AttributeKeySequencer, proposer.GetOperator().String()),
+					),
+				)
+			}
 		}
 	}
 
@@ -74,12 +75,4 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	/* ------------------------- fund the community pool ------------------------ */
 	feePool.CommunityPool = feePool.CommunityPool.Add(remainingFees...)
 	k.SetFeePool(ctx, feePool)
-}
-
-func (k Keeper) AllocateTokensToSequencer(ctx sdk.Context, val stakingtypes.ValidatorI, tokens sdk.Coins) error {
-	if tokens.IsZero() {
-		return nil
-	}
-	accAddr := sdk.AccAddress(val.GetOperator())
-	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, accAddr, tokens)
 }
