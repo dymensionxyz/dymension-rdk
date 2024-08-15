@@ -3,16 +3,13 @@ package keeper_test
 import (
 	"testing"
 
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	abci "github.com/tendermint/tendermint/abci/types"
-
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestEpochsInitAndExportGenesis(t *testing.T) {
+func TestInitAndExportGenesis(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
 
@@ -28,17 +25,6 @@ func TestEpochsInitAndExportGenesis(t *testing.T) {
 
 	// Test InitGenesis
 	genState.Params.HistoricalEntries = 100
-
-	// init dymint sequencer as expected for initGenesis
-	pubkey := utils.CreateTestPubKeys(1)[0]
-	tmPubkey, err := cryptocodec.ToTmProtoPublicKey(pubkey)
-	require.NoError(t, err)
-	dymintSeq := abci.ValidatorUpdate{
-		PubKey: tmPubkey,
-		Power:  1,
-	}
-
-	k.SetDymintSequencers(ctx, []abci.ValidatorUpdate{dymintSeq})
 
 	_ = k.InitGenesis(ctx, *genState)
 	assert.Equal(t, genState.Params, k.GetParams(ctx))
