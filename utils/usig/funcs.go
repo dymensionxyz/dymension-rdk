@@ -2,12 +2,15 @@ package usig
 
 // TODO: move this package to https://github.com/dymensionxyz/sdk-utils after we figure out sdk version mismatch
 
+func ED25519() {
+}
+
 /*
 Design
 	MsgCreate
 		creator (msg signer)
 		SignedPart
-		Update
+		optional Update
 		operator addr
 
 	MsgUpdate
