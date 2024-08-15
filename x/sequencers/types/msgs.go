@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	errorsmod "cosmossdk.io/errors"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
@@ -61,4 +62,22 @@ func (m *MsgUpdateSequencer) MustGetSigner() sdk.AccAddress {
 func (m *MsgUpdateSequencer) GetSigner() (sdk.AccAddress, error) {
 	addr, err := sdk.AccAddressFromBech32(m.Creator)
 	return addr, errorsmod.Wrap(err, "acc addr from bech32")
+}
+
+func (m *KeyAndSig) GetSdkPubKey() (cryptotypes.PubKey, error) {
+	c := m.PubKey.GetCachedValue()
+	pubKey, ok := c.(cryptotypes.PubKey)
+	if !ok {
+		return nil, errorsmod.WithType(errorsmod.Wrap(gerrc.ErrInvalidArgument, "assert cryptotypes pub key"), c)
+	}
+	return pubKey, nil
+}
+
+
+func (m *KeyAndSig) MustGetConsAddr() sdk.ConsAddress{
+	pk, err := m.GetSdkPubKey()
+	if err!=nil{
+		panic(err)
+	}
+	return pk.
 }
