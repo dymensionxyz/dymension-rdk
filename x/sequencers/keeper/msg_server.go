@@ -3,9 +3,12 @@ package keeper
 import (
 	"context"
 
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 type msgServer struct {
@@ -37,11 +40,19 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 var _ types.MsgServer = msgServer{}
 
+// CheckSig return true iff the key and sig contains a key and signature where the signature was produced by the key, and the signature
+// is over the account from the provided address, and the app payload data.
 func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
+	pubKey, ok := keyAndSig.PubKey.GetCachedValue().(cryptotypes.PubKey)
+	if !ok {
+		return false, errorsmod.WithType(errorsmod.Wrap(gerrc.ErrInvalidArgument, "could not assert cryptotypes pub key"), keyAndSig.PubKey.GetCachedValue())
+	}
+
 	payloadAppBz, err := payloadApp.Marshal()
 	if err != nil {
 		return false, err
 	}
+
 	acc := k.authAccountKeeper.GetAccount(ctx, addr)
 
 	payload := &types.PayloadToSign{
@@ -50,10 +61,13 @@ func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig types.K
 		AccountNumber: acc.GetAccountNumber(),
 	}
 
-	acc.GetSequence() // TODO: is sequence necessary, is addr necessary?
-	acc.GetAccountNumber()
-	acc.GetAddress()
-	ctx.ChainID()
+	payloadBz, err := payload.Marshal()
+	if err != nil {
+		return false, err
+	}
+
+	ok = pubKey.VerifySignature(payloadBz, keyAndSig.GetSignature())
+	return ok, nil
 }
 
 /*
