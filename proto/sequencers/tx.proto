@@ -3,6 +3,10 @@ package rollapp.sequencers.types;
 
 import "gogoproto/gogo.proto";
 import "cosmos/staking/v1beta1/staking.proto";
+import "types/tendermint/crypto/keys.proto";
+import "cosmos/msg/v1/msg.proto";
+
+
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 
@@ -14,9 +18,21 @@ service Msg {
 
 message MsgCreateSequencer {
 
+    tendermint.crypto.PublicKey pub_key = 1 [(gogoproto.nullable) = false];
+
+    optional MsgUpdateSequencer update = 2;
+
+    // TODO: need to make signer like this
+    option (cosmos.msg.v1.signer) = "creator";
+    // creator is the bech32-encoded address of the sequencer sending the update
+    string creator = 3;
+
+    // TODO: also require operator addr? because the current store is using it as the lookup key
+
+    // TODO: use sequencer object?
     // Sequencer - only the
-    cosmos.staking.v1beta1.Validator sequencer = 1
-    [ (gogoproto.nullable) = false ];
+    // cosmos.staking.v1beta1.Validator sequencer = 1
+    // [ (gogoproto.nullable) = false ];
 }
 
 message MsgCreateSequencerResponse {
@@ -24,7 +40,6 @@ message MsgCreateSequencerResponse {
 }
 
 message MsgUpdateSequencer {
-
 }
 
 message MsgUpdateSequencerResponse {
