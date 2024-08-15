@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -22,18 +23,24 @@ type StakingKeeper interface {
 	UnbondingTime(ctx sdk.Context) time.Duration
 }
 
+type AuthAccountKeeper interface {
+	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
+}
+
 var _ StakingKeeper = (*Keeper)(nil)
 
 type Keeper struct {
-	cdc        codec.BinaryCodec
-	storeKey   storetypes.StoreKey
-	paramstore paramtypes.Subspace
+	cdc               codec.BinaryCodec
+	storeKey          storetypes.StoreKey
+	paramstore        paramtypes.Subspace
+	authAccountKeeper AuthAccountKeeper
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
+	// TODO: auth account keeper
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
