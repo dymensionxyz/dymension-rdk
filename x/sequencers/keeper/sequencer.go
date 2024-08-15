@@ -6,7 +6,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
-// GetValidatorByConsAddr get a single validator by consensus address
+// GetValidatorByConsAddr get a single validator by consensus address - used for interface compat
 func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingtypes.Validator, found bool) {
 	return k.GetSequencerByConsAddr(ctx, consAddr)
 }
