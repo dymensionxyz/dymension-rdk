@@ -29,17 +29,16 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 
 	/* ---------------------------- Pay the proposer ---------------------------- */
 	// calculate and pay proposer reward
-	proposer, found := k.seqKeeper.GetSequencerByConsAddr(ctx, blockProposer)
+	addr, found := k.seqKeeper.GetRewardAddrByConsAddr(ctx, blockProposer)
 	if !found {
 		logger.Error("Finding the validator for this block. Reward not allocated.")
 	} else {
 		proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
 		proposerCoins, proposerRemainder := proposerReward.TruncateDecimal()
 		if !proposerCoins.IsZero() {
-			addr := sdk.AccAddress(proposer.GetOperator())
 			err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, proposerCoins)
 			if err != nil {
-				logger.Error("Send rewards to proposer.", "err", err, "proposer", proposer.GetOperator())
+				logger.Error("Send rewards to proposer.", "err", err, "proposer reward addr", addr)
 			} else {
 				remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
 				// update outstanding rewards
@@ -47,7 +46,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 					sdk.NewEvent(
 						disttypes.EventTypeDistSequencerRewards,
 						sdk.NewAttribute(sdk.AttributeKeyAmount, proposerCoins.String()),
-						sdk.NewAttribute(disttypes.AttributeKeySequencer, proposer.GetOperator().String()),
+						sdk.NewAttribute(disttypes.AttributeKeyRewardee, addr.String()),
 					),
 				)
 			}
