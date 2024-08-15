@@ -16,6 +16,7 @@ service Msg {
     rpc UpdateSequencer(MsgUpdateSequencer) returns (MsgUpdateSequencerResponse);
 }
 
+
 message MsgCreateSequencer {
 
     tendermint.crypto.PublicKey pub_key = 1 [(gogoproto.nullable) = false];
