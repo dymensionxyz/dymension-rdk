@@ -74,16 +74,14 @@ func (m *KeyAndSig) GetSdkPubKey() (cryptotypes.PubKey, error) {
 	return pubKey, nil
 }
 
-
-func (m *KeyAndSig) MustGetConsAddr() sdk.ConsAddress{
-
-	pk, err := m.GetSdkPubKey()
-	if err!=nil{
+func (m *KeyAndSig) MustGetConsAddr() sdk.ConsAddress {
+	addr, err := m.Validator().GetConsAddr()
+	if err != nil {
 		panic(err)
 	}
-	return pk.
+	return addr
 }
 
-func (m *KeyAndSig) Validator() stakingtypes.Validator{
+func (m *KeyAndSig) Validator() stakingtypes.Validator {
 	return stakingtypes.Validator{ConsensusPubkey: m.PubKey}
 }

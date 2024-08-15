@@ -5,7 +5,6 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
@@ -26,6 +25,8 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 		return nil, gerrc.ErrUnauthenticated
 	}
 
+	v := msg.GetKeyAndSig().Validator()
+	v.OperatorAddress
 	seq := stakingtypes.NewSequencer()
 	operAddr := msg.GetPayload().GetOperatorAddr()
 	_ = operAddr
@@ -64,8 +65,10 @@ var _ types.MsgServer = msgServer{}
 func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig *types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
 	acc := k.authAccountKeeper.GetAccount(ctx, addr)
 
-	pubKey, ok := keyAndSig.PubKey.GetCachedValue().(cryptotypes.PubKey)
-	if !ok {
+	v := keyAndSig.Validator()
+
+	pubKey, err := v.ConsPubKey()
+	if err != nil {
 		return false, errorsmod.WithType(errorsmod.Wrap(gerrc.ErrInvalidArgument, "could not assert cryptotypes pub key"), keyAndSig.PubKey.GetCachedValue())
 	}
 
@@ -85,6 +88,6 @@ func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig *types.
 		return false, err
 	}
 
-	ok = pubKey.VerifySignature(payloadBz, keyAndSig.GetSignature())
+	ok := pubKey.VerifySignature(payloadBz, keyAndSig.GetSignature())
 	return ok, nil
 }
