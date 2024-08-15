@@ -72,3 +72,24 @@ func (k Keeper) GetAllSequencers(ctx sdk.Context) (sequencers []stakingtypes.Val
 
 	return sequencers
 }
+
+// SetRewardAddr sets the address that rewards will be allocated to
+func (k Keeper) SetRewardAddr(ctx sdk.Context, sequencer stakingtypes.Validator, addr sdk.AccAddress) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GetSequencerRewardAddrKey(sequencer.GetOperator()), addr)
+}
+
+// GetRewardAddr gets the addr that the sequencer wants to allocate rewards to
+func (k Keeper) GetRewardAddr(ctx sdk.Context, operator sdk.ValAddress) (sdk.AccAddress, bool) {
+	store := ctx.KVStore(k.storeKey)
+	res := store.Get(types.GetSequencerRewardAddrKey(operator))
+	return res, res != nil
+}
+
+func (k Keeper) GetRewardAddrByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (sdk.AccAddress, bool) {
+	seq, ok := k.GetSequencerByConsAddr(ctx, consAddr)
+	if !ok {
+		return sdk.AccAddress{}, false
+	}
+	return k.GetRewardAddr(ctx, seq.GetOperator())
+}

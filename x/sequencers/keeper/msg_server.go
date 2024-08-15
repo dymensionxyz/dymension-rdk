@@ -14,6 +14,12 @@ type msgServer struct {
 	Keeper
 }
 
+// NewMsgServerImpl returns an implementation of the MsgServer interface
+// for the provided Keeper.
+func NewMsgServerImpl(keeper Keeper) types.MsgServer {
+	return &msgServer{Keeper: keeper}
+}
+
 func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	accAddr := msg.MustGetSigner()
@@ -26,13 +32,9 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	}
 
 	v := msg.GetKeyAndSig().Validator()
-	v.OperatorAddress
-	seq := stakingtypes.NewSequencer()
-	operAddr := msg.GetPayload().GetOperatorAddr()
-	_ = operAddr
-
-	// TODO implement me
-	panic("implement me")
+	v.OperatorAddress = msg.GetPayload().GetOperatorAddr()
+	m.SetSequencer(ctx, v)
+	return &types.MsgCreateSequencerResponse{}, nil
 }
 
 func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSequencer) (*types.MsgUpdateSequencerResponse, error) {
@@ -45,17 +47,16 @@ func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSe
 	if !allow {
 		return nil, gerrc.ErrUnauthenticated
 	}
-	rewardAddr := msg.GetPayload().GetRewardAddr()
-	_ = rewardAddr
-
-	// TODO implement me
-	panic("implement me")
-}
-
-// NewMsgServerImpl returns an implementation of the MsgServer interface
-// for the provided Keeper.
-func NewMsgServerImpl(keeper Keeper) types.MsgServer {
-	return &msgServer{Keeper: keeper}
+	consAddr, err := msg.GetKeyAndSig().Validator().GetConsAddr()
+	if err != nil {
+		panic(err) // it must be ok because we used it to check sig
+	}
+	seq, ok := m.GetSequencerByConsAddr(ctx, consAddr)
+	if !ok {
+		return nil, errorsmod.Wrap(gerrc.ErrNotFound, "sequencer by cons addr")
+	}
+	m.SetRewardAddr(ctx, seq, msg.MustRewardAccAddr())
+	return &types.MsgUpdateSequencerResponse{}, nil
 }
 
 var _ types.MsgServer = msgServer{}
