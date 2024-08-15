@@ -13,6 +13,7 @@ type msgServer struct {
 
 func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+	accAddr := msg.MustGetSigner()
 
 	// TODO implement me
 	panic("implement me")
