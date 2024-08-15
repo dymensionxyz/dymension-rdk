@@ -18,6 +18,15 @@ type msgServer struct {
 func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	accAddr := msg.MustGetSigner()
+	allow, err := m.CheckSig(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "check sig")
+	}
+	if !allow {
+		return nil, gerrc.ErrUnauthenticated
+	}
+	operAddr := msg.GetPayload().GetOperatorAddr()
+	_ = operAddr
 
 	// TODO implement me
 	panic("implement me")
@@ -25,8 +34,16 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 
 func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSequencer) (*types.MsgUpdateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	m.cdc.MustMarshal()
+	accAddr := msg.MustGetSigner()
+	allow, err := m.CheckSig(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "check sig")
+	}
+	if !allow {
+		return nil, gerrc.ErrUnauthenticated
+	}
+	rewardAddr := msg.GetPayload().GetRewardAddr()
+	_ = rewardAddr
 
 	// TODO implement me
 	panic("implement me")
@@ -42,13 +59,13 @@ var _ types.MsgServer = msgServer{}
 
 // CheckSig return true iff the key and sig contains a key and signature where the signature was produced by the key, and the signature
 // is over the account from the provided address, and the app payload data.
-func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
+func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig *types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
 	acc := k.authAccountKeeper.GetAccount(ctx, addr)
 	return k.checkSigAccNumber(ctx, acc.GetAccountNumber(), keyAndSig, payloadApp)
 }
 
 // a more easily testable helper for check sig
-func (k Keeper) checkSigAccNumber(ctx sdk.Context, acc uint64, keyAndSig types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
+func (k Keeper) checkSigAccNumber(ctx sdk.Context, acc uint64, keyAndSig *types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
 	pubKey, ok := keyAndSig.PubKey.GetCachedValue().(cryptotypes.PubKey)
 	if !ok {
 		return false, errorsmod.WithType(errorsmod.Wrap(gerrc.ErrInvalidArgument, "could not assert cryptotypes pub key"), keyAndSig.PubKey.GetCachedValue())
