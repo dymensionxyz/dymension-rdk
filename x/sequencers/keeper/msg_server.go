@@ -10,6 +10,8 @@ import (
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
+// TODO: emit events, cli, tests
+
 type msgServer struct {
 	Keeper
 }
