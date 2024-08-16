@@ -70,7 +70,7 @@ func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig *types.
 
 	pubKey, err := v.ConsPubKey()
 	if err != nil {
-		return false, errorsmod.WithType(errorsmod.Wrap(gerrc.ErrInvalidArgument, "could not assert cryptotypes pub key"), keyAndSig.PubKey.GetCachedValue())
+		return false, err
 	}
 
 	payloadAppBz, err := payloadApp.Marshal()
