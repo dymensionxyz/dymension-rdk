@@ -25,7 +25,7 @@ func (m *MsgCreateSequencer) ValidateBasic() error {
 	if _, err := m.Operator(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "operator")
 	}
-	// TODO implement me
+	// TODO implement me (move payload stuff to payload type)
 	return nil
 }
 
@@ -62,8 +62,11 @@ func (m *MsgUpdateSequencer) ValidateBasic() error {
 	if _, err := m.GetSigner(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer")
 	}
-	// TODO implement me
-	panic("implement me")
+	// TODO implement me (move payload stuff to payload type)
+	if _, err := sdk.AccAddressFromBech32(m.GetPayload().GetRewardAddr()); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward addr")
+	}
+	return nil
 }
 
 func (m *MsgUpdateSequencer) GetSigners() []sdk.AccAddress {

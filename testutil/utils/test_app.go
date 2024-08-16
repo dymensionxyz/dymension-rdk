@@ -66,6 +66,10 @@ var (
 	OperatorPK = secp256k1.GenPrivKey().PubKey()
 )
 
+func OperatorAddr() sdk.ValAddress {
+	return sdk.ValAddress(OperatorPK.Address())
+}
+
 func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.RawMessage) {
 	db := dbm.NewMemDB()
 
