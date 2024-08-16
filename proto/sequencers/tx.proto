@@ -20,7 +20,8 @@ service Msg {
     rpc UpdateSequencer(MsgUpdateSequencer) returns (MsgUpdateSequencerResponse);
 }
 
-// PayloadToSign is marshalled and signed
+// PayloadToSign is marshalled and signed. Note, this is not included in the message, but is used to generate
+// the signature which is included in the message, and to verify that signature on chain.
 message PayloadToSign {
     // PayloadApp is application specific signed data
     bytes payload_app = 1;
