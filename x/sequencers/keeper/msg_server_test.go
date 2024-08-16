@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	auth "github.com/cosmos/cosmos-sdk/x/auth/types"
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
@@ -20,6 +22,17 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 	msgServer := msgServer{*k}
 
 	wctx := sdk.WrapSDKContext(ctx)
+
+	creatorAccount := auth.NewBaseAccount(
+		sdk.MustAccAddressFromBech32("cosmos1r5sckdd808qvg7p8d0auaw896zcluqfd7djffp"),
+		nil,
+		42, // arbitrary
+		43, // arbitrary
+	)
+	app.AccountKeeper.SetAccount()
+
+	pk, err := cryptocodec.ToTmProtoPublicKey(utils.ProposerPK)
+	require.NoError(t, err)
 
 	_, err := msgServer.CreateSequencer(wctx, &types.MsgCreateSequencer{})
 	require.NoError(t, err)
