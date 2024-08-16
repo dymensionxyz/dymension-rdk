@@ -59,7 +59,11 @@ func NewCreateCmd() *cobra.Command {
 				return err
 			}
 
-			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+			var keyUID string
+			txf.Keybase().Sign(keyUID)
+
+			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
 		},
 	}
 

@@ -88,8 +88,7 @@ type CreatorAccount interface {
 type SigningData struct {
 	Account CreatorAccount
 	ChainID string
-	PubKey  cryptotypes.PubKey
-	PrivKey cryptotypes.PrivKey
+	Signer  func(msg []byte) ([]byte, cryptotypes.PubKey, error) // implemented with a wrapper around keyring
 }
 
 func BuildMsgCreateSequencer(
@@ -131,10 +130,12 @@ func createKeyAndSigAndCreator(
 		return nil, sdk.AccAddress{}, fmt.Errorf("create payload to sign: %w", err)
 	}
 
-	var sig []byte
-	// TODO: sign
+	sig, pubKey, err := signingData.Signer(toSign)
+	if err != nil {
+		return nil, sdk.AccAddress{}, fmt.Errorf("sign: %w", err)
+	}
 
-	pubKeyAny, err := codectypes.NewAnyWithValue(signingData.PubKey)
+	pubKeyAny, err := codectypes.NewAnyWithValue(pubKey)
 	if err != nil {
 		return nil, sdk.AccAddress{}, errorsmod.Wrap(err, "pubkey to any")
 	}
