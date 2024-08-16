@@ -6,6 +6,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -132,8 +133,13 @@ func createKeyAndSigAndCreator(
 	var sig []byte
 	// TODO: sign
 
+	pubKeyAny, err := codectypes.NewAnyWithValue(signingData.PubKey)
+	if err != nil {
+		return nil, sdk.AccAddress{}, errorsmod.Wrap(err, "pubkey to any")
+	}
+
 	return &KeyAndSig{
-		PubKey:    signingData.PubKey,
+		PubKey:    pubKeyAny,
 		Signature: sig,
 	}, signingData.Account.GetAddress(), nil
 }
