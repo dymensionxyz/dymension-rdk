@@ -47,7 +47,9 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 		signingData,
 		&types.CreateSequencerPayload{OperatorAddr: utils.OperatorPK.Address().String()},
 	)
+	require.NoError(t, err)
 
+	err = msgC.ValidateBasic()
 	require.NoError(t, err)
 
 	_, err = msgServer.CreateSequencer(wctx, msgC)

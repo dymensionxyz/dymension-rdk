@@ -22,8 +22,11 @@ func (m *MsgCreateSequencer) ValidateBasic() error {
 	if _, err := m.GetSigner(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer")
 	}
+	if _, err := m.Operator(); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "operator")
+	}
 	// TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (m *MsgCreateSequencer) GetSigners() []sdk.AccAddress {
@@ -41,6 +44,18 @@ func (m *MsgCreateSequencer) MustGetSigner() sdk.AccAddress {
 func (m *MsgCreateSequencer) GetSigner() (sdk.AccAddress, error) {
 	addr, err := sdk.AccAddressFromBech32(m.Creator)
 	return addr, errorsmod.Wrap(err, "acc addr from bech32")
+}
+
+func (m *MsgCreateSequencer) Operator() (sdk.ValAddress, error) {
+	return sdk.ValAddressFromBech32(m.GetPayload().GetOperatorAddr())
+}
+
+func (m *MsgCreateSequencer) MustOperator() sdk.ValAddress {
+	addr, err := m.Operator()
+	if err != nil {
+		panic(err)
+	}
+	return addr
 }
 
 func (m *MsgUpdateSequencer) ValidateBasic() error {

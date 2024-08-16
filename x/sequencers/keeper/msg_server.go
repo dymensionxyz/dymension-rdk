@@ -34,7 +34,7 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	}
 
 	v := msg.GetKeyAndSig().Validator()
-	v.OperatorAddress = msg.GetPayload().GetOperatorAddr() // TODO: check validate basic
+	v.OperatorAddress = msg.MustOperator().String() // checked in validate basic
 	m.SetSequencer(ctx, v)
 	return &types.MsgCreateSequencerResponse{}, nil
 }
