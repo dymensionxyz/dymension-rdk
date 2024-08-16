@@ -1,4 +1,4 @@
-package keeper
+package keeper_test
 
 import (
 	"testing"
@@ -9,6 +9,7 @@ import (
 	auth "github.com/cosmos/cosmos-sdk/x/auth/types"
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +18,7 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
 
-	msgServer := msgServer{*k}
+	msgServer := keeper.NewMsgServerImpl(*k)
 
 	wctx := sdk.WrapSDKContext(ctx)
 
