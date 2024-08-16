@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -30,7 +31,7 @@ func GetTxCmd() *cobra.Command {
 
 func NewCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create-sequencer ",
+		Use:   "create-sequencer [operator addr]",
 		Args:  cobra.ExactArgs(5),
 		Short: "Create a sequencer object, to claim rewards etc.",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -46,11 +47,16 @@ func NewCreateCmd() *cobra.Command {
 
 			var operatorAddr string
 
+			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+
+			var keyUID string
+
 			msg, err := types.BuildMsgCreateSequencer(types.SigningData{
 				Account: acc,
 				ChainID: clientCtx.ChainID,
-				PubKey:  nil,
-				PrivKey: nil,
+				Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
+					return txf.Keybase().Sign(keyUID, msg)
+				},
 			},
 				&types.CreateSequencerPayload{OperatorAddr: operatorAddr},
 			)
@@ -58,10 +64,6 @@ func NewCreateCmd() *cobra.Command {
 			if err = msg.ValidateBasic(); err != nil {
 				return err
 			}
-
-			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
-			var keyUID string
-			txf.Keybase().Sign(keyUID)
 
 			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
 		},
