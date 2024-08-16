@@ -34,11 +34,12 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 	privKey := ed25519.GenPrivKey()
 
 	signingData := types.SigningData{
-		Account: nil,
+		Account: creatorAccount,
 		ChainID: ctx.ChainID(),
 		Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
 			// TODO: actually sign
-			return nil, privKey.PubKey(), nil
+			bz, err := privKey.Sign(msg)
+			return bz, privKey.PubKey(), err
 		},
 	}
 

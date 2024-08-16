@@ -12,7 +12,7 @@ import (
 func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) []abci.ValidatorUpdate {
 	k.SetParams(ctx, genState.Params)
 
-	var updates []abci.ValidatorUpdate
+	updates := make([]abci.ValidatorUpdate, 1)
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.ValidatorUpdateKey)
 	k.cdc.MustUnmarshal(bz, &updates[0])

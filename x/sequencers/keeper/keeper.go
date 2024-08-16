@@ -40,7 +40,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
-	// TODO: auth account keeper
+	authAccountKeeper AuthAccountKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -48,9 +48,10 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		paramstore: ps,
+		cdc:               cdc,
+		storeKey:          storeKey,
+		paramstore:        ps,
+		authAccountKeeper: authAccountKeeper,
 	}
 }
 

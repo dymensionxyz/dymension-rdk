@@ -91,8 +91,7 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 
 	// setup for sequencer
 	seqGenesis := seqtypes.GenesisState{
-		Params:                 seqtypes.DefaultParams(),
-		GenesisOperatorAddress: sdk.ValAddress(OperatorPK.Address()).String(),
+		Params: seqtypes.DefaultParams(),
 	}
 	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
 
@@ -125,8 +124,7 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 	app, genesisState := setup(true, 5)
 
 	seqGenesis := seqtypes.GenesisState{
-		Params:                 seqtypes.DefaultParams(),
-		GenesisOperatorAddress: sdk.ValAddress(OperatorPK.Address()).String(),
+		Params: seqtypes.DefaultParams(),
 	}
 	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
 

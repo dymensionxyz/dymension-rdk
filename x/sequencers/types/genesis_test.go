@@ -3,16 +3,13 @@ package types_test
 import (
 	"testing"
 
-	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/require"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func TestGenesisState_Validate(t *testing.T) {
-	pk := ed25519.GenPrivKey().PubKey()
+// TODO: check
 
+func TestGenesisState_Validate(t *testing.T) {
 	for _, tc := range []struct {
 		desc     string
 		genState types.GenesisState
@@ -21,8 +18,7 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			desc: "valid",
 			genState: types.GenesisState{
-				Params:                 types.DefaultParams(),
-				GenesisOperatorAddress: sdk.ValAddress(pk.Address()).String(),
+				Params: types.DefaultParams(),
 			},
 			valid: true,
 		},
@@ -34,8 +30,7 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			desc: "not a val address",
 			genState: types.GenesisState{
-				Params:                 types.DefaultParams(),
-				GenesisOperatorAddress: sdk.AccAddress(pk.Address()).String(),
+				Params: types.DefaultParams(),
 			},
 			valid: false,
 		},

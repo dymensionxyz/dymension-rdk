@@ -20,7 +20,6 @@ func TestInitAndExportGenesis(t *testing.T) {
 	require.NotEmpty(t, expectedOperator)
 
 	genState := k.ExportGenesis(ctx)
-	assert.Equal(t, expectedOperator, genState.GenesisOperatorAddress)
 	assert.Equal(t, params, genState.Params)
 
 	// Test InitGenesis
