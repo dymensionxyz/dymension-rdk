@@ -32,7 +32,7 @@ func NewCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create-sequencer ",
 		Args:  cobra.ExactArgs(5),
-		Short: "Create a gas tank",
+		Short: "Create a sequencer object, to claim rewards etc.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -44,7 +44,16 @@ func NewCreateCmd() *cobra.Command {
 				return fmt.Errorf("get account: %w", err)
 			}
 
-			msg := types.MsgCreateSequencer{}.Build(acc, clientCtx.ChainID)
+			var operatorAddr string
+
+			msg, err := types.BuildMsgCreateSequencer(types.SigningData{
+				Account: acc,
+				ChainID: clientCtx.ChainID,
+				PubKey:  nil,
+				PrivKey: nil,
+			},
+				&types.CreateSequencerPayload{OperatorAddr: operatorAddr},
+			)
 
 			if err = msg.ValidateBasic(); err != nil {
 				return err
