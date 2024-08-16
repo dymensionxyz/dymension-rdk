@@ -5,6 +5,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	auth "github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
@@ -74,4 +75,13 @@ func (m *MsgUpdateSequencer) MustRewardAccAddr() sdk.AccAddress {
 // for the public key.
 func (m *KeyAndSig) Validator() stakingtypes.Validator {
 	return stakingtypes.Validator{ConsensusPubkey: m.PubKey}
+}
+
+// Build - a helper used to fill the data according to protocol
+func (m *MsgUpdateSequencer) Build(
+	creator auth.AccountI,
+	chainID string,
+) {
+	s := m.GetPayload().GetRewardAddr()
+	return sdk.MustAccAddressFromBech32(s)
 }
