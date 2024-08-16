@@ -22,8 +22,8 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	accAddr := msg.MustGetSigner()
-	allow, err := m.CheckSig(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
+	accAddr := msg.MustGetSigner() // ensured in validate basic
+	allow, err := m.IsSigned(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "check sig")
 	}
@@ -40,7 +40,7 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSequencer) (*types.MsgUpdateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	accAddr := msg.MustGetSigner()
-	allow, err := m.CheckSig(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
+	allow, err := m.IsSigned(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "check sig")
 	}
@@ -55,20 +55,20 @@ func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSe
 	if !ok {
 		return nil, errorsmod.Wrap(gerrc.ErrNotFound, "sequencer by cons addr")
 	}
-	m.SetRewardAddr(ctx, seq, msg.MustRewardAccAddr())
+	m.SetRewardAddr(ctx, seq, msg.MustRewardAccAddr()) // We can Must because it's checked in validate basic
 	return &types.MsgUpdateSequencerResponse{}, nil
 }
 
 var _ types.MsgServer = msgServer{}
 
-// CheckSig return true iff the key and sig contains a key and signature where the signature was produced by the key, and the signature
+// IsSigned return true iff the key and sig contains a key and signature where the signature was produced by the key, and the signature
 // is over the account from the provided address, and the app payload data.
 //
 // The reasoning is as follows:
 // We know that the TX containing the Msg was signed by addr, because it has passed the sdk signature verification ante.
 // Therefore, if we require that the private key for the consensus address was used to sign off over this addr AND this chain ID then
 // we know that the owner of the private key really intended this payload to be included in this transaction, and it is not man in the middle or replay.
-func (k Keeper) CheckSig(ctx sdk.Context, addr sdk.AccAddress, keyAndSig *types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
+func (k Keeper) IsSigned(ctx sdk.Context, addr sdk.AccAddress, keyAndSig *types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
 	acc := k.authAccountKeeper.GetAccount(ctx, addr)
 
 	v := keyAndSig.Validator()

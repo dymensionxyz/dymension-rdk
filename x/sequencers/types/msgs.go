@@ -69,6 +69,9 @@ func (m *MsgUpdateSequencer) MustRewardAccAddr() sdk.AccAddress {
 	return sdk.MustAccAddressFromBech32(s)
 }
 
+// Validator is a convenience method - it returns a validator object which already
+// has implementations of various useful methods like obtaining various type conversions
+// for the public key.
 func (m *KeyAndSig) Validator() stakingtypes.Validator {
 	return stakingtypes.Validator{ConsensusPubkey: m.PubKey}
 }
