@@ -2,10 +2,12 @@ package types
 
 import (
 	"errors"
+	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
+	"github.com/cosmos/cosmos-sdk/codec"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	auth "github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
@@ -77,11 +79,67 @@ func (m *KeyAndSig) Validator() stakingtypes.Validator {
 	return stakingtypes.Validator{ConsensusPubkey: m.PubKey}
 }
 
-// Build - a helper used to fill the data according to protocol
-func (m *MsgUpdateSequencer) Build(
-	creator auth.AccountI,
-	chainID string,
-) {
-	s := m.GetPayload().GetRewardAddr()
-	return sdk.MustAccAddressFromBech32(s)
+type CreatorAccount interface {
+	GetAddress() sdk.AccAddress
+	GetAccountNumber() uint64
+}
+
+type SigningData struct {
+	Account CreatorAccount
+	ChainID string
+	PubKey  cryptotypes.PubKey
+}
+
+func BuildMsgCreateSequencer(
+	signingData SigningData,
+	payload *CreateSequencerPayload,
+) (*MsgCreateSequencer, error) {
+	keyAndSig, creator, err := createKeyAndSigAndCreator(signingData, payload)
+	if err != nil {
+		return nil, fmt.Errorf("create key and sig: %w", err)
+	}
+	return &MsgCreateSequencer{
+		Creator:   creator.String(),
+		KeyAndSig: keyAndSig,
+		Payload:   payload,
+	}, nil
+}
+
+func BuildMsgUpdateSequencer(
+	signingData SigningData,
+	payload *UpdateSequencerPayload,
+) (*MsgUpdateSequencer, error) {
+	keyAndSig, creator, err := createKeyAndSigAndCreator(signingData, payload)
+	if err != nil {
+		return nil, fmt.Errorf("create key and sig: %w", err)
+	}
+	return &MsgUpdateSequencer{
+		Creator:   creator.String(),
+		KeyAndSig: keyAndSig,
+		Payload:   payload,
+	}, nil
+}
+
+func createKeyAndSigAndCreator(
+	signingData SigningData,
+	payload codec.ProtoMarshaler,
+) (*KeyAndSig, sdk.AccAddress, error) {
+	payloadBz, err := payload.Marshal()
+	if err != nil {
+		return nil, sdk.AccAddress{}, err
+	}
+
+	toSign := &PayloadToSign{
+		PayloadApp:    payloadBz,
+		ChainId:       signingData.ChainID,
+		AccountNumber: signingData.Account.GetAccountNumber(),
+	}
+
+	var sig []byte
+	// TODO: sign
+
+	return &KeyAndSig{
+		PubKey:    signingData.PubKey,
+		Signature: sig,
+	}, signingData.Account.GetAddress(), nil
 }
