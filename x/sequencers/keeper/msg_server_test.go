@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	auth "github.com/cosmos/cosmos-sdk/x/auth/types"
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
@@ -28,6 +29,10 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 	)
 
 	app.AccountKeeper.SetAccount(ctx, creatorAccount)
+
+	privKey := ed25519.GenPrivKey()
+
+	pubKey := privKey.PubKey()
 
 	pk, err := cryptocodec.ToTmProtoPublicKey(utils.ProposerPK)
 	require.NoError(t, err)

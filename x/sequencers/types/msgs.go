@@ -89,6 +89,7 @@ type SigningData struct {
 	Account CreatorAccount
 	ChainID string
 	PubKey  cryptotypes.PubKey
+	PrivKey cryptotypes.PrivKey
 }
 
 func BuildMsgCreateSequencer(
