@@ -75,27 +75,19 @@ func (k Keeper) IsSigned(ctx sdk.Context, addr sdk.AccAddress, keyAndSig *types.
 
 	v := keyAndSig.Validator()
 
+	payloadBz, err := types.CreatePayloadToSign(
+		ctx.ChainID(),
+		acc.GetAccountNumber(),
+		payloadApp,
+	)
+	if err != nil {
+		return false, errorsmod.Wrap(err, "create payload to sign")
+	}
+
 	pubKey, err := v.ConsPubKey()
 	if err != nil {
-		return false, err
+		return false, errorsmod.Wrap(err, "get cons pubkey")
 	}
 
-	payloadAppBz, err := payloadApp.Marshal()
-	if err != nil {
-		return false, err
-	}
-
-	payload := &types.PayloadToSign{
-		PayloadApp:    payloadAppBz,
-		ChainId:       ctx.ChainID(),
-		AccountNumber: acc.GetAccountNumber(),
-	}
-
-	payloadBz, err := payload.Marshal()
-	if err != nil {
-		return false, err
-	}
-
-	ok := pubKey.VerifySignature(payloadBz, keyAndSig.GetSignature())
-	return ok, nil
+	return pubKey.VerifySignature(payloadBz, keyAndSig.GetSignature()), nil
 }

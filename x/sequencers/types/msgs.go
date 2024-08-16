@@ -120,19 +120,30 @@ func BuildMsgUpdateSequencer(
 	}, nil
 }
 
+func CreatePayloadToSign(
+	chainID string,
+	accountNumber uint64,
+	payload codec.ProtoMarshaler,
+) ([]byte, error) {
+	payloadBz, err := payload.Marshal()
+	if err != nil {
+		return nil, err
+	}
+	toSign := &PayloadToSign{
+		PayloadApp:    payloadBz,
+		ChainId:       chainID,
+		AccountNumber: accountNumber,
+	}
+	return toSign.Marshal()
+}
+
 func createKeyAndSigAndCreator(
 	signingData SigningData,
 	payload codec.ProtoMarshaler,
 ) (*KeyAndSig, sdk.AccAddress, error) {
-	payloadBz, err := payload.Marshal()
+	toSign, err := CreatePayloadToSign(signingData.ChainID, signingData.Account.GetAccountNumber(), payload)
 	if err != nil {
-		return nil, sdk.AccAddress{}, err
-	}
-
-	toSign := &PayloadToSign{
-		PayloadApp:    payloadBz,
-		ChainId:       signingData.ChainID,
-		AccountNumber: signingData.Account.GetAccountNumber(),
+		return nil, sdk.AccAddress{}, fmt.Errorf("create payload to sign: %w", err)
 	}
 
 	var sig []byte
