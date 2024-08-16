@@ -14,6 +14,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+/*
+Monday morning:
+	Need to test the cli and figure out how to add the keys to they keychain
+	Fix regressions
+	Genesis import export
+	Sad path tests
+	Validations
+*/
+
 func TestCreateUpdateHappyPath(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
