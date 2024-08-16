@@ -120,7 +120,27 @@ func BuildMsgUpdateSequencer(
 	}, nil
 }
 
-func CreatePayloadToSign(
+func createKeyAndSigAndCreator(
+	signingData SigningData,
+	payload codec.ProtoMarshaler,
+) (*KeyAndSig, sdk.AccAddress, error) {
+	toSign, err := CreateBytesToSign(signingData.ChainID, signingData.Account.GetAccountNumber(), payload)
+	if err != nil {
+		return nil, sdk.AccAddress{}, fmt.Errorf("create payload to sign: %w", err)
+	}
+
+	var sig []byte
+	// TODO: sign
+
+	return &KeyAndSig{
+		PubKey:    signingData.PubKey,
+		Signature: sig,
+	}, signingData.Account.GetAddress(), nil
+}
+
+// CreateBytesToSign creates the bytes which must be signed
+// Used to do the initial signing, and then also to verify signature of original data
+func CreateBytesToSign(
 	chainID string,
 	accountNumber uint64,
 	payload codec.ProtoMarshaler,
@@ -135,22 +155,4 @@ func CreatePayloadToSign(
 		AccountNumber: accountNumber,
 	}
 	return toSign.Marshal()
-}
-
-func createKeyAndSigAndCreator(
-	signingData SigningData,
-	payload codec.ProtoMarshaler,
-) (*KeyAndSig, sdk.AccAddress, error) {
-	toSign, err := CreatePayloadToSign(signingData.ChainID, signingData.Account.GetAccountNumber(), payload)
-	if err != nil {
-		return nil, sdk.AccAddress{}, fmt.Errorf("create payload to sign: %w", err)
-	}
-
-	var sig []byte
-	// TODO: sign
-
-	return &KeyAndSig{
-		PubKey:    signingData.PubKey,
-		Signature: sig,
-	}, signingData.Account.GetAddress(), nil
 }

@@ -75,13 +75,13 @@ func (k Keeper) IsSigned(ctx sdk.Context, addr sdk.AccAddress, keyAndSig *types.
 
 	v := keyAndSig.Validator()
 
-	payloadBz, err := types.CreatePayloadToSign(
+	payloadBz, err := types.CreateBytesToSign(
 		ctx.ChainID(),
 		acc.GetAccountNumber(),
 		payloadApp,
 	)
 	if err != nil {
-		return false, errorsmod.Wrap(err, "create payload to sign")
+		return false, errorsmod.Wrap(err, "create bytes to sign")
 	}
 
 	pubKey, err := v.ConsPubKey()
