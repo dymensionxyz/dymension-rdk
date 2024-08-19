@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/spf13/cobra"
 
@@ -48,11 +47,6 @@ Operator addr should be bech32 encoded.`)
 			if err != nil {
 				return err
 			}
-
-			clientCtx = clientCtx.WithKeyringOptions(func(options *keyring.Options) {
-				// options.SupportedAlgos = append(options.SupportedAlgos,)
-				_ = options.SupportedAlgos
-			})
 
 			acc, err := clientCtx.AccountRetriever.GetAccount(clientCtx, clientCtx.GetFromAddress())
 			if err != nil {
