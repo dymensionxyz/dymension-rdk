@@ -26,3 +26,16 @@ var (
 )
 
 // TODO: need to do more? see gasless
+
+var (
+	amino = codec.NewLegacyAmino()
+
+	ModuleCdc = codec.NewAminoCodec(amino)
+)
+
+func init() {
+	RegisterLegacyAminoCodec(amino)
+	cryptocodec.RegisterCrypto(amino)
+	// sdk.RegisterLegacyAminoCodec(amino)
+	amino.Seal()
+}

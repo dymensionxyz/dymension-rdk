@@ -75,10 +75,6 @@ Operator addr should be bech32 encoded.`)
 				&types.CreateSequencerPayload{OperatorAddr: operatorAddr},
 			)
 
-			if err = msg.ValidateBasic(); err != nil {
-				return fmt.Errorf("validate basic create sequencer msg: %w", err)
-			}
-
 			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
 		},
 	}
