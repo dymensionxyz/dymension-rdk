@@ -14,9 +14,23 @@ import (
 )
 
 var (
-	_ sdk.Msg = (*MsgCreateSequencer)(nil)
-	_ sdk.Msg = (*MsgUpdateSequencer)(nil)
+	_ sdk.Msg                            = (*MsgCreateSequencer)(nil)
+	_ sdk.Msg                            = (*MsgUpdateSequencer)(nil)
+	_ codectypes.UnpackInterfacesMessage = (*MsgCreateSequencer)(nil)
+	_ codectypes.UnpackInterfacesMessage = (*MsgUpdateSequencer)(nil)
 )
+
+func (m *MsgCreateSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	return m.GetKeyAndSig().UnpackInterfaces(unpacker)
+}
+
+func (m *MsgUpdateSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	return m.GetKeyAndSig().UnpackInterfaces(unpacker)
+}
+
+func (m *KeyAndSig) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	return unpacker.UnpackAny(m.PubKey, new(cryptotypes.PubKey))
+}
 
 func (m *KeyAndSig) Valid() error {
 	if m.GetPubKey() == nil {
