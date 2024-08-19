@@ -19,6 +19,12 @@ var (
 )
 
 func (m *KeyAndSig) Valid() error {
+	if m.GetPubKey() == nil {
+		return errors.New("pub key is nil")
+	}
+	if m.GetPubKey().GetCachedValue() == nil {
+		return errors.New("pub key cached value is nil")
+	}
 	v := stakingtypes.Validator{
 		ConsensusPubkey: m.GetPubKey(),
 	}
@@ -82,7 +88,7 @@ func (m *MsgUpdateSequencer) ValidateBasic() error {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward addr")
 	}
 	if err := m.KeyAndSig.Valid(); err != nil {
-		return err
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "key and sig")
 	}
 	return nil
 }
