@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/spf13/cobra"
 )
 
@@ -46,13 +49,31 @@ func UnsafeImportConsensusKeyCmd() *cobra.Command {
 				return fmt.Errorf("unmarshal key file: %w", err)
 			}
 
+			consAddr, err := f.consAddr()
+			if err != nil {
+				return fmt.Errorf("consensus address: %w", err)
+			}
+			buf := bufio.NewReader(clientCtx.Input)
+
+			ok, err := input.GetConfirmation(fmt.Sprintf("Correct consensus addr: <%s> ?", consAddr.String()), buf, cmd.ErrOrStderr())
+			if err != nil {
+				return fmt.Errorf("get confirmation: %w", err)
+			}
+			if !ok {
+				return errors.New("requires confirmation")
+			}
+
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			passphrase, err := input.GetPassword("Enter passphrase to encrypt your key:", inBuf)
 			if err != nil {
 				return err
 			}
 
-			return importConsensusKeyToKeyring(clientCtx.Keyring, f, keyUID, passphrase)
+			err = importConsensusKeyToKeyring(clientCtx.Keyring, f, keyUID, passphrase)
+			if err != nil {
+				return fmt.Errorf("import armored key to keyring: %w", err)
+			}
+			return nil
 		},
 	}
 }
@@ -75,6 +96,18 @@ func (c consensusKeyFile) privateKey() (ed25519.PrivKey, error) {
 		return ed25519.PrivKey{}, fmt.Errorf("decode base64: %w", err)
 	}
 	return ed25519.PrivKey{Key: bz}, nil
+}
+
+func (c consensusKeyFile) consAddr() (sdk.ConsAddress, error) {
+	pk, err := c.privateKey()
+	if err != nil {
+		return sdk.ConsAddress{}, fmt.Errorf("private key: %w", err)
+	}
+	v, err := stakingtypes.NewValidator(sdk.ValAddress{}, pk.PubKey(), stakingtypes.Description{})
+	if err != nil {
+		return sdk.ConsAddress{}, fmt.Errorf("internal conversion new validator: %w", err)
+	}
+	return v.GetConsAddr()
 }
 
 func importConsensusKeyToKeyring(k keyring.Keyring, f consensusKeyFile, keyUID, passphrase string) error {
