@@ -45,16 +45,11 @@ Operator addr should be bech32 encoded. You may supply a reward addr optionally.
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var keyUID string
-			keyUID = args[0]
-			var operatorAddr string
-			operatorAddr = args[1]
-
-			clientCtx, txf, signingData, err := signingData(cmd, keyUID)
+			clientCtx, txf, signingData, err := signingData(cmd, args[0])
 
 			msgs := make([]sdk.Msg, 1)
 
-			msg, err := types.BuildMsgCreateSequencer(signingData, &types.CreateSequencerPayload{OperatorAddr: operatorAddr})
+			msg, err := types.BuildMsgCreateSequencer(signingData, &types.CreateSequencerPayload{OperatorAddr: args[1]})
 			if err != nil {
 				return fmt.Errorf("build create seq msg: %w", err)
 			}
@@ -94,23 +89,14 @@ Operator addr should be bech32 encoded.`)
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var keyUID string
-			keyUID = args[0]
-			var rewardAddr string
-			rewardAddr = args[1]
+			clientCtx, txf, signingData, err := signingData(cmd, args[0])
 
-			clientCtx, txf, signingData, err := signingData(cmd, keyUID)
-
-			msgs := make([]sdk.Msg, 1)
-
-			msg, err := types.BuildMsgUpdateSequencer(signingData, &types.UpdateSequencerPayload{RewardAddr: rewardAddr})
+			msg, err := types.BuildMsgUpdateSequencer(signingData, &types.UpdateSequencerPayload{RewardAddr: args[1]})
 			if err != nil {
 				return fmt.Errorf("build update seq msg: %w", err)
 			}
 
-			msgs[0] = msg
-
-			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msgs...)
+			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
 		},
 	}
 
