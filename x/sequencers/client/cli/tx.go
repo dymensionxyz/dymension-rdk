@@ -26,6 +26,7 @@ func GetTxCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		NewCreateCmd(),
+		UnsafeImportKeyCommand(),
 	)
 
 	return cmd
@@ -38,8 +39,8 @@ func NewCreateCmd() *cobra.Command {
 Operator addr should be bech32 encoded.`)
 
 	cmd := &cobra.Command{
-		Use:   "create-sequencer [keyring uid] [operator addr]",
-		Args:  cobra.ExactArgs(2),
+		Use:   "create-sequencer [keyring uid] [operator addr] [priv key path]",
+		Args:  cobra.ExactArgs(3),
 		Short: short,
 		Long:  long,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -49,9 +50,9 @@ Operator addr should be bech32 encoded.`)
 			}
 
 			clientCtx = clientCtx.WithKeyringOptions(func(options *keyring.Options) {
-				options.SupportedAlgos = append(options.SupportedAlgos,)
-
-			}
+				// options.SupportedAlgos = append(options.SupportedAlgos,)
+				_ = options.SupportedAlgos
+			})
 
 			acc, err := clientCtx.AccountRetriever.GetAccount(clientCtx, clientCtx.GetFromAddress())
 			if err != nil {
@@ -64,8 +65,6 @@ Operator addr should be bech32 encoded.`)
 			keyUID = args[1]
 
 			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
-
-			txf.Keybase().
 
 			if _, err := txf.Keybase().Key(keyUID); err != nil {
 				return fmt.Errorf("check key is available: %w", err)
