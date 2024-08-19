@@ -2,6 +2,8 @@ package cli
 
 import (
 	"bufio"
+	"encoding/base64"
+	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/input"
@@ -14,7 +16,7 @@ import (
 // UnsafeImportKeyCommand imports private keys from a keyfile.
 func UnsafeImportKeyCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:   "unsafe-import-cons-key <name> <pk>",
+		Use:   "unsafe-import-cons-key <name> <pk file path>",
 		Short: "**UNSAFE** Import consensus private key into the local keybase",
 		Long:  "**UNSAFE** Import a hex-encoded consensus private key into the local keybase.",
 		Args:  cobra.ExactArgs(2),
@@ -47,4 +49,34 @@ func UnsafeImportKeyCommand() *cobra.Command {
 			return clientCtx.Keyring.ImportPrivKey(keyUID, armor, passphrase)
 		},
 	}
+}
+
+type ConsensusPrivateKeyFile struct {
+	Address string `json:"address,omitempty"`
+	PubKey  struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	} `json:"pub_key,omitempty"`
+	PrivKey struct {
+		Type  string `json:"type,omitempty"`
+		Value string `json:"value"`
+	} `json:"priv_key"`
+}
+
+func (c ConsensusPrivateKeyFile) PrivateKey() (ed25519.PrivKey, error) {
+	bz, err := base64.StdEncoding.DecodeString(c.PrivKey.Value)
+	if err != nil {
+		return ed25519.PrivKey{}, fmt.Errorf("decode base64: %w", err)
+	}
+	return ed25519.PrivKey{Key: bz}, nil
+}
+
+func Import(ctx client.Context, k keyring.Keyring, f ConsensusPrivateKeyFile, keyUID, passphrase string) error {
+	privKey, err := f.PrivateKey()
+	if err != nil {
+		return fmt.Errorf("private key from file content: %w", err)
+	}
+	armor := crypto.EncryptArmorPrivKey(&privKey, passphrase, "ed25519")
+
+	return ctx.Keyring.ImportPrivKey(keyUID, armor, passphrase)
 }
