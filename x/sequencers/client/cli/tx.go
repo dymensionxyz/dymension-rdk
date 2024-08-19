@@ -39,7 +39,7 @@ Operator addr should be bech32 encoded.`)
 
 	cmd := &cobra.Command{
 		Use:     "create-sequencer [keyring uid] [operator addr]",
-		Example: "create-sequencer foo cosmosvaloper1cjkfrsete98dhy60yz8menqtrnt8pxw57x00a7",
+		Example: "create-sequencer fookey ethmvaloper1jkhslh0k3jtdxfjxrtp0z07a06w3uk8w5yyw9u --from foouser",
 		Args:    cobra.ExactArgs(2),
 		Short:   short,
 		Long:    long,
@@ -54,15 +54,15 @@ Operator addr should be bech32 encoded.`)
 				return fmt.Errorf("get account: %w", err)
 			}
 
-			var operatorAddr string
-			operatorAddr = args[0]
 			var keyUID string
-			keyUID = args[1]
+			keyUID = args[0]
+			var operatorAddr string
+			operatorAddr = args[1]
 
 			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
 
 			if _, err := txf.Keybase().Key(keyUID); err != nil {
-				return fmt.Errorf("check key is available: %w", err)
+				return fmt.Errorf("check key is available: key name: %s: %w", keyUID, err)
 			}
 
 			msg, err := types.BuildMsgCreateSequencer(types.SigningData{
@@ -76,7 +76,7 @@ Operator addr should be bech32 encoded.`)
 			)
 
 			if err = msg.ValidateBasic(); err != nil {
-				return err
+				return fmt.Errorf("validate basic create sequencer msg: %w", err)
 			}
 
 			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)

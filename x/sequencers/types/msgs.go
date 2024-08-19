@@ -170,6 +170,9 @@ func createKeyAndSigAndCreator(
 	if err != nil {
 		return nil, sdk.AccAddress{}, fmt.Errorf("sign: %w", err)
 	}
+	if pubKey == nil {
+		return nil, sdk.AccAddress{}, errorsmod.Wrap(gerrc.ErrInvalidArgument, "signer returned nil pub key")
+	}
 
 	pubKeyAny, err := codectypes.NewAnyWithValue(pubKey)
 	if err != nil {
