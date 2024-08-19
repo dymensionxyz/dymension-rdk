@@ -9,9 +9,9 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
-// SetDymintValidatorUpdates  - ABCI expects the result of init genesis to return the same value as passed in InitChainer,
+// MustSetDymintValidatorUpdates  - ABCI expects the result of init genesis to return the same value as passed in InitChainer,
 // so we save it to return later.
-func (k Keeper) SetDymintValidatorUpdates(ctx sdk.Context, updates []abci.ValidatorUpdate) {
+func (k Keeper) MustSetDymintValidatorUpdates(ctx sdk.Context, updates []abci.ValidatorUpdate) {
 	if len(updates) != 1 {
 		panic(errorsmod.Wrapf(gerrc.ErrOutOfRange, "expect 1 abci validator update: got: %d", len(updates)))
 	}
