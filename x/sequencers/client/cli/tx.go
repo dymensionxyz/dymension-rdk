@@ -38,10 +38,11 @@ func NewCreateCmd() *cobra.Command {
 Operator addr should be bech32 encoded.`)
 
 	cmd := &cobra.Command{
-		Use:   "create-sequencer [keyring uid] [operator addr] [priv key path]",
-		Args:  cobra.ExactArgs(3),
-		Short: short,
-		Long:  long,
+		Use:     "create-sequencer [keyring uid] [operator addr]",
+		Example: "create-sequencer foo cosmosvaloper1cjkfrsete98dhy60yz8menqtrnt8pxw57x00a7",
+		Args:    cobra.ExactArgs(2),
+		Short:   short,
+		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
