@@ -71,12 +71,12 @@ func (c ConsensusPrivateKeyFile) PrivateKey() (ed25519.PrivKey, error) {
 	return ed25519.PrivKey{Key: bz}, nil
 }
 
-func Import(ctx client.Context, k keyring.Keyring, f ConsensusPrivateKeyFile, keyUID, passphrase string) error {
+func Import(k keyring.Keyring, f ConsensusPrivateKeyFile, keyUID, passphrase string) error {
 	privKey, err := f.PrivateKey()
 	if err != nil {
 		return fmt.Errorf("private key from file content: %w", err)
 	}
 	armor := crypto.EncryptArmorPrivKey(&privKey, passphrase, "ed25519")
 
-	return ctx.Keyring.ImportPrivKey(keyUID, armor, passphrase)
+	return k.ImportPrivKey(keyUID, armor, passphrase)
 }
