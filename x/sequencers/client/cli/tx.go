@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/spf13/cobra"
@@ -30,10 +31,16 @@ func GetTxCmd() *cobra.Command {
 }
 
 func NewCreateCmd() *cobra.Command {
+	short := "Create a sequencer object, to claim rewards etc."
+	long := strings.TrimSpace(short +
+		`Requires signature from consensus address public key. Specify consensus key in keyring uid.
+Operator addr should be bech32 encoded.`)
+
 	cmd := &cobra.Command{
-		Use:   "create-sequencer [operator addr]",
-		Args:  cobra.ExactArgs(5),
-		Short: "Create a sequencer object, to claim rewards etc.",
+		Use:   "create-sequencer [keyring uid][operator addr]",
+		Args:  cobra.ExactArgs(2),
+		Short: short,
+		Long:  long,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -46,10 +53,15 @@ func NewCreateCmd() *cobra.Command {
 			}
 
 			var operatorAddr string
+			operatorAddr = args[0]
+			var keyUID string
+			keyUID = args[1]
 
 			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
 
-			var keyUID string
+			if _, err := txf.Keybase().Key(keyUID); err != nil {
+				return fmt.Errorf("check key is available: %w", err)
+			}
 
 			msg, err := types.BuildMsgCreateSequencer(types.SigningData{
 				Account: acc,
