@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -18,7 +19,6 @@ func GetTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        "sequencer",
 		Short:                      fmt.Sprintf("%s transactions subcommands", "sequencer"),
-		DisableFlagParsing:         true, // TODO:?
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
 	}
@@ -36,7 +36,7 @@ func NewCreateCmd() *cobra.Command {
 	short := "Create a sequencer object, to claim rewards etc."
 	long := strings.TrimSpace(short +
 		`Requires signature from consensus address public key. Specify consensus key in keyring uid.
-Operator addr should be bech32 encoded.`)
+Operator addr should be bech32 encoded. You may supply a reward addr optionally.`)
 
 	cmd := &cobra.Command{
 		Use:     "create-sequencer [keyring uid] [operator addr]",
@@ -45,51 +45,47 @@ Operator addr should be bech32 encoded.`)
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			acc, err := clientCtx.AccountRetriever.GetAccount(clientCtx, clientCtx.GetFromAddress())
-			if err != nil {
-				return fmt.Errorf("get account: make sure it has funds: %s: %w", clientCtx.GetFromAddress(), err)
-			}
-
 			var keyUID string
 			keyUID = args[0]
 			var operatorAddr string
 			operatorAddr = args[1]
 
-			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+			clientCtx, txf, signingData, err := signingData(cmd, keyUID)
 
-			if _, err := txf.Keybase().Key(keyUID); err != nil {
-				return fmt.Errorf("check key is available: key name: %s: %w", keyUID, err)
+			msgs := make([]sdk.Msg, 1)
+
+			msg, err := types.BuildMsgCreateSequencer(signingData, &types.CreateSequencerPayload{OperatorAddr: operatorAddr})
+			if err != nil {
+				return fmt.Errorf("build create seq msg: %w", err)
 			}
 
-			msg, err := types.BuildMsgCreateSequencer(types.SigningData{
-				Account: acc,
-				ChainID: clientCtx.ChainID,
-				Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
-					return txf.Keybase().Sign(keyUID, msg)
-				},
-			},
-				&types.CreateSequencerPayload{OperatorAddr: operatorAddr},
-			)
+			msgs[0] = msg
 
-			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
+			rewardAddr, _ := cmd.Flags().GetString(FlagRewardAddr)
+			if rewardAddr != "" {
+				msgU, err := types.BuildMsgUpdateSequencer(signingData, &types.UpdateSequencerPayload{RewardAddr: rewardAddr})
+				if err != nil {
+					return fmt.Errorf("build update seq msg: %w", err)
+				}
+
+				msgs = append(msgs, msgU)
+			}
+
+			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msgs...)
 		},
 	}
 
+	cmd.Flags().String(FlagRewardAddr, "", "Address to receive rewards for each block proposed.")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
 }
 
 func NewUpdateCmd() *cobra.Command {
-	short := "Update a sequencer object, to set a new reward addr etc."
+	short := "Create a sequencer object, to claim rewards etc."
 	long := strings.TrimSpace(short +
 		`Requires signature from consensus address public key. Specify consensus key in keyring uid.
-`)
+Operator addr should be bech32 encoded.`)
 
 	cmd := &cobra.Command{
 		Use:     "update-sequencer [keyring uid] [reward addr]",
@@ -98,42 +94,53 @@ func NewUpdateCmd() *cobra.Command {
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
-			acc, err := clientCtx.AccountRetriever.GetAccount(clientCtx, clientCtx.GetFromAddress())
-			if err != nil {
-				return fmt.Errorf("get account: make sure it has funds: %s: %w", clientCtx.GetFromAddress(), err)
-			}
-
 			var keyUID string
 			keyUID = args[0]
-			var operatorAddr string
-			operatorAddr = args[1]
+			var rewardAddr string
+			rewardAddr = args[1]
 
-			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+			clientCtx, txf, signingData, err := signingData(cmd, keyUID)
 
-			if _, err := txf.Keybase().Key(keyUID); err != nil {
-				return fmt.Errorf("check key is available: key name: %s: %w", keyUID, err)
+			msgs := make([]sdk.Msg, 1)
+
+			msg, err := types.BuildMsgUpdateSequencer(signingData, &types.UpdateSequencerPayload{RewardAddr: rewardAddr})
+			if err != nil {
+				return fmt.Errorf("build update seq msg: %w", err)
 			}
 
-			msg, err := types.BuildMsgCreateSequencer(types.SigningData{
-				Account: acc,
-				ChainID: clientCtx.ChainID,
-				Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
-					return txf.Keybase().Sign(keyUID, msg)
-				},
-			},
-				&types.CreateSequencerPayload{OperatorAddr: operatorAddr},
-			)
+			msgs[0] = msg
 
-			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
+			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msgs...)
 		},
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
+}
+
+func signingData(cmd *cobra.Command, keyUID string) (client.Context, tx.Factory, types.SigningData, error) {
+	clientCtx, err := client.GetClientTxContext(cmd)
+	if err != nil {
+		return client.Context{}, tx.Factory{}, types.SigningData{}, err
+	}
+
+	acc, err := clientCtx.AccountRetriever.GetAccount(clientCtx, clientCtx.GetFromAddress())
+	if err != nil {
+		return client.Context{}, tx.Factory{}, types.SigningData{}, fmt.Errorf("get account: make sure it has funds: %s: %w", clientCtx.GetFromAddress(), err)
+	}
+
+	txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+
+	if _, err := txf.Keybase().Key(keyUID); err != nil {
+		return client.Context{}, tx.Factory{}, types.SigningData{}, fmt.Errorf("check key is available: key name: %s: %w", keyUID, err)
+	}
+
+	return clientCtx, txf, types.SigningData{
+		Account: acc,
+		ChainID: clientCtx.ChainID,
+		Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
+			return txf.Keybase().Sign(keyUID, msg)
+		},
+	}, nil
 }

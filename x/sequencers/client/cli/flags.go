@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+const (
+	FlagRewardAddr = "reward-addr"
+)
+
 func ParseStringSliceFromString(s string, separator string) ([]string, error) {
 	if s == "" {
 		return []string{}, nil
