@@ -10,14 +10,10 @@ import (
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
-// TODO: emit events, cli, tests
-
 type msgServer struct {
 	Keeper
 }
 
-// NewMsgServerImpl returns an implementation of the MsgServer interface
-// for the provided Keeper.
 func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
@@ -36,6 +32,18 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	v := msg.GetKeyAndSig().Validator()
 	v.OperatorAddress = msg.MustOperator().String() // checked in validate basic
 	m.SetSequencer(ctx, v)
+
+	consAddr, err := v.GetConsAddr()
+	if err != nil {
+		panic(err) // it must be ok because we used it to check sig
+	}
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventCreateSequencer,
+		sdk.NewAttribute(types.AttributeKeyConsAddr, consAddr.String()),
+		sdk.NewAttribute(types.AttributeKeyOperatorAddr, v.OperatorAddress),
+	))
+
 	return &types.MsgCreateSequencerResponse{}, nil
 }
 
@@ -58,6 +66,13 @@ func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSe
 		return nil, errorsmod.Wrap(gerrc.ErrNotFound, "sequencer by cons addr")
 	}
 	m.SetRewardAddr(ctx, seq, msg.MustRewardAccAddr()) // We can Must because it's checked in validate basic
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventUpdateSequencer,
+		sdk.NewAttribute(types.AttributeKeyConsAddr, consAddr.String()),
+		sdk.NewAttribute(types.AttributeKeyOperatorAddr, seq.OperatorAddress),
+		sdk.NewAttribute(types.AttributeKeyRewardAddr, msg.MustRewardAccAddr().String()),
+	))
 	return &types.MsgUpdateSequencerResponse{}, nil
 }
 
