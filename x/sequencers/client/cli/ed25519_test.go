@@ -33,8 +33,7 @@ func TestImport(t *testing.T) {
 		require.NoError(t, err)
 
 		msg := []byte("bar")
-		_, pk, err := k.Sign(uid, msg)
+		_, _, err = k.Sign(uid, msg)
 		require.NoError(t, err)
-		t.Log(pk.String())
 	}
 }
