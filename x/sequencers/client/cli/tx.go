@@ -25,7 +25,7 @@ func GetTxCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		NewCreateCmd(),
-		UnsafeImportKeyCommand(),
+		UnsafeImportConsensusKeyCmd(),
 	)
 
 	return cmd

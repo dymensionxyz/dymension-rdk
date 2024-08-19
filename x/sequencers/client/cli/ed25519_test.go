@@ -23,13 +23,13 @@ func TestImport(t *testing.T) {
 		cdc := simapp.MakeTestEncodingConfig().Codec
 		k := keyring.NewInMemory(cdc)
 
-		var f ConsensusPrivateKeyFile
+		var f consensusKeyFile
 		err := json.Unmarshal(fbz, &f)
 		require.NoError(t, err)
 
 		uid := "foo"
 		passphrase := "password9999"
-		err = Import(k, f, uid, passphrase)
+		err = importConsensusKeyToKeyring(k, f, uid, passphrase)
 		require.NoError(t, err)
 
 		msg := []byte("bar")
