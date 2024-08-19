@@ -47,6 +47,7 @@ Operator addr should be bech32 encoded.`)
 			if err != nil {
 				return err
 			}
+
 			clientCtx = clientCtx.WithKeyringOptions(func(options *keyring.Options) {
 				options.SupportedAlgos = append(options.SupportedAlgos,)
 
@@ -63,6 +64,8 @@ Operator addr should be bech32 encoded.`)
 			keyUID = args[1]
 
 			txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+
+			txf.Keybase().
 
 			if _, err := txf.Keybase().Key(keyUID); err != nil {
 				return fmt.Errorf("check key is available: %w", err)
