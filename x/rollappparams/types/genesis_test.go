@@ -37,6 +37,15 @@ func TestGenesisState(t *testing.T) {
 			expectedErr: true,
 		},
 		{
+			name: "commit not alphanumeric",
+			params: func() types.Params {
+				p := types.DefaultParams()
+				p.Commit = "74fad6a00713_ba62352c2451c6b7ab73571c515"
+				return p
+			},
+			expectedErr: true,
+		},
+		{
 			name: "block max gas too small",
 			params: func() types.Params {
 				p := types.DefaultParams()
