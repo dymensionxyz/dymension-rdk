@@ -21,6 +21,7 @@ Monday morning:
 	Genesis import export
 	Sad path tests
 	Validations
+	Events
 */
 
 func TestCreateUpdateHappyPath(t *testing.T) {
