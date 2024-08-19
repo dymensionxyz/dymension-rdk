@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	"github.com/spf13/cobra"
 
@@ -37,7 +38,7 @@ func NewCreateCmd() *cobra.Command {
 Operator addr should be bech32 encoded.`)
 
 	cmd := &cobra.Command{
-		Use:   "create-sequencer [keyring uid][operator addr]",
+		Use:   "create-sequencer [keyring uid] [operator addr]",
 		Args:  cobra.ExactArgs(2),
 		Short: short,
 		Long:  long,
@@ -45,6 +46,10 @@ Operator addr should be bech32 encoded.`)
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
+			}
+			clientCtx = clientCtx.WithKeyringOptions(func(options *keyring.Options) {
+				options.SupportedAlgos = append(options.SupportedAlgos,)
+
 			}
 
 			acc, err := clientCtx.AccountRetriever.GetAccount(clientCtx, clientCtx.GetFromAddress())
