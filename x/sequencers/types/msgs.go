@@ -18,6 +18,20 @@ var (
 	_ sdk.Msg = (*MsgUpdateSequencer)(nil)
 )
 
+func (m *KeyAndSig) Valid() error {
+	v := stakingtypes.Validator{
+		ConsensusPubkey: m.GetPubKey(),
+	}
+	tm, err := v.TmConsPublicKey()
+	if err != nil {
+		return errorsmod.Wrap(err, "tm cons pub key")
+	}
+	if tm.GetEd25519() == nil {
+		return errors.New("not ed5519")
+	}
+	return nil
+}
+
 func (m *MsgCreateSequencer) ValidateBasic() error {
 	if _, err := m.GetSigner(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer")
@@ -25,7 +39,9 @@ func (m *MsgCreateSequencer) ValidateBasic() error {
 	if _, err := m.Operator(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "operator")
 	}
-	// TODO implement me (move payload stuff to payload type)
+	if err := m.KeyAndSig.Valid(); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "key and sig")
+	}
 	return nil
 }
 
@@ -62,9 +78,11 @@ func (m *MsgUpdateSequencer) ValidateBasic() error {
 	if _, err := m.GetSigner(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer")
 	}
-	// TODO implement me (move payload stuff to payload type)
 	if _, err := sdk.AccAddressFromBech32(m.GetPayload().GetRewardAddr()); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward addr")
+	}
+	if err := m.KeyAndSig.Valid(); err != nil {
+		return err
 	}
 	return nil
 }
