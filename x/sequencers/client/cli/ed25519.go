@@ -53,9 +53,9 @@ func UnsafeImportConsensusKeyCmd() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("consensus address: %w", err)
 			}
-			buf := bufio.NewReader(clientCtx.Input)
 
-			ok, err := input.GetConfirmation(fmt.Sprintf("Correct consensus addr: <%s> ?", consAddr.String()), buf, cmd.ErrOrStderr())
+			buf := bufio.NewReader(clientCtx.Input)
+			ok, err := input.GetConfirmation(fmt.Sprintf("Is this the right consensus addr: <%s> ?", consAddr.String()), buf, cmd.ErrOrStderr())
 			if err != nil {
 				return fmt.Errorf("get confirmation: %w", err)
 			}
