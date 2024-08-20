@@ -62,8 +62,7 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 var (
 	ProposerPK       = simapp.CreateTestPubKeys(1)[0]
 	ProposerConsAddr = sdk.ConsAddress(ProposerPK.Address())
-
-	OperatorPK = secp256k1.GenPrivKey().PubKey()
+	OperatorPK       = secp256k1.GenPrivKey().PubKey()
 )
 
 func OperatorAddr() sdk.ValAddress {
