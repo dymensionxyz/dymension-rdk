@@ -33,15 +33,13 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 
 	app.AccountKeeper.SetAccount(ctx, creatorAccount)
 
-	privKey := ed25519.GenPrivKey()
-
 	signingData := types.SigningData{
 		Operator: utils.Proposer.GetOperator(),
 		Account:  creatorAccount,
 		ChainID:  ctx.ChainID(),
 		Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
-			bz, err := privKey.Sign(msg)
-			return bz, privKey.PubKey(), err
+			bz, err := utils.ConsPrivKey.Sign(msg)
+			return bz, utils.ConsPrivKey.PubKey(), err
 		},
 	}
 
@@ -57,19 +55,27 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 	_, err = msgServer.CreateSequencer(wctx, msgC)
 	require.NoError(t, err)
 
-	rewardAddr := sdk.MustAccAddressFromBech32("cosmos1wyqh3n50ecatjg4vww5crmtd0nmyzusnwckw4at4gluc0m5m477q4arfek")
+	for _, rewardAddr := range []sdk.AccAddress{
+		sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()),
+		sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()),
+	} {
 
-	msgU, err := types.BuildMsgUpdateSequencer(
-		signingData,
-		&types.UpdateSequencerPayload{RewardAddr: rewardAddr.String()},
-	)
-	require.NoError(t, err)
+		msgU, err := types.BuildMsgUpdateSequencer(
+			signingData,
+			&types.UpdateSequencerPayload{RewardAddr: rewardAddr.String()},
+		)
+		require.NoError(t, err)
 
-	err = msgU.ValidateBasic()
-	require.NoError(t, err)
+		err = msgU.ValidateBasic()
+		require.NoError(t, err)
 
-	_, err = msgServer.UpdateSequencer(wctx, msgU)
-	require.NoError(t, err)
+		_, err = msgServer.UpdateSequencer(wctx, msgU)
+		require.NoError(t, err)
+
+		got, ok := k.GetRewardAddrByConsAddr(ctx, utils.ProposerCons())
+		require.True(t, ok)
+		require.Equal(t, rewardAddr, got)
+	}
 }
 
 func TestValidateKey(t *testing.T) {

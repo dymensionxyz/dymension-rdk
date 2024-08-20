@@ -62,9 +62,9 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 }
 
 var (
-	operatorPrivKey = secp256k1.GenPrivKey()
-	consPrivKey     = ed25519.GenPrivKey()
-	Proposer, _     = stakingtypes.NewValidator(sdk.ValAddress(operatorPrivKey.PubKey().Address()), consPrivKey.PubKey(), stakingtypes.Description{})
+	OperatorPrivKey = secp256k1.GenPrivKey()
+	ConsPrivKey     = ed25519.GenPrivKey()
+	Proposer, _     = stakingtypes.NewValidator(sdk.ValAddress(OperatorPrivKey.PubKey().Address()), ConsPrivKey.PubKey(), stakingtypes.Description{})
 )
 
 func ProposerCons() sdk.ConsAddress {
