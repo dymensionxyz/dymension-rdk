@@ -39,7 +39,7 @@ func NewCreateCmd() *cobra.Command {
 Operator addr should be bech32 encoded. You may supply a reward addr optionally.`)
 
 	cmd := &cobra.Command{
-		Use:     "create-sequencer [keyring uid] [operator addr] <reward",
+		Use:     "create-sequencer [keyring uid] [operator addr] {reward addr}",
 		Example: "create-sequencer fookey ethmvaloper1jkhslh0k3jtdxfjxrtp0z07a06w3uk8w5yyw9u --from foouser --reward-addr",
 		Args:    cobra.ExactArgs(2),
 		Short:   short,
@@ -129,6 +129,7 @@ func signingData(cmd *cobra.Command, keyUID string) (client.Context, tx.Factory,
 	}
 
 	return clientCtx, txf, types.SigningData{
+		Operator:
 		Account: acc,
 		ChainID: clientCtx.ChainID,
 		Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
