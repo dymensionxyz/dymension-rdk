@@ -31,7 +31,8 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// PayloadToSign is marshalled and signed
+// PayloadToSign is marshalled and signed. Note, this is not included in the message, but is used to generate
+// the signature which is included in the message, and to verify that signature on chain.
 type PayloadToSign struct {
 	// PayloadApp is application specific signed data
 	PayloadApp []byte `protobuf:"bytes,1,opt,name=payload_app,json=payloadApp,proto3" json:"payload_app,omitempty"`
