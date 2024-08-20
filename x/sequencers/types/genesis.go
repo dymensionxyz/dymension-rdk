@@ -27,6 +27,9 @@ func (gs GenesisState) ValidateGenesis() error {
 		if s.Validator == nil {
 			return errorsmod.Wrap(gerrc.ErrInvalidArgument, "validator is nil")
 		}
+		if s.Validator.ConsensusPubkey == nil {
+			return errorsmod.Wrap(gerrc.ErrInvalidArgument, "validator cons key is nil")
+		}
 		if _, err := s.Validator.ConsPubKey(); err != nil {
 			return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "cons pub key")
 		}
@@ -40,19 +43,6 @@ func (gs GenesisState) ValidateGenesis() error {
 		}
 	}
 	return nil
-}
-
-// MustClone returns a deep copy - intended for tests
-func (gs GenesisState) MustClone() GenesisState {
-	bz, err := gs.Marshal()
-	if err != nil {
-		panic(err)
-	}
-	err = (&gs).Unmarshal(bz)
-	if err != nil {
-		panic(err)
-	}
-	return gs
 }
 
 // RewardAcc will try to parse an acc address from the sequencer reward addr assuming it is not empty string

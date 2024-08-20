@@ -5,7 +5,8 @@ import (
 
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	"github.com/stretchr/testify/assert"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,18 +14,16 @@ func TestInitAndExportGenesis(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
 
-	params := k.GetParams(ctx)
-	seqs := k.GetAllSequencers(ctx)
-	require.Equal(t, 1, len(seqs))
-	expectedOperator := seqs[0].GetOperator().String()
-	require.NotEmpty(t, expectedOperator)
-
-	genState := k.ExportGenesis(ctx)
-	assert.Equal(t, params, genState.Params)
-
-	// Test InitGenesis
-	genState.Params.HistoricalEntries = 100
-
-	_ = k.InitGenesis(ctx, *genState)
-	assert.Equal(t, genState.Params, k.GetParams(ctx))
+	exp := types.GenesisState{
+		Params: types.DefaultParams(),
+		Sequencers: []types.Sequencer{
+			{
+				Validator:  &utils.Proposer,
+				RewardAddr: utils.OperatorAcc().String(),
+			},
+		},
+	}
+	k.InitGenesis(ctx, exp)
+	got := k.ExportGenesis(ctx)
+	require.Equal(t, &exp, got)
 }
