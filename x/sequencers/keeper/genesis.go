@@ -12,6 +12,14 @@ import (
 func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) []abci.ValidatorUpdate {
 	k.SetParams(ctx, genState.Params)
 
+	for _, s := range genState.GetSequencers() {
+		k.SetSequencer(ctx, *s.Validator)
+		if s.RewardAddr != "" {
+			k.SetRewardAddr(ctx, *s.Validator, s.MustRewardAcc()) // already validated
+		}
+	}
+
+	// return (and delete) the update from init chain
 	updates := make([]abci.ValidatorUpdate, 1)
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.ValidatorUpdateKey)
