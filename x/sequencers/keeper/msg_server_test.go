@@ -16,16 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-/*
-Monday morning:
-	Need to test the cli and figure out how to add the keys to they keychain
-	Fix regressions
-	Genesis import export
-	Sad path tests
-	Validations
-	Events
-*/
-
 func TestCreateUpdateHappyPath(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
@@ -35,7 +25,7 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 	wctx := sdk.WrapSDKContext(ctx)
 
 	creatorAccount := auth.NewBaseAccount(
-		sdk.MustAccAddressFromBech32("cosmos1r5sckdd808qvg7p8d0auaw896zcluqfd7djffp"),
+		utils.OperatorAcc(),
 		nil,
 		42, // arbitrary
 		43, // arbitrary
@@ -46,21 +36,18 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 	privKey := ed25519.GenPrivKey()
 
 	signingData := types.SigningData{
-		Account: creatorAccount,
-		ChainID: ctx.ChainID(),
+		Operator: utils.Proposer.GetOperator(),
+		Account:  creatorAccount,
+		ChainID:  ctx.ChainID(),
 		Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
 			bz, err := privKey.Sign(msg)
 			return bz, privKey.PubKey(), err
 		},
 	}
 
-	oper := utils.Proposer.GetOperator().String()
-
-	t.Log(oper)
-
 	msgC, err := types.BuildMsgCreateSequencer(
 		signingData,
-		&types.CreateSequencerPayload{OperatorAddr: oper},
+		&types.CreateSequencerPayload{OperatorAddr: signingData.Operator.String()},
 	)
 	require.NoError(t, err)
 

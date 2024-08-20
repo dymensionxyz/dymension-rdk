@@ -151,26 +151,26 @@ func (m *KeyAndSig) Validator() stakingtypes.Validator {
 }
 
 type CreatorAccount interface {
-	GetAddress() sdk.AccAddress
 	GetAccountNumber() uint64
 }
 
 type SigningData struct {
-	Account CreatorAccount
-	ChainID string
-	Signer  func(msg []byte) ([]byte, cryptotypes.PubKey, error) // implemented with a wrapper around keyring
+	Operator sdk.ValAddress
+	Account  CreatorAccount
+	ChainID  string
+	Signer   func(msg []byte) ([]byte, cryptotypes.PubKey, error) // implemented with a wrapper around keyring
 }
 
 func BuildMsgCreateSequencer(
 	signingData SigningData,
 	payload *CreateSequencerPayload,
 ) (*MsgCreateSequencer, error) {
-	keyAndSig, signer, err := createKeyAndSig(signingData, payload)
+	keyAndSig, err := createKeyAndSig(signingData, payload)
 	if err != nil {
 		return nil, fmt.Errorf("create key and sig: %w", err)
 	}
 	return &MsgCreateSequencer{
-		Operator:  signer.String(),
+		Operator:  signingData.Operator.String(),
 		KeyAndSig: keyAndSig,
 		Payload:   payload,
 	}, nil
@@ -180,44 +180,41 @@ func BuildMsgUpdateSequencer(
 	signingData SigningData,
 	payload *UpdateSequencerPayload,
 ) (*MsgUpdateSequencer, error) {
-	keyAndSig, signer, err := createKeyAndSig(signingData, payload)
+	keyAndSig, err := createKeyAndSig(signingData, payload)
 	if err != nil {
 		return nil, fmt.Errorf("create key and sig: %w", err)
 	}
 	return &MsgUpdateSequencer{
-		Operator:  signer.String(),
+		Operator:  signingData.Operator.String(),
 		KeyAndSig: keyAndSig,
 		Payload:   payload,
 	}, nil
 }
 
 // utility to create the key and sig argument needed in messages, and returns the signing address
-func createKeyAndSig(
-	signingData SigningData,
-	payload codec.ProtoMarshaler,
-) (*KeyAndSig, sdk.AccAddress, error) {
+func createKeyAndSig(signingData SigningData, payload codec.ProtoMarshaler) (*KeyAndSig, error) {
 	toSign, err := CreateBytesToSign(signingData.ChainID, signingData.Account.GetAccountNumber(), payload)
 	if err != nil {
-		return nil, sdk.AccAddress{}, fmt.Errorf("create payload to sign: %w", err)
+		return nil, fmt.Errorf("create payload to sign: %w", err)
 	}
 
 	sig, pubKey, err := signingData.Signer(toSign)
 	if err != nil {
-		return nil, sdk.AccAddress{}, fmt.Errorf("sign: %w", err)
+		return nil, fmt.Errorf("sign: %w", err)
 	}
 	if pubKey == nil {
-		return nil, sdk.AccAddress{}, errorsmod.Wrap(gerrc.ErrInvalidArgument, "signer returned nil pub key")
+		return nil, errorsmod.Wrap(gerrc.ErrInvalidArgument, "signer returned nil pub key")
 	}
 
 	pubKeyAny, err := codectypes.NewAnyWithValue(pubKey)
 	if err != nil {
-		return nil, sdk.AccAddress{}, errorsmod.Wrap(err, "pubkey to any")
+		return nil, errorsmod.Wrap(err, "pubkey to any")
 	}
 
 	return &KeyAndSig{
 		PubKey:    pubKeyAny,
 		Signature: sig,
-	}, signingData.Account.GetAddress(), nil
+	}, nil
 }
 
 // CreateBytesToSign creates the bytes which must be signed
