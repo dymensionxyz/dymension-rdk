@@ -1,7 +1,6 @@
 package types
 
 import (
-	"encoding/json"
 	"errors"
 
 	errorsmod "cosmossdk.io/errors"
@@ -45,11 +44,11 @@ func (gs GenesisState) ValidateGenesis() error {
 
 // MustClone returns a deep copy - intended for tests
 func (gs GenesisState) MustClone() GenesisState {
-	bz, err := json.Marshal(gs)
+	bz, err := gs.Marshal()
 	if err != nil {
 		panic(err)
 	}
-	err = json.Unmarshal(bz, &gs)
+	err = (&gs).Unmarshal(bz)
 	if err != nil {
 		panic(err)
 	}
