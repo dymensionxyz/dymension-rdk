@@ -27,6 +27,12 @@ func (gs GenesisState) ValidateGenesis() error {
 		if s.Validator == nil {
 			return errorsmod.Wrap(gerrc.ErrInvalidArgument, "validator is nil")
 		}
+		if _, err := s.Validator.ConsPubKey(); err != nil {
+			return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "cons pub key")
+		}
+		if _, err := sdk.ValAddressFromBech32(s.Validator.OperatorAddress); err != nil {
+			return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "operator addr")
+		}
 		if s.RewardAddr != "" {
 			if _, err := s.RewardAcc(); err != nil {
 				return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward acc")
