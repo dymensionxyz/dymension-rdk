@@ -18,7 +18,6 @@ func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) []abc
 	if bz != nil {
 		k.cdc.MustUnmarshal(bz, &updates[0])
 	}
-	store.Delete(types.ValidatorUpdateKey)
 	return updates
 }
 
