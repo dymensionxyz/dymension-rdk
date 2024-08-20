@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"errors"
 
 	errorsmod "cosmossdk.io/errors"
@@ -40,6 +41,19 @@ func (gs GenesisState) ValidateGenesis() error {
 		}
 	}
 	return nil
+}
+
+// MustClone returns a deep copy - intended for tests
+func (gs GenesisState) MustClone() GenesisState {
+	bz, err := json.Marshal(gs)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(bz, &gs)
+	if err != nil {
+		panic(err)
+	}
+	return gs
 }
 
 // RewardAcc will try to parse an acc address from the sequencer reward addr assuming it is not empty string
