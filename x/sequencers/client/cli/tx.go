@@ -46,6 +46,9 @@ Operator addr should be bech32 encoded. You may supply a reward addr optionally.
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, txf, signingData, err := signingData(cmd, args[0])
+			if err != nil {
+				return err
+			}
 
 			msgs := make([]sdk.Msg, 1)
 
@@ -90,6 +93,9 @@ Operator addr should be bech32 encoded.`)
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, txf, signingData, err := signingData(cmd, args[0])
+			if err != nil {
+				return err
+			}
 
 			msg, err := types.BuildMsgUpdateSequencer(signingData, &types.UpdateSequencerPayload{RewardAddr: args[1]})
 			if err != nil {

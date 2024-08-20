@@ -32,11 +32,8 @@ func UnsafeImportConsensusKeyCmd() *cobra.Command {
 				return err
 			}
 
-			var keyUID string
-			keyUID = args[0]
-
-			var filePath string
-			filePath = args[1]
+			keyUID := args[0]
+			filePath := args[1]
 
 			file, err := os.ReadFile(filePath)
 			if err != nil {
