@@ -45,14 +45,16 @@ Operator addr should be bech32 encoded. You may supply a reward addr optionally.
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, txf, signingData, err := signingData(cmd, args[0])
+			ctx := client.GetClientContextFromCmd(cmd)
+
+			txf, signingData, err := signingData(ctx, cmd, args[0])
 			if err != nil {
 				return err
 			}
 
 			msgs := make([]sdk.Msg, 1)
 
-			msg, err := types.BuildMsgCreateSequencer(signingData, &types.CreateSequencerPayload{OperatorAddr: sdk.ValAddress(clientCtx.GetFromAddress()).String()})
+			msg, err := types.BuildMsgCreateSequencer(signingData, &types.CreateSequencerPayload{OperatorAddr: sdk.ValAddress(ctx.GetFromAddress()).String()})
 			if err != nil {
 				return fmt.Errorf("build create seq msg: %w", err)
 			}
@@ -69,7 +71,7 @@ Operator addr should be bech32 encoded. You may supply a reward addr optionally.
 				msgs = append(msgs, msgU)
 			}
 
-			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msgs...)
+			return tx.GenerateOrBroadcastTxWithFactory(ctx, txf, msgs...)
 		},
 	}
 
@@ -92,7 +94,9 @@ Operator addr should be bech32 encoded.`)
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, txf, signingData, err := signingData(cmd, args[0])
+			ctx := client.GetClientContextFromCmd(cmd)
+
+			txf, signingData, err := signingData(ctx, cmd, args[0])
 			if err != nil {
 				return err
 			}
@@ -102,7 +106,7 @@ Operator addr should be bech32 encoded.`)
 				return fmt.Errorf("build update seq msg: %w", err)
 			}
 
-			return tx.GenerateOrBroadcastTxWithFactory(clientCtx, txf, msg)
+			return tx.GenerateOrBroadcastTxWithFactory(ctx, txf, msg)
 		},
 	}
 
@@ -111,27 +115,24 @@ Operator addr should be bech32 encoded.`)
 	return cmd
 }
 
-func signingData(cmd *cobra.Command, keyUID string) (client.Context, tx.Factory, types.SigningData, error) {
-	clientCtx, err := client.GetClientTxContext(cmd)
+func signingData(ctx client.Context, cmd *cobra.Command, keyUID string) (tx.Factory, types.SigningData, error) {
+	addr := ctx.GetFromAddress()
+
+	acc, err := ctx.AccountRetriever.GetAccount(ctx, addr)
 	if err != nil {
-		return client.Context{}, tx.Factory{}, types.SigningData{}, err
+		return tx.Factory{}, types.SigningData{}, fmt.Errorf("get account: make sure it has funds: %s: %w", addr, err)
 	}
 
-	acc, err := clientCtx.AccountRetriever.GetAccount(clientCtx, clientCtx.GetFromAddress())
-	if err != nil {
-		return client.Context{}, tx.Factory{}, types.SigningData{}, fmt.Errorf("get account: make sure it has funds: %s: %w", clientCtx.GetFromAddress(), err)
-	}
-
-	txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+	txf := tx.NewFactoryCLI(ctx, cmd.Flags())
 
 	if _, err := txf.Keybase().Key(keyUID); err != nil {
-		return client.Context{}, tx.Factory{}, types.SigningData{}, fmt.Errorf("check key is available: key name: %s: %w", keyUID, err)
+		return tx.Factory{}, types.SigningData{}, fmt.Errorf("check key is available: key name: %s: %w", keyUID, err)
 	}
 
-	return clientCtx, txf, types.SigningData{
-		Operator: sdk.ValAddress(clientCtx.GetFromAddress()),
+	return txf, types.SigningData{
+		Operator: sdk.ValAddress(addr),
 		Account:  acc,
-		ChainID:  clientCtx.ChainID,
+		ChainID:  ctx.ChainID,
 		Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
 			return txf.Keybase().Sign(keyUID, msg)
 		},
