@@ -3,14 +3,8 @@ package rollapp.sequencers.types;
 
 import "gogoproto/gogo.proto";
 import "cosmos/staking/v1beta1/staking.proto";
-//import "types/tendermint/crypto/keys.proto";
 import "cosmos/msg/v1/msg.proto";
 import "google/protobuf/any.proto";
-
-// TODO: use sequencer object?
-// Sequencer - only the
-// cosmos.staking.v1beta1.Validator sequencer = 1
-// [ (gogoproto.nullable) = false ];
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 
@@ -32,13 +26,15 @@ message PayloadToSign {
 }
 
 message KeyAndSig {
+    // PubKey is a tendermint consensus pub key
     google.protobuf.Any pub_key = 1;
-//    tendermint.crypto.PublicKey pub_key = 1 [(gogoproto.nullable) = false];
-    bytes signature = 2; // signature for some <payload, chain id, account number, account addr, sequence num> // TODO: not seq num
+    // Signature is some signed payload=<app payload, chain id, account number> with priv key of pub key
+    bytes signature = 2;
 }
 
 message CreateSequencerPayload {
-    string operator_addr = 1; // TODO: document
+    // OperatorAddr is a bech32 encoded sdk val addr
+    string operator_addr = 1;
 }
 
 message MsgCreateSequencer {
@@ -56,6 +52,7 @@ message MsgCreateSequencerResponse {
 }
 
 message UpdateSequencerPayload {
+    // RewardAddr is a bech32 encoded sdk acc address
     string reward_addr = 1;
 }
 

@@ -20,7 +20,7 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	accAddr := msg.MustGetSigner() // ensured in validate basic
+	accAddr := msg.MustSigner() // ensured in validate basic
 	allow, err := m.IsSigned(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "check sig")
@@ -49,7 +49,7 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 
 func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSequencer) (*types.MsgUpdateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	accAddr := msg.MustGetSigner()
+	accAddr := msg.MustSigner()
 	allow, err := m.IsSigned(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "check sig")
@@ -65,13 +65,13 @@ func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSe
 	if !ok {
 		return nil, errorsmod.Wrap(gerrc.ErrNotFound, "sequencer by cons addr")
 	}
-	m.SetRewardAddr(ctx, seq, msg.MustRewardAccAddr()) // We can Must because it's checked in validate basic
+	m.SetRewardAddr(ctx, seq, msg.MustRewardAcc()) // We can Must because it's checked in validate basic
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventUpdateSequencer,
 		sdk.NewAttribute(types.AttributeKeyConsAddr, consAddr.String()),
 		sdk.NewAttribute(types.AttributeKeyOperatorAddr, seq.OperatorAddress),
-		sdk.NewAttribute(types.AttributeKeyRewardAddr, msg.MustRewardAccAddr().String()),
+		sdk.NewAttribute(types.AttributeKeyRewardAddr, msg.MustRewardAcc().String()),
 	))
 	return &types.MsgUpdateSequencerResponse{}, nil
 }

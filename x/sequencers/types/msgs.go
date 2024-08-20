@@ -53,31 +53,31 @@ func (m *KeyAndSig) Valid() error {
 }
 
 func (m *MsgCreateSequencer) ValidateBasic() error {
-	if _, err := m.GetSigner(); err != nil {
+	if _, err := m.Signer(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer")
-	}
-	if _, err := m.Operator(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "operator")
 	}
 	if err := m.KeyAndSig.Valid(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "key and sig")
+	}
+	if _, err := m.Operator(); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "operator")
 	}
 	return nil
 }
 
 func (m *MsgCreateSequencer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.MustGetSigner()}
+	return []sdk.AccAddress{m.MustSigner()}
 }
 
-func (m *MsgCreateSequencer) MustGetSigner() sdk.AccAddress {
-	addr, err := m.GetSigner()
+func (m *MsgCreateSequencer) MustSigner() sdk.AccAddress {
+	addr, err := m.Signer()
 	if err != nil {
 		panic(err)
 	}
 	return addr
 }
 
-func (m *MsgCreateSequencer) GetSigner() (sdk.AccAddress, error) {
+func (m *MsgCreateSequencer) Signer() (sdk.AccAddress, error) {
 	addr, err := sdk.AccAddressFromBech32(m.Creator)
 	return addr, errorsmod.Wrap(err, "acc addr from bech32")
 }
@@ -95,36 +95,40 @@ func (m *MsgCreateSequencer) MustOperator() sdk.ValAddress {
 }
 
 func (m *MsgUpdateSequencer) ValidateBasic() error {
-	if _, err := m.GetSigner(); err != nil {
+	if _, err := m.Signer(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer")
-	}
-	if _, err := sdk.AccAddressFromBech32(m.GetPayload().GetRewardAddr()); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward addr")
 	}
 	if err := m.KeyAndSig.Valid(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "key and sig")
+	}
+	if _, err := m.RewardAcc(); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward addr")
 	}
 	return nil
 }
 
 func (m *MsgUpdateSequencer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.MustGetSigner()}
+	return []sdk.AccAddress{m.MustSigner()}
 }
 
-func (m *MsgUpdateSequencer) MustGetSigner() sdk.AccAddress {
-	addr, err := m.GetSigner()
+func (m *MsgUpdateSequencer) MustSigner() sdk.AccAddress {
+	addr, err := m.Signer()
 	if err != nil {
 		panic(err)
 	}
 	return addr
 }
 
-func (m *MsgUpdateSequencer) GetSigner() (sdk.AccAddress, error) {
+func (m *MsgUpdateSequencer) Signer() (sdk.AccAddress, error) {
 	addr, err := sdk.AccAddressFromBech32(m.Creator)
 	return addr, errorsmod.Wrap(err, "acc addr from bech32")
 }
 
-func (m *MsgUpdateSequencer) MustRewardAccAddr() sdk.AccAddress {
+func (m *MsgUpdateSequencer) RewardAcc() (sdk.AccAddress, error) {
+	return sdk.AccAddressFromBech32(m.GetPayload().GetRewardAddr())
+}
+
+func (m *MsgUpdateSequencer) MustRewardAcc() sdk.AccAddress {
 	s := m.GetPayload().GetRewardAddr()
 	return sdk.MustAccAddressFromBech32(s)
 }
