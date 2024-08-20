@@ -54,7 +54,7 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 		},
 	}
 
-	oper := utils.OperatorAddr().String()
+	oper := utils.Proposer.GetOperator().String()
 
 	t.Log(oper)
 

@@ -110,7 +110,7 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// allocate tokens as if both had voted and second was proposer
-	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerCons())
 
 	/* ------------------------------ Test stakers ------------------------------ */
 	// outstanding rewards: 60% to val1 and 40% to val2
@@ -166,12 +166,12 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 		WithdrawAddrEnabled: false,
 	})
 	// allocate tokens as if both had voted and second was proposer
-	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerCons())
 
 	/* ------------------------- Test proposer rewards ------------------------ */
 	proposerFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", proposerReward)))
 
-	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(sdk.ValAddress(utils.OperatorPK.Address())))
+	currentBalance := app.BankKeeper.GetAllBalances(ctx, utils.OperatorAcc())
 	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, proposerFees.RoundInt()))
 	require.Equal(t, expectedCoins, currentBalance)
 
@@ -214,11 +214,11 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 		WithdrawAddrEnabled: false,
 	})
 	// allocate tokens as if both had voted and second was proposer
-	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerCons())
 
 	/* ------------------------- Test proposer rewards ------------------------ */
 	proposerFees := totalFeesDec.MulTruncate(sdk.MustNewDecFromStr(fmt.Sprintf("%f", proposerReward)))
-	currentBalance := app.BankKeeper.GetAllBalances(ctx, sdk.AccAddress(sdk.ValAddress(utils.OperatorPK.Address())))
+	currentBalance := app.BankKeeper.GetAllBalances(ctx, utils.OperatorAcc())
 	expectedCoins := sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, proposerFees.RoundInt()))
 	require.Equal(t, expectedCoins, currentBalance)
 
@@ -327,7 +327,7 @@ func TestAllocateTokensTruncation(t *testing.T) {
 			SignedLastBlock: true,
 		},
 	}
-	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerConsAddr)
+	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerCons())
 
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[0]).Rewards.IsValid())
 	require.True(t, app.DistrKeeper.GetValidatorOutstandingRewards(ctx, valAddrs[1]).Rewards.IsValid())

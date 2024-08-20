@@ -5,7 +5,10 @@ import (
 	"testing"
 	"time"
 
+	tmprotocrypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
+
 	"github.com/CosmWasm/wasmd/x/wasm"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -18,7 +21,6 @@ import (
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
 	"github.com/stretchr/testify/require"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -60,13 +62,23 @@ func (ao EmptyAppOptions) Get(o string) interface{} {
 }
 
 var (
-	ProposerPK       = simapp.CreateTestPubKeys(1)[0]
-	ProposerConsAddr = sdk.ConsAddress(ProposerPK.Address())
-	OperatorPK       = secp256k1.GenPrivKey().PubKey()
+	operatorPrivKey = secp256k1.GenPrivKey()
+	consPrivKey     = ed25519.GenPrivKey()
+	Proposer, _     = stakingtypes.NewValidator(sdk.ValAddress(operatorPrivKey.PubKey().Address()), consPrivKey.PubKey(), stakingtypes.Description{})
 )
 
-func OperatorAddr() sdk.ValAddress {
-	return sdk.ValAddress(OperatorPK.Address())
+func ProposerCons() sdk.ConsAddress {
+	ret, _ := Proposer.GetConsAddr()
+	return ret
+}
+
+func ProposerTMCons() tmprotocrypto.PublicKey {
+	ret, _ := Proposer.TmConsPublicKey()
+	return ret
+}
+
+func OperatorAcc() sdk.AccAddress {
+	return sdk.AccAddress(Proposer.GetOperator())
 }
 
 func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.RawMessage) {
@@ -87,9 +99,6 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.Raw
 func Setup(t *testing.T, isCheckTx bool) *app.App {
 	t.Helper()
 
-	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
-	require.NoError(t, err)
-
 	app, genesisState := setup(true, 5)
 
 	// setup for sequencer
@@ -109,7 +118,7 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 			ChainId:         "test_100-1",
 			ConsensusParams: DefaultConsensusParams,
 			Validators: []abci.ValidatorUpdate{
-				{PubKey: pk, Power: 1},
+				{PubKey: ProposerTMCons(), Power: 1},
 			},
 			AppStateBytes: stateBytes,
 			InitialHeight: 0,
@@ -181,9 +190,6 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 		Coins:   sdk.Coins{sdk.NewCoin(rollAppDenom, genModuleAmount)},
 	})
 
-	pk, err := cryptocodec.ToTmProtoPublicKey(ProposerPK)
-	require.NoError(t, err)
-
 	// set validators and delegations
 	stakingGenesis = *stakingtypes.NewGenesisState(stakingGenesis.Params, validators, delegations)
 	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&stakingGenesis)
@@ -201,7 +207,7 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 			ChainId:         chainID,
 			ConsensusParams: DefaultConsensusParams,
 			Validators: []abci.ValidatorUpdate{
-				{PubKey: pk, Power: 1},
+				{PubKey: ProposerTMCons(), Power: 1},
 			},
 			AppStateBytes: stateBytes,
 			InitialHeight: 0,
