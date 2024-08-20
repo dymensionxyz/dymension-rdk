@@ -38,9 +38,9 @@ message CreateSequencerPayload {
 }
 
 message MsgCreateSequencer {
-    option (cosmos.msg.v1.signer) = "creator";
-    // Creator is the bech32-encoded address of the actor sending the update
-    string creator = 1;
+    option (cosmos.msg.v1.signer) = "operator";
+    // Operator is the bech32-encoded address of the actor sending the update - must be val addr
+    string operator = 1;
     // KeyAndSig has the cons key of the sequencer, as well as a sig over the payload and some replay protection metadata
     KeyAndSig key_and_sig = 2;
     // Payload - signature is in key and sig
@@ -57,9 +57,9 @@ message UpdateSequencerPayload {
 }
 
 message MsgUpdateSequencer {
-    option (cosmos.msg.v1.signer) = "creator";
-    // Creator is the bech32-encoded address of the actor sending the update
-    string creator = 1;
+    option (cosmos.msg.v1.signer) = "operator";
+    // Operator is the bech32-encoded address of the actor sending the update - must be val addr
+    string operator = 1;
     // KeyAndSig has the cons key of the sequencer, as well as a sig over the payload and some replay protection metadata
     KeyAndSig key_and_sig = 2;
     // Payload - signature is in key and sig
