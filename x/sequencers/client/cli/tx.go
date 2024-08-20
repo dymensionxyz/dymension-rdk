@@ -45,7 +45,10 @@ Operator addr should be bech32 encoded. You may supply a reward addr optionally.
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := client.GetClientContextFromCmd(cmd)
+			ctx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
 
 			txf, signingData, err := signingData(ctx, cmd, args[0])
 			if err != nil {
@@ -94,7 +97,10 @@ Operator addr should be bech32 encoded.`)
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx := client.GetClientContextFromCmd(cmd)
+			ctx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
 
 			txf, signingData, err := signingData(ctx, cmd, args[0])
 			if err != nil {
@@ -120,7 +126,7 @@ func signingData(ctx client.Context, cmd *cobra.Command, keyUID string) (tx.Fact
 
 	acc, err := ctx.AccountRetriever.GetAccount(ctx, addr)
 	if err != nil {
-		return tx.Factory{}, types.SigningData{}, fmt.Errorf("get account: make sure it has funds: %s: %w", addr, err)
+		return tx.Factory{}, types.SigningData{}, fmt.Errorf("get account (make sure it has funds): %s: %w", addr, err)
 	}
 
 	txf := tx.NewFactoryCLI(ctx, cmd.Flags())
