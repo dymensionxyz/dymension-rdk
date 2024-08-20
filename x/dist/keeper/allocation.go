@@ -31,7 +31,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	// calculate and pay proposer reward
 	addr, found := k.seqKeeper.GetRewardAddrByConsAddr(ctx, blockProposer)
 	if !found {
-		logger.Error("Finding the validator for this block. Reward not allocated.")
+		logger.Error("Find the validator for this block. Reward not allocated.", "addr", blockProposer)
 	} else {
 		proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
 		proposerCoins, proposerRemainder := proposerReward.TruncateDecimal()
