@@ -97,8 +97,9 @@ func (m *PayloadToSign) GetAccountNumber() uint64 {
 }
 
 type KeyAndSig struct {
+	// PubKey is a tendermint consensus pub key
 	PubKey *types.Any `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3" json:"pub_key,omitempty"`
-	//    tendermint.crypto.PublicKey pub_key = 1 [(gogoproto.nullable) = false];
+	// Signature is some signed payload=<app payload, chain id, account number> with priv key of pub key
 	Signature []byte `protobuf:"bytes,2,opt,name=signature,proto3" json:"signature,omitempty"`
 }
 
@@ -150,6 +151,7 @@ func (m *KeyAndSig) GetSignature() []byte {
 }
 
 type CreateSequencerPayload struct {
+	// OperatorAddr is a bech32 encoded sdk val addr
 	OperatorAddr string `protobuf:"bytes,1,opt,name=operator_addr,json=operatorAddr,proto3" json:"operator_addr,omitempty"`
 }
 
@@ -293,6 +295,7 @@ func (m *MsgCreateSequencerResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgCreateSequencerResponse proto.InternalMessageInfo
 
 type UpdateSequencerPayload struct {
+	// RewardAddr is a bech32 encoded sdk acc address
 	RewardAddr string `protobuf:"bytes,1,opt,name=reward_addr,json=rewardAddr,proto3" json:"reward_addr,omitempty"`
 }
 
