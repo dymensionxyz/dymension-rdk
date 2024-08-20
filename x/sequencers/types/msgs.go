@@ -53,34 +53,32 @@ func (m *KeyAndSig) Valid() error {
 }
 
 func (m *MsgCreateSequencer) ValidateBasic() error {
-	if _, err := m.Signer(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer")
+	if _, err := m.AccAddr(); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
+	}
+	if m.Operator != m.GetPayload().GetOperatorAddr() {
+		return errorsmod.Wrap(gerrc.ErrInvalidArgument, "signer operator must match payload operator")
 	}
 	if err := m.KeyAndSig.Valid(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "key and sig")
-	}
-	operator, err := 
-	if _, err := m.OperatorAddr(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "operator")
 	}
 	return nil
 }
 
 func (m *MsgCreateSequencer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.MustSigner()}
+	return []sdk.AccAddress{m.MustAccAddr()}
 }
 
-func (m *MsgCreateSequencer) MustSigner() sdk.AccAddress {
-	addr, err := m.Signer()
+func (m *MsgCreateSequencer) AccAddr() (sdk.AccAddress, error) {
+	oper, err := m.OperatorAddr()
 	if err != nil {
-		panic(err)
+		return nil, errorsmod.Wrap(err, "operator addr")
 	}
-	return addr
+	return sdk.AccAddress(oper), nil
 }
 
-func (m *MsgCreateSequencer) Signer() (sdk.AccAddress, error) {
-	addr, err := sdk.AccAddressFromBech32(m.GetOperator())
-	return addr, errorsmod.Wrap(err, "acc addr from bech32")
+func (m *MsgCreateSequencer) MustAccAddr() sdk.AccAddress {
+	return sdk.AccAddress(m.MustOperatorAddr())
 }
 
 func (m *MsgCreateSequencer) OperatorAddr() (sdk.ValAddress, error) {
