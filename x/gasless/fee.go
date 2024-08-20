@@ -3,6 +3,7 @@
 package gasless
 
 import (
+	"errors"
 	"fmt"
 	"math"
 
@@ -155,7 +156,7 @@ func DeductFees(bankKeeper authtypes.BankKeeper, ctx sdk.Context, acc authtypes.
 
 	err := bankKeeper.SendCoinsFromAccountToModule(ctx, acc.GetAddress(), authtypes.FeeCollectorName, fees)
 	if err != nil {
-		return sdkerrors.Wrapf(errortypes.ErrInsufficientFunds, err.Error())
+		return errors.Join(errortypes.ErrInsufficientFunds, err)
 	}
 
 	return nil
