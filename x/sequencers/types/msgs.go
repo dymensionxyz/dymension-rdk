@@ -94,8 +94,8 @@ func (m *MsgCreateSequencer) MustOperatorAddr() sdk.ValAddress {
 }
 
 func (m *MsgUpdateSequencer) ValidateBasic() error {
-	if _, err := m.Signer(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer")
+	if _, err := m.AccAddr(); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
 	}
 	if err := m.KeyAndSig.Valid(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "key and sig")
@@ -107,20 +107,31 @@ func (m *MsgUpdateSequencer) ValidateBasic() error {
 }
 
 func (m *MsgUpdateSequencer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.MustSigner()}
+	return []sdk.AccAddress{m.MustAccAddr()}
 }
 
-func (m *MsgUpdateSequencer) MustSigner() sdk.AccAddress {
-	addr, err := m.Signer()
+func (m *MsgUpdateSequencer) AccAddr() (sdk.AccAddress, error) {
+	oper, err := m.OperatorAddr()
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "operator addr")
+	}
+	return sdk.AccAddress(oper), nil
+}
+
+func (m *MsgUpdateSequencer) MustAccAddr() sdk.AccAddress {
+	return sdk.AccAddress(m.MustOperatorAddr())
+}
+
+func (m *MsgUpdateSequencer) OperatorAddr() (sdk.ValAddress, error) {
+	return sdk.ValAddressFromBech32(m.GetOperator())
+}
+
+func (m *MsgUpdateSequencer) MustOperatorAddr() sdk.ValAddress {
+	addr, err := m.OperatorAddr()
 	if err != nil {
 		panic(err)
 	}
 	return addr
-}
-
-func (m *MsgUpdateSequencer) Signer() (sdk.AccAddress, error) {
-	addr, err := sdk.AccAddressFromBech32(m.Creator)
-	return addr, errorsmod.Wrap(err, "acc addr from bech32")
 }
 
 func (m *MsgUpdateSequencer) RewardAcc() (sdk.AccAddress, error) {
@@ -154,12 +165,12 @@ func BuildMsgCreateSequencer(
 	signingData SigningData,
 	payload *CreateSequencerPayload,
 ) (*MsgCreateSequencer, error) {
-	keyAndSig, creator, err := createKeyAndSigAndCreator(signingData, payload)
+	keyAndSig, signer, err := createKeyAndSig(signingData, payload)
 	if err != nil {
 		return nil, fmt.Errorf("create key and sig: %w", err)
 	}
 	return &MsgCreateSequencer{
-		Creator:   creator.String(),
+		Operator:  signer.String(),
 		KeyAndSig: keyAndSig,
 		Payload:   payload,
 	}, nil
@@ -169,18 +180,19 @@ func BuildMsgUpdateSequencer(
 	signingData SigningData,
 	payload *UpdateSequencerPayload,
 ) (*MsgUpdateSequencer, error) {
-	keyAndSig, creator, err := createKeyAndSigAndCreator(signingData, payload)
+	keyAndSig, signer, err := createKeyAndSig(signingData, payload)
 	if err != nil {
 		return nil, fmt.Errorf("create key and sig: %w", err)
 	}
 	return &MsgUpdateSequencer{
-		Creator:   creator.String(),
+		Operator:  signer.String(),
 		KeyAndSig: keyAndSig,
 		Payload:   payload,
 	}, nil
 }
 
-func createKeyAndSigAndCreator(
+// utility to create the key and sig argument needed in messages, and returns the signing address
+func createKeyAndSig(
 	signingData SigningData,
 	payload codec.ProtoMarshaler,
 ) (*KeyAndSig, sdk.AccAddress, error) {
