@@ -39,9 +39,9 @@ func NewCreateCmd() *cobra.Command {
 Operator addr should be bech32 encoded. You may supply a reward addr optionally.`)
 
 	cmd := &cobra.Command{
-		Use:     "create-sequencer [keyring uid] [operator addr] {reward addr}",
-		Example: "create-sequencer fookey ethmvaloper1jkhslh0k3jtdxfjxrtp0z07a06w3uk8w5yyw9u --from foouser --reward-addr",
-		Args:    cobra.ExactArgs(2),
+		Use:     "create-sequencer [keyring uid for cons key] {reward addr}",
+		Example: "create-sequencer fooCons --from fooOper --reward-addr ethm1cv7qcksr7cyxv9wgjn3tpxd74n2pffryq7ujw4",
+		Args:    cobra.ExactArgs(1),
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -52,7 +52,7 @@ Operator addr should be bech32 encoded. You may supply a reward addr optionally.
 
 			msgs := make([]sdk.Msg, 1)
 
-			msg, err := types.BuildMsgCreateSequencer(signingData, &types.CreateSequencerPayload{OperatorAddr: args[1]})
+			msg, err := types.BuildMsgCreateSequencer(signingData, &types.CreateSequencerPayload{OperatorAddr: sdk.ValAddress(clientCtx.GetFromAddress()).String()})
 			if err != nil {
 				return fmt.Errorf("build create seq msg: %w", err)
 			}
@@ -129,9 +129,9 @@ func signingData(cmd *cobra.Command, keyUID string) (client.Context, tx.Factory,
 	}
 
 	return clientCtx, txf, types.SigningData{
-		Operator:
-		Account: acc,
-		ChainID: clientCtx.ChainID,
+		Operator: sdk.ValAddress(clientCtx.GetFromAddress()),
+		Account:  acc,
+		ChainID:  clientCtx.ChainID,
 		Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
 			return txf.Keybase().Sign(keyUID, msg)
 		},
