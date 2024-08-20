@@ -25,9 +25,15 @@ func (k *Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Params = k.GetParams(ctx)
 
-	sequencers := k.GetAllSequencers(ctx)
-	// TODO:
-	_ = sequencers
+	sequencersAsValidators := k.GetAllSequencers(ctx)
+	genesis.Sequencers = make([]types.Sequencer, len(sequencersAsValidators))
+	for i, v := range sequencersAsValidators {
+		genesis.Sequencers[i].Validator = &v
+		rewardAddr, ok := k.GetRewardAddr(ctx, v.GetOperator())
+		if ok {
+			genesis.Sequencers[i].RewardAddr = rewardAddr.String()
+		}
+	}
 
 	return genesis
 }

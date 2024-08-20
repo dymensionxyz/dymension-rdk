@@ -10,7 +10,7 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 message Sequencer {
   // Validator is a convenient storage for e.g operator address and consensus pub key
   cosmos.staking.v1beta1.Validator validator = 1;
-  // RewardAddr is the sdk acc address where the sequencer has opted to receive rewards
+  // RewardAddr is the sdk acc address where the sequencer has opted to receive rewards. Empty if not set.
   string reward_addr = 2;
 }
 

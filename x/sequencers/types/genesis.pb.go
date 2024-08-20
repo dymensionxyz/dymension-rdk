@@ -27,7 +27,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 type Sequencer struct {
 	// Validator is a convenient storage for e.g operator address and consensus pub key
 	Validator *types.Validator `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator,omitempty"`
-	// RewardAddr is the sdk acc address where the sequencer has opted to receive rewards
+	// RewardAddr is the sdk acc address where the sequencer has opted to receive rewards. Empty if not set.
 	RewardAddr string `protobuf:"bytes,2,opt,name=reward_addr,json=rewardAddr,proto3" json:"reward_addr,omitempty"`
 }
 
