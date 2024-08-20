@@ -166,6 +166,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 		WithdrawAddrEnabled: false,
 	})
 	// allocate tokens as if both had voted and second was proposer
+	app.SequencersKeeper.SetRewardAddr(ctx, utils.Proposer, utils.OperatorAcc())
 	app.DistrKeeper.AllocateTokens(ctx, utils.ProposerCons())
 
 	/* ------------------------- Test proposer rewards ------------------------ */
