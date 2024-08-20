@@ -12,10 +12,10 @@ func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress
 }
 
 // GetSequencer get a single sequencer
-func (k Keeper) GetSequencer(ctx sdk.Context, addr sdk.ValAddress) (sequencer stakingtypes.Validator, found bool) {
+func (k Keeper) GetSequencer(ctx sdk.Context, operator sdk.ValAddress) (sequencer stakingtypes.Validator, found bool) {
 	store := ctx.KVStore(k.storeKey)
 
-	value := store.Get(types.GetSequencerKey(addr))
+	value := store.Get(types.GetSequencerKey(operator))
 	if value == nil {
 		return sequencer, false
 	}

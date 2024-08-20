@@ -28,9 +28,13 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	if !allow {
 		return nil, gerrc.ErrUnauthenticated
 	}
+	operator := msg.MustOperator() // checked in validate basic
+	if _, ok := m.GetSequencer(ctx, operator); ok {
+		return nil, gerrc.ErrAlreadyExists
+	}
 
 	v := msg.GetKeyAndSig().Validator()
-	v.OperatorAddress = msg.MustOperator().String() // checked in validate basic
+	v.OperatorAddress = operator.String()
 	m.SetSequencer(ctx, v)
 
 	consAddr, err := v.GetConsAddr()
