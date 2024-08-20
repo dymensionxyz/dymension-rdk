@@ -191,7 +191,7 @@ func BuildMsgUpdateSequencer(
 	}, nil
 }
 
-// utility to create the key and sig argument needed in messages, and returns the signing address
+// utility to create the key and sig argument needed in messages
 func createKeyAndSig(signingData SigningData, payload codec.ProtoMarshaler) (*KeyAndSig, error) {
 	toSign, err := CreateBytesToSign(signingData.ChainID, signingData.Account.GetAccountNumber(), payload)
 	if err != nil {

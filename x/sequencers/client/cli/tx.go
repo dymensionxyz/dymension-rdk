@@ -39,8 +39,8 @@ func NewCreateCmd() *cobra.Command {
 Operator addr should be bech32 encoded. You may supply a reward addr optionally.`)
 
 	cmd := &cobra.Command{
-		Use:     "create-sequencer [keyring uid for cons key] {reward addr}",
-		Example: "create-sequencer fooCons --from fooOper --reward-addr ethm1cv7qcksr7cyxv9wgjn3tpxd74n2pffryq7ujw4",
+		Use:     "create-sequencer [key name] {reward addr}",
+		Example: "create-sequencer fooCons --reward-addr ethm1cv7qcksr7cyxv9wgjn3tpxd74n2pffryq7ujw4  --from foo",
 		Args:    cobra.ExactArgs(1),
 		Short:   short,
 		Long:    long,
@@ -85,13 +85,13 @@ Operator addr should be bech32 encoded. You may supply a reward addr optionally.
 }
 
 func NewUpdateCmd() *cobra.Command {
-	short := "Create a sequencer object, to claim rewards etc."
+	short := "Update a sequencer object, to claim rewards etc."
 	long := strings.TrimSpace(short +
 		`Requires signature from consensus address public key. Specify consensus key in keyring uid.
 Operator addr should be bech32 encoded.`)
 
 	cmd := &cobra.Command{
-		Use:     "update-sequencer [keyring uid] [reward addr]",
+		Use:     "update-sequencer [key name] [reward addr]",
 		Example: "update-sequencer fookey ethm1lhk5cnfrhgh26w5r6qft36qerg4dclfev9nprc --from foouser",
 		Args:    cobra.ExactArgs(2),
 		Short:   short,
@@ -121,6 +121,7 @@ Operator addr should be bech32 encoded.`)
 	return cmd
 }
 
+// a utility to be DRYer
 func signingData(ctx client.Context, cmd *cobra.Command, keyUID string) (tx.Factory, types.SigningData, error) {
 	addr := ctx.GetFromAddress()
 

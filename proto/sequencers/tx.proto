@@ -32,8 +32,9 @@ message KeyAndSig {
     bytes signature = 2;
 }
 
+// Payload as separate type is convenient for signing
 message CreateSequencerPayload {
-    // OperatorAddr is a bech32 encoded sdk val addr
+    // OperatorAddr is a bech32 encoded sdk val addr. Must match operator field on msg.
     string operator_addr = 1;
 }
 
@@ -51,6 +52,7 @@ message MsgCreateSequencerResponse {
 
 }
 
+// Payload as separate type is convenient for signing
 message UpdateSequencerPayload {
     // RewardAddr is a bech32 encoded sdk acc address
     string reward_addr = 1;

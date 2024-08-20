@@ -18,7 +18,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// UnsafeImportConsensusKeyCmd imports private keys from a keyfile.
+// UnsafeImportConsensusKeyCmd imports private keys from a keyfile. This is 'unsafe' because it reads the private key into
+// memory temporarily.
 func UnsafeImportConsensusKeyCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:     "unsafe-import-cons-key <name> <private key file path>",
