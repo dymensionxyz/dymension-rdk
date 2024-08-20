@@ -15,9 +15,8 @@ func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) []abc
 	updates := make([]abci.ValidatorUpdate, 1)
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.ValidatorUpdateKey)
-	if bz != nil {
-		k.cdc.MustUnmarshal(bz, &updates[0])
-	}
+	k.cdc.MustUnmarshal(bz, &updates[0])
+	store.Delete(types.ValidatorUpdateKey)
 	return updates
 }
 
