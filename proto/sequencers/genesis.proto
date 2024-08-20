@@ -3,11 +3,25 @@ package rollapp.sequencers.types;
 
 import "gogoproto/gogo.proto";
 import "sequencers/params.proto";
+import "cosmos/staking/v1beta1/staking.proto";
+import "tendermint/abci/types.proto";
+
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 
+message Sequencer {
+  // Validator is a convenient storage for e.g operator address and consensus pub key
+  cosmos.staking.v1beta1.Validator validator = 1;
+  // RewardAddr is the sdk acc address where the sequencer has opted to receive rewards
+  string reward_addr = 2;
+}
+
 // GenesisState defines the module's genesis state.
 message GenesisState {
-  Params params = 1 [ (gogoproto.nullable) = false ];
+  Params params = 1 [(gogoproto.nullable) = false];
   reserved 2;
+  // Sequencers all stored sequencers
+  repeated Sequencer sequencers = 4 [(gogoproto.nullable) = false];
+  // InitChainUpdate is the update passed in init chain, which must be returned on the first init genesis
+  tendermint.abci.ValidatorUpdate init_chain_update = 5 [(gogoproto.nullable) = false];
 }
