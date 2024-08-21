@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
@@ -62,7 +61,7 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 			proxyApp := proxy.NewLocalClientCreator(app)
 			ctx.Logger.Info("starting block manager with ABCI in-process")
-			blockManager, err := liteBlockManager(context.Background(), cfg, nodeConfig, proxyApp)
+			blockManager, err := liteBlockManager(cfg, nodeConfig, proxyApp)
 			if err != nil {
 				return fmt.Errorf("start lite block manager: %w", err)
 			}
@@ -85,7 +84,7 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 	return cmd
 }
 
-func liteBlockManager(context context.Context, cfg *config.Config, dymintConf *dymintconf.NodeConfig, clientCreator proxy.ClientCreator) (*block.Manager, error) {
+func liteBlockManager(cfg *config.Config, dymintConf *dymintconf.NodeConfig, clientCreator proxy.ClientCreator) (*block.Manager, error) {
 
 	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
 
