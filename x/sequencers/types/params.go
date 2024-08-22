@@ -29,7 +29,7 @@ var (
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
-// ParamTable for sequencers module
+// ParamKeyTable for sequencers module
 func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
