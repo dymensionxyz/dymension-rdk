@@ -57,6 +57,19 @@ func (m *KeyAndSig) Validator() stakingtypes.Validator {
 func (m *KeyAndSig) Ok(ctx sdk.Context, acc auth.AccountI, payloadApp codec.ProtoMarshaler) error {
 	v := m.Validator()
 
+	/*
+		A simpler logic (1):
+		We have the operator signature over chain ID and account number
+		We have cons key signature over the operator signature
+		Therefore the cons key owner did intend to use this operator
+
+		A simpler logic (2):
+		We have the operator signature over chain ID and account number
+		We have cons key signature over the chain ID and account number
+		Therefore implicitly we have acceptance of the operator addr too
+		Therefore the cons key owner did intend to use this operator
+	*/
+
 	payloadBz, err := CreateBytesToSign(
 		ctx.ChainID(),
 		acc.GetAccountNumber(),
