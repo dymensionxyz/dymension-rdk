@@ -30,17 +30,15 @@ type AuthAccountKeeper interface {
 var _ StakingKeeper = (*Keeper)(nil)
 
 type Keeper struct {
-	cdc               codec.BinaryCodec
-	storeKey          storetypes.StoreKey
-	paramstore        paramtypes.Subspace
-	authAccountKeeper AuthAccountKeeper
+	cdc        codec.BinaryCodec
+	storeKey   storetypes.StoreKey
+	paramstore paramtypes.Subspace
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
-	authAccountKeeper AuthAccountKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -48,10 +46,9 @@ func NewKeeper(
 	}
 
 	return &Keeper{
-		cdc:               cdc,
-		storeKey:          storeKey,
-		paramstore:        ps,
-		authAccountKeeper: authAccountKeeper,
+		cdc:        cdc,
+		storeKey:   storeKey,
+		paramstore: ps,
 	}
 }
 

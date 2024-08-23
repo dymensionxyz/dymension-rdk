@@ -14,58 +14,26 @@ service Msg {
     rpc UpdateSequencer(MsgUpdateSequencer) returns (MsgUpdateSequencerResponse);
 }
 
-// PayloadToSign is marshalled and signed. Note, this is not included in the message, but is used to generate
-// the signature which is included in the message, and to verify that signature on chain.
-message PayloadToSign {
-    // PayloadApp is application specific signed data. E.g. CreateSequencerPayload
-    bytes payload_app = 1;
-    // ChainId will be verified against processing chain
-    string chain_id = 2;
-    // AccountNumber is the auth account keeper account number, it is verified against the message creator
-    uint64 account_number = 3;
-}
-
-message KeyAndSig {
-    // PubKey is a tendermint consensus pub key
-    google.protobuf.Any pub_key = 1;
-    // Signature is some signed payload=<app payload, chain id, account number> with priv key of pub key
-    bytes signature = 2;
-}
-
-// Payload as separate type is convenient for signing
-message CreateSequencerPayload {
-    // OperatorAddr is a bech32 encoded sdk val addr. Must match operator field on msg.
-    string operator_addr = 1;
-}
-
 message MsgCreateSequencer {
     option (cosmos.msg.v1.signer) = "operator";
     // Operator is the bech32-encoded address of the actor sending the update - must be val addr
     string operator = 1;
-    // KeyAndSig has the cons key of the sequencer, as well as a sig over the payload and some replay protection metadata
-    KeyAndSig key_and_sig = 2;
-    // Payload - signature is in key and sig
-    CreateSequencerPayload payload = 3;
+    // PubKey is a tendermint consensus pub key
+    google.protobuf.Any pub_key = 2;
+    // Signature is operator signed with the private key of pub_key
+    bytes signature = 3;
 }
 
 message MsgCreateSequencerResponse {
 
 }
 
-// Payload as separate type is convenient for signing
-message UpdateSequencerPayload {
-    // RewardAddr is a bech32 encoded sdk acc address
-    string reward_addr = 1;
-}
-
 message MsgUpdateSequencer {
     option (cosmos.msg.v1.signer) = "operator";
     // Operator is the bech32-encoded address of the actor sending the update - must be val addr
     string operator = 1;
-    // KeyAndSig has the cons key of the sequencer, as well as a sig over the payload and some replay protection metadata
-    KeyAndSig key_and_sig = 2;
-    // Payload - signature is in key and sig
-    UpdateSequencerPayload payload = 3;
+    // RewardAddr is a bech32 encoded sdk acc address
+    string reward_addr = 3;
 }
 
 message MsgUpdateSequencerResponse {

@@ -50,14 +50,21 @@ Operator addr should be bech32 encoded. You may supply a different reward addr o
 				return err
 			}
 
-			txf, signingData, err := signingData(ctx, cmd, args[0])
-			if err != nil {
-				return err
+			keyID := args[0]
+
+			addr := ctx.GetFromAddress()
+
+			txf := tx.NewFactoryCLI(ctx, cmd.Flags())
+
+			if _, err := txf.Keybase().Key(keyID); err != nil {
+				return fmt.Errorf("keybase key: %w", err)
 			}
 
 			msgs := make([]sdk.Msg, 1)
 
-			msg, err := types.BuildMsgCreateSequencer(signingData, &types.CreateSequencerPayload{OperatorAddr: sdk.ValAddress(ctx.GetFromAddress()).String()})
+			msg, err := types.BuildMsgCreateSequencer(func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
+				return txf.Keybase().Sign(keyID, msg)
+			}, sdk.ValAddress(addr))
 			if err != nil {
 				return fmt.Errorf("build create seq msg: %w", err)
 			}
@@ -68,9 +75,9 @@ Operator addr should be bech32 encoded. You may supply a different reward addr o
 			if rewardAddr == "" {
 				rewardAddr = ctx.GetFromAddress().String()
 			}
-			msgU, err := types.BuildMsgUpdateSequencer(signingData, &types.UpdateSequencerPayload{RewardAddr: rewardAddr})
-			if err != nil {
-				return fmt.Errorf("build update seq msg: %w", err)
+			msgU := &types.MsgUpdateSequencer{
+				Operator:   sdk.ValAddress(ctx.GetFromAddress()).String(),
+				RewardAddr: rewardAddr,
 			}
 
 			msgs = append(msgs, msgU)
@@ -92,9 +99,9 @@ func NewUpdateCmd() *cobra.Command {
 Operator addr should be bech32 encoded.`)
 
 	cmd := &cobra.Command{
-		Use:     "update-sequencer [key name] [reward addr]",
-		Example: "update-sequencer fookey ethm1lhk5cnfrhgh26w5r6qft36qerg4dclfev9nprc --from foouser",
-		Args:    cobra.ExactArgs(2),
+		Use:     "update-sequencer [reward addr]",
+		Example: "update-sequencer ethm1lhk5cnfrhgh26w5r6qft36qerg4dclfev9nprc --from foouser",
+		Args:    cobra.ExactArgs(1),
 		Short:   short,
 		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -103,46 +110,16 @@ Operator addr should be bech32 encoded.`)
 				return err
 			}
 
-			txf, signingData, err := signingData(ctx, cmd, args[0])
-			if err != nil {
-				return err
+			msg := &types.MsgUpdateSequencer{
+				Operator:   sdk.ValAddress(ctx.GetFromAddress()).String(),
+				RewardAddr: args[0],
 			}
 
-			msg, err := types.BuildMsgUpdateSequencer(signingData, &types.UpdateSequencerPayload{RewardAddr: args[1]})
-			if err != nil {
-				return fmt.Errorf("build update seq msg: %w", err)
-			}
-
-			return tx.GenerateOrBroadcastTxWithFactory(ctx, txf, msg)
+			return tx.GenerateOrBroadcastTxCLI(ctx, cmd.Flags(), msg)
 		},
 	}
 
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
-}
-
-// a utility to be DRYer
-func signingData(ctx client.Context, cmd *cobra.Command, keyUID string) (tx.Factory, types.SigningData, error) {
-	addr := ctx.GetFromAddress()
-
-	acc, err := ctx.AccountRetriever.GetAccount(ctx, addr)
-	if err != nil {
-		return tx.Factory{}, types.SigningData{}, fmt.Errorf("get account (make sure it has funds): %s: %w", addr, err)
-	}
-
-	txf := tx.NewFactoryCLI(ctx, cmd.Flags())
-
-	if _, err := txf.Keybase().Key(keyUID); err != nil {
-		return tx.Factory{}, types.SigningData{}, fmt.Errorf("check key is available: key name: %s: %w", keyUID, err)
-	}
-
-	return txf, types.SigningData{
-		Operator: sdk.ValAddress(addr),
-		Account:  acc,
-		ChainID:  ctx.ChainID,
-		Signer: func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
-			return txf.Keybase().Sign(keyUID, msg)
-		},
-	}, nil
 }

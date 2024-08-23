@@ -21,17 +21,12 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	acc := m.authAccountKeeper.GetAccount(ctx, msg.MustAccAddr()) // ensured in validate basic
-	if err := msg.GetKeyAndSig().Ok(ctx, acc, msg.GetPayload()); err != nil {
-		return nil, errorsmod.Wrap(err, "check sig ok")
-	}
 	operator := msg.MustOperatorAddr() // checked in validate basic
 	if _, ok := m.GetSequencer(ctx, operator); ok {
 		return nil, gerrc.ErrAlreadyExists
 	}
 
-	v := msg.GetKeyAndSig().Validator()
-	v.OperatorAddress = operator.String()
+	v := msg.Validator()
 	m.SetSequencer(ctx, v)
 
 	consAddr, err := v.GetConsAddr()
@@ -50,19 +45,19 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 
 func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSequencer) (*types.MsgUpdateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	acc := m.authAccountKeeper.GetAccount(ctx, msg.MustAccAddr()) // ensured in validate basic
-	if err := msg.GetKeyAndSig().Ok(ctx, acc, msg.GetPayload()); err != nil {
-		return nil, errorsmod.Wrap(err, "check sig ok")
-	}
-	consAddr, err := msg.GetKeyAndSig().Validator().GetConsAddr()
-	if err != nil {
-		panic(err) // it must be ok because we used it to check sig
-	}
-	seq, ok := m.GetSequencerByConsAddr(ctx, consAddr)
+	operator := msg.MustOperatorAddr() // checked in validate basic
+
+	seq, ok := m.GetSequencer(ctx, operator)
 	if !ok {
-		return nil, errorsmod.Wrap(gerrc.ErrNotFound, "sequencer by cons addr")
+		return nil, errorsmod.Wrap(gerrc.ErrNotFound, "sequencer")
 	}
+
 	m.SetRewardAddr(ctx, seq, msg.MustRewardAcc()) // checked in validate basic
+
+	consAddr, err := seq.GetConsAddr()
+	if err != nil {
+		return nil, errorsmod.Wrap(gerrc.ErrInternal, "expected to get valid cons addr")
+	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventUpdateSequencer,

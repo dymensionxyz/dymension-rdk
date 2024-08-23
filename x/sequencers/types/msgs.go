@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
-	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,22 +16,16 @@ var (
 	_ sdk.Msg                            = (*MsgCreateSequencer)(nil)
 	_ sdk.Msg                            = (*MsgUpdateSequencer)(nil)
 	_ codectypes.UnpackInterfacesMessage = (*MsgCreateSequencer)(nil)
-	_ codectypes.UnpackInterfacesMessage = (*MsgUpdateSequencer)(nil)
 )
 
 func (m *MsgCreateSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	return m.GetKeyAndSig().UnpackInterfaces(unpacker)
-}
-
-func (m *MsgUpdateSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	return m.GetKeyAndSig().UnpackInterfaces(unpacker)
-}
-
-func (m *KeyAndSig) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
 	return unpacker.UnpackAny(m.PubKey, new(cryptotypes.PubKey))
 }
 
-func (m *KeyAndSig) Valid() error {
+func (m *MsgCreateSequencer) ValidateBasic() error {
+	if _, err := m.OperatorAccAddr(); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
+	}
 	if m.GetPubKey() == nil {
 		return errors.New("pub key is nil")
 	}
@@ -49,32 +42,44 @@ func (m *KeyAndSig) Valid() error {
 	if tm.GetEd25519() == nil {
 		return errors.New("not ed5519")
 	}
+	operator, err := m.OperatorAddr()
+	if err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
+	}
+	pubKey, _ := v.ConsPubKey()
+
+	// We return OK only if the key and sig contains a key and signature where the signature was produced by the key, and the signature
+	// is over the operator account, and the app payload data (if not empty).
+	//
+	// The reasoning is as follows:
+	//
+	// We know from the SDK TX signing mechanism that the account originates from the operator, and on this chain ID.
+	// Therefore, we just need to check that the consensus private key also signed over this account and chain ID.
+	// That means the consensus private key owner is the same actor as the operator.
+	if !pubKey.VerifySignature(operator, m.GetSignature()) {
+		return errorsmod.Wrap(gerrc.ErrUnauthenticated, "priv key of pub cons key was not used to sign operator addr")
+	}
+
 	return nil
 }
 
-func (m *MsgCreateSequencer) ValidateBasic() error {
-	if _, err := m.AccAddr(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
-	}
-	if m.Operator != m.GetPayload().GetOperatorAddr() {
-		return errorsmod.Wrap(gerrc.ErrInvalidArgument, "signer operator must match payload operator")
-	}
-	if err := m.KeyAndSig.Valid(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "key and sig")
-	}
-	return nil
+// Validator is a convenience method - it returns a validator object which already
+// has implementations of various useful methods like obtaining various type conversions
+// for the public key.
+func (m *MsgCreateSequencer) Validator() stakingtypes.Validator {
+	return stakingtypes.Validator{ConsensusPubkey: m.PubKey, OperatorAddress: m.MustOperatorAddr().String()}
 }
 
 func (m *MsgCreateSequencer) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.MustAccAddr()}
 }
 
-func (m *MsgCreateSequencer) AccAddr() (sdk.AccAddress, error) {
-	oper, err := m.OperatorAddr()
+func (m *MsgCreateSequencer) OperatorAccAddr() (sdk.AccAddress, error) {
+	operator, err := m.OperatorAddr()
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "operator addr")
 	}
-	return sdk.AccAddress(oper), nil
+	return sdk.AccAddress(operator), nil
 }
 
 func (m *MsgCreateSequencer) MustAccAddr() sdk.AccAddress {
@@ -93,12 +98,34 @@ func (m *MsgCreateSequencer) MustOperatorAddr() sdk.ValAddress {
 	return addr
 }
 
-func (m *MsgUpdateSequencer) ValidateBasic() error {
-	if _, err := m.AccAddr(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
+func BuildMsgCreateSequencer(
+	// Produces a signature over a message
+	signer func(msg []byte) ([]byte, cryptotypes.PubKey, error), // implemented with a wrapper around keyring
+	// Operator, will be signed over by signer
+	operator sdk.ValAddress,
+) (*MsgCreateSequencer, error) {
+	sig, pubKey, err := signer(operator)
+	if err != nil {
+		return nil, fmt.Errorf("sign: %w", err)
 	}
-	if err := m.KeyAndSig.Valid(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "key and sig")
+	if pubKey == nil {
+		return nil, errorsmod.Wrap(gerrc.ErrInvalidArgument, "signer returned nil pub key")
+	}
+
+	pubKeyAny, err := codectypes.NewAnyWithValue(pubKey)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "pubkey to any")
+	}
+	return &MsgCreateSequencer{
+		Operator:  operator.String(),
+		PubKey:    pubKeyAny,
+		Signature: sig,
+	}, nil
+}
+
+func (m *MsgUpdateSequencer) ValidateBasic() error {
+	if _, err := m.OperatorAccAddr(); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
 	}
 	if _, err := m.RewardAcc(); err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward addr")
@@ -110,7 +137,7 @@ func (m *MsgUpdateSequencer) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{m.MustAccAddr()}
 }
 
-func (m *MsgUpdateSequencer) AccAddr() (sdk.AccAddress, error) {
+func (m *MsgUpdateSequencer) OperatorAccAddr() (sdk.AccAddress, error) {
 	oper, err := m.OperatorAddr()
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "operator addr")
@@ -135,66 +162,13 @@ func (m *MsgUpdateSequencer) MustOperatorAddr() sdk.ValAddress {
 }
 
 func (m *MsgUpdateSequencer) RewardAcc() (sdk.AccAddress, error) {
-	return sdk.AccAddressFromBech32(m.GetPayload().GetRewardAddr())
+	return sdk.AccAddressFromBech32(m.GetRewardAddr())
 }
 
 func (m *MsgUpdateSequencer) MustRewardAcc() sdk.AccAddress {
-	s := m.GetPayload().GetRewardAddr()
-	return sdk.MustAccAddressFromBech32(s)
-}
-
-func BuildMsgCreateSequencer(
-	signingData SigningData,
-	payload *CreateSequencerPayload,
-) (*MsgCreateSequencer, error) {
-	keyAndSig, err := createKeyAndSig(signingData, payload)
+	ret, err := m.RewardAcc()
 	if err != nil {
-		return nil, fmt.Errorf("create key and sig: %w", err)
+		panic(err)
 	}
-	return &MsgCreateSequencer{
-		Operator:  signingData.Operator.String(),
-		KeyAndSig: keyAndSig,
-		Payload:   payload,
-	}, nil
-}
-
-func BuildMsgUpdateSequencer(
-	signingData SigningData,
-	payload *UpdateSequencerPayload,
-) (*MsgUpdateSequencer, error) {
-	keyAndSig, err := createKeyAndSig(signingData, payload)
-	if err != nil {
-		return nil, fmt.Errorf("create key and sig: %w", err)
-	}
-	return &MsgUpdateSequencer{
-		Operator:  signingData.Operator.String(),
-		KeyAndSig: keyAndSig,
-		Payload:   payload,
-	}, nil
-}
-
-// utility to create the key and sig argument needed in messages
-func createKeyAndSig(signingData SigningData, payload codec.ProtoMarshaler) (*KeyAndSig, error) {
-	toSign, err := CreateBytesToSign(signingData.ChainID, signingData.Account.GetAccountNumber(), payload)
-	if err != nil {
-		return nil, fmt.Errorf("create payload to sign: %w", err)
-	}
-
-	sig, pubKey, err := signingData.Signer(toSign)
-	if err != nil {
-		return nil, fmt.Errorf("sign: %w", err)
-	}
-	if pubKey == nil {
-		return nil, errorsmod.Wrap(gerrc.ErrInvalidArgument, "signer returned nil pub key")
-	}
-
-	pubKeyAny, err := codectypes.NewAnyWithValue(pubKey)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "pubkey to any")
-	}
-
-	return &KeyAndSig{
-		PubKey:    pubKeyAny,
-		Signature: sig,
-	}, nil
+	return ret
 }

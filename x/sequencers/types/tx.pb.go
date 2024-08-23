@@ -31,184 +31,20 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// PayloadToSign is marshalled and signed. Note, this is not included in the message, but is used to generate
-// the signature which is included in the message, and to verify that signature on chain.
-type PayloadToSign struct {
-	// PayloadApp is application specific signed data
-	PayloadApp []byte `protobuf:"bytes,1,opt,name=payload_app,json=payloadApp,proto3" json:"payload_app,omitempty"`
-	// ChainId will be verified against processing chain
-	ChainId string `protobuf:"bytes,2,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
-	// AccountNumber is the auth account keeper account number, it is verified against the message creator
-	AccountNumber uint64 `protobuf:"varint,3,opt,name=account_number,json=accountNumber,proto3" json:"account_number,omitempty"`
-}
-
-func (m *PayloadToSign) Reset()         { *m = PayloadToSign{} }
-func (m *PayloadToSign) String() string { return proto.CompactTextString(m) }
-func (*PayloadToSign) ProtoMessage()    {}
-func (*PayloadToSign) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aee37376ffafeb0a, []int{0}
-}
-func (m *PayloadToSign) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *PayloadToSign) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_PayloadToSign.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *PayloadToSign) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PayloadToSign.Merge(m, src)
-}
-func (m *PayloadToSign) XXX_Size() int {
-	return m.Size()
-}
-func (m *PayloadToSign) XXX_DiscardUnknown() {
-	xxx_messageInfo_PayloadToSign.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PayloadToSign proto.InternalMessageInfo
-
-func (m *PayloadToSign) GetPayloadApp() []byte {
-	if m != nil {
-		return m.PayloadApp
-	}
-	return nil
-}
-
-func (m *PayloadToSign) GetChainId() string {
-	if m != nil {
-		return m.ChainId
-	}
-	return ""
-}
-
-func (m *PayloadToSign) GetAccountNumber() uint64 {
-	if m != nil {
-		return m.AccountNumber
-	}
-	return 0
-}
-
-type KeyAndSig struct {
-	// PubKey is a tendermint consensus pub key
-	PubKey *types.Any `protobuf:"bytes,1,opt,name=pub_key,json=pubKey,proto3" json:"pub_key,omitempty"`
-	// Signature is some signed payload=<app payload, chain id, account number> with priv key of pub key
-	Signature []byte `protobuf:"bytes,2,opt,name=signature,proto3" json:"signature,omitempty"`
-}
-
-func (m *KeyAndSig) Reset()         { *m = KeyAndSig{} }
-func (m *KeyAndSig) String() string { return proto.CompactTextString(m) }
-func (*KeyAndSig) ProtoMessage()    {}
-func (*KeyAndSig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aee37376ffafeb0a, []int{1}
-}
-func (m *KeyAndSig) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *KeyAndSig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_KeyAndSig.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *KeyAndSig) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_KeyAndSig.Merge(m, src)
-}
-func (m *KeyAndSig) XXX_Size() int {
-	return m.Size()
-}
-func (m *KeyAndSig) XXX_DiscardUnknown() {
-	xxx_messageInfo_KeyAndSig.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_KeyAndSig proto.InternalMessageInfo
-
-func (m *KeyAndSig) GetPubKey() *types.Any {
-	if m != nil {
-		return m.PubKey
-	}
-	return nil
-}
-
-func (m *KeyAndSig) GetSignature() []byte {
-	if m != nil {
-		return m.Signature
-	}
-	return nil
-}
-
-type CreateSequencerPayload struct {
-	// OperatorAddr is a bech32 encoded sdk val addr
-	OperatorAddr string `protobuf:"bytes,1,opt,name=operator_addr,json=operatorAddr,proto3" json:"operator_addr,omitempty"`
-}
-
-func (m *CreateSequencerPayload) Reset()         { *m = CreateSequencerPayload{} }
-func (m *CreateSequencerPayload) String() string { return proto.CompactTextString(m) }
-func (*CreateSequencerPayload) ProtoMessage()    {}
-func (*CreateSequencerPayload) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aee37376ffafeb0a, []int{2}
-}
-func (m *CreateSequencerPayload) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *CreateSequencerPayload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_CreateSequencerPayload.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *CreateSequencerPayload) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateSequencerPayload.Merge(m, src)
-}
-func (m *CreateSequencerPayload) XXX_Size() int {
-	return m.Size()
-}
-func (m *CreateSequencerPayload) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateSequencerPayload.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CreateSequencerPayload proto.InternalMessageInfo
-
-func (m *CreateSequencerPayload) GetOperatorAddr() string {
-	if m != nil {
-		return m.OperatorAddr
-	}
-	return ""
-}
-
 type MsgCreateSequencer struct {
 	// Operator is the bech32-encoded address of the actor sending the update - must be val addr
 	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
-	// KeyAndSig has the cons key of the sequencer, as well as a sig over the payload and some replay protection metadata
-	KeyAndSig *KeyAndSig `protobuf:"bytes,2,opt,name=key_and_sig,json=keyAndSig,proto3" json:"key_and_sig,omitempty"`
-	// Payload - signature is in key and sig
-	Payload *CreateSequencerPayload `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"`
+	// PubKey is a tendermint consensus pub key
+	PubKey *types.Any `protobuf:"bytes,2,opt,name=pub_key,json=pubKey,proto3" json:"pub_key,omitempty"`
+	// Signature is operator signed with the private key of pub_key
+	Signature []byte `protobuf:"bytes,3,opt,name=signature,proto3" json:"signature,omitempty"`
 }
 
 func (m *MsgCreateSequencer) Reset()         { *m = MsgCreateSequencer{} }
 func (m *MsgCreateSequencer) String() string { return proto.CompactTextString(m) }
 func (*MsgCreateSequencer) ProtoMessage()    {}
 func (*MsgCreateSequencer) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aee37376ffafeb0a, []int{3}
+	return fileDescriptor_aee37376ffafeb0a, []int{0}
 }
 func (m *MsgCreateSequencer) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -244,16 +80,16 @@ func (m *MsgCreateSequencer) GetOperator() string {
 	return ""
 }
 
-func (m *MsgCreateSequencer) GetKeyAndSig() *KeyAndSig {
+func (m *MsgCreateSequencer) GetPubKey() *types.Any {
 	if m != nil {
-		return m.KeyAndSig
+		return m.PubKey
 	}
 	return nil
 }
 
-func (m *MsgCreateSequencer) GetPayload() *CreateSequencerPayload {
+func (m *MsgCreateSequencer) GetSignature() []byte {
 	if m != nil {
-		return m.Payload
+		return m.Signature
 	}
 	return nil
 }
@@ -265,7 +101,7 @@ func (m *MsgCreateSequencerResponse) Reset()         { *m = MsgCreateSequencerRe
 func (m *MsgCreateSequencerResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgCreateSequencerResponse) ProtoMessage()    {}
 func (*MsgCreateSequencerResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aee37376ffafeb0a, []int{4}
+	return fileDescriptor_aee37376ffafeb0a, []int{1}
 }
 func (m *MsgCreateSequencerResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -294,65 +130,18 @@ func (m *MsgCreateSequencerResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCreateSequencerResponse proto.InternalMessageInfo
 
-type UpdateSequencerPayload struct {
-	// RewardAddr is a bech32 encoded sdk acc address
-	RewardAddr string `protobuf:"bytes,1,opt,name=reward_addr,json=rewardAddr,proto3" json:"reward_addr,omitempty"`
-}
-
-func (m *UpdateSequencerPayload) Reset()         { *m = UpdateSequencerPayload{} }
-func (m *UpdateSequencerPayload) String() string { return proto.CompactTextString(m) }
-func (*UpdateSequencerPayload) ProtoMessage()    {}
-func (*UpdateSequencerPayload) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aee37376ffafeb0a, []int{5}
-}
-func (m *UpdateSequencerPayload) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *UpdateSequencerPayload) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_UpdateSequencerPayload.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *UpdateSequencerPayload) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UpdateSequencerPayload.Merge(m, src)
-}
-func (m *UpdateSequencerPayload) XXX_Size() int {
-	return m.Size()
-}
-func (m *UpdateSequencerPayload) XXX_DiscardUnknown() {
-	xxx_messageInfo_UpdateSequencerPayload.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_UpdateSequencerPayload proto.InternalMessageInfo
-
-func (m *UpdateSequencerPayload) GetRewardAddr() string {
-	if m != nil {
-		return m.RewardAddr
-	}
-	return ""
-}
-
 type MsgUpdateSequencer struct {
 	// Operator is the bech32-encoded address of the actor sending the update - must be val addr
 	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
-	// KeyAndSig has the cons key of the sequencer, as well as a sig over the payload and some replay protection metadata
-	KeyAndSig *KeyAndSig `protobuf:"bytes,2,opt,name=key_and_sig,json=keyAndSig,proto3" json:"key_and_sig,omitempty"`
-	// Payload - signature is in key and sig
-	Payload *UpdateSequencerPayload `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"`
+	// RewardAddr is a bech32 encoded sdk acc address
+	RewardAddr string `protobuf:"bytes,3,opt,name=reward_addr,json=rewardAddr,proto3" json:"reward_addr,omitempty"`
 }
 
 func (m *MsgUpdateSequencer) Reset()         { *m = MsgUpdateSequencer{} }
 func (m *MsgUpdateSequencer) String() string { return proto.CompactTextString(m) }
 func (*MsgUpdateSequencer) ProtoMessage()    {}
 func (*MsgUpdateSequencer) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aee37376ffafeb0a, []int{6}
+	return fileDescriptor_aee37376ffafeb0a, []int{2}
 }
 func (m *MsgUpdateSequencer) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -388,18 +177,11 @@ func (m *MsgUpdateSequencer) GetOperator() string {
 	return ""
 }
 
-func (m *MsgUpdateSequencer) GetKeyAndSig() *KeyAndSig {
+func (m *MsgUpdateSequencer) GetRewardAddr() string {
 	if m != nil {
-		return m.KeyAndSig
+		return m.RewardAddr
 	}
-	return nil
-}
-
-func (m *MsgUpdateSequencer) GetPayload() *UpdateSequencerPayload {
-	if m != nil {
-		return m.Payload
-	}
-	return nil
+	return ""
 }
 
 type MsgUpdateSequencerResponse struct {
@@ -409,7 +191,7 @@ func (m *MsgUpdateSequencerResponse) Reset()         { *m = MsgUpdateSequencerRe
 func (m *MsgUpdateSequencerResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgUpdateSequencerResponse) ProtoMessage()    {}
 func (*MsgUpdateSequencerResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_aee37376ffafeb0a, []int{7}
+	return fileDescriptor_aee37376ffafeb0a, []int{3}
 }
 func (m *MsgUpdateSequencerResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -439,12 +221,8 @@ func (m *MsgUpdateSequencerResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgUpdateSequencerResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*PayloadToSign)(nil), "rollapp.sequencers.types.PayloadToSign")
-	proto.RegisterType((*KeyAndSig)(nil), "rollapp.sequencers.types.KeyAndSig")
-	proto.RegisterType((*CreateSequencerPayload)(nil), "rollapp.sequencers.types.CreateSequencerPayload")
 	proto.RegisterType((*MsgCreateSequencer)(nil), "rollapp.sequencers.types.MsgCreateSequencer")
 	proto.RegisterType((*MsgCreateSequencerResponse)(nil), "rollapp.sequencers.types.MsgCreateSequencerResponse")
-	proto.RegisterType((*UpdateSequencerPayload)(nil), "rollapp.sequencers.types.UpdateSequencerPayload")
 	proto.RegisterType((*MsgUpdateSequencer)(nil), "rollapp.sequencers.types.MsgUpdateSequencer")
 	proto.RegisterType((*MsgUpdateSequencerResponse)(nil), "rollapp.sequencers.types.MsgUpdateSequencerResponse")
 }
@@ -452,42 +230,33 @@ func init() {
 func init() { proto.RegisterFile("sequencers/tx.proto", fileDescriptor_aee37376ffafeb0a) }
 
 var fileDescriptor_aee37376ffafeb0a = []byte{
-	// 558 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x94, 0xcf, 0x6e, 0xd3, 0x4c,
-	0x14, 0xc5, 0xeb, 0xaf, 0x9f, 0xda, 0xe6, 0x3a, 0x01, 0x69, 0xa8, 0x4a, 0x1a, 0x55, 0x6e, 0xe4,
-	0x82, 0x14, 0x21, 0x6a, 0xd3, 0xc0, 0x02, 0x90, 0x58, 0x84, 0xae, 0xa0, 0x2a, 0x42, 0x0e, 0x48,
-	0x88, 0x8d, 0x35, 0xf6, 0x0c, 0x53, 0x2b, 0xc9, 0xcc, 0x30, 0x63, 0x43, 0xcc, 0x92, 0x27, 0xe0,
-	0x51, 0x78, 0x0c, 0x96, 0x59, 0xb2, 0x44, 0xc9, 0x82, 0x07, 0xe0, 0x05, 0x50, 0x1c, 0x3b, 0x89,
-	0xdc, 0x84, 0x8a, 0x1d, 0x2b, 0xfb, 0x9e, 0x39, 0x33, 0xe7, 0xde, 0x9f, 0xff, 0xc0, 0x0d, 0x4d,
-	0xdf, 0x27, 0x94, 0x87, 0x54, 0x69, 0x37, 0x1e, 0x3a, 0x52, 0x89, 0x58, 0xa0, 0xba, 0x12, 0xfd,
-	0x3e, 0x96, 0xd2, 0x59, 0x2c, 0x3a, 0x71, 0x2a, 0xa9, 0x6e, 0xec, 0x32, 0xc1, 0x44, 0x66, 0x72,
-	0xa7, 0x77, 0x33, 0x7f, 0xe3, 0x56, 0x28, 0xf4, 0x40, 0x68, 0x57, 0xc7, 0xb8, 0x17, 0x71, 0xe6,
-	0x7e, 0x38, 0x09, 0x68, 0x8c, 0x4f, 0x8a, 0x3a, 0x77, 0xdd, 0xcc, 0x5d, 0x03, 0x3d, 0x75, 0x4c,
-	0x2f, 0xf9, 0xc2, 0x3e, 0x13, 0x82, 0xf5, 0xa9, 0x9b, 0x55, 0x41, 0xf2, 0xce, 0xc5, 0x3c, 0x9d,
-	0x2d, 0xd9, 0x0a, 0x6a, 0x2f, 0x71, 0xda, 0x17, 0x98, 0xbc, 0x12, 0xdd, 0x88, 0x71, 0x74, 0x08,
-	0xa6, 0x9c, 0x09, 0x3e, 0x96, 0xb2, 0x6e, 0x34, 0x8d, 0x56, 0xd5, 0x83, 0x5c, 0xea, 0x48, 0x89,
-	0xf6, 0x61, 0x27, 0xbc, 0xc0, 0x11, 0xf7, 0x23, 0x52, 0xff, 0xaf, 0x69, 0xb4, 0x2a, 0xde, 0x76,
-	0x56, 0x3f, 0x23, 0xe8, 0x36, 0x5c, 0xc3, 0x61, 0x28, 0x12, 0x1e, 0xfb, 0x3c, 0x19, 0x04, 0x54,
-	0xd5, 0x37, 0x9b, 0x46, 0xeb, 0x7f, 0xaf, 0x96, 0xab, 0x2f, 0x32, 0xd1, 0x7e, 0x03, 0x95, 0x33,
-	0x9a, 0x76, 0x38, 0xe9, 0x46, 0x0c, 0x1d, 0xc3, 0xb6, 0x4c, 0x02, 0xbf, 0x47, 0xd3, 0x2c, 0xcb,
-	0x6c, 0xef, 0x3a, 0xb3, 0x6e, 0x9d, 0xa2, 0x5b, 0xa7, 0xc3, 0x53, 0x6f, 0x4b, 0x26, 0xc1, 0x19,
-	0x4d, 0xd1, 0x01, 0x54, 0x74, 0xc4, 0x38, 0x8e, 0x13, 0x45, 0xb3, 0xf8, 0xaa, 0xb7, 0x10, 0xec,
-	0x27, 0xb0, 0x77, 0xaa, 0x28, 0x8e, 0x69, 0xb7, 0xe0, 0x9a, 0x0f, 0x87, 0x8e, 0xa0, 0x26, 0x24,
-	0x55, 0x38, 0x16, 0xca, 0xc7, 0x84, 0xa8, 0x2c, 0xac, 0xe2, 0x55, 0x0b, 0xb1, 0x43, 0x88, 0xb2,
-	0x47, 0x06, 0xa0, 0x73, 0xcd, 0x4a, 0x47, 0xa0, 0x06, 0xec, 0x14, 0xb6, 0x7c, 0xdb, 0xbc, 0x46,
-	0xa7, 0x60, 0xf6, 0x68, 0xea, 0x63, 0x4e, 0x7c, 0x1d, 0xb1, 0xac, 0x23, 0xb3, 0x7d, 0xe4, 0xac,
-	0x7b, 0xbe, 0xce, 0x7c, 0x70, 0xaf, 0xd2, 0x9b, 0x33, 0x78, 0x0e, 0xdb, 0x39, 0xe0, 0x0c, 0x98,
-	0xd9, 0xbe, 0xb7, 0xfe, 0x80, 0xd5, 0xf3, 0x79, 0xc5, 0x01, 0x8f, 0x6b, 0x9f, 0x7f, 0x7e, 0xbd,
-	0x33, 0xef, 0xcf, 0x3e, 0x80, 0xc6, 0xe5, 0x89, 0x3c, 0xaa, 0xa5, 0xe0, 0x9a, 0xda, 0x8f, 0x60,
-	0xef, 0xb5, 0x24, 0xab, 0x78, 0x1d, 0x82, 0xa9, 0xe8, 0x47, 0xac, 0xc8, 0x32, 0x2d, 0x98, 0x49,
-	0xcb, 0xac, 0x4a, 0xdb, 0xff, 0x2d, 0x56, 0xab, 0x67, 0xbb, 0x82, 0x55, 0x69, 0x53, 0xc1, 0xaa,
-	0xfd, 0xcb, 0x80, 0xcd, 0x73, 0xcd, 0x50, 0x02, 0xd7, 0xcb, 0x2f, 0xc8, 0xdd, 0xf5, 0x2d, 0x5c,
-	0x86, 0xdf, 0x78, 0xf0, 0x37, 0xee, 0x22, 0x7e, 0x1a, 0x5b, 0x66, 0xfd, 0xe7, 0xd8, 0x92, 0xfb,
-	0x8a, 0xd8, 0x35, 0x53, 0x3f, 0xf5, 0xbe, 0x8d, 0x2d, 0x63, 0x34, 0xb6, 0x8c, 0x1f, 0x63, 0xcb,
-	0xf8, 0x32, 0xb1, 0x36, 0x46, 0x13, 0x6b, 0xe3, 0xfb, 0xc4, 0xda, 0x78, 0xfb, 0x90, 0x45, 0xf1,
-	0x45, 0x12, 0x38, 0xa1, 0x18, 0xb8, 0x24, 0x1d, 0x50, 0xae, 0x23, 0xc1, 0x87, 0xe9, 0xa7, 0x45,
-	0x71, 0xac, 0x48, 0xcf, 0x1d, 0xba, 0xcb, 0x3f, 0xc0, 0x69, 0x5c, 0xb0, 0x95, 0x7d, 0xd9, 0xf7,
-	0x7f, 0x07, 0x00, 0x00, 0xff, 0xff, 0xbb, 0x67, 0xd6, 0x27, 0x1b, 0x05, 0x00, 0x00,
+	// 402 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x93, 0xbf, 0xae, 0xd3, 0x30,
+	0x14, 0xc6, 0x6b, 0xae, 0x74, 0xa1, 0xbe, 0x20, 0xa4, 0x50, 0x89, 0x10, 0x55, 0xa1, 0xaa, 0x18,
+	0x2a, 0x44, 0x6d, 0xb5, 0x30, 0x20, 0xb6, 0xc2, 0x88, 0xba, 0x04, 0xb1, 0xb0, 0x14, 0xa7, 0x3e,
+	0x98, 0xa8, 0x8d, 0x6d, 0x6c, 0x07, 0x1a, 0x46, 0x66, 0x06, 0x1e, 0x85, 0xc7, 0x60, 0xec, 0xc8,
+	0x88, 0xda, 0x81, 0x07, 0xe0, 0x05, 0x50, 0x92, 0xa6, 0x45, 0x29, 0xe5, 0xcf, 0x94, 0x7c, 0xe7,
+	0x7c, 0x3a, 0xbf, 0xef, 0x24, 0x36, 0xbe, 0x61, 0xe1, 0x4d, 0x06, 0x72, 0x0e, 0xc6, 0x52, 0xb7,
+	0x22, 0xda, 0x28, 0xa7, 0x3c, 0xdf, 0xa8, 0xe5, 0x92, 0x69, 0x4d, 0x0e, 0x4d, 0xe2, 0x72, 0x0d,
+	0x36, 0xe8, 0x08, 0x25, 0x54, 0x69, 0xa2, 0xc5, 0x5b, 0xe5, 0x0f, 0xee, 0xcc, 0x95, 0x4d, 0x95,
+	0xa5, 0xd6, 0xb1, 0x45, 0x22, 0x05, 0x7d, 0x3b, 0x8a, 0xc1, 0xb1, 0x51, 0xad, 0x77, 0xae, 0x9b,
+	0x3b, 0x57, 0x6a, 0x0b, 0x47, 0xf1, 0xd8, 0x35, 0x6e, 0x09, 0xa5, 0xc4, 0x12, 0x68, 0xa9, 0xe2,
+	0xec, 0x15, 0x65, 0x32, 0xaf, 0x5a, 0xfd, 0x8f, 0x08, 0x7b, 0x53, 0x2b, 0x9e, 0x18, 0x60, 0x0e,
+	0x9e, 0xd5, 0x69, 0xbc, 0x00, 0x5f, 0x51, 0x1a, 0x0c, 0x73, 0xca, 0xf8, 0xa8, 0x87, 0x06, 0xed,
+	0x68, 0xaf, 0xbd, 0x21, 0xbe, 0xac, 0xb3, 0x78, 0xb6, 0x80, 0xdc, 0xbf, 0xd4, 0x43, 0x83, 0x8b,
+	0x71, 0x87, 0x54, 0xf3, 0x49, 0x3d, 0x9f, 0x4c, 0x64, 0x1e, 0x9d, 0xeb, 0x2c, 0x7e, 0x0a, 0xb9,
+	0xd7, 0xc5, 0x6d, 0x9b, 0x08, 0xc9, 0x5c, 0x66, 0xc0, 0x3f, 0xeb, 0xa1, 0xc1, 0xd5, 0xe8, 0x50,
+	0x78, 0x74, 0xed, 0xc3, 0xf7, 0xcf, 0x77, 0xf7, 0xb3, 0xfb, 0x5d, 0x1c, 0x1c, 0xa7, 0x89, 0xc0,
+	0x6a, 0x25, 0x2d, 0xf4, 0x5f, 0x96, 0x59, 0x9f, 0x6b, 0xfe, 0xcf, 0x59, 0x6f, 0xe3, 0x0b, 0x03,
+	0xef, 0x98, 0xe1, 0x33, 0xc6, 0xb9, 0x29, 0xf1, 0xed, 0x08, 0x57, 0xa5, 0x09, 0xe7, 0xe6, 0xf7,
+	0xfc, 0x06, 0xa1, 0xe6, 0x8f, 0x7f, 0x20, 0x7c, 0x36, 0xb5, 0xc2, 0xcb, 0xf0, 0xf5, 0xe6, 0x07,
+	0xbb, 0x47, 0x4e, 0xfd, 0x52, 0x72, 0xbc, 0x50, 0xf0, 0xe0, 0x7f, 0xdc, 0x35, 0xbe, 0xc0, 0x36,
+	0x77, 0xff, 0x33, 0xb6, 0xe1, 0xfe, 0x0b, 0xf6, 0xc4, 0xd6, 0x8f, 0xa3, 0x2f, 0x9b, 0x10, 0xad,
+	0x37, 0x21, 0xfa, 0xb6, 0x09, 0xd1, 0xa7, 0x6d, 0xd8, 0x5a, 0x6f, 0xc3, 0xd6, 0xd7, 0x6d, 0xd8,
+	0x7a, 0xf1, 0x50, 0x24, 0xee, 0x75, 0x16, 0x93, 0xb9, 0x4a, 0x29, 0xcf, 0x53, 0x90, 0x36, 0x51,
+	0x72, 0x95, 0xbf, 0x3f, 0x88, 0xa1, 0xe1, 0x0b, 0xba, 0xa2, 0xbf, 0xde, 0x81, 0x02, 0x17, 0x9f,
+	0x97, 0x47, 0xe5, 0xfe, 0xcf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x47, 0x32, 0xc4, 0x21, 0x1e, 0x03,
+	0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -606,120 +375,6 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	Metadata: "sequencers/tx.proto",
 }
 
-func (m *PayloadToSign) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *PayloadToSign) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *PayloadToSign) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.AccountNumber != 0 {
-		i = encodeVarintTx(dAtA, i, uint64(m.AccountNumber))
-		i--
-		dAtA[i] = 0x18
-	}
-	if len(m.ChainId) > 0 {
-		i -= len(m.ChainId)
-		copy(dAtA[i:], m.ChainId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ChainId)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.PayloadApp) > 0 {
-		i -= len(m.PayloadApp)
-		copy(dAtA[i:], m.PayloadApp)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.PayloadApp)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *KeyAndSig) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *KeyAndSig) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *KeyAndSig) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Signature) > 0 {
-		i -= len(m.Signature)
-		copy(dAtA[i:], m.Signature)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Signature)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if m.PubKey != nil {
-		{
-			size, err := m.PubKey.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *CreateSequencerPayload) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *CreateSequencerPayload) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *CreateSequencerPayload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.OperatorAddr) > 0 {
-		i -= len(m.OperatorAddr)
-		copy(dAtA[i:], m.OperatorAddr)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.OperatorAddr)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *MsgCreateSequencer) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -740,21 +395,16 @@ func (m *MsgCreateSequencer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Payload != nil {
-		{
-			size, err := m.Payload.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
+	if len(m.Signature) > 0 {
+		i -= len(m.Signature)
+		copy(dAtA[i:], m.Signature)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Signature)))
 		i--
 		dAtA[i] = 0x1a
 	}
-	if m.KeyAndSig != nil {
+	if m.PubKey != nil {
 		{
-			size, err := m.KeyAndSig.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.PubKey.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -797,36 +447,6 @@ func (m *MsgCreateSequencerResponse) MarshalToSizedBuffer(dAtA []byte) (int, err
 	return len(dAtA) - i, nil
 }
 
-func (m *UpdateSequencerPayload) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *UpdateSequencerPayload) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *UpdateSequencerPayload) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.RewardAddr) > 0 {
-		i -= len(m.RewardAddr)
-		copy(dAtA[i:], m.RewardAddr)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.RewardAddr)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func (m *MsgUpdateSequencer) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -847,29 +467,12 @@ func (m *MsgUpdateSequencer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.Payload != nil {
-		{
-			size, err := m.Payload.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
+	if len(m.RewardAddr) > 0 {
+		i -= len(m.RewardAddr)
+		copy(dAtA[i:], m.RewardAddr)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.RewardAddr)))
 		i--
 		dAtA[i] = 0x1a
-	}
-	if m.KeyAndSig != nil {
-		{
-			size, err := m.KeyAndSig.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintTx(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x12
 	}
 	if len(m.Operator) > 0 {
 		i -= len(m.Operator)
@@ -915,56 +518,6 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *PayloadToSign) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.PayloadApp)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.ChainId)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	if m.AccountNumber != 0 {
-		n += 1 + sovTx(uint64(m.AccountNumber))
-	}
-	return n
-}
-
-func (m *KeyAndSig) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.PubKey != nil {
-		l = m.PubKey.Size()
-		n += 1 + l + sovTx(uint64(l))
-	}
-	l = len(m.Signature)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
-func (m *CreateSequencerPayload) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.OperatorAddr)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
 func (m *MsgCreateSequencer) Size() (n int) {
 	if m == nil {
 		return 0
@@ -975,12 +528,12 @@ func (m *MsgCreateSequencer) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.KeyAndSig != nil {
-		l = m.KeyAndSig.Size()
+	if m.PubKey != nil {
+		l = m.PubKey.Size()
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.Payload != nil {
-		l = m.Payload.Size()
+	l = len(m.Signature)
+	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
 	return n
@@ -995,19 +548,6 @@ func (m *MsgCreateSequencerResponse) Size() (n int) {
 	return n
 }
 
-func (m *UpdateSequencerPayload) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.RewardAddr)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
-	return n
-}
-
 func (m *MsgUpdateSequencer) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1018,12 +558,8 @@ func (m *MsgUpdateSequencer) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	if m.KeyAndSig != nil {
-		l = m.KeyAndSig.Size()
-		n += 1 + l + sovTx(uint64(l))
-	}
-	if m.Payload != nil {
-		l = m.Payload.Size()
+	l = len(m.RewardAddr)
+	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
 	return n
@@ -1043,343 +579,6 @@ func sovTx(x uint64) (n int) {
 }
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (m *PayloadToSign) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: PayloadToSign: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: PayloadToSign: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PayloadApp", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.PayloadApp = append(m.PayloadApp[:0], dAtA[iNdEx:postIndex]...)
-			if m.PayloadApp == nil {
-				m.PayloadApp = []byte{}
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ChainId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field AccountNumber", wireType)
-			}
-			m.AccountNumber = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.AccountNumber |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *KeyAndSig) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: KeyAndSig: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: KeyAndSig: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PubKey", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.PubKey == nil {
-				m.PubKey = &types.Any{}
-			}
-			if err := m.PubKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Signature", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Signature = append(m.Signature[:0], dAtA[iNdEx:postIndex]...)
-			if m.Signature == nil {
-				m.Signature = []byte{}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *CreateSequencerPayload) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: CreateSequencerPayload: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: CreateSequencerPayload: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorAddr", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.OperatorAddr = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *MsgCreateSequencer) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -1444,7 +643,7 @@ func (m *MsgCreateSequencer) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field KeyAndSig", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field PubKey", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1471,18 +670,18 @@ func (m *MsgCreateSequencer) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.KeyAndSig == nil {
-				m.KeyAndSig = &KeyAndSig{}
+			if m.PubKey == nil {
+				m.PubKey = &types.Any{}
 			}
-			if err := m.KeyAndSig.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.PubKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Payload", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Signature", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1492,26 +691,24 @@ func (m *MsgCreateSequencer) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Payload == nil {
-				m.Payload = &CreateSequencerPayload{}
-			}
-			if err := m.Payload.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+			m.Signature = append(m.Signature[:0], dAtA[iNdEx:postIndex]...)
+			if m.Signature == nil {
+				m.Signature = []byte{}
 			}
 			iNdEx = postIndex
 		default:
@@ -1564,88 +761,6 @@ func (m *MsgCreateSequencerResponse) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: MsgCreateSequencerResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTx(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTx
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *UpdateSequencerPayload) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTx
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: UpdateSequencerPayload: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: UpdateSequencerPayload: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RewardAddr", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.RewardAddr = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1728,47 +843,11 @@ func (m *MsgUpdateSequencer) Unmarshal(dAtA []byte) error {
 			}
 			m.Operator = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field KeyAndSig", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.KeyAndSig == nil {
-				m.KeyAndSig = &KeyAndSig{}
-			}
-			if err := m.KeyAndSig.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Payload", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardAddr", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1778,27 +857,23 @@ func (m *MsgUpdateSequencer) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Payload == nil {
-				m.Payload = &UpdateSequencerPayload{}
-			}
-			if err := m.Payload.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.RewardAddr = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
