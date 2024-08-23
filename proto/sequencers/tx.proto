@@ -17,7 +17,7 @@ service Msg {
 // PayloadToSign is marshalled and signed. Note, this is not included in the message, but is used to generate
 // the signature which is included in the message, and to verify that signature on chain.
 message PayloadToSign {
-    // PayloadApp is application specific signed data
+    // PayloadApp is application specific signed data. E.g. CreateSequencerPayload
     bytes payload_app = 1;
     // ChainId will be verified against processing chain
     string chain_id = 2;
