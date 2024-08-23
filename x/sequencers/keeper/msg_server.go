@@ -4,11 +4,12 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
+
+var _ types.MsgServer = msgServer{}
 
 type msgServer struct {
 	Keeper
@@ -20,13 +21,9 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 
 func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	accAddr := msg.MustAccAddr() // ensured in validate basic
-	allow, err := m.IsSigned(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "check sig")
-	}
-	if !allow {
-		return nil, gerrc.ErrUnauthenticated
+	acc := m.authAccountKeeper.GetAccount(ctx, msg.MustAccAddr()) // ensured in validate basic
+	if err := msg.GetKeyAndSig().Ok(ctx, acc, msg.GetPayload()); err != nil {
+		return nil, errorsmod.Wrap(err, "check sig ok")
 	}
 	operator := msg.MustOperatorAddr() // checked in validate basic
 	if _, ok := m.GetSequencer(ctx, operator); ok {
@@ -53,13 +50,9 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 
 func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSequencer) (*types.MsgUpdateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	accAddr := msg.MustAccAddr()
-	allow, err := m.IsSigned(ctx, accAddr, msg.GetKeyAndSig(), msg.GetPayload())
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "check sig")
-	}
-	if !allow {
-		return nil, gerrc.ErrUnauthenticated
+	acc := m.authAccountKeeper.GetAccount(ctx, msg.MustAccAddr()) // ensured in validate basic
+	if err := msg.GetKeyAndSig().Ok(ctx, acc, msg.GetPayload()); err != nil {
+		return nil, errorsmod.Wrap(err, "check sig ok")
 	}
 	consAddr, err := msg.GetKeyAndSig().Validator().GetConsAddr()
 	if err != nil {
@@ -78,35 +71,4 @@ func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSe
 		sdk.NewAttribute(types.AttributeKeyRewardAddr, msg.MustRewardAcc().String()),
 	))
 	return &types.MsgUpdateSequencerResponse{}, nil
-}
-
-var _ types.MsgServer = msgServer{}
-
-// IsSigned return true iff the key and sig contains a key and signature where the signature was produced by the key, and the signature
-// is over the account from the provided address, and the app payload data.
-//
-// The reasoning is as follows:
-// We know that the TX containing the Msg was signed by addr, because it has passed the sdk signature verification ante.
-// Therefore, if we require that the private key for the consensus address was used to sign off over this addr AND this chain ID then
-// we know that the owner of the private key really intended this payload to be included in this transaction, and it is not man in the middle or replay.
-func (k Keeper) IsSigned(ctx sdk.Context, addr sdk.AccAddress, keyAndSig *types.KeyAndSig, payloadApp codec.ProtoMarshaler) (bool, error) {
-	acc := k.authAccountKeeper.GetAccount(ctx, addr)
-
-	v := keyAndSig.Validator()
-
-	payloadBz, err := types.CreateBytesToSign(
-		ctx.ChainID(),
-		acc.GetAccountNumber(),
-		payloadApp,
-	)
-	if err != nil {
-		return false, errorsmod.Wrap(err, "create bytes to sign")
-	}
-
-	pubKey, err := v.ConsPubKey()
-	if err != nil {
-		return false, errorsmod.Wrap(err, "get cons pubkey")
-	}
-
-	return pubKey.VerifySignature(payloadBz, keyAndSig.GetSignature()), nil
 }

@@ -143,24 +143,6 @@ func (m *MsgUpdateSequencer) MustRewardAcc() sdk.AccAddress {
 	return sdk.MustAccAddressFromBech32(s)
 }
 
-// Validator is a convenience method - it returns a validator object which already
-// has implementations of various useful methods like obtaining various type conversions
-// for the public key.
-func (m *KeyAndSig) Validator() stakingtypes.Validator {
-	return stakingtypes.Validator{ConsensusPubkey: m.PubKey}
-}
-
-type CreatorAccount interface {
-	GetAccountNumber() uint64
-}
-
-type SigningData struct {
-	Operator sdk.ValAddress
-	Account  CreatorAccount
-	ChainID  string
-	Signer   func(msg []byte) ([]byte, cryptotypes.PubKey, error) // implemented with a wrapper around keyring
-}
-
 func BuildMsgCreateSequencer(
 	signingData SigningData,
 	payload *CreateSequencerPayload,
@@ -215,23 +197,4 @@ func createKeyAndSig(signingData SigningData, payload codec.ProtoMarshaler) (*Ke
 		PubKey:    pubKeyAny,
 		Signature: sig,
 	}, nil
-}
-
-// CreateBytesToSign creates the bytes which must be signed
-// Used to do the initial signing, and then also to verify signature of original data
-func CreateBytesToSign(
-	chainID string,
-	accountNumber uint64,
-	payload codec.ProtoMarshaler,
-) ([]byte, error) {
-	payloadBz, err := payload.Marshal()
-	if err != nil {
-		return nil, err
-	}
-	toSign := &PayloadToSign{
-		PayloadApp:    payloadBz,
-		ChainId:       chainID,
-		AccountNumber: accountNumber,
-	}
-	return toSign.Marshal()
 }
