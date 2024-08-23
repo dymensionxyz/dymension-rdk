@@ -36,7 +36,7 @@ func NewCreateCmd() *cobra.Command {
 	short := "Create a sequencer object, to claim rewards etc."
 	long := strings.TrimSpace(short +
 		`Requires signature from consensus address public key. Specify consensus key in keyring uid.
-Operator addr should be bech32 encoded. You may supply a reward addr optionally.`)
+Operator addr should be bech32 encoded. You may supply a different reward addr optionally.`)
 
 	cmd := &cobra.Command{
 		Use:     "create-sequencer [key name] {reward addr}",
@@ -65,14 +65,15 @@ Operator addr should be bech32 encoded. You may supply a reward addr optionally.
 			msgs[0] = msg
 
 			rewardAddr, _ := cmd.Flags().GetString(FlagRewardAddr)
-			if rewardAddr != "" {
-				msgU, err := types.BuildMsgUpdateSequencer(signingData, &types.UpdateSequencerPayload{RewardAddr: rewardAddr})
-				if err != nil {
-					return fmt.Errorf("build update seq msg: %w", err)
-				}
-
-				msgs = append(msgs, msgU)
+			if rewardAddr == "" {
+				rewardAddr = ctx.GetFromAddress().String()
 			}
+			msgU, err := types.BuildMsgUpdateSequencer(signingData, &types.UpdateSequencerPayload{RewardAddr: rewardAddr})
+			if err != nil {
+				return fmt.Errorf("build update seq msg: %w", err)
+			}
+
+			msgs = append(msgs, msgU)
 
 			return tx.GenerateOrBroadcastTxWithFactory(ctx, txf, msgs...)
 		},
