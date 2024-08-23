@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	errorsmod "cosmossdk.io/errors"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -60,20 +62,40 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 	}
 }
 
-func TestCreateUpdateWrongSig(t *testing.T) {
-	operator := utils.Proposer.GetOperator()
-	signer := func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
-		bz, err := utils.ConsPrivKey.Sign(msg)
-		return bz, utils.ConsPrivKey.PubKey(), err
+func TestCreateSecure(t *testing.T) {
+	valid := func() *types.MsgCreateSequencer {
+		operator := utils.Proposer.GetOperator()
+		signer := func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
+			bz, err := utils.ConsPrivKey.Sign(msg)
+			return bz, utils.ConsPrivKey.PubKey(), err
+		}
+		valid, err := types.BuildMsgCreateSequencer(signer, operator)
+		require.NoError(t, err)
+		return valid
 	}
-
-	msgC, err := types.BuildMsgCreateSequencer(signer, operator)
-
-	require.NoError(t, err)
-
-	// set a wrong operator
-	msgC.Operator = sdk.ValAddress(secp256k1.GenPrivKey().PubKey().Address()).String()
-
-	err = msgC.ValidateBasic()
-	require.True(t, errorsmod.IsOf(err, gerrc.ErrUnauthenticated))
+	t.Run("ok", func(t *testing.T) {
+		m := valid()
+		require.NoError(t, m.ValidateBasic())
+	})
+	t.Run("wrong oper", func(t *testing.T) {
+		m := valid()
+		m.Operator = sdk.ValAddress(secp256k1.GenPrivKey().PubKey().Address()).String()
+		err := m.ValidateBasic()
+		require.True(t, errorsmod.IsOf(err, gerrc.ErrUnauthenticated))
+	})
+	t.Run("wrong pub key", func(t *testing.T) {
+		m := valid()
+		pk := ed25519.GenPrivKey().PubKey()
+		pkA, err := codectypes.NewAnyWithValue(pk)
+		require.NoError(t, err)
+		m.PubKey = pkA
+		err = m.ValidateBasic()
+		require.True(t, errorsmod.IsOf(err, gerrc.ErrUnauthenticated))
+	})
+	t.Run("wrong sig", func(t *testing.T) {
+		m := valid()
+		m.Signature = []byte("foo")
+		err := m.ValidateBasic()
+		require.True(t, errorsmod.IsOf(err, gerrc.ErrUnauthenticated))
+	})
 }
