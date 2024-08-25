@@ -22,7 +22,7 @@ var (
 	_ module.AppModuleSimulation = AppModule{}
 )
 
-// AppModule embeds the Cosmos SDK's x/distribution AppModuleBasic.
+// AppModuleBasic embeds the Cosmos SDK's x/distribution AppModuleBasic.
 type AppModuleBasic struct {
 	distribution.AppModuleBasic
 }
@@ -71,7 +71,7 @@ func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 func (am AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
 	defGenesis := types.DefaultGenesisState()
 
-	// by default, all rewards goes to the governers
+	// by default, all rewards goes to the governors
 	defGenesis.Params.CommunityTax = sdk.ZeroDec()
 	defGenesis.Params.BaseProposerReward = sdk.ZeroDec()
 	defGenesis.Params.BonusProposerReward = sdk.ZeroDec()

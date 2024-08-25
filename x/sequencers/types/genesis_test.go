@@ -3,50 +3,46 @@ package types_test
 import (
 	"testing"
 
-	"github.com/cometbft/cometbft/crypto/ed25519"
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/stretchr/testify/require"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {
-	pk := ed25519.GenPrivKey().PubKey()
-
-	for _, tc := range []struct {
-		desc     string
-		genState types.GenesisState
-		valid    bool
-	}{
-		{
-			desc: "valid",
-			genState: types.GenesisState{
-				Params:                 types.DefaultParams(),
-				GenesisOperatorAddress: sdk.ValAddress(pk.Address()).String(),
+	valid := func() types.GenesisState {
+		return types.GenesisState{
+			Params: types.DefaultParams(),
+			Sequencers: []types.Sequencer{
+				{
+					Validator:  &utils.Proposer,
+					RewardAddr: "",
+				},
 			},
-			valid: true,
-		},
-		{
-			desc:     "default - missing operator address",
-			genState: *types.DefaultGenesis(),
-			valid:    false,
-		},
-		{
-			desc: "not a val address",
-			genState: types.GenesisState{
-				Params:                 types.DefaultParams(),
-				GenesisOperatorAddress: sdk.AccAddress(pk.Address()).String(),
-			},
-			valid: false,
-		},
-	} {
-		t.Run(tc.desc, func(t *testing.T) {
-			err := tc.genState.ValidateGenesis()
-			if tc.valid {
-				require.NoError(t, err)
-			} else {
-				require.Error(t, err)
-			}
-		})
+		}
 	}
+
+	t.Run("ok", func(t *testing.T) {
+		c := valid()
+		require.NoError(t, c.ValidateGenesis())
+	})
+	t.Run("nil seq", func(t *testing.T) {
+		c := valid()
+		c.Sequencers[0].Validator = nil
+		require.Error(t, c.ValidateGenesis())
+	})
+	t.Run("bad operator", func(t *testing.T) {
+		c := valid()
+		c.Sequencers[0].Validator.OperatorAddress = "foo"
+		require.Error(t, c.ValidateGenesis())
+	})
+	t.Run("bad cons", func(t *testing.T) {
+		c := valid()
+		c.Sequencers[0].Validator.ConsensusPubkey = nil
+		require.Error(t, c.ValidateGenesis())
+	})
+	t.Run("bad reward addr", func(t *testing.T) {
+		c := valid()
+		c.Sequencers[0].RewardAddr = "foo"
+		require.Error(t, c.ValidateGenesis())
+	})
 }

@@ -9,17 +9,17 @@ import (
 
 // SequencerKeeper expected sequencer keeper (noalias)
 type SequencerKeeper interface {
-	GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (stakingtypes.Validator, bool)
+	GetRewardAddrByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (sdk.AccAddress, bool)
 }
 
 // StakingKeeper expected staking keeper (noalias)
 type StakingKeeper interface {
 	GetLastTotalPower(ctx sdk.Context) math.Int
 
-	// iterate through validators by operator address, execute func for each validator
+	// IterateValidators iterate through validators by operator address, execute func for each validator
 	IterateValidators(sdk.Context,
 		func(index int64, validator stakingtypes.ValidatorI) (stop bool))
-	// iterate through bonded validators by operator address, execute func for each validator
+	// IterateBondedValidatorsByPower iterate through bonded validators by operator address, execute func for each validator
 	IterateBondedValidatorsByPower(sdk.Context,
 		func(index int64, validator stakingtypes.ValidatorI) (stop bool))
 

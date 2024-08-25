@@ -25,11 +25,8 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(CmdQuerySequencers())
 	cmd.AddCommand(CmdQuerySequencer())
 
-	// TODO:
-	// cmd.AddCommand(CmdQueryHistoricalInfo())
-	// Add queries for specific sequencer (num of blocks, rewards, etc..)
-
-	// this line is used by starport scaffolding # 1
+	// TODO: historical info
+	// TODO: Add queries for specific sequencer (num of blocks, rewards, etc..)
 
 	return cmd
 }

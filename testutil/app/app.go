@@ -746,7 +746,7 @@ func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.Res
 	}
 
 	// Passing the dymint sequencers to the sequencer module from RequestInitChain
-	app.SequencersKeeper.SetDymintSequencers(ctx, req.Validators)
+	app.SequencersKeeper.MustSetDymintValidatorUpdates(ctx, req.Validators)
 
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	res := app.mm.InitGenesis(ctx, app.appCodec, genesisState)
