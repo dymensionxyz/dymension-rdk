@@ -1,0 +1,17 @@
+syntax = "proto3";
+package rollapp.params.types;
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types";
+
+// rollapp params defined in genesis and updated via gov proposal
+message Params {
+  // data availability type (e.g. celestia) used in the rollapp
+  string da = 1;
+  // commit used for the rollapp executable
+  string commit = 2;
+  // maximum amount of gas that all transactions included in a block can use
+  uint32 blockmaxgas = 3;
+  // maximum allowed block size
+  uint32 blockmaxsize = 4;
+}
