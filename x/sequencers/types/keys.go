@@ -26,8 +26,11 @@ const (
 
 var (
 	// Keys for store prefixes
+
 	SequencersKey           = []byte{0x21} // prefix for each key to a sequencer
 	SequencersByConsAddrKey = []byte{0x22} // prefix for each key to a sequencer index, by pubkey
+	ValidatorUpdateKey      = []byte{0x23} // prefix for each key to a validator updates list
+	SequencersRewardAddrKey = []byte{0x24} // prefix for each key to a validator reward addr
 
 	HistoricalInfoKey = []byte{0x50} // prefix for the historical info
 )
@@ -40,6 +43,10 @@ func GetSequencerKey(operatorAddr sdk.ValAddress) []byte {
 // GetSequencerByConsAddrKey creates the key for the sequencer with pubkey
 func GetSequencerByConsAddrKey(addr sdk.ConsAddress) []byte {
 	return append(SequencersByConsAddrKey, address.MustLengthPrefix(addr)...)
+}
+
+func GetSequencerRewardAddrKey(operator sdk.ValAddress) []byte {
+	return append(SequencersRewardAddrKey, address.MustLengthPrefix(operator)...)
 }
 
 // GetHistoricalInfoKey returns a key prefix for indexing HistoricalInfo objects.

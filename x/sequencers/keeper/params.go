@@ -18,7 +18,6 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramstore.SetParamSet(ctx, &params)
 }
 
-// UnbondingTime
 func (k Keeper) UnbondingTime(ctx sdk.Context) (res time.Duration) {
 	k.paramstore.Get(ctx, types.KeyUnbondingTime, &res)
 	return

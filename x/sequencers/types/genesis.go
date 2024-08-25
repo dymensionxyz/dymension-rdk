@@ -1,9 +1,11 @@
 package types
 
 import (
-	"fmt"
+	"errors"
 
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 // DefaultIndex is the default capability global index
@@ -21,11 +23,33 @@ func (gs GenesisState) ValidateGenesis() error {
 	if err != nil {
 		return err
 	}
-
-	_, err = sdk.ValAddressFromBech32(gs.GenesisOperatorAddress)
-	if err != nil {
-		return fmt.Errorf("genesis operator address is invalid: %w", err)
+	for _, s := range gs.GetSequencers() {
+		if s.Validator == nil {
+			return errorsmod.Wrap(gerrc.ErrInvalidArgument, "validator is nil")
+		}
+		if s.Validator.ConsensusPubkey == nil {
+			return errorsmod.Wrap(gerrc.ErrInvalidArgument, "validator cons key is nil")
+		}
+		if _, err := s.Validator.ConsPubKey(); err != nil {
+			return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "cons pub key")
+		}
+		if _, err := sdk.ValAddressFromBech32(s.Validator.OperatorAddress); err != nil {
+			return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "operator addr")
+		}
+		if s.RewardAddr != "" {
+			if _, err := s.RewardAcc(); err != nil {
+				return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward acc")
+			}
+		}
 	}
-
 	return nil
+}
+
+// RewardAcc will try to parse an acc address from the sequencer reward addr assuming it is not empty string
+func (s Sequencer) RewardAcc() (sdk.AccAddress, error) {
+	return sdk.AccAddressFromBech32(s.GetRewardAddr())
+}
+
+func (s Sequencer) MustRewardAcc() sdk.AccAddress {
+	return sdk.MustAccAddressFromBech32(s.GetRewardAddr())
 }

@@ -3,16 +3,21 @@ package rollapp.sequencers.types;
 
 import "gogoproto/gogo.proto";
 import "sequencers/params.proto";
-
-// this line is used by starport scaffolding # genesis/proto/import
+import "cosmos/staking/v1beta1/staking.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 
-// GenesisState defines the test module's genesis state.
-message GenesisState {
-  Params params = 1 [ (gogoproto.nullable) = false ];
+message Sequencer {
+  // Validator is a convenient storage for e.g operator address and consensus pub key
+  cosmos.staking.v1beta1.Validator validator = 1;
+  // RewardAddr is the sdk acc address where the sequencer has opted to receive rewards. Empty if not set.
+  string reward_addr = 2;
+}
 
-  // genesis_operator_address defines the genesis operator address of the
-  // sequencer.
-  string genesis_operator_address = 2;
+// GenesisState defines the module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  reserved 2;
+  // Sequencers all stored sequencers
+  repeated Sequencer sequencers = 3 [(gogoproto.nullable) = false];
 }
