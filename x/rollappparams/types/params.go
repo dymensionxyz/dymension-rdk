@@ -43,7 +43,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 func NewParams(
 	da string,
 	version string,
-	blockMaxGas uint32,
+	blockMaxGas int64,
 	blockMaxSize uint32,
 ) Params {
 	return Params{
@@ -59,7 +59,7 @@ func DefaultParams() Params {
 	return Params{
 		Da:           DefaultDA,
 		Version:      DefaultVersion,
-		Blockmaxgas:  uint32(DefaultBlockMaxGas),
+		Blockmaxgas:  int64(DefaultBlockMaxGas),
 		Blockmaxsize: uint32(DefaultBlockMaxSize),
 	}
 }
@@ -110,11 +110,11 @@ func ValidateVersion(i any) error {
 }
 
 func ValidateBlockMaxGas(i any) error {
-	gas, ok := i.(uint32)
+	gas, ok := i.(int64)
 	if !ok {
 		return fmt.Errorf("invalid block max gas param type: %w", gerrc.ErrInvalidArgument)
 	}
-	if gas < uint32(MinBlockMaxGas) {
+	if gas < int64(MinBlockMaxGas) {
 		return fmt.Errorf("invalid block max gas value: used: %d minimum accepted: %d: %w", gas, MinBlockMaxGas, gerrc.ErrInvalidArgument)
 	}
 	return nil
