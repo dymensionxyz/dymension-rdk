@@ -8,8 +8,8 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types
 message Params {
   // data availability type (e.g. celestia) used in the rollapp
   string da = 1;
-  // commit used for the rollapp executable
-  string commit = 2;
+  // commit of the version used for the rollapp executable
+  string version = 2;
   // maximum amount of gas that all transactions included in a block can use
   uint32 blockmaxgas = 3;
   // maximum allowed block size

@@ -19,28 +19,28 @@ func TestGenesisState(t *testing.T) {
 			params: types.DefaultParams,
 		},
 		{
-			name: "missing commit",
+			name: "missing version",
 			params: func() types.Params {
 				p := types.DefaultParams()
-				p.Commit = ""
+				p.Version = ""
 				return p
 			},
 			expectedErr: true,
 		},
 		{
-			name: "wrong length commit",
+			name: "wrong length version",
 			params: func() types.Params {
 				p := types.DefaultParams()
-				p.Commit = "fdasfewkq102382w523"
+				p.Version = "fdasfewkq102382w523"
 				return p
 			},
 			expectedErr: true,
 		},
 		{
-			name: "commit not alphanumeric",
+			name: "version not alphanumeric",
 			params: func() types.Params {
 				p := types.DefaultParams()
-				p.Commit = "74fad6a00713_ba62352c2451c6b7ab73571c515"
+				p.Version = "3a19edd887a9b576a866750bc9d480ada53d2c0d"
 				return p
 			},
 			expectedErr: true,
