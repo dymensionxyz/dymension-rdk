@@ -533,14 +533,22 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/dvsekhvalnov/jose2go v1.5.0 h1:3j8ya4Z4kMCwT5nXIKFSV84YS+HdqSSO0VsTQxaLAeM=
 github.com/dvsekhvalnov/jose2go v1.5.0/go.mod h1:QsHjhyTlD/lAVqn/NSbVZmSCGeDehTB/mPZadG+mhXU=
+<<<<<<< HEAD
 github.com/dymensionxyz/cometbft v0.34.29-0.20240822095912-8f031e6a53af h1:JRkyWzueq+6a3gdNfGyaioSYPbLP06BkijRFE+UOWhU=
 github.com/dymensionxyz/cometbft v0.34.29-0.20240822095912-8f031e6a53af/go.mod h1:L9shMfbkZ8B+7JlwANEr+NZbBcn+hBpwdbeYvA5rLCw=
+=======
+github.com/dymensionxyz/cometbft v0.34.29-0.20240826103935-3b56e9ae1680 h1:g992HU2HzVTEywlFTGW4JzGR7B4tdPDXSsUoXm4ae4Q=
+github.com/dymensionxyz/cometbft v0.34.29-0.20240826103935-3b56e9ae1680/go.mod h1:L9shMfbkZ8B+7JlwANEr+NZbBcn+hBpwdbeYvA5rLCw=
+>>>>>>> 1695b31 (go mod)
 github.com/dymensionxyz/cosmosclient v0.4.2-beta.0.20240821081230-b4018b2bac13 h1:u5yeve5jZR6TdRjjR+vYT/8PWKbhwCZxUmAu+/Tnxyg=
 github.com/dymensionxyz/cosmosclient v0.4.2-beta.0.20240821081230-b4018b2bac13/go.mod h1:jabDQYXrccscSE0fXkh7eQFYPWJCRiuWKonFGObVq6s=
 github.com/dymensionxyz/dymension/v3 v3.1.0-rc03.0.20240411195658-f7cd96f53b56 h1:cmpJYdRviuUfmlJdHrcAND8Jd6JIY4rp63bWAQzPr54=
 github.com/dymensionxyz/dymension/v3 v3.1.0-rc03.0.20240411195658-f7cd96f53b56/go.mod h1:3Pfrr8j/BR9ztNKztGfC5PqDiO6CcrzMLCJtFtPEVW4=
+<<<<<<< HEAD
 github.com/dymensionxyz/dymint v1.2.0-rc01.0.20240824093518-9aff93277837 h1:r+tqV014gP5P2xdIPjBdP0l+8meFC9rRxUNhgJPrf/U=
 github.com/dymensionxyz/dymint v1.2.0-rc01.0.20240824093518-9aff93277837/go.mod h1:yV6rRJG5quG/sRPh30zlzgyTFwElFP8wk8HAbDRGymc=
+=======
+>>>>>>> 1695b31 (go mod)
 github.com/dymensionxyz/evmos/v12 v12.1.6-dymension-v0.3 h1:vmAdUGUc4rTIiO3Phezr7vGq+0uPDVKSA4WAe8+yl6w=
 github.com/dymensionxyz/evmos/v12 v12.1.6-dymension-v0.3/go.mod h1:LfPv2O1HXMgETpka81Pg3nXy+U/7urq8dn85ZnSXK5Y=
 github.com/dymensionxyz/gerr-cosmos v1.0.0 h1:oi91rgOkpJWr41oX9JOyjvvBnhGY54tj513x8VlDAEc=
