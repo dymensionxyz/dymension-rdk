@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	"github.com/dymensionxyz/dymension-rdk/x/rollappparams/client/cli"
 	"github.com/dymensionxyz/dymension-rdk/x/rollappparams/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/rollappparams/types"
 	"github.com/gorilla/mux"
@@ -53,7 +54,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 
 // GetQueryCmd returns the capability module's root query command.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return nil
+	return cli.GetQueryCmd()
 }
 
 // GetTxCmd returns the capability module's root tx command.
@@ -101,12 +102,13 @@ func (am AppModule) Name() string {
 
 // QuerierRoute returns the module's query routing key.
 func (AppModule) QuerierRoute() string {
-	return ""
+	return types.QuerierRoute
 }
 
 // RegisterServices registers a GRPC query service to respond to the
 // module-specific GRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQuerier(am.keeper))
 }
 
 // RegisterInvariants registers the module's invariants.
@@ -143,7 +145,9 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 
 // LegacyQuerierHandler returns the module's Querier.
 func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
-	return nil
+	return func(sdk.Context, []string, abci.RequestQuery) ([]byte, error) {
+		return nil, fmt.Errorf("legacy querier not supported for the x/%s module", types.ModuleName)
+	}
 }
 
 // Route returns the module's message routing key.

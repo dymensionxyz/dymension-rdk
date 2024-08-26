@@ -32,7 +32,7 @@ func GetQueryCmd() *cobra.Command {
 func GetCmdQueryParams() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "params",
-		Short: "Query the current minting parameters",
+		Short: "Query the current rollapp parameters",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
