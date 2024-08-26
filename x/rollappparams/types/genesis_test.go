@@ -40,7 +40,7 @@ func TestGenesisState(t *testing.T) {
 			name: "version not alphanumeric",
 			params: func() types.Params {
 				p := types.DefaultParams()
-				p.Version = "3a19edd887a9b576a866750bc9d480ada53d2c0d"
+				p.Version = "3a19edd887_9b576a866750bc9d480ada53d2c0d"
 				return p
 			},
 			expectedErr: true,
