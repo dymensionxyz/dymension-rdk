@@ -49,13 +49,13 @@ func (m *MsgCreateSequencer) ValidateBasic() error {
 	pubKey, _ := v.ConsPubKey()
 
 	// We return OK only if the key and sig contains a key and signature where the signature was produced by the key, and the signature
-	// is over the operator account, and the app payload data (if not empty).
+	// is over the operator account.
 	//
 	// The reasoning is as follows:
 	//
 	// We know from the SDK TX signing mechanism that the account originates from the operator, and on this chain ID.
-	// Therefore, we just need to check that the consensus private key also signed over this account and chain ID.
-	// That means the consensus private key owner is the same actor as the operator.
+	// Therefore, we just need to check that the consensus private key also over this operator. Then we know that
+	// the private key holder of the operator and the consensus keys is the same actor.
 	if !pubKey.VerifySignature(operator, m.GetSignature()) {
 		return errorsmod.Wrap(gerrc.ErrUnauthenticated, "priv key of pub cons key was not used to sign operator addr")
 	}

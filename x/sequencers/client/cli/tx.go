@@ -60,10 +60,10 @@ Operator addr should be bech32 encoded. You may supply a different reward addr o
 				return fmt.Errorf("keybase key: %w", err)
 			}
 
-			msgs := make([]sdk.Msg, 1)
+			msgs := make([]sdk.Msg, 2)
 
-			msg, err := types.BuildMsgCreateSequencer(func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
-				return txf.Keybase().Sign(keyID, msg)
+			msg, err := types.BuildMsgCreateSequencer(func(toSign []byte) ([]byte, cryptotypes.PubKey, error) {
+				return txf.Keybase().Sign(keyID, toSign)
 			}, sdk.ValAddress(addr))
 			if err != nil {
 				return fmt.Errorf("build create seq msg: %w", err)
@@ -75,12 +75,10 @@ Operator addr should be bech32 encoded. You may supply a different reward addr o
 			if rewardAddr == "" {
 				rewardAddr = ctx.GetFromAddress().String()
 			}
-			msgU := &types.MsgUpdateSequencer{
+			msgs[1] = &types.MsgUpdateSequencer{
 				Operator:   sdk.ValAddress(ctx.GetFromAddress()).String(),
 				RewardAddr: rewardAddr,
 			}
-
-			msgs = append(msgs, msgU)
 
 			return tx.GenerateOrBroadcastTxWithFactory(ctx, txf, msgs...)
 		},
@@ -94,16 +92,11 @@ Operator addr should be bech32 encoded. You may supply a different reward addr o
 
 func NewUpdateCmd() *cobra.Command {
 	short := "Update a sequencer object, to claim rewards etc."
-	long := strings.TrimSpace(short +
-		`Requires signature from consensus address public key. Specify consensus key in keyring uid.
-Operator addr should be bech32 encoded.`)
-
 	cmd := &cobra.Command{
 		Use:     "update-sequencer [reward addr]",
 		Example: "update-sequencer ethm1lhk5cnfrhgh26w5r6qft36qerg4dclfev9nprc --from foouser",
 		Args:    cobra.ExactArgs(1),
 		Short:   short,
-		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, err := client.GetClientTxContext(cmd)
 			if err != nil {
