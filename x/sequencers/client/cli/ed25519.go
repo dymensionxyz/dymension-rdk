@@ -1,64 +1,64 @@
 package cli
 
 import (
-    "bufio"
-    "encoding/base64"
-    "encoding/json"
-    "fmt"
-    "os"
+	"bufio"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"os"
 
-    "github.com/cosmos/cosmos-sdk/client"
-    "github.com/cosmos/cosmos-sdk/client/input"
-    "github.com/cosmos/cosmos-sdk/crypto"
-    "github.com/cosmos/cosmos-sdk/crypto/keyring"
-    "github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-    sdk "github.com/cosmos/cosmos-sdk/types"
-    stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-    "github.com/spf13/cobra"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/input"
+	"github.com/cosmos/cosmos-sdk/crypto"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/spf13/cobra"
 )
 
 // UnsafeImportConsensusKeyCmd imports private keys from a keyfile. This is 'unsafe' because it reads the private key into
 // memory temporarily.
 func UnsafeImportConsensusKeyCmd() *cobra.Command {
-    return &cobra.Command{
-        Use:     "unsafe-import-cons-key <name> <private key file path>",
-        Short:   "**UNSAFE** Import consensus private key into the local keyring",
-        Long:    "**UNSAFE** Import a consensus private key (ed25519) to the keyring by reading the file into memory",
-        Example: "unsafe-import-cons-key fooCons /Users/foo/.rollapp_evm/config/node_key.json",
-        Args:    cobra.ExactArgs(2),
-        RunE: func(cmd *cobra.Command, args []string) error {
-            clientCtx, err := client.GetClientTxContext(cmd)
-            if err != nil {
-                return err
-            }
+	return &cobra.Command{
+		Use:     "unsafe-import-cons-key <name> <private key file path>",
+		Short:   "**UNSAFE** Import consensus private key into the local keyring",
+		Long:    "**UNSAFE** Import a consensus private key (ed25519) to the keyring by reading the file into memory",
+		Example: "unsafe-import-cons-key fooCons /Users/foo/.rollapp_evm/config/node_key.json",
+		Args:    cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
 
-            keyUID := args[0]
-            filePath := args[1]
+			keyUID := args[0]
+			filePath := args[1]
 
-            file, err := os.ReadFile(filePath)
-            if err != nil {
-                return fmt.Errorf("read key file: %w", err)
-            }
+			file, err := os.ReadFile(filePath)
+			if err != nil {
+				return fmt.Errorf("read key file: %w", err)
+			}
 
-            var f consensusKeyFile
-            err = json.Unmarshal(file, &f)
-            if err != nil {
-                return fmt.Errorf("unmarshal key file: %w", err)
-            }
+			var f consensusKeyFile
+			err = json.Unmarshal(file, &f)
+			if err != nil {
+				return fmt.Errorf("unmarshal key file: %w", err)
+			}
 
-            inBuf := bufio.NewReader(cmd.InOrStdin())
-            passphrase, err := input.GetPassword("Enter passphrase to encrypt your key:", inBuf)
-            if err != nil {
-                return err
-            }
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			passphrase, err := input.GetPassword("Enter passphrase to encrypt your key:", inBuf)
+			if err != nil {
+				return err
+			}
 
-            err = importConsensusKeyToKeyring(clientCtx.Keyring, f, keyUID, passphrase)
-            if err != nil {
-                return fmt.Errorf("import armored key to keyring: %w", err)
-            }
-            return nil
-        },
-    }
+			err = importConsensusKeyToKeyring(clientCtx.Keyring, f, keyUID, passphrase)
+			if err != nil {
+				return fmt.Errorf("import armored key to keyring: %w", err)
+			}
+			return nil
+		},
+	}
 }
 
 type consensusKeyFile struct {
