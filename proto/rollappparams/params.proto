@@ -10,8 +10,5 @@ message Params {
   string da = 1;
   // commit of the version used for the rollapp executable
   string version = 2;
-  // maximum amount of gas that all transactions included in a block can use
-  int64 blockmaxgas = 3;
-  // maximum allowed block size
-  uint32 blockmaxsize = 4;
+
 }

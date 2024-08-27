@@ -37,16 +37,6 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramSpace.SetParamSet(ctx, &params)
 }
 
-func (k Keeper) BlockMaxGas(ctx sdk.Context) (res uint32) {
-	k.paramSpace.Get(ctx, types.KeyBlockMaxGas, &res)
-	return
-}
-
-func (k Keeper) BlockMaxSize(ctx sdk.Context) (res uint32) {
-	k.paramSpace.Get(ctx, types.KeyBlockMaxSize, &res)
-	return
-}
-
 func (k Keeper) DA(ctx sdk.Context) (res string) {
 	k.paramSpace.Get(ctx, types.KeyDa, &res)
 	return
