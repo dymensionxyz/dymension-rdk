@@ -22,21 +22,24 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	operator := msg.MustOperatorAddr() // checked in validate basic
-	if _, ok := m.GetSequencer(ctx, operator); ok {
-		return nil, gerrc.ErrAlreadyExists
-	}
-
 	v := msg.Validator()
-	m.SetSequencer(ctx, v)
-
-	consAddr, err := v.GetConsAddr()
+	cons, err := v.GetConsAddr()
 	if err != nil {
 		panic(err) // it must be ok because we used it to check sig
 	}
 
+	if _, ok := m.GetSequencer(ctx, operator); ok {
+		return nil, gerrc.ErrAlreadyExists
+	}
+	if _, ok := m.GetSequencerByConsAddr(ctx, cons); ok {
+		return nil, gerrc.ErrAlreadyExists
+	}
+
+	m.SetSequencer(ctx, v)
+
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventCreateSequencer,
-		sdk.NewAttribute(types.AttributeKeyConsAddr, consAddr.String()),
+		sdk.NewAttribute(types.AttributeKeyConsAddr, cons.String()),
 		sdk.NewAttribute(types.AttributeKeyOperatorAddr, v.OperatorAddress),
 	))
 
