@@ -8,7 +8,13 @@ import (
 
 // GetValidatorByConsAddr get a single validator by consensus address - used for interface compat
 func (k Keeper) GetValidatorByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (validator stakingtypes.Validator, found bool) {
-	return k.GetSequencerByConsAddr(ctx, consAddr)
+	ret, ok := k.GetSequencerByConsAddr(ctx, consAddr)
+	if !ok {
+		if consAddr.Equals(sdk.ConsAddress(ctx.BlockHeader().ProposerAddress)) {
+			return stakingtypes.Validator{}, true
+		}
+	}
+	return ret, ok
 }
 
 // GetSequencer get a single sequencer

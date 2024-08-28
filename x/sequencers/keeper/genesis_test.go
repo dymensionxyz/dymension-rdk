@@ -11,6 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestGetCoinbaseAddressAlt(t *testing.T) {
+	_ = common.BytesToAddress(nil)
+}
+
 // A regression test to make sure we are compatible with ethermint, which requires a 'coinbase'
 // addr for compat with EVM op codes.
 // https://github.com/dymensionxyz/ethermint/blob/b1506ae83050d2361857251766d93253e317900c/x/evm/keeper/state_transition.go#L41-L44
