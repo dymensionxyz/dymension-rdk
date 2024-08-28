@@ -31,8 +31,14 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	if _, ok := m.GetSequencer(ctx, operator); ok {
 		return nil, gerrc.ErrAlreadyExists
 	}
-	if _, ok := m.GetSequencerByConsAddr(ctx, cons); ok {
-		return nil, gerrc.ErrAlreadyExists
+
+	existing, ok := m.GetSequencerByConsAddr(ctx, cons)
+	if ok {
+		if !existing.GetOperator().Equals(types.DummyOperatorAddr) {
+			return nil, gerrc.ErrAlreadyExists
+		}
+		// this caller is the owner of the cons key used for the dummy addr, so we let them replace it
+		m.DeleteSequencer(ctx, existing)
 	}
 
 	m.SetSequencer(ctx, v)

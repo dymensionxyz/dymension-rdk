@@ -8,6 +8,9 @@ import (
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
+// DummyOperatorAddr - The addr used temporarily for the current proposer until they register
+var DummyOperatorAddr = sdk.ValAddress("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+
 // DefaultIndex is the default capability global index
 const DefaultIndex uint64 = 1
 

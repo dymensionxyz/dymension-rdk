@@ -62,6 +62,86 @@ func TestCreateUpdateHappyPath(t *testing.T) {
 	}
 }
 
+// Make sure the owner of the private key relating to the dummy validator can replace it
+func TestCreateDummyOwner(t *testing.T) {
+	app := utils.Setup(t, false)
+	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
+
+	msgServer := keeper.NewMsgServerImpl(*k)
+
+	wctx := sdk.WrapSDKContext(ctx)
+
+	signer := func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
+		bz, err := utils.ConsPrivKey.Sign(msg)
+		return bz, utils.ConsPrivKey.PubKey(), err
+	}
+
+	msgC, err := types.BuildMsgCreateSequencer(signer, types.DummyOperatorAddr)
+	require.NoError(t, err)
+
+	err = msgC.ValidateBasic()
+	require.NoError(t, err)
+
+	_, err = msgServer.CreateSequencer(wctx, msgC)
+	require.NoError(t, err)
+}
+
+// Make sure we stop people creating either duplicate operators or duplicate cons addrs
+func TestCreateBlockDuplicates(t *testing.T) {
+	app := utils.Setup(t, false)
+	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
+
+	msgServer := keeper.NewMsgServerImpl(*k)
+
+	wctx := sdk.WrapSDKContext(ctx)
+
+	type args struct {
+		oper     sdk.ValAddress
+		priv     cryptotypes.PrivKey
+		expectOk bool
+	}
+
+	for _, a := range []args{
+		{
+			// the first guy uses up the operator addr and priv key
+			utils.Proposer.GetOperator(),
+			utils.ConsPrivKey,
+			true,
+		},
+		{
+			// shouldn't work: operator in use
+			utils.Proposer.GetOperator(),
+			ed25519.GenPrivKey(),
+			false,
+		},
+		{
+			// shouldn't work: cons key in use
+			sdk.ValAddress(secp256k1.GenPrivKey().PubKey().Address()),
+			utils.ConsPrivKey,
+			false,
+		},
+	} {
+
+		signer := func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
+			bz, err := a.priv.Sign(msg)
+			return bz, a.priv.PubKey(), err
+		}
+
+		msgC, err := types.BuildMsgCreateSequencer(signer, a.oper)
+		require.NoError(t, err)
+
+		err = msgC.ValidateBasic()
+		require.NoError(t, err)
+
+		_, err = msgServer.CreateSequencer(wctx, msgC)
+		if a.expectOk {
+			require.NoError(t, err)
+		} else {
+			require.True(t, errorsmod.IsOf(err, gerrc.ErrAlreadyExists))
+		}
+	}
+}
+
 func TestCreateSecure(t *testing.T) {
 	valid := func() *types.MsgCreateSequencer {
 		operator := utils.Proposer.GetOperator()
