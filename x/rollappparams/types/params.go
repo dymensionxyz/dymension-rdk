@@ -11,9 +11,9 @@ import (
 
 const (
 	// current supported DA
-	DefaultDA = "celestia"
-	// commit used for the rollapp binary. it must be overwritten in Makefile.
-	DefaultCommit = "74fad6a00713cba62352c2451c6b7ab73571c515"
+	DefaultDA = "mock"
+	// version used for the rollapp binary. it must be overwritten in Makefile.
+	DefaultVersion = "3a19edd887a9b576a866750bc9d480ada53d2c0d"
 	// default max gas accepted per block. limited to 400M.
 	DefaultBlockMaxGas = 400000000
 	// default max block size accepted (equivalent to block max size it can fit into a celestia blob).
@@ -22,17 +22,17 @@ const (
 	MinBlockMaxSize = 100000
 	// default minimum value for max gas used in a block. set to 10M to avoid using too small values that limit performance and avoid no transactions can be included in a block.
 	MinBlockMaxGas = 10000000
-	// length of the commit string.
-	CommitLength = 40
+	// length of the version commit string.
+	VersionLength = 40
 )
 
 // Parameter store keys.
 var (
 	KeyDa           = []byte("da")
-	KeyCommit       = []byte("commit")
+	KeyVersion      = []byte("version")
 	KeyBlockMaxGas  = []byte("blockmaxgas")
 	KeyBlockMaxSize = []byte("blockmaxsize")
-	CommitRegExp    = regexp.MustCompile(`^[a-z0-9]*$`)
+	VersionRegExp   = regexp.MustCompile(`^[a-z0-9]*$`)
 )
 
 func ParamKeyTable() paramtypes.KeyTable {
@@ -42,13 +42,13 @@ func ParamKeyTable() paramtypes.KeyTable {
 // NewParams creates a new Params object
 func NewParams(
 	da string,
-	commit string,
+	version string,
 	blockMaxGas uint32,
 	blockMaxSize uint32,
 ) Params {
 	return Params{
 		Da:           da,
-		Commit:       commit,
+		Version:      version,
 		Blockmaxgas:  blockMaxGas,
 		Blockmaxsize: blockMaxSize,
 	}
@@ -58,7 +58,7 @@ func NewParams(
 func DefaultParams() Params {
 	return Params{
 		Da:           DefaultDA,
-		Commit:       DefaultCommit,
+		Version:      DefaultVersion,
 		Blockmaxgas:  uint32(DefaultBlockMaxGas),
 		Blockmaxsize: uint32(DefaultBlockMaxSize),
 	}
@@ -69,7 +69,7 @@ func (p Params) Validate() error {
 	if err != nil {
 		return err
 	}
-	err = ValidateCommit(p.Commit)
+	err = ValidateVersion(p.Version)
 	if err != nil {
 		return err
 	}
@@ -93,17 +93,17 @@ func ValidateDa(i any) error {
 
 }
 
-func ValidateCommit(i any) error {
+func ValidateVersion(i any) error {
 
-	commit, ok := i.(string)
+	version, ok := i.(string)
 	if !ok {
-		return fmt.Errorf("invalid commit type param type: %w", gerrc.ErrInvalidArgument)
+		return fmt.Errorf("invalid version type param type: %w", gerrc.ErrInvalidArgument)
 	}
-	if len(commit) != CommitLength {
-		return fmt.Errorf("invalid commit length: param length: %d accepted: %d: %w", len(commit), CommitLength, gerrc.ErrInvalidArgument)
+	if len(version) != VersionLength {
+		return fmt.Errorf("invalid version length: param length: %d accepted: %d: %w", len(version), VersionLength, gerrc.ErrInvalidArgument)
 	}
-	if !CommitRegExp.MatchString(commit) {
-		return fmt.Errorf("invalid commit: it must be alphanumeric %w", gerrc.ErrInvalidArgument)
+	if !VersionRegExp.MatchString(version) {
+		return fmt.Errorf("invalid version: it must be alphanumeric %w", gerrc.ErrInvalidArgument)
 	}
 
 	return nil
@@ -138,7 +138,7 @@ func ValidateBlockMaxSize(i any) error {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, ValidateDa),
-		paramtypes.NewParamSetPair(KeyCommit, &p.Commit, ValidateCommit),
+		paramtypes.NewParamSetPair(KeyVersion, &p.Version, ValidateVersion),
 		paramtypes.NewParamSetPair(KeyBlockMaxGas, &p.Blockmaxgas, ValidateBlockMaxGas),
 		paramtypes.NewParamSetPair(KeyBlockMaxSize, &p.Blockmaxsize, ValidateBlockMaxSize),
 	}
