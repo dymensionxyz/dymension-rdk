@@ -10,6 +10,6 @@ message Params {
   string da = 1;
   // commit of the version used for the rollapp executable
   string version = 2;
-  // maximum allowed block size
-  uint32 blockmaxsize = 3;
+  // maximum allowed block size in bytes
+  uint32 blockmaxbytes = 3;
 }
