@@ -46,19 +46,10 @@ func TestGenesisState(t *testing.T) {
 			expectedErr: true,
 		},
 		{
-			name: "block max gas too small",
-			params: func() types.Params {
-				p := types.DefaultParams()
-				p.Blockmaxgas = 0
-				return p
-			},
-			expectedErr: true,
-		},
-		{
 			name: "block max size too small",
 			params: func() types.Params {
 				p := types.DefaultParams()
-				p.Blockmaxsize = 50000
+				p.Blockmaxbytes = 50000
 				return p
 			},
 			expectedErr: true,
@@ -67,7 +58,7 @@ func TestGenesisState(t *testing.T) {
 			name: "block max size too big",
 			params: func() types.Params {
 				p := types.DefaultParams()
-				p.Blockmaxsize = 1000000
+				p.Blockmaxbytes = 1000000
 				return p
 			},
 			expectedErr: true,
