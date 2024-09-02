@@ -21,6 +21,8 @@ import (
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
+	rollappparamstypes "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types"
+
 	"github.com/stretchr/testify/require"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -106,6 +108,13 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 		Params: seqtypes.DefaultParams(),
 	}
 	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
+
+	// setup for rollapp params
+
+	rollappParamsGenesis := rollappparamstypes.GenesisState{
+		Params: rollappparamstypes.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86", 500000),
+	}
+	genesisState[rollappparamstypes.ModuleName] = app.AppCodec().MustMarshalJSON(&rollappParamsGenesis)
 
 	// for now bank genesis won't be set here, funding accounts should be called with fund utils.FundModuleAccount
 
