@@ -15,6 +15,10 @@ func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 
 // SetParams sets the sequencers parameters to the param space.
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
+	// TODO: this is hack needed to make the light client work
+	//  we need to synchronise this value with the value on the Hub
+	params.UnbondingTime = time.Hour * 24 * 14
+
 	k.paramstore.SetParamSet(ctx, &params)
 }
 
