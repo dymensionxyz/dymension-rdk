@@ -23,7 +23,7 @@ var (
 	KeyVersion       = []byte("version")
 	KeyBlockMaxBytes = []byte("blockmaxbytes")
 
-	// Data availability used by the RollApp.  it must be overwritten in the build process
+	// Data availability used by the RollApp. it must be overwritten in the build process
 	DA = "<da>"
 	// git commit for the version used for the rollapp binary. it must be overwritten in the build process
 	Version = "<version>"
