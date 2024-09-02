@@ -24,9 +24,9 @@ var (
 	KeyBlockMaxBytes = []byte("blockmaxbytes")
 
 	// current supported DA
-	DefaultDA = "mock"
+	DefaultDA = "<da>"
 	// version used for the rollapp binary. it must be overwritten in Makefile.
-	DefaultVersion = "3a19edd887a9b576a866750bc9d480ada53d2c0d"
+	DefaultVersion = "<version>"
 	// default max block size accepted (equivalent to block max size it can fit into a celestia blob).
 	DefaultBlockMaxBytes = 500000
 	// regexp used to validate version commit
