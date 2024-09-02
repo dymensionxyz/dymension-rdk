@@ -23,10 +23,10 @@ var (
 	KeyVersion       = []byte("version")
 	KeyBlockMaxBytes = []byte("blockmaxbytes")
 
-	// current supported DA
-	DefaultDA = "<da>"
-	// version used for the rollapp binary. it must be overwritten in Makefile.
-	DefaultVersion = "<version>"
+	// Data availability used by the RollApp.  it must be overwritten in the build process
+	DA = "<da>"
+	// git commit for the version used for the rollapp binary. it must be overwritten in the build process
+	Version = "<version>"
 	// default max block size accepted (equivalent to block max size it can fit into a celestia blob).
 	DefaultBlockMaxBytes = 500000
 	// regexp used to validate version commit
@@ -53,8 +53,8 @@ func NewParams(
 // DefaultParams returns default x/rollappparams module parameters.
 func DefaultParams() Params {
 	return Params{
-		Da:            DefaultDA,
-		Version:       DefaultVersion,
+		Da:            DA,
+		Version:       Version,
 		Blockmaxbytes: uint32(DefaultBlockMaxBytes),
 	}
 }
