@@ -32,6 +32,8 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		ShowNodeIDCmd(),
 		commands.InspectStateCmd(),
 		commands.ShowP2PInfoCmd(),
+		commands.PruneDymintStoreCmd(),
+		commands.PruneIndexerStoreCmd(),
 		ResetAll(),
 		server.VersionCmd(),
 		ResetState(),
