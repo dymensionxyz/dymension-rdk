@@ -8,6 +8,8 @@ import (
 const (
 	// ModuleName defines the module name
 	ModuleName = "timeupgrade"
+
+	StoreKey = ModuleName
 )
 
 var (

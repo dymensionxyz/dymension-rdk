@@ -2,22 +2,45 @@ package keeper
 
 import (
 	"context"
+	"fmt"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
+	types2 "github.com/gogo/protobuf/types"
 )
 
 var _ types.MsgServer = msgServer{}
 
 type msgServer struct {
-	Keeper
+	*Keeper
 }
 
-func NewMsgServerImpl(keeper Keeper) types.MsgServer {
+func NewMsgServerImpl(keeper *Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-func (m msgServer) SoftwareUpgrade(ctx context.Context, upgrade *types.MsgSoftwareUpgrade) (*types.MsgSoftwareUpgradeResponse, error) {
-	//TODO implement me
-	panic("implement me")
+func (m msgServer) SoftwareUpgrade(ctx context.Context, req *types.MsgSoftwareUpgrade) (*types.MsgSoftwareUpgradeResponse, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	err := req.OriginalUpgrade.ValidateBasic()
+	if err != nil {
+		return nil, err
+	}
+
+	if m.authority != req.OriginalUpgrade.Authority {
+		return nil, govtypes.ErrInvalidSigner
+	}
+
+	upgradeTimeTimestamp, err := types2.TimestampFromProto(req.UpgradeTime)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse upgrade time: %w", err)
+	}
+
+	if upgradeTimeTimestamp.Before(sdkCtx.BlockTime()) {
+		return nil, fmt.Errorf("upgrade time must be in the future")
+	}
+
+	return nil, nil
 }
 
 func (m msgServer) CancelUpgrade(ctx context.Context, upgrade *types.MsgCancelUpgrade) (*types.MsgCancelUpgradeResponse, error) {

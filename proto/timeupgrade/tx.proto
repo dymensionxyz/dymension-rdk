@@ -2,7 +2,7 @@ syntax = "proto3";
 package rollapp.timeupgrade.types;
 
 import "gogoproto/gogo.proto";
-import "cosmos/upgrade/v1beta1/upgrade.proto";
+import "cosmos/upgrade/v1beta1/tx.proto";
 import "cosmos/msg/v1/msg.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
@@ -16,14 +16,13 @@ service Msg {
 }
 
 message MsgSoftwareUpgrade {
-  cosmos.upgrade.v1beta1.SoftwareUpgradeProposal original_upgrade = 1;
+  cosmos.upgrade.v1beta1.MsgSoftwareUpgrade original_upgrade = 1;
   google.protobuf.Timestamp upgrade_time = 2;
 }
 
 message MsgSoftwareUpgradeResponse {}
 
 message MsgCancelUpgrade {
-  cosmos.upgrade.v1beta1.SoftwareUpgradeProposal original_upgrade = 1;
 }
 
 message MsgCancelUpgradeResponse {}

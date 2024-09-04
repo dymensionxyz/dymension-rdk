@@ -3,6 +3,8 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
+	types2 "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -231,6 +233,7 @@ type App struct {
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	StakingKeeper       stakingkeeper.Keeper
 	SequencersKeeper    seqkeeper.Keeper
+	TimeUpgradeKeeper   keeper.Keeper
 	MintKeeper          mintkeeper.Keeper
 	EpochsKeeper        epochskeeper.Keeper
 	DistrKeeper         distrkeeper.Keeper
@@ -391,6 +394,12 @@ func NewRollapp(
 	)
 
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp, authtypes.NewModuleAddress(govtypes.ModuleName).String())
+
+	app.TimeUpgradeKeeper = keeper.NewKeeper(
+		appCodec,
+		keys[types2.StoreKey],
+		authtypes.NewModuleAddress(types2.ModuleName).String(),
+	)
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
