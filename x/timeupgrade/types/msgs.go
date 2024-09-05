@@ -1,6 +1,9 @@
 package types
 
-import sdk "github.com/cosmos/cosmos-sdk/types"
+import (
+	sdkerrors "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
 
 var _, _ sdk.Msg = &MsgSoftwareUpgrade{}, &MsgCancelUpgrade{}
 
@@ -14,11 +17,14 @@ func (m *MsgSoftwareUpgrade) GetSigners() []sdk.AccAddress {
 }
 
 func (m *MsgCancelUpgrade) ValidateBasic() error {
-	//TODO implement me
-	panic("implement me")
+	if _, err := sdk.AccAddressFromBech32(m.Authority); err != nil {
+		return sdkerrors.Wrap(err, "authority")
+	}
+
+	return nil
 }
 
 func (m *MsgCancelUpgrade) GetSigners() []sdk.AccAddress {
-	//TODO implement me
-	panic("implement me")
+	addr, _ := sdk.AccAddressFromBech32(m.Authority)
+	return []sdk.AccAddress{addr}
 }

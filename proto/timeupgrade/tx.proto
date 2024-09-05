@@ -23,6 +23,8 @@ message MsgSoftwareUpgrade {
 message MsgSoftwareUpgradeResponse {}
 
 message MsgCancelUpgrade {
+  // authority is the address of the governance account.
+  string authority = 1;
 }
 
 message MsgCancelUpgradeResponse {}

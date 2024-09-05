@@ -126,3 +126,89 @@ func TestMsgServer_SoftwareUpgrade(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, timeNowTimestamp, &savedTime)
 }
+
+func TestMsgServer_CancelUpgrade_Errors(t *testing.T) {
+	app := utils.Setup(t, false)
+	k, ctx := testkeepers.NewTestTimeupgradeKeeperFromApp(app)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	govAuthorityAccount := authtypes.NewModuleAddress(types.ModuleName).String()
+	otherAddress := authtypes.NewModuleAddress("otherModuleAddress").String()
+
+	testCases := []struct {
+		name           string
+		authority      string
+		expectedErrMsg string
+	}{
+		{
+			name:           "invalid authority address",
+			authority:      "invalidAddress",
+			expectedErrMsg: "decoding bech32 failed",
+		},
+		{
+			name:           "non-authority account",
+			authority:      otherAddress,
+			expectedErrMsg: "expected gov account as only signer for proposal message",
+		},
+		{
+			name:           "valid authority address",
+			authority:      govAuthorityAccount,
+			expectedErrMsg: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := msgServer.CancelUpgrade(ctx, &types.MsgCancelUpgrade{
+				Authority: tc.authority,
+			})
+			if tc.expectedErrMsg == "" {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.expectedErrMsg)
+			}
+		})
+	}
+}
+
+func TestMsgServer_CancelUpgrade_HappyPath(t *testing.T) {
+	app := utils.Setup(t, false)
+	k, ctx := testkeepers.NewTestTimeupgradeKeeperFromApp(app)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	govAuthorityAccount := authtypes.NewModuleAddress(types.ModuleName).String()
+
+	// Set the upgrade plan and time
+	err := k.UpgradePlan.Set(ctx, types2.Plan{
+		Name:   "someName",
+		Height: 1,
+		Info:   "",
+	})
+	require.NoError(t, err)
+
+	err = k.UpgradeTime.Set(ctx, types3.Timestamp{
+		Seconds: 1,
+	})
+	require.NoError(t, err)
+
+	// Validate that the upgrade plan and time exist in the state
+	_, err = k.UpgradePlan.Get(ctx)
+	require.NoError(t, err)
+
+	_, err = k.UpgradeTime.Get(ctx)
+	require.NoError(t, err)
+
+	// Call CancelUpgrade
+	_, err = msgServer.CancelUpgrade(ctx, &types.MsgCancelUpgrade{
+		Authority: govAuthorityAccount,
+	})
+	require.NoError(t, err)
+
+	// Validate that the upgrade plan and time have been deleted from the state
+	_, err = k.UpgradePlan.Get(ctx)
+	require.Error(t, err)
+
+	_, err = k.UpgradeTime.Get(ctx)
+	require.Error(t, err)
+}

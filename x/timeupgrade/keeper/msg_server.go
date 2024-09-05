@@ -53,7 +53,26 @@ func (m msgServer) SoftwareUpgrade(ctx context.Context, req *types.MsgSoftwareUp
 	return nil, nil
 }
 
-func (m msgServer) CancelUpgrade(ctx context.Context, upgrade *types.MsgCancelUpgrade) (*types.MsgCancelUpgradeResponse, error) {
-	//TODO implement me
-	panic("implement me")
+func (m msgServer) CancelUpgrade(ctx context.Context, req *types.MsgCancelUpgrade) (*types.MsgCancelUpgradeResponse, error) {
+	err := req.ValidateBasic()
+	if err != nil {
+		return nil, err
+	}
+
+	if m.authority != req.Authority {
+		return nil, govtypes.ErrInvalidSigner
+	}
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	err = m.Keeper.UpgradePlan.Remove(sdkCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.Keeper.UpgradeTime.Remove(sdkCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
