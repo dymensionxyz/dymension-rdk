@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
-	types2 "github.com/gogo/protobuf/types"
+	prototypes "github.com/gogo/protobuf/types"
 )
 
 var _ types.MsgServer = msgServer{}
@@ -31,13 +31,23 @@ func (m msgServer) SoftwareUpgrade(ctx context.Context, req *types.MsgSoftwareUp
 		return nil, govtypes.ErrInvalidSigner
 	}
 
-	upgradeTimeTimestamp, err := types2.TimestampFromProto(req.UpgradeTime)
+	upgradeTimeTimestamp, err := prototypes.TimestampFromProto(req.UpgradeTime)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse upgrade time: %w", err)
 	}
 
 	if upgradeTimeTimestamp.Before(sdkCtx.BlockTime()) {
 		return nil, fmt.Errorf("upgrade time must be in the future")
+	}
+
+	err = m.Keeper.UpgradePlan.Set(sdkCtx, req.OriginalUpgrade.Plan)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.Keeper.UpgradeTime.Set(sdkCtx, *req.UpgradeTime)
+	if err != nil {
+		return nil, err
 	}
 
 	return nil, nil

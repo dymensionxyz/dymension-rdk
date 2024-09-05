@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
-	types2 "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
+	timeupgradetypes "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -145,7 +145,7 @@ var kvstorekeys = []string{
 	ibchost.StoreKey, upgradetypes.StoreKey,
 	epochstypes.StoreKey, hubgentypes.StoreKey, hubtypes.StoreKey,
 	ibctransfertypes.StoreKey, capabilitytypes.StoreKey, gaslesstypes.StoreKey, wasmtypes.StoreKey,
-	rollappparamstypes.StoreKey,
+	rollappparamstypes.StoreKey, timeupgradetypes.StoreKey,
 }
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -397,8 +397,8 @@ func NewRollapp(
 
 	app.TimeUpgradeKeeper = keeper.NewKeeper(
 		appCodec,
-		keys[types2.StoreKey],
-		authtypes.NewModuleAddress(types2.ModuleName).String(),
+		keys[timeupgradetypes.StoreKey],
+		authtypes.NewModuleAddress(timeupgradetypes.ModuleName).String(),
 	)
 
 	// register the staking hooks

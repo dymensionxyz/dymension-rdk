@@ -1,7 +1,11 @@
 package keeper
 
 import (
+	"cosmossdk.io/collections"
 	"fmt"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	"github.com/dymensionxyz/dymension-rdk/internal/collcompat"
+	prototypes "github.com/gogo/protobuf/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -15,6 +19,9 @@ type Keeper struct {
 	cdc       codec.BinaryCodec
 	storeKey  storetypes.StoreKey
 	authority string
+
+	UpgradePlan collections.Item[upgradetypes.Plan]
+	UpgradeTime collections.Item[prototypes.Timestamp]
 }
 
 func NewKeeper(
@@ -22,10 +29,16 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	authority string,
 ) Keeper {
+	service := collcompat.NewKVStoreService(storeKey)
+	sb := collections.NewSchemaBuilder(service)
+
 	return Keeper{
 		cdc:       cdc,
 		storeKey:  storeKey,
 		authority: authority,
+
+		UpgradePlan: collections.NewItem[upgradetypes.Plan](sb, collections.NewPrefix(0), "plan", collcompat.ProtoValue[upgradetypes.Plan](cdc)),
+		UpgradeTime: collections.NewItem[prototypes.Timestamp](sb, collections.NewPrefix(1), "time", collcompat.ProtoValue[prototypes.Timestamp](cdc)),
 	}
 }
 

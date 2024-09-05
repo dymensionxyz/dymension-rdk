@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func TestMsgServer_SoftwareUpgrade(t *testing.T) {
+func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestTimeupgradeKeeperFromApp(app)
 	msgServer := keeper.NewMsgServerImpl(k)
@@ -24,8 +24,6 @@ func TestMsgServer_SoftwareUpgrade(t *testing.T) {
 	timeNow := time.Now()
 	oneHourBefore := timeNow.Add(-time.Hour)
 	oneHourBeforeTimestamp, err := types3.TimestampProto(oneHourBefore)
-	require.NoError(t, err)
-	timeNowTimestamp, err := types3.TimestampProto(timeNow)
 	require.NoError(t, err)
 
 	ctx = ctx.WithBlockTime(timeNow)
@@ -79,32 +77,52 @@ func TestMsgServer_SoftwareUpgrade(t *testing.T) {
 			},
 			expectedErrMsg: "upgrade time must be in the future",
 		},
-		{
-			name: "validate basic original upgrade: good authority address",
-			request: &types.MsgSoftwareUpgrade{
-				UpgradeTime: timeNowTimestamp,
-				OriginalUpgrade: &types2.MsgSoftwareUpgrade{
-					Authority: govAuthorityAccount,
-					Plan: types2.Plan{
-						Name:   "someName",
-						Height: 1,
-						Info:   "",
-					},
-				},
-			},
-			expectedErrMsg: "",
-		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := msgServer.SoftwareUpgrade(ctx, tc.request)
-			if tc.expectedErrMsg == "" {
-				require.NoError(t, err)
-			} else {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), tc.expectedErrMsg)
-			}
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tc.expectedErrMsg)
 		})
 	}
+}
+
+func TestMsgServer_SoftwareUpgrade(t *testing.T) {
+	app := utils.Setup(t, false)
+	k, ctx := testkeepers.NewTestTimeupgradeKeeperFromApp(app)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	govAuthorityAccount := authtypes.NewModuleAddress(types.ModuleName).String()
+
+	timeNow := time.Now()
+	timeNowTimestamp, err := types3.TimestampProto(timeNow)
+	require.NoError(t, err)
+
+	ctx = ctx.WithBlockTime(timeNow)
+
+	plan := types2.Plan{
+		Name:   "someName",
+		Height: 1,
+		Info:   "",
+	}
+
+	_, err = msgServer.SoftwareUpgrade(ctx, &types.MsgSoftwareUpgrade{
+		UpgradeTime: timeNowTimestamp,
+		OriginalUpgrade: &types2.MsgSoftwareUpgrade{
+			Authority: govAuthorityAccount,
+			Plan:      plan,
+		},
+	})
+	require.NoError(t, err)
+
+	// Retrieve the saved plan from the keeper
+	savedPlan, err := k.UpgradePlan.Get(ctx)
+	require.NoError(t, err)
+	require.Equal(t, plan, savedPlan)
+
+	// Retrieve the saved upgrade time from the keeper
+	savedTime, err := k.UpgradeTime.Get(ctx)
+	require.NoError(t, err)
+	require.Equal(t, timeNowTimestamp, &savedTime)
 }
