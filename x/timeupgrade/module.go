@@ -2,6 +2,8 @@ package timeupgrade
 
 import (
 	"encoding/json"
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -16,8 +18,9 @@ import (
 )
 
 var (
-	_ module.AppModule      = AppModule{}
-	_ module.AppModuleBasic = AppModuleBasic{}
+	_ module.AppModule           = AppModule{}
+	_ module.BeginBlockAppModule = AppModule{}
+	_ module.AppModuleBasic      = AppModuleBasic{}
 )
 
 type AppModuleBasic struct {
@@ -64,6 +67,13 @@ func (a AppModuleBasic) GetQueryCmd() *cobra.Command {
 
 type AppModule struct {
 	AppModuleBasic
+
+	keeper        keeper.Keeper
+	upgradeKeeper upgradekeeper.Keeper
+}
+
+func (a AppModule) BeginBlock(context sdk.Context, block abci.RequestBeginBlock) {
+	BeginBlocker(context, a.keeper, a.upgradeKeeper)
 }
 
 func (a AppModule) InitGenesis(context sdk.Context, jsonCodec codec.JSONCodec, message json.RawMessage) []abci.ValidatorUpdate {
