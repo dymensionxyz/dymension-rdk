@@ -114,7 +114,7 @@ func TestIBCMiddleware_OnRecvPacket(t *testing.T) {
 			}
 			packetData := packetDataWithMemo(memo)
 			packet := channeltypes.Packet{Data: packetData, SourcePort: "transfer", SourceChannel: "channel-0"}
-			got := im.OnRecvPacket(sdk.Context{}, packet, sdk.AccAddress{})
+			got := im.OnRecvPacket(sdk.Context{}.WithEventManager(&sdk.EventManager{}), packet, sdk.AccAddress{})
 			require.Equal(t, tt.wantAck, got)
 			if !tt.wantAck.Success() {
 				return

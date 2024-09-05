@@ -14,6 +14,8 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+
+	"github.com/dymensionxyz/sdk-utils/utils/uevent"
 	"github.com/dymensionxyz/sdk-utils/utils/uibc"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
@@ -195,7 +197,7 @@ func (im IBCModule) OnRecvPacket(
 	packetData := new(transfertypes.FungibleTokenPacketData)
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), packetData); err != nil {
 		err = errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet data")
-		return channeltypes.NewErrorAcknowledgement(err)
+		return uevent.NewErrorAcknowledgement(ctx, err)
 	}
 
 	if packetData.Memo == "" {
@@ -208,7 +210,7 @@ func (im IBCModule) OnRecvPacket(
 	}
 
 	if err := dm.Validate(); err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
+		return uevent.NewErrorAcknowledgement(ctx, err)
 	}
 
 	// at this point it's safe to assume that we are not handling a native token of the rollapp,
@@ -226,7 +228,7 @@ func (im IBCModule) OnRecvPacket(
 	im.bankKeeper.SetDenomMetaData(ctx, *dm)
 	// set hook after denom metadata creation
 	if err := im.hooks.AfterDenomMetadataCreation(ctx, *dm); err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
+		return uevent.NewErrorAcknowledgement(ctx, err)
 	}
 
 	return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
