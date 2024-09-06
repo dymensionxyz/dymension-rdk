@@ -19,8 +19,8 @@ var (
 	KeyDa      = []byte("da")
 	KeyVersion = []byte("version")
 
-	// Data availability used by the RollApp. it must be overwritten in the build process
-	DA = "<da>"
+	// Data availability used by the RollApp. Default value used is mock da.
+	DA = "mock"
 	// git commit for the version used for the rollapp binary. it must be overwritten in the build process
 	Version = "<version>"
 	// default max block size accepted (equivalent to block max size it can fit into a celestia blob).
