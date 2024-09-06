@@ -10,25 +10,20 @@ import (
 )
 
 const (
-
 	// length of the version commit string.
 	VersionLength = 40
-	// default minimum block size. not specific reason to set it to 100K, but we need to avoid no transactions can be included in a block.
-	MinBlockMaxBytes = 100000
 )
 
 // Parameter store keys.
 var (
-	KeyDa            = []byte("da")
-	KeyVersion       = []byte("version")
-	KeyBlockMaxBytes = []byte("blockmaxbytes")
+	KeyDa      = []byte("da")
+	KeyVersion = []byte("version")
 
 	// Data availability used by the RollApp. it must be overwritten in the build process
 	DA = "<da>"
 	// git commit for the version used for the rollapp binary. it must be overwritten in the build process
 	Version = "<version>"
 	// default max block size accepted (equivalent to block max size it can fit into a celestia blob).
-	DefaultBlockMaxBytes = 500000
 	// regexp used to validate version commit
 	VersionRegExp = regexp.MustCompile(`^[a-z0-9]*$`)
 )
@@ -41,21 +36,18 @@ func ParamKeyTable() paramtypes.KeyTable {
 func NewParams(
 	da string,
 	version string,
-	blockMaxBytes uint32,
 ) Params {
 	return Params{
-		Da:            da,
-		Version:       version,
-		Blockmaxbytes: blockMaxBytes,
+		Da:      da,
+		Version: version,
 	}
 }
 
 // DefaultParams returns default x/rollappparams module parameters.
 func DefaultParams() Params {
 	return Params{
-		Da:            DA,
-		Version:       Version,
-		Blockmaxbytes: uint32(DefaultBlockMaxBytes),
+		Da:      DA,
+		Version: Version,
 	}
 }
 
@@ -65,10 +57,6 @@ func (p Params) Validate() error {
 		return err
 	}
 	err = ValidateVersion(p.Version)
-	if err != nil {
-		return err
-	}
-	err = ValidateBlockMaxBytes(p.Blockmaxbytes)
 	if err != nil {
 		return err
 	}
@@ -100,25 +88,10 @@ func ValidateVersion(i any) error {
 	return nil
 }
 
-func ValidateBlockMaxBytes(i any) error {
-	size, ok := i.(uint32)
-	if !ok {
-		return fmt.Errorf("invalid block max size param type : %w", gerrc.ErrInvalidArgument)
-	}
-	if size < uint32(MinBlockMaxBytes) {
-		return fmt.Errorf("invalid block max size value: used %d: minimum accepted %d : %w", size, MinBlockMaxBytes, gerrc.ErrInvalidArgument)
-	}
-	if size > uint32(DefaultBlockMaxBytes) {
-		return fmt.Errorf("invalid block max size value: used %d: max accepted %d : %w", size, DefaultBlockMaxBytes, gerrc.ErrInvalidArgument)
-	}
-	return nil
-}
-
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, ValidateDa),
 		paramtypes.NewParamSetPair(KeyVersion, &p.Version, ValidateVersion),
-		paramtypes.NewParamSetPair(KeyBlockMaxBytes, &p.Blockmaxbytes, ValidateBlockMaxBytes),
 	}
 }

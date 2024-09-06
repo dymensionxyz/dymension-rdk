@@ -112,7 +112,7 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	// setup for rollapp params
 
 	rollappParamsGenesis := rollappparamstypes.GenesisState{
-		Params: rollappparamstypes.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86", 500000),
+		Params: rollappparamstypes.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86"),
 	}
 	genesisState[rollappparamstypes.ModuleName] = app.AppCodec().MustMarshalJSON(&rollappParamsGenesis)
 

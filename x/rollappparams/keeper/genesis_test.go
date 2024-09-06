@@ -15,7 +15,7 @@ func TestGenesis(t *testing.T) {
 
 	state := types.GenesisState{}
 
-	state.Params = types.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86", 500000)
+	state.Params = types.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86")
 
 	k.InitGenesis(ctx, &state)
 	got := k.ExportGenesis(ctx)
