@@ -10,7 +10,7 @@ import (
 
 func TestGenesisState(t *testing.T) {
 
-	testParams := types.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86", 500000)
+	testParams := types.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86")
 	testCases := []struct {
 		name        string
 		params      func() types.Params
@@ -46,24 +46,6 @@ func TestGenesisState(t *testing.T) {
 			params: func() types.Params {
 				p := testParams
 				p.Version = "3a19edd887_9b576a866750bc9d480ada53d2c0d"
-				return p
-			},
-			expectedErr: true,
-		},
-		{
-			name: "block max size too small",
-			params: func() types.Params {
-				p := testParams
-				p.Blockmaxbytes = 50000
-				return p
-			},
-			expectedErr: true,
-		},
-		{
-			name: "block max size too big",
-			params: func() types.Params {
-				p := types.DefaultParams()
-				p.Blockmaxbytes = 1000000
 				return p
 			},
 			expectedErr: true,

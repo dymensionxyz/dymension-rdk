@@ -46,8 +46,3 @@ func (k Keeper) Version(ctx sdk.Context) (res string) {
 	k.paramSpace.Get(ctx, types.KeyVersion, &res)
 	return
 }
-
-func (k Keeper) BlockMaxBytes(ctx sdk.Context) (res uint32) {
-	k.paramSpace.Get(ctx, types.KeyBlockMaxBytes, &res)
-	return
-}
