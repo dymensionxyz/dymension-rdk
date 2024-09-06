@@ -12,10 +12,10 @@ import (
 var _ types.MsgServer = msgServer{}
 
 type msgServer struct {
-	*Keeper
+	Keeper
 }
 
-func NewMsgServerImpl(keeper *Keeper) types.MsgServer {
+func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
@@ -37,7 +37,7 @@ func (m msgServer) SoftwareUpgrade(ctx context.Context, req *types.MsgSoftwareUp
 	}
 
 	if upgradeTimeTimestamp.Before(sdkCtx.BlockTime()) {
-		return nil, fmt.Errorf("upgrade time must be in the future")
+		return nil, fmt.Errorf("upgrade time must be in the future: upgrade time %s, current time %s", upgradeTimeTimestamp, sdkCtx.BlockTime())
 	}
 
 	err = m.Keeper.UpgradePlan.Set(sdkCtx, req.OriginalUpgrade.Plan)

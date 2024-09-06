@@ -31,38 +31,29 @@ func (a AppModuleBasic) Name() string {
 }
 
 func (a AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {
-	//TODO implement me
-	panic("implement me")
+	types.RegisterCodec(amino)
 }
 
 func (a AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	//TODO implement me
-	panic("implement me")
+	types.RegisterInterfaces(registry)
 }
 
 func (a AppModuleBasic) DefaultGenesis(codec codec.JSONCodec) json.RawMessage {
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (a AppModuleBasic) ValidateGenesis(codec codec.JSONCodec, config client.TxEncodingConfig, message json.RawMessage) error {
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
-func (a AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {
-	//TODO implement me
-	panic("implement me")
-}
+func (a AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {}
 
 func (a AppModuleBasic) GetTxCmd() *cobra.Command {
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (a AppModuleBasic) GetQueryCmd() *cobra.Command {
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
 type AppModule struct {
@@ -72,43 +63,39 @@ type AppModule struct {
 	upgradeKeeper upgradekeeper.Keeper
 }
 
+func NewAppModule(keeper keeper.Keeper, upgradeKeeper upgradekeeper.Keeper) *AppModule {
+	return &AppModule{keeper: keeper, upgradeKeeper: upgradeKeeper}
+}
+
 func (a AppModule) BeginBlock(context sdk.Context, block abci.RequestBeginBlock) {
 	BeginBlocker(context, a.keeper, a.upgradeKeeper)
 }
 
 func (a AppModule) InitGenesis(context sdk.Context, jsonCodec codec.JSONCodec, message json.RawMessage) []abci.ValidatorUpdate {
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (a AppModule) ExportGenesis(context sdk.Context, jsonCodec codec.JSONCodec) json.RawMessage {
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (a AppModule) RegisterInvariants(registry sdk.InvariantRegistry) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (a AppModule) Route() sdk.Route {
-	//TODO implement me
-	panic("implement me")
+	return sdk.NewRoute(types.RouterKey, nil)
 }
 
 func (a AppModule) QuerierRoute() string {
-	//TODO implement me
-	panic("implement me")
+	return types.RouterKey
 }
 
 func (a AppModule) LegacyQuerierHandler(amino *codec.LegacyAmino) sdk.Querier {
-	//TODO implement me
-	panic("implement me")
+	return nil
 }
 
 func (a AppModule) RegisterServices(configurator module.Configurator) {
-	//TODO implement me
-	panic("implement me")
+	types.RegisterMsgServer(configurator.MsgServer(), keeper.NewMsgServerImpl(a.keeper))
 }
 
 func (a AppModule) ConsensusVersion() uint64 {
