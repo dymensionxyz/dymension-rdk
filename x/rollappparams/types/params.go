@@ -12,6 +12,8 @@ import (
 const (
 	// length of the version commit string.
 	VersionLength = 40
+	// Data availability used by the RollApp. Default value used is mock da.
+	DefaultDA = "mock"
 )
 
 // Parameter store keys.
@@ -19,8 +21,6 @@ var (
 	KeyDa      = []byte("da")
 	KeyVersion = []byte("version")
 
-	// Data availability used by the RollApp. it must be overwritten in the build process
-	DA = "<da>"
 	// git commit for the version used for the rollapp binary. it must be overwritten in the build process
 	Version = "<version>"
 	// default max block size accepted (equivalent to block max size it can fit into a celestia blob).
@@ -46,7 +46,7 @@ func NewParams(
 // DefaultParams returns default x/rollappparams module parameters.
 func DefaultParams() Params {
 	return Params{
-		Da:      DA,
+		Da:      DefaultDA,
 		Version: Version,
 	}
 }
