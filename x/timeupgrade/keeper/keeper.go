@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"time"
 
 	"cosmossdk.io/collections"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
@@ -45,4 +46,33 @@ func NewKeeper(
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+// GetUpgradeTime gets the upgrade time from the store
+func (k Keeper) GetUpgradeTime(ctx sdk.Context) (time.Time, error) {
+	upgradeTime, err := k.UpgradeTime.Get(ctx)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	upgradeTimeTimestamp, err := prototypes.TimestampFromProto(&upgradeTime)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to parse upgrade time: %w", err)
+	}
+
+	return upgradeTimeTimestamp, nil
+}
+
+// CleanTimeUpgrade removes the upgrade time and plan from the store
+func (k Keeper) CleanTimeUpgrade(ctx sdk.Context) error {
+	err := k.UpgradeTime.Remove(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = k.UpgradePlan.Remove(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
