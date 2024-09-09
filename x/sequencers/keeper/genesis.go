@@ -41,7 +41,7 @@ func (k *Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		genesis.Sequencers[i].Validator = &v
 		rewardAddr, ok := k.GetRewardAddr(ctx, v.GetOperator())
 		if ok {
-			genesis.Sequencers[i].RewardAddr = rewardAddr.String()
+			genesis.Sequencers[i].RewardAddr = string(rewardAddr.Bytes())
 		}
 	}
 
