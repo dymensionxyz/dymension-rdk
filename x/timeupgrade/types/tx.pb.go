@@ -33,8 +33,10 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgSoftwareUpgrade struct {
+	// original_upgrade is the original software upgrade message.
 	OriginalUpgrade *types.MsgSoftwareUpgrade `protobuf:"bytes,1,opt,name=original_upgrade,json=originalUpgrade,proto3" json:"original_upgrade,omitempty"`
-	UpgradeTime     *types1.Timestamp         `protobuf:"bytes,2,opt,name=upgrade_time,json=upgradeTime,proto3" json:"upgrade_time,omitempty"`
+	// upgrade_time is the time at which the upgrade is scheduled.
+	UpgradeTime *types1.Timestamp `protobuf:"bytes,2,opt,name=upgrade_time,json=upgradeTime,proto3" json:"upgrade_time,omitempty"`
 }
 
 func (m *MsgSoftwareUpgrade) Reset()         { *m = MsgSoftwareUpgrade{} }

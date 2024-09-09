@@ -4,7 +4,7 @@ import (
 	"cosmossdk.io/collections"
 	"fmt"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/dymensionxyz/dymension-rdk/internal/collcompat"
+	"github.com/dymensionxyz/dymension-rdk/utils/collcompat"
 	prototypes "github.com/gogo/protobuf/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
