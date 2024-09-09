@@ -3,8 +3,6 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
-	timeupgradetypes "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -96,6 +94,9 @@ import (
 	gaslessclient "github.com/dymensionxyz/dymension-rdk/x/gasless/client"
 	gaslesskeeper "github.com/dymensionxyz/dymension-rdk/x/gasless/keeper"
 	gaslesstypes "github.com/dymensionxyz/dymension-rdk/x/gasless/types"
+
+	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
+	timeupgradetypes "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 
 	ibctransfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
