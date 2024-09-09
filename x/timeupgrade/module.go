@@ -2,8 +2,7 @@ package timeupgrade
 
 import (
 	"encoding/json"
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
-	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
+
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -11,9 +10,11 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 )
 

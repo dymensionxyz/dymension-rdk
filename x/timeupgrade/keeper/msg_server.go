@@ -3,10 +3,12 @@ package keeper
 import (
 	"context"
 	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 	prototypes "github.com/gogo/protobuf/types"
+
+	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 )
 
 var _ types.MsgServer = msgServer{}

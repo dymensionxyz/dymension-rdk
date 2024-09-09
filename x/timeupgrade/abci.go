@@ -2,11 +2,12 @@ package timeupgrade
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	prototypes "github.com/gogo/protobuf/types"
-	"time"
 
 	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
@@ -17,14 +18,20 @@ func BeginBlocker(ctx sdk.Context, k keeper.Keeper, upgradeKeeper upgradekeeper.
 
 	upgradeTimeTimestamp, err := getUpgradeTime(ctx, k)
 	if err != nil {
-		cleanTimeUpgrade(ctx, k)
+		err = cleanTimeUpgrade(ctx, k)
+		if err != nil {
+			panic(fmt.Errorf("failed to clean time upgrade: %w", err))
+		}
 		return
 	}
 
 	if ctx.BlockTime().After(upgradeTimeTimestamp) {
 		err = setPlanToNextBlock(ctx, k, upgradeKeeper)
 		if err != nil {
-			cleanTimeUpgrade(ctx, k)
+			err = cleanTimeUpgrade(ctx, k)
+			if err != nil {
+				panic(fmt.Errorf("failed to clean time upgrade: %w", err))
+			}
 			return
 		}
 	}

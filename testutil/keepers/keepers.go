@@ -1,8 +1,9 @@
 package keepers
 
 import (
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	"time"
+
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 

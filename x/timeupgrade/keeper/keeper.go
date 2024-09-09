@@ -1,10 +1,10 @@
 package keeper
 
 import (
-	"cosmossdk.io/collections"
 	"fmt"
+
+	"cosmossdk.io/collections"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	"github.com/dymensionxyz/dymension-rdk/utils/collcompat"
 	prototypes "github.com/gogo/protobuf/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -12,6 +12,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/libs/log"
 
+	"github.com/dymensionxyz/dymension-rdk/utils/collcompat"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
