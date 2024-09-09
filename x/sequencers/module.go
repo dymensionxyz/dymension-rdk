@@ -5,8 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	// this line is used by starport scaffolding # 1
-
+	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
@@ -130,10 +129,18 @@ func (am AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
 
 // InitGenesis performs the capability module's genesis initialization
 // It returns the sequencers set by dymint as the validator updates
-func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {
+func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, gs json.RawMessage) []abci.ValidatorUpdate {
+	registry := cdctypes.NewInterfaceRegistry()
+	protoCodec := codec.NewProtoCodec(registry)
+	std.RegisterInterfaces(registry)
 	// Initialize global index to index in genesis state
 	var genState types.GenesisState
-	cdc.MustUnmarshalJSON(gs, &genState)
+	protoCodec.MustUnmarshalJSON(gs, &genState)
+	for _, s := range genState.Sequencers {
+		if err := cdctypes.UnpackInterfaces(s.Validator, registry); err != nil {
+			panic(err)
+		}
+	}
 	return am.keeper.InitGenesis(ctx, genState)
 }
 

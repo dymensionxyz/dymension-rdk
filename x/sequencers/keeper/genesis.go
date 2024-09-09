@@ -17,7 +17,7 @@ func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) []abc
 	for _, s := range genState.GetSequencers() {
 		k.SetSequencer(ctx, *s.Validator)
 		if s.RewardAddr != "" {
-			k.SetRewardAddr(ctx, *s.Validator, s.MustRewardAcc()) // already validated
+			k.SetRewardAddr(ctx, *s.Validator, sdk.AccAddress(s.RewardAddr))
 		}
 	}
 
