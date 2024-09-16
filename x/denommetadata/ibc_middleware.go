@@ -79,12 +79,9 @@ func (m *ICS4Wrapper) SendPacket(
 	state := m.hubKeeper.GetState(ctx)
 
 	// Check if the hub already contains the denom metadata by matching the base of the denom metadata.
-	// At the first match, we assume that the hub already contains the metadata.
-	// It would be technically possible to have a race condition where the denom metadata is added to the hub
-	// from another packet before this packet is acknowledged.
-	// If the denom metadata exists but is either PENDING or ACTIVE, proceed to the next middleware in the chain.
+	// If the denom metadata exists, proceed to the next middleware in the chain.
 	if ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
-		return denom.Base == packet.Denom && denom.Status != hubtypes.RegisteredDenom_INACTIVE
+		return denom.Base == packet.Denom
 	}) {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
@@ -103,13 +100,6 @@ func (m *ICS4Wrapper) SendPacket(
 	if err != nil {
 		return 0, errorsmod.Wrapf(errors.Join(errortypes.ErrJSONMarshal, err), "marshal ICS-20 transfer packet data")
 	}
-
-	registeredDenom := &hubtypes.RegisteredDenom{
-		Base:   denomMetadata.Base,
-		Status: hubtypes.RegisteredDenom_PENDING,
-	}
-	state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, registeredDenom)
-	m.hubKeeper.SetState(ctx, state)
 
 	return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 }
@@ -154,6 +144,10 @@ func (im IBCModule) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errors.Join(errortypes.ErrJSONUnmarshal, err), "unmarshal ICS-20 transfer acknowledgement")
 	}
 
+	if !ack.Success() {
+		return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	}
+
 	var data transfertypes.FungibleTokenPacketData
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return errorsmod.Wrapf(errors.Join(errortypes.ErrJSONUnmarshal, err), "unmarshal ICS-20 transfer packet data")
@@ -166,19 +160,13 @@ func (im IBCModule) OnAcknowledgementPacket(
 
 	state := im.hubKeeper.GetState(ctx)
 
-	// find the denom from the list by matching the base
-	// if it exists, update the status
-	// if the ack is error or timeout, update the status to INACTIVE
-	// otherwise, update the status to ACTIVE
-	for i, denom := range state.Hub.RegisteredDenoms {
-		if denom.Base == dm.Base {
-			state.Hub.RegisteredDenoms[i].Status = map[bool]hubtypes.RegisteredDenom_Status{
-				true:  hubtypes.RegisteredDenom_ACTIVE,
-				false: hubtypes.RegisteredDenom_INACTIVE,
-			}[ack.Success()]
-			im.hubKeeper.SetState(ctx, state)
-			break
-		}
+	if !ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
+		return denom.Base == dm.Base
+	}) {
+		state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, &hubtypes.RegisteredDenom{
+			Base: dm.Base,
+		})
+		im.hubKeeper.SetState(ctx, state)
 	}
 
 	return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
