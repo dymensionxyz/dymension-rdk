@@ -5,6 +5,10 @@ const (
 	ModuleName = "hubs"
 	// StoreKey defines the primary store key.
 	StoreKey = ModuleName
+	// RouterKey is the message route for hub genesis.
+	RouterKey = ModuleName
+	// QuerierRoute is the querier route for the minting store.
+	QuerierRoute = StoreKey
 )
 
 var StateKey = []byte{0x01}

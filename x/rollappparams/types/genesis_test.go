@@ -9,65 +9,43 @@ import (
 )
 
 func TestGenesisState(t *testing.T) {
+
+	testParams := types.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86")
 	testCases := []struct {
 		name        string
 		params      func() types.Params
 		expectedErr bool
 	}{
 		{
-			name:   "default",
-			params: types.DefaultParams,
+			name: "default",
+			params: func() types.Params {
+				p := testParams
+				return p
+			},
 		},
 		{
-			name: "missing commit",
+			name: "missing version",
 			params: func() types.Params {
-				p := types.DefaultParams()
-				p.Commit = ""
+				p := testParams
+				p.Version = ""
 				return p
 			},
 			expectedErr: true,
 		},
 		{
-			name: "wrong length commit",
+			name: "wrong length version",
 			params: func() types.Params {
-				p := types.DefaultParams()
-				p.Commit = "fdasfewkq102382w523"
+				p := testParams
+				p.Version = "fdasfewkq102382w523"
 				return p
 			},
 			expectedErr: true,
 		},
 		{
-			name: "commit not alphanumeric",
+			name: "version not alphanumeric",
 			params: func() types.Params {
-				p := types.DefaultParams()
-				p.Commit = "74fad6a00713_ba62352c2451c6b7ab73571c515"
-				return p
-			},
-			expectedErr: true,
-		},
-		{
-			name: "block max gas too small",
-			params: func() types.Params {
-				p := types.DefaultParams()
-				p.Blockmaxgas = 0
-				return p
-			},
-			expectedErr: true,
-		},
-		{
-			name: "block max size too small",
-			params: func() types.Params {
-				p := types.DefaultParams()
-				p.Blockmaxsize = 50000
-				return p
-			},
-			expectedErr: true,
-		},
-		{
-			name: "block max size too big",
-			params: func() types.Params {
-				p := types.DefaultParams()
-				p.Blockmaxsize = 1000000
+				p := testParams
+				p.Version = "3a19edd887_9b576a866750bc9d480ada53d2c0d"
 				return p
 			},
 			expectedErr: true,

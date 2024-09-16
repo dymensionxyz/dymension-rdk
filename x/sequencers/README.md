@@ -2,19 +2,10 @@
 
 ## Abstract
 
-The Sequencers module provides a method to initialize a sequencer from Dymint for rewards. Unlike traditional Cosmos SDK chains, the proposer's source of truth is not the Cosmos SDK but the hub. Dymint is responsible for communicating with the hub and conveying the current proposer's information to the RDK.
+The module houses sequencer objects which can set a reward address to receive blocks rewards.
 
 ## Overview
 
-Currently, we use the ABCI `InitChainer` method. There are two challenges we encounter when updating a sequencer, as opposed to when creating a validator:
+The ABCI InitChainer method passes a validator set. The same set needs to be returned on InitGenesis. We simply save the passed set and return it, but do not use it.
 
-    1. `InitChainer` expects the `validatorUpdates` to be identical to what it received from Dymint.
-    2. We need a method to set the operator address, which is the address used for sequencer rewards.
-
-To address these challenges, we proceed as follows:
-
-    1. Upon `InitChainer`, we invoke `SetDymintSequencers` and create a dummy sequencer object with the consensus public key and power obtained from the `validatorUpdates`.
-    2. Upon `InitGenesis`, we construct a validator-like object where the operator address is specified in the genesis file, and the consensus public key and power are derived from the dummy sequencer object.
-    3. Finally, we delete the dummy sequencer object.
-
-Subsequently, we have a sequencer structure that implements the `stakingtypes.Validator` interface, which is utilized for rewards.
+The distr module will query this module for a reward address using a cons address. Sequencers should set an appropriate reward addr to be returned here.

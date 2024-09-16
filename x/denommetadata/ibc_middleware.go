@@ -14,6 +14,8 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+
+	"github.com/dymensionxyz/sdk-utils/utils/uevent"
 	"github.com/dymensionxyz/sdk-utils/utils/uibc"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
@@ -77,12 +79,9 @@ func (m *ICS4Wrapper) SendPacket(
 	state := m.hubKeeper.GetState(ctx)
 
 	// Check if the hub already contains the denom metadata by matching the base of the denom metadata.
-	// At the first match, we assume that the hub already contains the metadata.
-	// It would be technically possible to have a race condition where the denom metadata is added to the hub
-	// from another packet before this packet is acknowledged.
-	// If the denom metadata exists but is either PENDING or ACTIVE, proceed to the next middleware in the chain.
+	// If the denom metadata exists, proceed to the next middleware in the chain.
 	if ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
-		return denom.Base == packet.Denom && denom.Status != hubtypes.RegisteredDenom_INACTIVE
+		return denom.Base == packet.Denom
 	}) {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
@@ -101,13 +100,6 @@ func (m *ICS4Wrapper) SendPacket(
 	if err != nil {
 		return 0, errorsmod.Wrapf(errors.Join(errortypes.ErrJSONMarshal, err), "marshal ICS-20 transfer packet data")
 	}
-
-	registeredDenom := &hubtypes.RegisteredDenom{
-		Base:   denomMetadata.Base,
-		Status: hubtypes.RegisteredDenom_PENDING,
-	}
-	state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, registeredDenom)
-	m.hubKeeper.SetState(ctx, state)
 
 	return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 }
@@ -152,6 +144,10 @@ func (im IBCModule) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errors.Join(errortypes.ErrJSONUnmarshal, err), "unmarshal ICS-20 transfer acknowledgement")
 	}
 
+	if !ack.Success() {
+		return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	}
+
 	var data transfertypes.FungibleTokenPacketData
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), &data); err != nil {
 		return errorsmod.Wrapf(errors.Join(errortypes.ErrJSONUnmarshal, err), "unmarshal ICS-20 transfer packet data")
@@ -164,19 +160,13 @@ func (im IBCModule) OnAcknowledgementPacket(
 
 	state := im.hubKeeper.GetState(ctx)
 
-	// find the denom from the list by matching the base
-	// if it exists, update the status
-	// if the ack is error or timeout, update the status to INACTIVE
-	// otherwise, update the status to ACTIVE
-	for i, denom := range state.Hub.RegisteredDenoms {
-		if denom.Base == dm.Base {
-			state.Hub.RegisteredDenoms[i].Status = map[bool]hubtypes.RegisteredDenom_Status{
-				true:  hubtypes.RegisteredDenom_ACTIVE,
-				false: hubtypes.RegisteredDenom_INACTIVE,
-			}[ack.Success()]
-			im.hubKeeper.SetState(ctx, state)
-			break
-		}
+	if !ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
+		return denom.Base == dm.Base
+	}) {
+		state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, &hubtypes.RegisteredDenom{
+			Base: dm.Base,
+		})
+		im.hubKeeper.SetState(ctx, state)
 	}
 
 	return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
@@ -195,7 +185,7 @@ func (im IBCModule) OnRecvPacket(
 	packetData := new(transfertypes.FungibleTokenPacketData)
 	if err := types.ModuleCdc.UnmarshalJSON(packet.GetData(), packetData); err != nil {
 		err = errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet data")
-		return channeltypes.NewErrorAcknowledgement(err)
+		return uevent.NewErrorAcknowledgement(ctx, err)
 	}
 
 	if packetData.Memo == "" {
@@ -208,7 +198,7 @@ func (im IBCModule) OnRecvPacket(
 	}
 
 	if err := dm.Validate(); err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
+		return uevent.NewErrorAcknowledgement(ctx, err)
 	}
 
 	// at this point it's safe to assume that we are not handling a native token of the rollapp,
@@ -226,7 +216,7 @@ func (im IBCModule) OnRecvPacket(
 	im.bankKeeper.SetDenomMetaData(ctx, *dm)
 	// set hook after denom metadata creation
 	if err := im.hooks.AfterDenomMetadataCreation(ctx, *dm); err != nil {
-		return channeltypes.NewErrorAcknowledgement(err)
+		return uevent.NewErrorAcknowledgement(ctx, err)
 	}
 
 	return im.IBCModule.OnRecvPacket(ctx, packet, relayer)
