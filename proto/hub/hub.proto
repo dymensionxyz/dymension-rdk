@@ -14,5 +14,4 @@ message Hub {
 message RegisteredDenom {
   // base is the base of the denom
   string base = 1;
-  reserved 2;
 }

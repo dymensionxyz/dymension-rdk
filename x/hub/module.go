@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/CosmWasm/wasmd/x/wasm/client/cli"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -16,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/dymensionxyz/dymension-rdk/x/hub/client/cli"
 	"github.com/dymensionxyz/dymension-rdk/x/hub/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
@@ -109,7 +109,7 @@ func (AppModule) Route() sdk.Route { return sdk.Route{} }
 
 // QuerierRoute returns the hub module's querier route name.
 func (AppModule) QuerierRoute() string {
-	return ""
+	return types.QuerierRoute
 }
 
 // LegacyQuerierHandler returns the x/hub module's sdk.Querier.
@@ -121,7 +121,9 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 
 // RegisterServices registers a gRPC query service to respond to the
 // module-specific gRPC queries.
-func (am AppModule) RegisterServices(cfg module.Configurator) {}
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQuerier(am.keeper))
+}
 
 // InitGenesis performs genesis initialization for the hub module. It returns
 // no validator updates.

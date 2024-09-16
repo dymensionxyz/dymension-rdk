@@ -159,10 +159,15 @@ func (im IBCModule) OnAcknowledgementPacket(
 	}
 
 	state := im.hubKeeper.GetState(ctx)
-	state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, &hubtypes.RegisteredDenom{
-		Base: dm.Base,
-	})
-	im.hubKeeper.SetState(ctx, state)
+
+	if !ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
+		return denom.Base == dm.Base
+	}) {
+		state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, &hubtypes.RegisteredDenom{
+			Base: dm.Base,
+		})
+		im.hubKeeper.SetState(ctx, state)
+	}
 
 	return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 }
