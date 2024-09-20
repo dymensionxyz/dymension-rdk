@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/crypto"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
@@ -21,7 +22,7 @@ import (
 // UnsafeImportConsensusKeyCmd imports private keys from a keyfile. This is 'unsafe' because it reads the private key into
 // memory temporarily.
 func UnsafeImportConsensusKeyCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "unsafe-import-cons-key <name> <private key file path>",
 		Short:   "**UNSAFE** Import consensus private key into the local keyring",
 		Long:    "**UNSAFE** Import a consensus private key (ed25519) to the keyring by reading the file into memory",
@@ -29,6 +30,10 @@ func UnsafeImportConsensusKeyCmd() *cobra.Command {
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+			clientCtx, err = client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
 			if err != nil {
 				return err
 			}
@@ -53,7 +58,12 @@ func UnsafeImportConsensusKeyCmd() *cobra.Command {
 			}
 
 			buf := bufio.NewReader(clientCtx.Input)
-			ok, err := input.GetConfirmation(fmt.Sprintf("Double check: is this the expected consensus addr: <%s> ?", consAddr.String()), buf, cmd.ErrOrStderr())
+			ok, err := input.GetConfirmation(
+				fmt.Sprintf(
+					"Double check: is this the expected consensus addr: <%s> ?",
+					consAddr.String(),
+				), buf, cmd.ErrOrStderr(),
+			)
 			if err != nil {
 				return fmt.Errorf("get confirmation: %w", err)
 			}
@@ -74,6 +84,14 @@ func UnsafeImportConsensusKeyCmd() *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.PersistentFlags().String(
+		flags.FlagKeyringDir,
+		"",
+		"The client Keyring directory; if omitted, the default 'home' directory will be used",
+	)
+	cmd.PersistentFlags().String(flags.FlagKeyringBackend, keyring.BackendOS, "Select keyring's backend (os|file|test)")
+	return cmd
 }
 
 type consensusKeyFile struct {
