@@ -95,6 +95,9 @@ import (
 	gaslesskeeper "github.com/dymensionxyz/dymension-rdk/x/gasless/keeper"
 	gaslesstypes "github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 
+	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
+	timeupgradetypes "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
+
 	ibctransfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
@@ -143,7 +146,7 @@ var kvstorekeys = []string{
 	ibchost.StoreKey, upgradetypes.StoreKey,
 	epochstypes.StoreKey, hubgentypes.StoreKey, hubtypes.StoreKey,
 	ibctransfertypes.StoreKey, capabilitytypes.StoreKey, gaslesstypes.StoreKey, wasmtypes.StoreKey,
-	rollappparamstypes.StoreKey,
+	rollappparamstypes.StoreKey, timeupgradetypes.StoreKey,
 }
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -231,6 +234,7 @@ type App struct {
 	CapabilityKeeper    *capabilitykeeper.Keeper
 	StakingKeeper       stakingkeeper.Keeper
 	SequencersKeeper    seqkeeper.Keeper
+	TimeUpgradeKeeper   keeper.Keeper
 	MintKeeper          mintkeeper.Keeper
 	EpochsKeeper        epochskeeper.Keeper
 	DistrKeeper         distrkeeper.Keeper
@@ -391,6 +395,12 @@ func NewRollapp(
 	)
 
 	app.UpgradeKeeper = upgradekeeper.NewKeeper(skipUpgradeHeights, keys[upgradetypes.StoreKey], appCodec, homePath, app.BaseApp, authtypes.NewModuleAddress(govtypes.ModuleName).String())
+
+	app.TimeUpgradeKeeper = keeper.NewKeeper(
+		appCodec,
+		keys[timeupgradetypes.StoreKey],
+		authtypes.NewModuleAddress(timeupgradetypes.ModuleName).String(),
+	)
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
@@ -559,7 +569,7 @@ func NewRollapp(
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, app.BankKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
-		sequencers.NewAppModule(appCodec, app.SequencersKeeper),
+		sequencers.NewAppModule(app.SequencersKeeper),
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
