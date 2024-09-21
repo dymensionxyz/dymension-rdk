@@ -1,0 +1,32 @@
+syntax = "proto3";
+package rollapp.timeupgrade.types;
+
+import "gogoproto/gogo.proto";
+import "cosmos/upgrade/v1beta1/tx.proto";
+import "cosmos/msg/v1/msg.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types";
+
+// Msg defines the Msg service.
+service Msg {
+  rpc SoftwareUpgrade(MsgSoftwareUpgrade) returns (MsgSoftwareUpgradeResponse);
+  rpc CancelUpgrade(MsgCancelUpgrade) returns (MsgCancelUpgradeResponse);
+}
+
+message MsgSoftwareUpgrade {
+// original_upgrade is the original software upgrade message.
+cosmos.upgrade.v1beta1.MsgSoftwareUpgrade original_upgrade = 1;
+// upgrade_time is the time at which the upgrade is scheduled.
+google.protobuf.Timestamp upgrade_time = 2;
+}
+
+message MsgSoftwareUpgradeResponse {}
+
+message MsgCancelUpgrade {
+  // authority is the address of the governance account.
+  string authority = 1;
+}
+
+message MsgCancelUpgradeResponse {}

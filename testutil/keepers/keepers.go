@@ -3,6 +3,8 @@ package keepers
 import (
 	"time"
 
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -14,6 +16,7 @@ import (
 	mintkeeper "github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
 	rollappparamskeeper "github.com/dymensionxyz/dymension-rdk/x/rollappparams/keeper"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	timeupgradekeeper "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
 )
 
 func NewTestEpochKeeperFromApp(app *app.App) (*epochkeeper.Keeper, sdk.Context) {
@@ -24,6 +27,18 @@ func NewTestEpochKeeperFromApp(app *app.App) (*epochkeeper.Keeper, sdk.Context) 
 
 func NewTestSequencerKeeperFromApp(app *app.App) (*seqkeeper.Keeper, sdk.Context) {
 	k := &app.SequencersKeeper
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
+	return k, ctx
+}
+
+func NewTestTimeupgradeKeeperFromApp(app *app.App) (timeupgradekeeper.Keeper, sdk.Context) {
+	k := app.TimeUpgradeKeeper
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
+	return k, ctx
+}
+
+func NewTestUpgradeKeeperFromApp(app *app.App) (upgradekeeper.Keeper, sdk.Context) {
+	k := app.UpgradeKeeper
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "rollapp-1", Time: time.Now().UTC()})
 	return k, ctx
 }
