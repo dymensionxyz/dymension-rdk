@@ -12,7 +12,7 @@ require (
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/cosmos/ibc-go/v6 v6.2.1
 	github.com/dymensionxyz/dymint v1.2.0-rc01.0.20240824093518-9aff93277837
-	github.com/dymensionxyz/gerr-cosmos v1.0.0
+	github.com/dymensionxyz/gerr-cosmos v1.1.0
 	github.com/dymensionxyz/sdk-utils v0.1.2-0.20240905104639-19dc09f5c6f5
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.4
