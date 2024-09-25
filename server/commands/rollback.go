@@ -143,6 +143,8 @@ func liteBlockManager(context context.Context, cfg *config.Config, dymintConf *d
 		nil,
 		nil,
 		nil,
+		nil,
+		nil,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("BlockManager initialization error: %w", err)
