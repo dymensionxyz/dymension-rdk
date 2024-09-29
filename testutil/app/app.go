@@ -465,7 +465,9 @@ func NewRollapp(
 		appCodec,
 		keys[hubgentypes.StoreKey],
 		app.GetSubspace(hubgentypes.ModuleName),
+		app.StakingKeeper,
 		app.AccountKeeper,
+		app.BankKeeper,
 	)
 
 	genesisTransfersBlocker := hubgenkeeper.NewICS4Wrapper(denomMetadataMiddleware, app.HubGenesisKeeper)

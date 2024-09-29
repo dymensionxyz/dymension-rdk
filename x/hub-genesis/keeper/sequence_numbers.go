@@ -1,11 +1,8 @@
 package keeper
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 /*
@@ -54,32 +51,19 @@ func (k Keeper) getAllUnackedTransferSeqNums(ctx sdk.Context) []uint64 {
 	return ret
 }
 
+// FIXME: refactor after proto change
 // ackTransferSeqNum handles the inbound acknowledgement of an outbound genesis transfer
-func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64, ack channeltypes.Acknowledgement) error {
-	if !ack.Success() {
-		res, ok := ack.Response.(*channeltypes.Acknowledgement_Error)
-		if !ok {
-			return errorsmod.WithType(gerrc.ErrInvalidArgument, ack)
-		}
-		return errorsmod.Wrapf(gerrc.ErrUnknown, "ack is not success: %s", res.Error)
+func (k Keeper) ackTransferSeqNum(ctx sdk.Context, seq uint64) {
+	if !k.hasUnackedTransferSeqNum(ctx, seq) {
+		panic("genesis transfer sequence number not found")
 	}
-	if k.hasUnackedTransferSeqNum(ctx, seq) {
-		k.delUnackedTransferSeqNum(ctx, seq)
-		state := k.GetState(ctx)
-		state.NumUnackedTransfers--
-		k.SetState(ctx, state)
-		if state.NumUnackedTransfers == 0 {
-			// all acks have come back successfully
-			k.enableOutboundTransfers(ctx)
-		}
-	}
-	return nil
-}
 
-func (k Keeper) enableOutboundTransfers(ctx sdk.Context) {
+	k.delUnackedTransferSeqNum(ctx, seq)
 	state := k.GetState(ctx)
+	state.NumUnackedTransfers--
 	state.OutboundTransfersEnabled = true
 	k.SetState(ctx, state)
+
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
 	k.Logger(ctx).With("module", types.ModuleName).Debug("Enabled outbound transfers.")
 }
