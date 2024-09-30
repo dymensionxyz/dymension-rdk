@@ -21,6 +21,7 @@ import (
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 
+	hubgenesistypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	rollappparamstypes "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types"
 
 	"github.com/stretchr/testify/require"
@@ -33,9 +34,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
-
-	// unnamed import of statik for swagger UI support
-	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
 )
 
 var DefaultConsensusParams = &abci.ConsensusParams{
@@ -97,6 +95,77 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.Raw
 	return testApp, map[string]json.RawMessage{}
 }
 
+//FIXME: DRY the test setup
+
+// Setup initializes a new Rollapp. A Nop logger is set in Rollapp.
+func SetupWithGenesisBridge(t *testing.T, token sdk.Coin, genAcct []hubgenesistypes.GenesisAccount) *app.App {
+	t.Helper()
+
+	app, genesisState := setup(true, 5)
+
+	// setup for sequencer
+	seqGenesis := seqtypes.DefaultGenesis()
+	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(seqGenesis)
+
+	// setup for rollapp params
+	rollappParamsGenesis := rollappparamstypes.GenesisState{
+		Params: rollappparamstypes.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86"),
+	}
+	genesisState[rollappparamstypes.ModuleName] = app.AppCodec().MustMarshalJSON(&rollappParamsGenesis)
+
+	// setting bank genesis as required for genesis bridge
+	nativeDenomMetadata := banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{
+			{
+				Denom:    "stake",
+				Exponent: 0,
+			},
+			{
+				Denom:    "TST",
+				Exponent: 18,
+			},
+		},
+		Base:    "stake",
+		Display: "TST",
+	}
+	genesisBridgeFunds := []banktypes.Balance{
+		{
+			Address: authtypes.NewModuleAddress(hubgenesistypes.ModuleName).String(),
+			Coins:   sdk.NewCoins(token),
+		},
+	}
+
+	bankGenesis := banktypes.DefaultGenesisState()
+	bankGenesis.DenomMetadata = append(bankGenesis.DenomMetadata, nativeDenomMetadata)
+	bankGenesis.Balances = append(bankGenesis.Balances, genesisBridgeFunds...)
+	bankGenesis.Supply = sdk.NewCoins(token)
+	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
+
+	// set genesis transfer required accounts
+	genesisBridgeGenesisState := hubgenesistypes.DefaultGenesisState()
+	genesisBridgeGenesisState.State.GenesisAccounts = genAcct
+	genesisState[hubgenesistypes.ModuleName] = app.AppCodec().MustMarshalJSON(genesisBridgeGenesisState)
+
+	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
+	require.NoError(t, err)
+
+	// init chain will set the validator set and initialize the genesis accounts
+	app.InitChain(
+		abci.RequestInitChain{
+			Time:            time.Time{},
+			ChainId:         "test_100-1",
+			ConsensusParams: DefaultConsensusParams,
+			Validators: []abci.ValidatorUpdate{
+				{PubKey: ProposerTMCons(), Power: 1},
+			},
+			AppStateBytes: stateBytes,
+			InitialHeight: 0,
+		},
+	)
+
+	return app
+}
+
 // Setup initializes a new Rollapp. A Nop logger is set in Rollapp.
 func Setup(t *testing.T, isCheckTx bool) *app.App {
 	t.Helper()
@@ -104,10 +173,9 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	app, genesisState := setup(true, 5)
 
 	// setup for sequencer
-	seqGenesis := seqtypes.GenesisState{
-		Params: seqtypes.DefaultParams(),
-	}
-	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&seqGenesis)
+	// FIXME: can be removed???
+	seqGenesis := seqtypes.DefaultGenesis()
+	genesisState[seqtypes.ModuleName] = app.AppCodec().MustMarshalJSON(seqGenesis)
 
 	// setup for rollapp params
 

@@ -27,20 +27,18 @@ type GenesisTransferData struct {
 
 func (k Keeper) PrepareGenesisTransfer(ctx sdk.Context, portID, channelID string) (*transfertypes.FungibleTokenPacketData, error) {
 	state := k.GetState(ctx)
-
-	// no genesis accounts defined => no genesis transfer needed
-	if len(state.GetGenesisAccounts()) == 0 {
-		return nil, nil
-	}
-
-	sender := k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress().String()
-
-	denom := k.GetBaseDenom(ctx)
-
 	amount := math.ZeroInt()
 	for _, acc := range state.GenesisAccounts {
 		amount = amount.Add(acc.Amount)
 	}
+
+	// no genesis accounts defined => no genesis transfer needed
+	if amount.IsZero() {
+		return nil, nil
+	}
+
+	sender := k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress().String()
+	denom := k.GetBaseDenom(ctx)
 
 	// prepare memo with the genesis accounts info
 	memo, err := k.CreateGenesisAccountsMemo(ctx, state.GenesisAccounts)

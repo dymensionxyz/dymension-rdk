@@ -11,6 +11,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 )
 
+// FIXME: rename and add godoc
 type ICS4Wrapper struct {
 	porttypes.ICS4Wrapper
 	k Keeper
@@ -24,10 +25,8 @@ func (w ICS4Wrapper) logger(ctx sdk.Context) log.Logger {
 	return w.k.Logger(ctx).With("module", types.ModuleName, "component", "ics4 middleware")
 }
 
-// SendPacket does two things:
-//  1. It stops anyone from sending a packet with the special memo. Only the module itself is allowed to do so.
-//  2. It stops anyone from sending a regular transfer until the genesis phase is finished. To help with this,
-//     it tracks all acks which arrive from genesis transfers.
+// SendPacket is a wrapper around the ICS4Wrapper.SendPacket method.
+// It will reject outbound transfers until the genesis phase is finished.
 func (w ICS4Wrapper) SendPacket(
 	ctx sdk.Context,
 	chanCap *capabilitytypes.Capability,
@@ -37,11 +36,9 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
-	l := w.logger(ctx)
-
 	state := w.k.GetState(ctx)
 	if !state.OutboundTransfersEnabled {
-		l.Debug("Transfer rejected: outbound transfers are disabled.")
+		w.logger(ctx).Info("Transfer rejected: outbound transfers are disabled.")
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}
 
