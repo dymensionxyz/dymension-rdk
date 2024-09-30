@@ -29,7 +29,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
-	sk types.StakingKeeper,
+	mk types.MintKeeper,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -42,8 +42,8 @@ func NewKeeper(
 	if bk == nil {
 		panic("bank keeper cannot be nil")
 	}
-	if sk == nil {
-		panic("staking keeper cannot be nil")
+	if mk == nil {
+		panic("mint keeper cannot be nil")
 	}
 
 	return Keeper{
@@ -52,7 +52,7 @@ func NewKeeper(
 		paramstore: ps,
 		ak:         ak,
 		bk:         bk,
-		sk:         sk,
+		mk:         mk,
 	}
 }
 
