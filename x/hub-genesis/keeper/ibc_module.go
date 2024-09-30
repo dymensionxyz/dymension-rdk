@@ -22,13 +22,12 @@ var (
 type IBCModule struct {
 	porttypes.IBCModule
 	k             Keeper
-	transfer      types.TransferKeeper
 	bank          types.BankKeeper
 	channelKeeper types.ChannelKeeper
 }
 
-func NewIBCModule(next porttypes.IBCModule, t types.TransferKeeper, k Keeper, bank types.BankKeeper, chanKeeper types.ChannelKeeper) *IBCModule {
-	return &IBCModule{next, k, t, bank, chanKeeper}
+func NewIBCModule(next porttypes.IBCModule, k Keeper, bank types.BankKeeper, chanKeeper types.ChannelKeeper) *IBCModule {
+	return &IBCModule{next, k, bank, chanKeeper}
 }
 
 func (w IBCModule) logger(ctx sdk.Context) log.Logger {
