@@ -8,8 +8,8 @@ import (
 )
 
 // GetNativeDenom returns the native denomination.
-func (k Keeper) GetNativeDenom(ctx sdk.Context) string {
-	return k.GetGenesisInfo(ctx).NativeDenom.Base
+func (k Keeper) GetBaseDenom(ctx sdk.Context) string {
+	return k.GetGenesisInfo(ctx).BaseDenom()
 }
 
 func (k Keeper) PopulateGenesisInfo(ctx sdk.Context) error {
@@ -28,7 +28,7 @@ func (k Keeper) PopulateGenesisInfo(ctx sdk.Context) error {
 	// Query the decimals of the denom
 	decimals := uint32(0)
 	for _, unit := range metadata.DenomUnits {
-		// exists in a valid denom metadata
+		// guaranteed to exists in a valid denom metadata
 		if unit.Denom == metadata.Display {
 			decimals = unit.Exponent
 			break
@@ -43,7 +43,7 @@ func (k Keeper) PopulateGenesisInfo(ctx sdk.Context) error {
 
 	// Create the genesis info
 	genesisInfo := types.GenesisInfo{
-		GenesisChecksum: "", // TODO: Implement checksum
+		GenesisChecksum: "", // TODO: populate checksum value
 		Bech32Prefix:    bech32Prefix,
 		NativeDenom: &types.DenomMetadata{
 			Display:  metadata.Display,

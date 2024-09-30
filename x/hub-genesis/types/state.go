@@ -47,3 +47,7 @@ func (s *State) SetCanonicalTransferChannel(port, channel string) {
 		Channel: channel,
 	}
 }
+
+func (g GenesisInfo) BaseDenom() string {
+	return g.NativeDenom.Base
+}
