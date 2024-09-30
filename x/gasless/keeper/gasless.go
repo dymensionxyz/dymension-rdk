@@ -7,7 +7,6 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/dymensionxyz/dymension-rdk/utils/coinsutils"
 	"github.com/dymensionxyz/dymension-rdk/utils/sliceutils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
@@ -61,7 +60,7 @@ func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGa
 		}
 	}
 
-	minDepositRequired, found := coinsutils.GetCoinByDenomFromCoins(msg.FeeDenom, params.MinimumGasDeposit)
+	found, minDepositRequired := params.MinimumGasDeposit.Find(msg.FeeDenom)
 	if !found {
 		return sdkerrors.Wrapf(errors.ErrInvalidRequest, " fee denom %s not allowed ", msg.FeeDenom)
 	}
