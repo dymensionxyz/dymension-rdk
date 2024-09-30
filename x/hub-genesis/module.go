@@ -68,7 +68,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingCo
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 
-	return types.ValidateGenesis(data)
+	return data.ValidateBasic()
 }
 
 // RegisterRESTRoutes registers the REST routes for the hub-genesis module.

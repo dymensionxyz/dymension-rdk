@@ -20,7 +20,7 @@ type Keeper struct {
 
 	ak types.AccountKeeper
 	bk types.BankKeeper
-	sk types.StakingKeeper
+	mk types.MintKeeper
 }
 
 func NewKeeper(
@@ -60,11 +60,6 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-// GetNativeDenom returns the native denomination.
-func (k Keeper) GetNativeDenom(ctx sdk.Context) string {
-	return k.sk.BondDenom(ctx)
-}
-
 // SetState sets the state.
 func (k Keeper) SetState(ctx sdk.Context, state types.State) {
 	store := ctx.KVStore(k.storeKey)
@@ -94,6 +89,12 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 	k.paramstore.SetParamSet(ctx, &params)
 }
 
+// SetGenesisInfo sets the genesis info.
+func (k Keeper) SetGenesisInfo(ctx sdk.Context, gInfo types.GenesisInfo) {
+	store := ctx.KVStore(k.storeKey)
+	store.Set(types.GenesisInfoKey, k.cdc.MustMarshal(&gInfo))
+}
+
 // GetGenesisInfo returns the genesis info.
 func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 	store := ctx.KVStore(k.storeKey)
@@ -101,23 +102,7 @@ func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 	if bz == nil {
 		return types.GenesisInfo{}
 	}
-	var info types.GenesisInfo
-	// k.cdc.MustUnmarshal(bz, &info)
-	err := info.Unmarshal(bz)
-	if err != nil {
-		panic(err)
-	}
-	return info
-}
-
-// SetGenesisInfo sets the genesis info.
-func (k Keeper) SetGenesisInfo(ctx sdk.Context, info types.GenesisInfo) {
-	store := ctx.KVStore(k.storeKey)
-	// store.Set(types.GenesisInfoKey, k.cdc.MustMarshal(&info))
-
-	bz, err := info.Marshal()
-	if err != nil {
-		panic(err)
-	}
-	store.Set(types.GenesisInfoKey, bz)
+	var gInfo types.GenesisInfo
+	k.cdc.MustUnmarshal(bz, &gInfo)
+	return gInfo
 }

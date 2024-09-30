@@ -1,28 +1,36 @@
 package types
 
 import (
-	"reflect"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	errorsmod "cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
-	"github.com/dymensionxyz/sdk-utils/utils/uibc"
 )
 
 func (s *State) Validate() error {
 	for _, a := range s.GetGenesisAccounts() {
-		if err := a.GetAmount().Validate(); err != nil {
-			return errorsmod.Wrap(err, "amount")
+		if !a.Amount.IsPositive() {
+			return errorsmod.Wrapf(gerrc.ErrInvalidArgument, "invalid amount: %s %s", a.Address, a.Amount)
 		}
-		if uibc.IsIBCDenom(a.Amount.GetDenom()) {
-			return errorsmod.Wrapf(gerrc.ErrInvalidArgument, "ibc denoms not allowed in genesis accounts: %s", a.Amount)
-		}
-		_, err := sdk.AccAddressFromBech32(a.GetAddress())
-		if err != nil {
-			return errorsmod.Wrap(err, "address from bech 32")
+
+		if err := ValidateHubBech32(a.Address); err != nil {
+			return errorsmod.Wrapf(gerrc.ErrInvalidArgument, "invalid address: %s", a.Address)
 		}
 	}
+
+	// TODO: validate port and channel?
+
 	return nil
+}
+
+// AccAddressFromBech32 creates an AccAddress from a Bech32 string.
+func ValidateHubBech32(address string) (err error) {
+	bech32PrefixAccAddr := "dym"
+	bz, err := sdk.GetFromBech32(address, bech32PrefixAccAddr)
+	if err != nil {
+		return err
+	}
+	return sdk.VerifyAddressFormat(bz)
 }
 
 func (s *State) IsCanonicalHubTransferChannel(port, channel string) bool {
@@ -30,7 +38,7 @@ func (s *State) IsCanonicalHubTransferChannel(port, channel string) bool {
 }
 
 func (s *State) CanonicalHubTransferChannelHasBeenSet() bool {
-	return !reflect.ValueOf(s.HubPortAndChannel).IsZero()
+	return s.HubPortAndChannel != nil
 }
 
 func (s *State) SetCanonicalTransferChannel(port, channel string) {

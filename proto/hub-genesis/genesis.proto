@@ -13,9 +13,5 @@ message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
   // state defines the state of the module.
   State state = 2 [(gogoproto.nullable) = false];
-  // unackedTransferSeqNum is the sequence number of the genesis bridge packet
-  // that has not been acknowledged by the hub.
-  // unused, unless exported genesis while a packet is in flight.
-  uint64 unacked_transfer_seq_num = 3;
 }
 

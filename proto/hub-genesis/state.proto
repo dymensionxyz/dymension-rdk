@@ -14,11 +14,8 @@ message State {
   bool outbound_transfers_enabled = 6;
   // the canonical transfer port and channel for the hub
   PortAndChannel hub_port_and_channel= 7;
-  // The genesis info of the rollapp, that is passed to the hub for validation.
-  // it's populated on the InitGenesis of the rollapp
-  GenesisInfo genesis_info = 8 [(gogoproto.nullable) = false];
   // accounts on the Hub to fund with some bootstrapping transfers
-  repeated GenesisAccount genesis_accounts = 9 [(gogoproto.nullable) = false];
+  repeated GenesisAccount genesis_accounts = 8 [(gogoproto.nullable) = false];
 }
 
 message PortAndChannel {
@@ -41,9 +38,10 @@ message GenesisAccount {
 
 
 
+// The genesis info of the rollapp, that is passed to the hub for validation.
+// it's populated on the InitGenesis of the rollapp
 message GenesisInfo {
-  // checksum used to verify integrity of the genesis file
-  // currently unused
+  // checksum used to verify integrity of the genesis file. currently unused
   string genesis_checksum = 1;
   // unique bech32 prefix
   string bech32_prefix = 2;

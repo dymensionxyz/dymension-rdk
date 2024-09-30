@@ -31,9 +31,10 @@ type BankKeeper interface {
 	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 	GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
+	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	GetSupply(ctx sdk.Context, denom string) sdk.Coin
 }
 
-type StakingKeeper interface {
-	BondDenom(ctx sdk.Context) string
+type MintKeeper interface {
+	MintDenom(ctx sdk.Context) string
 }
