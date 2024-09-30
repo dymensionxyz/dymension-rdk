@@ -15,9 +15,7 @@ import (
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
-var (
-	transferTimeout = uint64((time.Duration(24*365) * time.Hour).Nanoseconds()) // very long timeout
-)
+var transferTimeout = uint64((time.Duration(24*365) * time.Hour).Nanoseconds()) // very long timeout
 
 type IBCModule struct {
 	porttypes.IBCModule

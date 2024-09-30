@@ -1,9 +1,10 @@
 package types
 
 import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
+
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
@@ -14,11 +15,18 @@ func (s *State) Validate() error {
 		}
 
 		if err := ValidateHubBech32(a.Address); err != nil {
-			return errorsmod.Wrapf(gerrc.ErrInvalidArgument, "invalid address: %s", a.Address)
+			return errorsmod.Wrapf(err, "invalid address: %s", a.Address)
 		}
 	}
 
-	// TODO: validate port and channel?
+	if s.HubPortAndChannel != nil {
+		if err := host.PortIdentifierValidator(s.HubPortAndChannel.Port); err != nil {
+			return errorsmod.Wrapf(err, "invalid port Id: %s", s.HubPortAndChannel.Port)
+		}
+		if err := host.ChannelIdentifierValidator(s.HubPortAndChannel.Channel); err != nil {
+			return errorsmod.Wrapf(err, "invalid channel Id: %s", s.HubPortAndChannel.Channel)
+		}
+	}
 
 	return nil
 }
