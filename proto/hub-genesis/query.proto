@@ -16,8 +16,8 @@ service Query {
         "/dymensionxyz/dymension-rdk/hub-genesis/params";
   }
 
-   // State returns the state of the genesis event.
-   rpc State(QueryStateRequest) returns (QueryStateResponse) {
+  // State returns the state of the genesis event.
+  rpc State(QueryStateRequest) returns (QueryStateResponse) {
     option (google.api.http).get =
         "/dymensionxyz/dymension-rdk/hub-genesis/state";
   }
@@ -44,14 +44,16 @@ message QueryStateRequest {}
 // QueryStateResponse is the response type for the Query/State RPC method.
 message QueryStateResponse {
   // state holds the state of the genesis event
-  State state = 1 [(gogoproto.nullable) = false];
+  State state = 1 [ (gogoproto.nullable) = false ];
 }
 
-// QueryGenesisInfoRequest is the request type for the Query/GenesisInfo RPC method.
+// QueryGenesisInfoRequest is the request type for the Query/GenesisInfo RPC
+// method.
 message QueryGenesisInfoRequest {}
 
-// QueryGenesisInfoResponse is the response type for the Query/GenesisInfo RPC method.
+// QueryGenesisInfoResponse is the response type for the Query/GenesisInfo RPC
+// method.
 message QueryGenesisInfoResponse {
   // genesis_info holds the genesis info of the rollapp
-  GenesisInfo genesis_info = 1 [(gogoproto.nullable) = false];
+  GenesisInfo genesis_info = 1 [ (gogoproto.nullable) = false ];
 }
