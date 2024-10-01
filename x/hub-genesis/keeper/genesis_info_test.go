@@ -45,7 +45,7 @@ func TestInitGenesis_HappyFlow(t *testing.T) {
 	assert.Equal(t, genesisBridgeFunds.Amount, gInfo.InitialSupply)
 }
 
-func TestInitGenesis_MissingGenesisFunds(t *testing.T) {
+func TestInitGenesis_MissingGenesisFundsOnGenesis(t *testing.T) {
 	genesisBridgeFunds := sdk.NewCoin("stake", math.NewInt(100_000))
 	genAccounts := []types.GenesisAccount{
 		{

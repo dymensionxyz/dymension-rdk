@@ -11,7 +11,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 )
 
-// FIXME: rename and add godoc
 type ICS4Wrapper struct {
 	porttypes.ICS4Wrapper
 	k Keeper
@@ -26,7 +25,7 @@ func (w ICS4Wrapper) logger(ctx sdk.Context) log.Logger {
 }
 
 // SendPacket is a wrapper around the ICS4Wrapper.SendPacket method.
-// It will reject outbound transfers until the genesis phase is finished.
+// It will reject outbound transfers until the genesis bridge phase is finished.
 func (w ICS4Wrapper) SendPacket(
 	ctx sdk.Context,
 	chanCap *capabilitytypes.Capability,

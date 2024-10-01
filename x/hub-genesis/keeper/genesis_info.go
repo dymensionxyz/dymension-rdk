@@ -12,6 +12,7 @@ func (k Keeper) GetBaseDenom(ctx sdk.Context) string {
 	return k.GetGenesisInfo(ctx).BaseDenom()
 }
 
+// PopulateGenesisInfo populates the genesis info. This function is called during InitGenesis.
 func (k Keeper) PopulateGenesisInfo(ctx sdk.Context) error {
 	// Query the bech32 prefix
 	bech32Prefix := sdk.GetConfig().GetBech32AccountAddrPrefix()

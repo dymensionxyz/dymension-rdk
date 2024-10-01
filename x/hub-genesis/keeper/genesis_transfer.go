@@ -14,7 +14,7 @@ import (
 
 const (
 	// hubRecipient is the address of `x/rollapp` module's account on the hub chain.
-	hubRecipient = "dym1fuckme" // FIXME
+	hubRecipient = "dym1mk7pw34ypusacm29m92zshgxee3yreums8avur"
 )
 
 type GenesisTransferMemo struct {
@@ -37,6 +37,10 @@ func (memo GenesisTransferMemo) String() string {
 	return string(memo.MustMarshal())
 }
 
+// PrepareGenesisTransfer prepares the genesis transfer packet.
+// It returns the packet data if the genesis accounts are defined, otherwise it returns nil.
+// The transfer funds are escrowed explicitly in this method.
+// A memo is attaached with the genesis accounts info, to be validated against the genesis accounts defined on the hub chain.
 func (k Keeper) PrepareGenesisTransfer(ctx sdk.Context, portID, channelID string) (*transfertypes.FungibleTokenPacketData, error) {
 	state := k.GetState(ctx)
 	amount := math.ZeroInt()
