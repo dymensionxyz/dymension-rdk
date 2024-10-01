@@ -5,6 +5,7 @@ package types
 
 import (
 	fmt "fmt"
+	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
 	types "github.com/cosmos/cosmos-sdk/x/bank/types"
 	types1 "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	_ "github.com/gogo/protobuf/gogoproto"
@@ -25,7 +26,8 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// GenesisBridgeData is the data struct that is passed to the hub for the genesis bridge flow
+// GenesisBridgeData is the data struct that is passed to the hub for the
+// genesis bridge flow
 type GenesisBridgeData struct {
 	// genesis_info is the genesis info of the rollapp. used for hub validation
 	GenesisInfo GenesisInfo `protobuf:"bytes,1,opt,name=genesis_info,json=genesisInfo,proto3" json:"genesis_info"`
@@ -89,8 +91,137 @@ func (m *GenesisBridgeData) GetGenesisTransfer() *types1.FungibleTokenPacketData
 	return nil
 }
 
+// The genesis info of the rollapp, that is passed to the hub for validation.
+// it's populated on the InitGenesis of the rollapp
+type GenesisInfo struct {
+	// checksum used to verify integrity of the genesis file. currently unused
+	GenesisChecksum string `protobuf:"bytes,1,opt,name=genesis_checksum,json=genesisChecksum,proto3" json:"genesis_checksum,omitempty"`
+	// unique bech32 prefix
+	Bech32Prefix string `protobuf:"bytes,2,opt,name=bech32_prefix,json=bech32Prefix,proto3" json:"bech32_prefix,omitempty"`
+	// native_denom is the base denom for the native token
+	NativeDenom *DenomMetadata `protobuf:"bytes,3,opt,name=native_denom,json=nativeDenom,proto3" json:"native_denom,omitempty"`
+	// initial_supply is the initial supply of the native token
+	InitialSupply github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,4,opt,name=initial_supply,json=initialSupply,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"initial_supply"`
+}
+
+func (m *GenesisInfo) Reset()         { *m = GenesisInfo{} }
+func (m *GenesisInfo) String() string { return proto.CompactTextString(m) }
+func (*GenesisInfo) ProtoMessage()    {}
+func (*GenesisInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b92d08aeaaf6feb0, []int{1}
+}
+func (m *GenesisInfo) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *GenesisInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_GenesisInfo.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *GenesisInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GenesisInfo.Merge(m, src)
+}
+func (m *GenesisInfo) XXX_Size() int {
+	return m.Size()
+}
+func (m *GenesisInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_GenesisInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GenesisInfo proto.InternalMessageInfo
+
+func (m *GenesisInfo) GetGenesisChecksum() string {
+	if m != nil {
+		return m.GenesisChecksum
+	}
+	return ""
+}
+
+func (m *GenesisInfo) GetBech32Prefix() string {
+	if m != nil {
+		return m.Bech32Prefix
+	}
+	return ""
+}
+
+func (m *GenesisInfo) GetNativeDenom() *DenomMetadata {
+	if m != nil {
+		return m.NativeDenom
+	}
+	return nil
+}
+
+type DenomMetadata struct {
+	Display  string `protobuf:"bytes,1,opt,name=display,proto3" json:"display,omitempty"`
+	Base     string `protobuf:"bytes,2,opt,name=base,proto3" json:"base,omitempty"`
+	Exponent uint32 `protobuf:"varint,3,opt,name=exponent,proto3" json:"exponent,omitempty"`
+}
+
+func (m *DenomMetadata) Reset()         { *m = DenomMetadata{} }
+func (m *DenomMetadata) String() string { return proto.CompactTextString(m) }
+func (*DenomMetadata) ProtoMessage()    {}
+func (*DenomMetadata) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b92d08aeaaf6feb0, []int{2}
+}
+func (m *DenomMetadata) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *DenomMetadata) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_DenomMetadata.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *DenomMetadata) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DenomMetadata.Merge(m, src)
+}
+func (m *DenomMetadata) XXX_Size() int {
+	return m.Size()
+}
+func (m *DenomMetadata) XXX_DiscardUnknown() {
+	xxx_messageInfo_DenomMetadata.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DenomMetadata proto.InternalMessageInfo
+
+func (m *DenomMetadata) GetDisplay() string {
+	if m != nil {
+		return m.Display
+	}
+	return ""
+}
+
+func (m *DenomMetadata) GetBase() string {
+	if m != nil {
+		return m.Base
+	}
+	return ""
+}
+
+func (m *DenomMetadata) GetExponent() uint32 {
+	if m != nil {
+		return m.Exponent
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*GenesisBridgeData)(nil), "rollapp.hub_genesis.GenesisBridgeData")
+	proto.RegisterType((*GenesisInfo)(nil), "rollapp.hub_genesis.GenesisInfo")
+	proto.RegisterType((*DenomMetadata)(nil), "rollapp.hub_genesis.DenomMetadata")
 }
 
 func init() {
@@ -98,30 +229,40 @@ func init() {
 }
 
 var fileDescriptor_b92d08aeaaf6feb0 = []byte{
-	// 368 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x50, 0x41, 0x4b, 0xeb, 0x40,
-	0x18, 0x4c, 0xfa, 0x1e, 0xef, 0x90, 0x16, 0x9e, 0x46, 0xc1, 0x52, 0x30, 0x16, 0x41, 0xd0, 0x43,
-	0x77, 0x69, 0xc5, 0x83, 0xd7, 0x52, 0x2a, 0x3d, 0x08, 0x52, 0x7b, 0xf2, 0x12, 0x77, 0x93, 0x6d,
-	0xba, 0x24, 0xd9, 0x5d, 0xb2, 0x9b, 0xd0, 0xfa, 0x0b, 0x3c, 0xfa, 0xb3, 0x7a, 0xec, 0xd1, 0x93,
-	0x48, 0xfb, 0x47, 0x24, 0x9b, 0x0d, 0xed, 0xc1, 0xd3, 0xee, 0xf7, 0x7d, 0x33, 0xc3, 0xcc, 0x38,
-	0x57, 0x8b, 0x1c, 0xf7, 0x22, 0xc2, 0x88, 0xa4, 0x12, 0x9a, 0xd7, 0xc7, 0x19, 0x0d, 0x23, 0xe2,
-	0x87, 0x48, 0x21, 0x20, 0x32, 0xae, 0xb8, 0x7b, 0x92, 0xf1, 0x24, 0x41, 0x42, 0x80, 0x45, 0x8e,
-	0x7d, 0x03, 0xeb, 0x9c, 0x46, 0x3c, 0xe2, 0xfa, 0x0e, 0xcb, 0x5f, 0x05, 0xed, 0x78, 0x01, 0x97,
-	0x29, 0x97, 0x10, 0x23, 0x16, 0xc3, 0xa2, 0x8f, 0x89, 0x42, 0x7d, 0x3d, 0x98, 0xfb, 0x0d, 0xc5,
-	0x01, 0x44, 0x42, 0x24, 0x34, 0x40, 0x8a, 0x72, 0x26, 0xa1, 0xca, 0x10, 0x93, 0x73, 0x92, 0xc1,
-	0x62, 0x00, 0x05, 0x0a, 0x62, 0xa2, 0x0c, 0xf4, 0xec, 0xd0, 0x9c, 0x54, 0x48, 0x91, 0xea, 0x70,
-	0xf9, 0xde, 0x70, 0x8e, 0x1f, 0xaa, 0xfd, 0x50, 0x7b, 0x1d, 0x21, 0x85, 0xdc, 0x89, 0xd3, 0xaa,
-	0x13, 0x50, 0x36, 0xe7, 0x6d, 0xbb, 0x6b, 0x5f, 0x37, 0x07, 0x5d, 0xf0, 0x8b, 0x77, 0x60, 0xd8,
-	0x13, 0x36, 0xe7, 0xc3, 0xbf, 0xeb, 0xaf, 0x0b, 0x6b, 0xda, 0x8c, 0xf6, 0x2b, 0x77, 0xec, 0xb4,
-	0x18, 0x52, 0xb4, 0x20, 0x7e, 0x48, 0x18, 0x4f, 0xdb, 0x0d, 0x2d, 0x75, 0x0e, 0xaa, 0x6c, 0x40,
-	0xc7, 0x31, 0xd9, 0xc0, 0x23, 0x51, 0xa8, 0xac, 0xaa, 0xd6, 0xa9, 0x88, 0xa3, 0x92, 0xe7, 0xbe,
-	0x3a, 0x47, 0xb5, 0xa5, 0x3a, 0x65, 0xfb, 0x8f, 0xd6, 0xba, 0x03, 0x14, 0x07, 0xe0, 0xb0, 0x07,
-	0x50, 0x23, 0x40, 0x31, 0x00, 0xe3, 0x9c, 0x45, 0x14, 0x27, 0x64, 0xc6, 0x63, 0xc2, 0x9e, 0x74,
-	0x29, 0x65, 0xc6, 0xe9, 0x7f, 0x23, 0x37, 0x33, 0xd8, 0xe1, 0xf3, 0x7a, 0xeb, 0xd9, 0x9b, 0xad,
-	0x67, 0x7f, 0x6f, 0x3d, 0xfb, 0x63, 0xe7, 0x59, 0x9b, 0x9d, 0x67, 0x7d, 0xee, 0x3c, 0xeb, 0xe5,
-	0x3e, 0xa2, 0x6a, 0x91, 0x63, 0x10, 0xf0, 0x14, 0x86, 0xab, 0x94, 0x30, 0x49, 0x39, 0x5b, 0xae,
-	0xde, 0xf6, 0x43, 0x2f, 0x0b, 0x63, 0xb8, 0x84, 0x87, 0x2d, 0xab, 0x95, 0x20, 0x12, 0xff, 0xd3,
-	0x35, 0xdf, 0xfe, 0x04, 0x00, 0x00, 0xff, 0xff, 0xcd, 0xa4, 0xa2, 0xe0, 0x1e, 0x02, 0x00, 0x00,
+	// 524 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x92, 0xcf, 0x6f, 0xd3, 0x30,
+	0x14, 0xc7, 0x9b, 0x51, 0x01, 0x73, 0x5b, 0x7e, 0x18, 0x24, 0xaa, 0x4a, 0x64, 0x53, 0x11, 0x88,
+	0x1d, 0x6a, 0x6b, 0x9d, 0x38, 0x70, 0x2d, 0x63, 0xa8, 0x07, 0xa4, 0xa9, 0x1b, 0x07, 0xb8, 0x04,
+	0x3b, 0x71, 0x53, 0x2b, 0xa9, 0x6d, 0xc5, 0x4e, 0xd5, 0xf2, 0x17, 0x70, 0xe4, 0xcf, 0xda, 0x71,
+	0x47, 0xc4, 0x61, 0x42, 0xed, 0x9f, 0xc1, 0x05, 0xc5, 0x71, 0xd6, 0x6c, 0xda, 0xc9, 0x7e, 0xcf,
+	0xef, 0x3d, 0x7f, 0x3f, 0x5f, 0x3d, 0xf0, 0x7a, 0x96, 0xd3, 0x41, 0xcc, 0x04, 0xd3, 0x5c, 0x63,
+	0x77, 0x06, 0x34, 0xe3, 0x51, 0xcc, 0x82, 0x88, 0x18, 0x82, 0x54, 0x26, 0x8d, 0x84, 0xcf, 0x32,
+	0x99, 0xa6, 0x44, 0x29, 0x34, 0xcb, 0x69, 0xe0, 0xca, 0x7a, 0xcf, 0x63, 0x19, 0x4b, 0xfb, 0x8e,
+	0x8b, 0x5b, 0x59, 0xda, 0xf3, 0x43, 0xa9, 0xe7, 0x52, 0x63, 0x4a, 0x44, 0x82, 0x17, 0x87, 0x94,
+	0x19, 0x72, 0x68, 0x03, 0xf7, 0x7e, 0xc0, 0x69, 0x88, 0x89, 0x52, 0x29, 0x0f, 0x89, 0xe1, 0x52,
+	0x68, 0x6c, 0x32, 0x22, 0xf4, 0x94, 0x65, 0x78, 0x31, 0xc4, 0x8a, 0x84, 0x09, 0x33, 0xae, 0xf4,
+	0x45, 0x5d, 0x9c, 0x36, 0xc4, 0xb0, 0xf2, 0xa1, 0xff, 0x73, 0x07, 0x3c, 0xfd, 0x54, 0xe6, 0x47,
+	0x56, 0xeb, 0x31, 0x31, 0x04, 0x8e, 0x41, 0xbb, 0x22, 0xe0, 0x62, 0x2a, 0xbb, 0xde, 0xbe, 0xf7,
+	0xb6, 0x35, 0xdc, 0x47, 0x77, 0x68, 0x47, 0xae, 0x7b, 0x2c, 0xa6, 0x72, 0xd4, 0xbc, 0xb8, 0xda,
+	0x6b, 0x4c, 0x5a, 0xf1, 0x36, 0x05, 0x4f, 0x40, 0x5b, 0x10, 0xc3, 0x17, 0x2c, 0x88, 0x98, 0x90,
+	0xf3, 0xee, 0x8e, 0x1d, 0xf5, 0x12, 0x95, 0x6c, 0xc8, 0xe2, 0x38, 0x36, 0xf4, 0x99, 0x19, 0x52,
+	0x58, 0x55, 0xcd, 0x29, 0x1b, 0x8f, 0x8b, 0x3e, 0xf8, 0x1d, 0x3c, 0xa9, 0x24, 0x55, 0x94, 0xdd,
+	0x7b, 0x76, 0xd6, 0x3b, 0xc4, 0x69, 0x88, 0xea, 0x3e, 0xa0, 0xaa, 0x02, 0x2d, 0x86, 0xe8, 0x24,
+	0x17, 0x31, 0xa7, 0x29, 0x3b, 0x97, 0x09, 0x13, 0xa7, 0xd6, 0x94, 0x82, 0x71, 0xf2, 0xd8, 0x8d,
+	0x3b, 0x77, 0xb5, 0xfd, 0x7f, 0x1e, 0x68, 0xd5, 0x60, 0xe0, 0xc1, 0xf6, 0xc7, 0x70, 0xc6, 0xc2,
+	0x44, 0xe7, 0x73, 0x6b, 0xc4, 0xee, 0x75, 0xeb, 0x07, 0x97, 0x86, 0xaf, 0x40, 0x87, 0xb2, 0x70,
+	0x76, 0x34, 0x0c, 0x54, 0xc6, 0xa6, 0x7c, 0x69, 0x29, 0x77, 0x27, 0xed, 0x32, 0x79, 0x6a, 0x73,
+	0xf0, 0xe3, 0x2d, 0x27, 0x4a, 0xf5, 0xfd, 0x3b, 0x4d, 0xb5, 0xcc, 0x95, 0x1d, 0x37, 0x8d, 0xf8,
+	0x02, 0x1e, 0x71, 0xc1, 0x0d, 0x27, 0x69, 0xa0, 0x73, 0xa5, 0xd2, 0x55, 0xb7, 0x59, 0x7c, 0x36,
+	0x42, 0x85, 0x67, 0x7f, 0xae, 0xf6, 0xde, 0xc4, 0xdc, 0xcc, 0x72, 0x8a, 0x42, 0x39, 0xc7, 0x6e,
+	0x81, 0xca, 0x63, 0xa0, 0xa3, 0x04, 0x9b, 0x95, 0x62, 0x1a, 0x8d, 0x85, 0x99, 0x74, 0xdc, 0x94,
+	0x33, 0x3b, 0xa4, 0xff, 0x15, 0x74, 0x6e, 0x7c, 0x0a, 0xbb, 0xe0, 0x41, 0xc4, 0xb5, 0x4a, 0xc9,
+	0xca, 0x51, 0x57, 0x21, 0x84, 0xa0, 0x49, 0x89, 0x66, 0x0e, 0xd2, 0xde, 0x61, 0x0f, 0x3c, 0x64,
+	0x4b, 0x25, 0x05, 0x13, 0xc6, 0x82, 0x75, 0x26, 0xd7, 0xf1, 0xe8, 0xec, 0x62, 0xed, 0x7b, 0x97,
+	0x6b, 0xdf, 0xfb, 0xbb, 0xf6, 0xbd, 0x5f, 0x1b, 0xbf, 0x71, 0xb9, 0xf1, 0x1b, 0xbf, 0x37, 0x7e,
+	0xe3, 0xdb, 0xfb, 0x9a, 0xd6, 0x68, 0x35, 0x67, 0x42, 0x73, 0x29, 0x96, 0xab, 0x1f, 0xdb, 0x60,
+	0x90, 0x45, 0x09, 0x5e, 0xe2, 0xfa, 0xfa, 0x5a, 0x04, 0x7a, 0xdf, 0xee, 0xef, 0xd1, 0xff, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0x54, 0x95, 0x6f, 0xfc, 0x77, 0x03, 0x00, 0x00,
 }
 
 func (m *GenesisBridgeData) Marshal() (dAtA []byte, err error) {
@@ -179,6 +320,107 @@ func (m *GenesisBridgeData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *GenesisInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GenesisInfo) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *GenesisInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size := m.InitialSupply.Size()
+		i -= size
+		if _, err := m.InitialSupply.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintGenesisBridgeData(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if m.NativeDenom != nil {
+		{
+			size, err := m.NativeDenom.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintGenesisBridgeData(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.Bech32Prefix) > 0 {
+		i -= len(m.Bech32Prefix)
+		copy(dAtA[i:], m.Bech32Prefix)
+		i = encodeVarintGenesisBridgeData(dAtA, i, uint64(len(m.Bech32Prefix)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.GenesisChecksum) > 0 {
+		i -= len(m.GenesisChecksum)
+		copy(dAtA[i:], m.GenesisChecksum)
+		i = encodeVarintGenesisBridgeData(dAtA, i, uint64(len(m.GenesisChecksum)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *DenomMetadata) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *DenomMetadata) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *DenomMetadata) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Exponent != 0 {
+		i = encodeVarintGenesisBridgeData(dAtA, i, uint64(m.Exponent))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Base) > 0 {
+		i -= len(m.Base)
+		copy(dAtA[i:], m.Base)
+		i = encodeVarintGenesisBridgeData(dAtA, i, uint64(len(m.Base)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Display) > 0 {
+		i -= len(m.Display)
+		copy(dAtA[i:], m.Display)
+		i = encodeVarintGenesisBridgeData(dAtA, i, uint64(len(m.Display)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintGenesisBridgeData(dAtA []byte, offset int, v uint64) int {
 	offset -= sovGenesisBridgeData(v)
 	base := offset
@@ -203,6 +445,49 @@ func (m *GenesisBridgeData) Size() (n int) {
 	if m.GenesisTransfer != nil {
 		l = m.GenesisTransfer.Size()
 		n += 1 + l + sovGenesisBridgeData(uint64(l))
+	}
+	return n
+}
+
+func (m *GenesisInfo) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.GenesisChecksum)
+	if l > 0 {
+		n += 1 + l + sovGenesisBridgeData(uint64(l))
+	}
+	l = len(m.Bech32Prefix)
+	if l > 0 {
+		n += 1 + l + sovGenesisBridgeData(uint64(l))
+	}
+	if m.NativeDenom != nil {
+		l = m.NativeDenom.Size()
+		n += 1 + l + sovGenesisBridgeData(uint64(l))
+	}
+	l = m.InitialSupply.Size()
+	n += 1 + l + sovGenesisBridgeData(uint64(l))
+	return n
+}
+
+func (m *DenomMetadata) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Display)
+	if l > 0 {
+		n += 1 + l + sovGenesisBridgeData(uint64(l))
+	}
+	l = len(m.Base)
+	if l > 0 {
+		n += 1 + l + sovGenesisBridgeData(uint64(l))
+	}
+	if m.Exponent != 0 {
+		n += 1 + sovGenesisBridgeData(uint64(m.Exponent))
 	}
 	return n
 }
@@ -344,6 +629,323 @@ func (m *GenesisBridgeData) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesisBridgeData(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GenesisInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesisBridgeData
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GenesisInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GenesisInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GenesisChecksum", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesisBridgeData
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.GenesisChecksum = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Bech32Prefix", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesisBridgeData
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Bech32Prefix = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NativeDenom", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesisBridgeData
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.NativeDenom == nil {
+				m.NativeDenom = &DenomMetadata{}
+			}
+			if err := m.NativeDenom.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field InitialSupply", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesisBridgeData
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.InitialSupply.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenesisBridgeData(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *DenomMetadata) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenesisBridgeData
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: DenomMetadata: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: DenomMetadata: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Display", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesisBridgeData
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Display = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Base", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesisBridgeData
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesisBridgeData
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Base = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Exponent", wireType)
+			}
+			m.Exponent = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesisBridgeData
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Exponent |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipGenesisBridgeData(dAtA[iNdEx:])

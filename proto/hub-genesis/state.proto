@@ -35,25 +35,3 @@ message GenesisAccount {
   // address is a bech-32 address of the genesis account
   string address = 2;
 }
-
-// The genesis info of the rollapp, that is passed to the hub for validation.
-// it's populated on the InitGenesis of the rollapp
-message GenesisInfo {
-  // checksum used to verify integrity of the genesis file. currently unused
-  string genesis_checksum = 1;
-  // unique bech32 prefix
-  string bech32_prefix = 2;
-  // native_denom is the base denom for the native token
-  DenomMetadata native_denom = 3;
-  // initial_supply is the initial supply of the native token
-  string initial_supply = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-}
-
-message DenomMetadata {
-  string display = 1;
-  string base = 2;
-  uint32 exponent = 3;
-}
