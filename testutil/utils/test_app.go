@@ -184,7 +184,26 @@ func Setup(t *testing.T, isCheckTx bool) *app.App {
 	}
 	genesisState[rollappparamstypes.ModuleName] = app.AppCodec().MustMarshalJSON(&rollappParamsGenesis)
 
+	// setting bank genesis as required for genesis bridge
+	nativeDenomMetadata := banktypes.Metadata{
+		DenomUnits: []*banktypes.DenomUnit{
+			{
+				Denom:    "stake",
+				Exponent: 0,
+			},
+			{
+				Denom:    "TST",
+				Exponent: 18,
+			},
+		},
+		Base:    "stake",
+		Display: "TST",
+	}
+
+	bankGenesis := banktypes.DefaultGenesisState()
+	bankGenesis.DenomMetadata = append(bankGenesis.DenomMetadata, nativeDenomMetadata)
 	// for now bank genesis won't be set here, funding accounts should be called with fund utils.FundModuleAccount
+	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
 	require.NoError(t, err)

@@ -25,6 +25,18 @@ type GenesisTransferData struct {
 	GenesisAccounts []types.GenesisAccount `json:"genesis_accounts"`
 }
 
+func (memo GenesisTransferMemo) MustMarshal() []byte {
+	memoBytes, err := json.Marshal(memo)
+	if err != nil {
+		panic(err)
+	}
+	return memoBytes
+}
+
+func (memo GenesisTransferMemo) String() string {
+	return string(memo.MustMarshal())
+}
+
 func (k Keeper) PrepareGenesisTransfer(ctx sdk.Context, portID, channelID string) (*transfertypes.FungibleTokenPacketData, error) {
 	state := k.GetState(ctx)
 	amount := math.ZeroInt()
@@ -41,13 +53,10 @@ func (k Keeper) PrepareGenesisTransfer(ctx sdk.Context, portID, channelID string
 	denom := k.GetBaseDenom(ctx)
 
 	// prepare memo with the genesis accounts info
-	memo, err := k.CreateGenesisAccountsMemo(ctx, state.GenesisAccounts)
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "create genesis memo")
-	}
+	memo := k.CreateGenesisAccountsMemo(ctx, state.GenesisAccounts)
 
 	// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
-	err = k.EscrowGenesisTransferFunds(ctx, portID, channelID, sdk.NewCoin(denom, amount))
+	err := k.EscrowGenesisTransferFunds(ctx, portID, channelID, sdk.NewCoin(denom, amount))
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "escrow genesis transfer funds")
 	}
@@ -65,17 +74,12 @@ func (k Keeper) EscrowGenesisTransferFunds(ctx sdk.Context, portID, channelID st
 }
 
 // CreateGenesisAccountsMemo creates a memo with the genesis accounts info.
-func (k Keeper) CreateGenesisAccountsMemo(ctx sdk.Context, genesisAccounts []types.GenesisAccount) (string, error) {
+func (k Keeper) CreateGenesisAccountsMemo(ctx sdk.Context, genesisAccounts []types.GenesisAccount) string {
 	memo := GenesisTransferMemo{
 		GenesisTransferData: GenesisTransferData{
 			GenesisAccounts: genesisAccounts,
 		},
 	}
 
-	memoBytes, err := json.Marshal(memo)
-	if err != nil {
-		return "", err
-	}
-
-	return string(memoBytes), nil
+	return memo.String()
 }

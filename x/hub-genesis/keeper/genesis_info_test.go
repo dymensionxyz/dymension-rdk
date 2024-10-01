@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	_ "embed"
 	"testing"
 
 	"cosmossdk.io/math"
