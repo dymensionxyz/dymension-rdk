@@ -32,9 +32,9 @@ func (w IBCModule) logger(ctx sdk.Context) log.Logger {
 	return w.k.Logger(ctx)
 }
 
-// OnChanOpenConfirm will send any unsent genesis account transfers over the channel.
-// It is ASSUMED that the channel is for the Hub. This can be ensured by not exposing
-// the sequencer API until after genesis is complete.
+// On successful OnChanOpenConfirm for the canonical channel, the genesis bridge flow will be initiated.
+// It will prepare the genesis bridge data and send it over the channel.
+// The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
 // Since transfers are only sent once, it does not matter if someone else tries to open
 // a channel in future (it will no-op).
 func (w IBCModule) OnChanOpenConfirm(
@@ -42,8 +42,6 @@ func (w IBCModule) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	l := w.logger(ctx).With("method", "OnChanOpenConfirm", "port id", portID, "channelID", channelID)
-
 	err := w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
 		return err
@@ -55,18 +53,20 @@ func (w IBCModule) OnChanOpenConfirm(
 		// to send the transfers again.
 		return nil
 	}
+	state.SetCanonicalTransferChannel(portID, channelID)
 
 	seq, err := w.SubmitGenesisBridgeData(ctx, portID, channelID)
 	if err != nil {
 		return errorsmod.Wrap(err, "submit genesis bridge data")
 	}
 
-	state.SetCanonicalTransferChannel(portID, channelID)
-
-	l.Info("genesis bridge data submitted", "sequence", seq, "port", portID, "channel", channelID)
+	w.logger(ctx).Info("genesis bridge data submitted", "sequence", seq, "port", portID, "channel", channelID)
 	return nil
 }
 
+// SubmitGenesisBridgeData sends the genesis bridge data over the channel.
+// The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
+// It uses the channel keeper to send the packet, instead of transfer keeper, as we are not sending fungible token directly.
 func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, channelID string) (seq uint64, err error) {
 	_, chanCap, err := w.channelKeeper.LookupModuleByChannel(ctx, portID, channelID)
 	if err != nil {
