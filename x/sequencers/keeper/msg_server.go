@@ -5,8 +5,9 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 var _ types.MsgServer = msgServer{}
@@ -41,6 +42,27 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	))
 
 	return &types.MsgCreateSequencerResponse{}, nil
+}
+
+func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.MsgUpsertSequencer) (*types.MsgUpsertSequencerResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	v := msg.Validator()
+	m.SetSequencer(ctx, v)
+
+	consAddr, err := v.GetConsAddr()
+	if err != nil {
+		panic(err) // it must be ok because we used it to check sig
+	}
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(
+		types.EventUpsertSequencer,
+		sdk.NewAttribute(types.AttributeKeyConsAddr, consAddr.String()),
+		sdk.NewAttribute(types.AttributeKeyOperatorAddr, v.OperatorAddress),
+		sdk.NewAttribute(types.AttributeKeyRewardAddr, msg.MustRewardAddr()),
+	))
+
+	return &types.MsgUpsertSequencerResponse{}, nil
 }
 
 func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSequencer) (*types.MsgUpdateSequencerResponse, error) {

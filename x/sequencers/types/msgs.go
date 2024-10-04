@@ -14,8 +14,10 @@ import (
 
 var (
 	_ sdk.Msg                            = (*MsgCreateSequencer)(nil)
+	_ sdk.Msg                            = (*MsgUpsertSequencer)(nil)
 	_ sdk.Msg                            = (*MsgUpdateSequencer)(nil)
 	_ codectypes.UnpackInterfacesMessage = (*MsgCreateSequencer)(nil)
+	_ codectypes.UnpackInterfacesMessage = (*MsgUpsertSequencer)(nil)
 )
 
 func (m *MsgCreateSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
@@ -121,6 +123,77 @@ func BuildMsgCreateSequencer(
 		PubKey:    pubKeyAny,
 		Signature: sig,
 	}, nil
+}
+
+func (m *MsgUpsertSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+	return unpacker.UnpackAny(m.ConsPubKey, new(cryptotypes.PubKey))
+}
+
+func (m *MsgUpsertSequencer) ValidateBasic() error {
+	if _, err := m.OperatorAccAddr(); err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
+	}
+	if m.GetConsPubKey() == nil {
+		return gerrc.ErrInvalidArgument.Wrap("pub key is nil")
+	}
+	if m.GetConsPubKey().GetCachedValue() == nil {
+		return gerrc.ErrInvalidArgument.Wrap("pub key cached value is nil")
+	}
+	if _, err := m.RewardAddr(); err != nil {
+		return errors.Join(gerrc.ErrInvalidArgument, errorsmod.Wrap(err, "reward pub key"))
+	}
+	return nil
+}
+
+func (m *MsgUpsertSequencer) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{m.MustOperatorAccAddr()}
+}
+
+// Validator is a convenience method - it returns a validator object which already
+// has implementations of various useful methods like obtaining various type conversions
+// for the public key.
+func (m *MsgUpsertSequencer) Validator() stakingtypes.Validator {
+	return stakingtypes.Validator{ConsensusPubkey: m.ConsPubKey, OperatorAddress: m.MustOperatorValAddr().String()}
+}
+
+func (m *MsgUpsertSequencer) OperatorAccAddr() (sdk.AccAddress, error) {
+	operator, err := m.OperatorValAddr()
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "operator addr")
+	}
+	return sdk.AccAddress(operator), nil
+}
+
+func (m *MsgUpsertSequencer) MustOperatorAccAddr() sdk.AccAddress {
+	addr, err := m.OperatorAccAddr()
+	if err != nil {
+		panic(err)
+	}
+	return addr
+}
+
+func (m *MsgUpsertSequencer) OperatorValAddr() (sdk.ValAddress, error) {
+	return sdk.ValAddressFromBech32(m.GetOperator())
+}
+
+func (m *MsgUpsertSequencer) MustOperatorValAddr() sdk.ValAddress {
+	addr, err := m.OperatorValAddr()
+	if err != nil {
+		panic(err)
+	}
+	return addr
+}
+
+func (m *MsgUpsertSequencer) RewardAddr() (string, error) {
+	return AddrBytesToAddrString(m.RewardAddrBytes)
+}
+
+func (m *MsgUpsertSequencer) MustRewardAddr() string {
+	addr, err := m.RewardAddr()
+	if err != nil {
+		panic(err)
+	}
+	return addr
 }
 
 func (m *MsgUpdateSequencer) ValidateBasic() error {
