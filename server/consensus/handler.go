@@ -21,6 +21,6 @@ func AllowedMessagesHandler(messageNames []string) AdmissionHandler {
 			}
 		}
 
-		return fmt.Errorf("consensus message %s is not allowed", msgName)
+		return fmt.Errorf("consensus message is not allowed: %s", msgName)
 	}
 }
