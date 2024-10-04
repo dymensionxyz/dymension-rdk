@@ -10,7 +10,8 @@ import (
 // AdmissionHandler is a function used to validate if a Consensus Message is valid
 type AdmissionHandler func(ctx sdk.Context, msg sdk.Msg) error
 
-func MapAdmissionHandler(messageNames []string) AdmissionHandler {
+// AllowedMessagesHandler returns an AdmissionHandler that only allows messages with the given names
+func AllowedMessagesHandler(messageNames []string) AdmissionHandler {
 	return func(ctx sdk.Context, msg sdk.Msg) error {
 		msgName := proto.MessageName(msg)
 

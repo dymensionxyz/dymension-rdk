@@ -17,7 +17,7 @@ func TestMapAdmissionHandler(t *testing.T) {
 		proto.MessageName(&types.MsgUpdateSequencer{}),
 	}
 
-	handler := MapAdmissionHandler(allowedMessages)
+	handler := AllowedMessagesHandler(allowedMessages)
 
 	tests := []struct {
 		name    string
