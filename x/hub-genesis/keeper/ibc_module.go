@@ -94,7 +94,7 @@ func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, chann
 		GenesisTransfer: genesisTransferPacket,
 	}
 
-	bz, err := types.ModuleCdc.MarshalJSON(data)
+	bz, err := data.Marshal()
 	if err != nil {
 		return 0, errorsmod.Wrap(err, "marshal genesis bridge data")
 	}

@@ -29,7 +29,7 @@ func (k Keeper) PopulateGenesisInfo(ctx sdk.Context, gAccounts []types.GenesisAc
 	// Query the decimals of the denom
 	decimals := uint32(0)
 	for _, unit := range metadata.DenomUnits {
-		// guaranteed to exists in a valid denom metadata
+		// guaranteed to exist in a valid denom metadata
 		if unit.Denom == metadata.Display {
 			decimals = unit.Exponent
 			break
