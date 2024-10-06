@@ -44,7 +44,8 @@ func (k Keeper) PopulateGenesisInfo(ctx sdk.Context, gAccounts []types.GenesisAc
 
 	// Create the genesis info
 	genesisInfo := types.GenesisInfo{
-		GenesisChecksum: "", // TODO: populate checksum value
+		// TODO: populate checksum value (https://github.com/dymensionxyz/dymension-rdk/issues/569)
+		GenesisChecksum: "checksum", // currently using a placeholder as we don't allow empty strings
 		Bech32Prefix:    bech32Prefix,
 		NativeDenom: &types.DenomMetadata{
 			Display:  metadata.Display,

@@ -53,4 +53,4 @@ func TestInitGenesis_MissingGenesisFundsOnGenesis(t *testing.T) {
 	})
 }
 
-// TODO: missing metadata
+// TODO: test for missing metadata on genesis
