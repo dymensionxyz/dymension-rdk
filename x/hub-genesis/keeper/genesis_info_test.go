@@ -32,15 +32,10 @@ func TestInitGenesis_HappyFlow(t *testing.T) {
 	utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(1000))
 	require.NotEqual(t, app.BankKeeper.GetSupply(ctx, "stake"), genesisBridgeFunds)
 
-	state := k.GetState(ctx)
-	require.Equal(t, genAccounts, state.GenesisAccounts)
-
 	gInfo := k.GetGenesisInfo(ctx)
-	require.NotEqual(t, types.GenesisInfo{}, gInfo)
-
+	assert.Equal(t, genAccounts, gInfo.GenesisAccounts)
 	// assert native denom
 	assert.Equal(t, genesisBridgeFunds.Denom, gInfo.NativeDenom.Base)
-
 	// assert initial supply
 	assert.Equal(t, genesisBridgeFunds.Amount, gInfo.InitialSupply)
 }

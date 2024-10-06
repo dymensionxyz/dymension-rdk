@@ -30,5 +30,4 @@ func (q Querier) State(ctx context.Context, _ *types.QueryStateRequest) (*types.
 
 func (q Querier) GenesisInfo(ctx context.Context, _ *types.QueryGenesisInfoRequest) (*types.QueryGenesisInfoResponse, error) {
 	return &types.QueryGenesisInfoResponse{GenesisInfo: q.Keeper.GetGenesisInfo(sdk.UnwrapSDKContext(ctx))}, nil
-
 }

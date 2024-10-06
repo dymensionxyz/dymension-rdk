@@ -159,7 +159,7 @@ func SetupWithGenesisBridge(t *testing.T, gbFunds sdk.Coin, genAcct []hubgenesis
 
 	// set genesis transfer required accounts
 	genesisBridgeGenesisState := hubgenesistypes.DefaultGenesisState()
-	genesisBridgeGenesisState.State.GenesisAccounts = genAcct
+	genesisBridgeGenesisState.GenesisAccounts = genAcct
 	genesisState[hubgenesistypes.ModuleName] = app.AppCodec().MustMarshalJSON(genesisBridgeGenesisState)
 
 	setGenesisAndInitChain(t, app, genesisState)
