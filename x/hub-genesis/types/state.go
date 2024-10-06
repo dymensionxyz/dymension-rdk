@@ -2,23 +2,10 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
-
-	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 func (s *State) Validate() error {
-	for _, a := range s.GetGenesisAccounts() {
-		if !a.Amount.IsPositive() {
-			return errorsmod.Wrapf(gerrc.ErrInvalidArgument, "invalid amount: %s %s", a.Address, a.Amount)
-		}
-
-		if err := ValidateHubBech32(a.Address); err != nil {
-			return errorsmod.Wrapf(err, "invalid address: %s", a.Address)
-		}
-	}
-
 	if s.HubPortAndChannel != nil {
 		if err := host.PortIdentifierValidator(s.HubPortAndChannel.Port); err != nil {
 			return errorsmod.Wrapf(err, "invalid port Id: %s", s.HubPortAndChannel.Port)
@@ -29,16 +16,6 @@ func (s *State) Validate() error {
 	}
 
 	return nil
-}
-
-// AccAddressFromBech32 creates an AccAddress from a Bech32 string.
-func ValidateHubBech32(address string) (err error) {
-	bech32PrefixAccAddr := "dym"
-	bz, err := sdk.GetFromBech32(address, bech32PrefixAccAddr)
-	if err != nil {
-		return err
-	}
-	return sdk.VerifyAddressFormat(bz)
 }
 
 func (s *State) IsCanonicalHubTransferChannel(port, channel string) bool {
@@ -54,8 +31,4 @@ func (s *State) SetCanonicalTransferChannel(port, channel string) {
 		Port:    port,
 		Channel: channel,
 	}
-}
-
-func (g GenesisInfo) BaseDenom() string {
-	return g.NativeDenom.Base
 }

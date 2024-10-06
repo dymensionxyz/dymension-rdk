@@ -3,7 +3,7 @@ package rollapp.hub_genesis;
 
 import "gogoproto/gogo.proto";
 import "hub-genesis/params.proto";
-import "hub-genesis/state.proto";
+import "hub-genesis/genesis_info.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
@@ -11,6 +11,7 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 message GenesisState {
   // params defines all the parameters of the module.
   Params params = 1 [ (gogoproto.nullable) = false ];
-  // state defines the state of the module.
-  State state = 2 [ (gogoproto.nullable) = false ];
+
+  // accounts on the Hub to fund with some bootstrapping transfers
+  repeated GenesisAccount genesis_accounts = 2 [ (gogoproto.nullable) = false ];
 }

@@ -4,8 +4,8 @@ package rollapp.hub_genesis;
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "hub-genesis/params.proto";
-import "hub-genesis/genesis_bridge_data.proto";
 import "hub-genesis/state.proto";
+import "hub-genesis/genesis_info.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 

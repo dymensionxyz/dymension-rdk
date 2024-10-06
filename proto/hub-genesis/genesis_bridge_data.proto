@@ -5,7 +5,7 @@ package rollapp.hub_genesis;
 import "gogoproto/gogo.proto";
 import "cosmos/bank/v1beta1/bank.proto";
 import "ibc/applications/transfer/v2/packet.proto";
-import "hub-genesis/state.proto";
+import "hub-genesis/genesis_info.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
@@ -19,26 +19,4 @@ message GenesisBridgeData {
       [ (gogoproto.nullable) = false ];
   // optional genesis transfer packet data
   ibc.applications.transfer.v2.FungibleTokenPacketData genesis_transfer = 3;
-}
-
-// The genesis info of the rollapp, that is passed to the hub for validation.
-// it's populated on the InitGenesis of the rollapp
-message GenesisInfo {
-  // checksum used to verify integrity of the genesis file. currently unused
-  string genesis_checksum = 1;
-  // unique bech32 prefix
-  string bech32_prefix = 2;
-  // native_denom is the base denom for the native token
-  DenomMetadata native_denom = 3;
-  // initial_supply is the initial supply of the native token
-  string initial_supply = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-}
-
-message DenomMetadata {
-  string display = 1;
-  string base = 2;
-  uint32 exponent = 3;
 }

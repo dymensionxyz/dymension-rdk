@@ -14,8 +14,6 @@ message State {
   bool outbound_transfers_enabled = 6;
   // the canonical transfer port and channel for the hub
   PortAndChannel hub_port_and_channel = 7;
-  // accounts on the Hub to fund with some bootstrapping transfers
-  repeated GenesisAccount genesis_accounts = 8 [ (gogoproto.nullable) = false ];
 }
 
 message PortAndChannel {
@@ -23,15 +21,4 @@ message PortAndChannel {
   string port = 1;
   // channel
   string channel = 2;
-}
-
-// GenesisAccount is a struct for the genesis account for the rollapp
-message GenesisAccount {
-  // amount of coins to be sent to the genesis address
-  string amount = 1 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-  // address is a bech-32 address of the genesis account
-  string address = 2;
 }
