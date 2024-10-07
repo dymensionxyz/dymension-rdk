@@ -5,7 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 )
 
-func AddrBytesToAddrString(addr []byte) (string, error) {
+func BytesToBech32(addr []byte) (string, error) {
 	newAddr, err := bech32.ConvertAndEncode(sdk.GetConfig().GetBech32AccountAddrPrefix(), addr)
 	if err != nil {
 		return "", err

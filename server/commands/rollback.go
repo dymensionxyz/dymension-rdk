@@ -7,6 +7,7 @@ import (
 	"github.com/dymensionxyz/dymint/block"
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/dymensionxyz/dymint/store"
 	"github.com/tendermint/tendermint/config"
@@ -17,8 +18,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/dymensionxyz/dymension-rdk/utils"
 )
 
 // RollbackCmd rollbacks the app multistore to specific height and updates dymint state according to it
@@ -134,6 +136,7 @@ func liteBlockManager(cfg *config.Config, dymintConf *dymintconf.NodeConfig, cli
 		nil,
 		nil,
 		nil,
+		log.NewNopLogger(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("BlockManager initialization error: %w", err)

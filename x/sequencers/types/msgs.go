@@ -185,7 +185,7 @@ func (m *MsgUpsertSequencer) MustOperatorValAddr() sdk.ValAddress {
 }
 
 func (m *MsgUpsertSequencer) RewardAddr() (string, error) {
-	return AddrBytesToAddrString(m.RewardAddrBytes)
+	return BytesToBech32(m.RewardAddrBytes)
 }
 
 func (m *MsgUpsertSequencer) MustRewardAddr() string {

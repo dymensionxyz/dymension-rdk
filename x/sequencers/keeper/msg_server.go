@@ -52,7 +52,7 @@ func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.MsgUpsertSe
 
 	consAddr, err := v.GetConsAddr()
 	if err != nil {
-		panic(err) // it must be ok because we used it to check sig
+		return nil, err
 	}
 
 	ctx.EventManager().EmitEvent(sdk.NewEvent(
