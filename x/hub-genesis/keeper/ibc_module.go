@@ -15,7 +15,7 @@ import (
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
-var transferTimeout = uint64((time.Duration(24*365) * time.Hour).Nanoseconds()) // very long timeout
+var transferTimeout = (time.Duration(24*365) * time.Hour) // very long timeout
 
 type IBCModule struct {
 	porttypes.IBCModule
@@ -53,12 +53,14 @@ func (w IBCModule) OnChanOpenConfirm(
 		// to send the transfers again.
 		return nil
 	}
-	state.SetCanonicalTransferChannel(portID, channelID)
 
 	seq, err := w.SubmitGenesisBridgeData(ctx, portID, channelID)
 	if err != nil {
 		return errorsmod.Wrap(err, "submit genesis bridge data")
 	}
+
+	state.SetCanonicalTransferChannel(portID, channelID)
+	w.k.SetState(ctx, state)
 
 	w.logger(ctx).Info("genesis bridge data submitted", "sequence", seq, "port", portID, "channel", channelID)
 	return nil
@@ -99,7 +101,8 @@ func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, chann
 		return 0, errorsmod.Wrap(err, "marshal genesis bridge data")
 	}
 
-	return w.channelKeeper.SendPacket(ctx, chanCap, portID, channelID, clienttypes.ZeroHeight(), transferTimeout, bz)
+	timeoutTimestamp := ctx.BlockTime().Add(transferTimeout).UnixNano()
+	return w.channelKeeper.SendPacket(ctx, chanCap, portID, channelID, clienttypes.ZeroHeight(), uint64(timeoutTimestamp), bz)
 }
 
 func (w IBCModule) OnAcknowledgementPacket(
