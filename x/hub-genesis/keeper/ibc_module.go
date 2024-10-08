@@ -129,11 +129,6 @@ func (w IBCModule) OnAcknowledgementPacket(
 		return errors.New("acknowledgement failed for genesis transfer")
 	}
 
-	err = w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
-	if err != nil {
-		return err
-	}
-
 	w.k.enableBridge(ctx, state)
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
 	w.logger(ctx).Info("genesis bridge phase completed successfully")
