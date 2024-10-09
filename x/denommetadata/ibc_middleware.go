@@ -30,8 +30,10 @@ import (
 type ICS4Wrapper struct {
 	porttypes.ICS4Wrapper
 
-	hubKeeper      types.HubKeeper
-	bankKeeper     types.BankKeeper
+	hubKeeper  types.HubKeeper
+	bankKeeper types.BankKeeper
+
+	// TODO: refactor to `IsCanonicalHubTransferChannel` directly
 	getHubGenState func(ctx sdk.Context) hgtypes.State
 }
 
@@ -64,6 +66,7 @@ func (m *ICS4Wrapper) SendPacket(
 		return 0, errorsmod.Wrapf(errortypes.ErrJSONUnmarshal, "unmarshal ICS-20 transfer packet data: %s", err.Error())
 	}
 
+	// don't send metadata on non-canonical channels
 	if hubGenState := m.getHubGenState(ctx); !hubGenState.IsCanonicalHubTransferChannel(destinationPort, destinationChannel) {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}

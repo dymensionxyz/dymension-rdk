@@ -1,55 +1,40 @@
 package keeper
 
 import (
-	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
-	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
-const (
-	transferTimeout = time.Hour * 24 * 365
-)
+var transferTimeout = (time.Duration(24*365) * time.Hour) // very long timeout
 
 type IBCModule struct {
 	porttypes.IBCModule
-	k        Keeper
-	transfer TransferKeeper
-	bank     BankKeeper
+	k             Keeper
+	bank          types.BankKeeper
+	channelKeeper types.ChannelKeeper
 }
 
-type TransferKeeper interface {
-	Transfer(goCtx context.Context, msg *transfertypes.MsgTransfer) (*transfertypes.MsgTransferResponse, error)
-}
-
-type BankKeeper interface {
-	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
-	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
-}
-
-func NewIBCModule(next porttypes.IBCModule, t TransferKeeper, k Keeper, bank BankKeeper) *IBCModule {
-	return &IBCModule{next, k, t, bank}
+func NewIBCModule(next porttypes.IBCModule, k Keeper, bank types.BankKeeper, chanKeeper types.ChannelKeeper) *IBCModule {
+	return &IBCModule{next, k, bank, chanKeeper}
 }
 
 func (w IBCModule) logger(ctx sdk.Context) log.Logger {
-	return w.k.Logger(ctx).With("module", types.ModuleName, "component", "ibc module")
+	return w.k.Logger(ctx)
 }
 
-// OnChanOpenConfirm will send any unsent genesis account transfers over the channel.
-// It is ASSUMED that the channel is for the Hub. This can be ensured by not exposing
-// the sequencer API until after genesis is complete.
+// On successful OnChanOpenConfirm for the canonical channel, the genesis bridge flow will be initiated.
+// It will prepare the genesis bridge data and send it over the channel.
+// The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
 // Since transfers are only sent once, it does not matter if someone else tries to open
 // a channel in future (it will no-op).
 func (w IBCModule) OnChanOpenConfirm(
@@ -57,84 +42,67 @@ func (w IBCModule) OnChanOpenConfirm(
 	portID,
 	channelID string,
 ) error {
-	l := ctx.Logger().With("module", "hubgenesis OnChanOpenConfirm middleware", "port id", portID, "channelID", channelID)
-
 	err := w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
 	if err != nil {
 		return err
 	}
 
 	state := w.k.GetState(ctx)
-
 	if state.CanonicalHubTransferChannelHasBeenSet() {
 		// We only set the canonical channel in this function, so if it's already been set, we don't need
 		// to send the transfers again.
 		return nil
 	}
 
+	seq, err := w.SubmitGenesisBridgeData(ctx, portID, channelID)
+	if err != nil {
+		return errorsmod.Wrap(err, "submit genesis bridge data")
+	}
+
 	state.SetCanonicalTransferChannel(portID, channelID)
-
-	state.NumUnackedTransfers = uint64(len(state.GetGenesisAccounts()))
-
 	w.k.SetState(ctx, state)
 
-	if len(state.GetGenesisAccounts()) == 0 {
-		// we want to handle the case where the rollapp doesn't have genesis transfers
-		// normally we would enable outbound transfers on an ack, but in this case we won't have an ack
-		w.k.enableOutboundTransfers(ctx)
-		return nil
-	}
-
-	srcAccount := w.k.accountKeeper.GetModuleAccount(ctx, types.ModuleName)
-	srcAddr := srcAccount.GetAddress().String()
-
-	for i, a := range state.GetGenesisAccounts() {
-		if err := w.mintAndTransfer(ctx, a, srcAddr, portID, channelID); err != nil {
-			// there is no feasible way to recover
-			panic(fmt.Errorf("mint and transfer: %w", err))
-		}
-		l.Info("Sent genesis transfer.", "index", i, "receiver", a.GetAddress(), "coin", a)
-	}
-
-	l.Info("Sent all genesis transfers.", "n", len(state.GetGenesisAccounts()))
-
+	w.logger(ctx).Info("genesis bridge data submitted", "sequence", seq, "port", portID, "channel", channelID)
 	return nil
 }
 
-func (w IBCModule) mintAndTransfer(ctx sdk.Context, account types.GenesisAccount, srcAddr string, portID string, channelID string) error {
-	coin := account.GetAmount()
-	err := w.bank.MintCoins(ctx, types.ModuleName, sdk.Coins{coin})
+// SubmitGenesisBridgeData sends the genesis bridge data over the channel.
+// The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
+// It uses the channel keeper to send the packet, instead of transfer keeper, as we are not sending fungible token directly.
+func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, channelID string) (seq uint64, err error) {
+	_, chanCap, err := w.channelKeeper.LookupModuleByChannel(ctx, portID, channelID)
 	if err != nil {
-		return errorsmod.Wrap(err, "mint coins")
+		return
 	}
 
-	// NOTE: for simplicity we don't optimize to avoid sending duplicate metadata
-	// we assume the hub will deduplicate. We expect to eventually get a timeout
-	// or commit anyway, so the packet will be cleared up.
-	// (Actually, since transfers may arrive out of order, we must include the
-	// denom metadata anyway).
-	memo, err := w.createMemo(ctx, account.Amount.Denom)
-	if err != nil {
-		return errorsmod.Wrap(err, "create memo")
+	// prepare genesis info
+	gInfo := w.k.GetGenesisInfo(ctx)
+
+	// prepare the denom metadata
+	d, ok := w.bank.GetDenomMetaData(ctx, gInfo.BaseDenom())
+	if !ok {
+		return 0, errorsmod.Wrap(gerrc.ErrInternal, "denom metadata not found")
 	}
 
-	m := transfertypes.MsgTransfer{
-		SourcePort:       portID,
-		SourceChannel:    channelID,
-		Token:            account.Amount,
-		Sender:           srcAddr,
-		Receiver:         account.GetAddress(),
-		TimeoutHeight:    clienttypes.Height{},
-		TimeoutTimestamp: uint64(ctx.BlockTime().Add(transferTimeout).UnixNano()),
-		Memo:             memo,
+	// prepare the genesis transfer
+	genesisTransferPacket, err := w.k.PrepareGenesisTransfer(ctx, portID, channelID)
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "genesis transfer")
 	}
 
-	res, err := w.transfer.Transfer(sdk.WrapSDKContext(allowSpecialMemoCtx(ctx)), &m)
-	if err != nil {
-		return errorsmod.Wrap(err, "transfer")
+	data := &types.GenesisBridgeData{
+		GenesisInfo:     gInfo,
+		NativeDenom:     d,
+		GenesisTransfer: genesisTransferPacket,
 	}
-	w.k.saveUnackedTransferSeqNum(ctx, res.Sequence)
-	return nil
+
+	bz, err := data.Marshal()
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "marshal genesis bridge data")
+	}
+
+	timeoutTimestamp := ctx.BlockTime().Add(transferTimeout).UnixNano()
+	return w.channelKeeper.SendPacket(ctx, chanCap, portID, channelID, clienttypes.ZeroHeight(), uint64(timeoutTimestamp), bz)
 }
 
 func (w IBCModule) OnAcknowledgementPacket(
@@ -143,33 +111,33 @@ func (w IBCModule) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	l := w.logger(ctx)
 	state := w.k.GetState(ctx)
 
-	if !state.IsCanonicalHubTransferChannel(packet.SourcePort, packet.SourceChannel) {
-		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
-	}
-
+	// if outbound transfers are enabled, we past the genesis phase. nothing to do here.
 	if state.OutboundTransfersEnabled {
 		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
 
-	var data transfertypes.FungibleTokenPacketData
-	err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &data)
-	if err != nil {
-		return err
-	}
-
 	var ack channeltypes.Acknowledgement
-	err = types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack)
+	err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack)
 	if err != nil {
 		return err
 	}
 
-	err = w.k.ackTransferSeqNum(ctx, packet.Sequence, ack)
-	if err != nil {
-		l.Error("Processing ack from transfer.", "err", err)
-		return errorsmod.Wrap(errors.Join(err, gerrc.ErrUnknown), "ack transfer seq num")
+	if !ack.Success() {
+		w.logger(ctx).Error("acknowledgement failed for genesis transfer", "packet", packet, "ack", ack)
+		return errors.New("acknowledgement failed for genesis transfer")
 	}
-	return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+
+	w.k.enableBridge(ctx, state)
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
+	w.logger(ctx).Info("genesis bridge phase completed successfully")
+
+	return nil
+}
+
+// enableBridge enables the bridge after successful genesis bridge phase.
+func (k Keeper) enableBridge(ctx sdk.Context, state types.State) {
+	state.OutboundTransfersEnabled = true
+	k.SetState(ctx, state)
 }
