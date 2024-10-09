@@ -3,17 +3,14 @@ package types
 const (
 	ModuleName = "hubgenesis"
 
-	// StoreKey is the default store key for mint.
+	// StoreKey is the default store key for hub-genesis module.
 	StoreKey = ModuleName
 
-	// RouterKey is the message route for hub genesis.
-	RouterKey = ModuleName
-
-	// QuerierRoute is the querier route for the minting store.
+	// QuerierRoute is the querier route for the hub-genesis module
 	QuerierRoute = StoreKey
-
-	// QueryParameters endpoints supported by the minting querier.
-	QueryParameters = "parameters"
 )
 
-var StateKey = []byte{0x01}
+var (
+	StateKey       = []byte{0x01}
+	GenesisInfoKey = []byte{0x02}
+)
