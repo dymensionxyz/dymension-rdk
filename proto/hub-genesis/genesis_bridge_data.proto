@@ -1,0 +1,22 @@
+
+syntax = "proto3";
+package rollapp.hub_genesis;
+
+import "gogoproto/gogo.proto";
+import "cosmos/bank/v1beta1/bank.proto";
+import "ibc/applications/transfer/v2/packet.proto";
+import "hub-genesis/genesis_info.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
+
+// GenesisBridgeData is the data struct that is passed to the hub for the
+// genesis bridge flow
+message GenesisBridgeData {
+  // genesis_info is the genesis info of the rollapp. used for hub validation
+  GenesisInfo genesis_info = 1 [ (gogoproto.nullable) = false ];
+  // native_denom is the native denom of the rollapp. registered on the hub
+  cosmos.bank.v1beta1.Metadata native_denom = 2
+      [ (gogoproto.nullable) = false ];
+  // optional genesis transfer packet data
+  ibc.applications.transfer.v2.FungibleTokenPacketData genesis_transfer = 3;
+}
