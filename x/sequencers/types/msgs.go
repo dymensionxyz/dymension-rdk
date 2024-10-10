@@ -23,11 +23,11 @@ var (
 func (m *MsgUpdateRewardAddress) ValidateBasic() error {
 	_, err := sdk.ValAddressFromBech32(m.GetOperator())
 	if err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get operator addr from bech32")
 	}
 	_, err = sdk.AccAddressFromBech32(m.RewardAddr)
 	if err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward addr")
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get reward addr from bech32")
 	}
 	return nil
 }
@@ -56,11 +56,11 @@ func (m *MsgUpdateRewardAddress) MustRewardAcc() sdk.AccAddress {
 func (m *MsgUpdateWhitelistedRelayers) ValidateBasic() error {
 	_, err := sdk.ValAddressFromBech32(m.GetOperator())
 	if err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get operator addr from bech32")
 	}
 	err = WhitelistedRelayers{Relayers: m.Relayers}.Validate()
 	if err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayer")
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayers")
 	}
 	return nil
 }
@@ -110,7 +110,7 @@ func (m *ConsensusMsgUpsertSequencer) ValidateBasic() error {
 
 	err = WhitelistedRelayers{Relayers: m.Relayers}.Validate()
 	if err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayer")
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayers")
 	}
 
 	return nil
