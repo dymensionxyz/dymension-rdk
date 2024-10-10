@@ -10,6 +10,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+
+	"github.com/dymensionxyz/dymension-rdk/utils/addressutils"
 )
 
 var (
@@ -130,7 +132,7 @@ func (m *ConsensusMsgUpsertSequencer) UnpackInterfaces(unpacker codectypes.AnyUn
 }
 
 func (m *ConsensusMsgUpsertSequencer) ValidateBasic() error {
-	operAddr, err := Bech32ToAddr[sdk.ValAddress](m.Operator)
+	operAddr, err := addressutils.Bech32ToAddr[sdk.ValAddress](m.Operator)
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get operator addr from bech32")
 	}
@@ -146,7 +148,7 @@ func (m *ConsensusMsgUpsertSequencer) ValidateBasic() error {
 		return errorsmod.Wrap(gerrc.ErrInvalidArgument, "pub key cached value is nil")
 	}
 
-	rewardAddr, err := Bech32ToAddr[sdk.AccAddress](m.RewardAddr)
+	rewardAddr, err := addressutils.Bech32ToAddr[sdk.AccAddress](m.RewardAddr)
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get reward addr from bech32")
 	}
@@ -166,7 +168,7 @@ func (m *ConsensusMsgUpsertSequencer) GetSigners() []sdk.AccAddress {
 // has implementations of various useful methods like obtaining various type conversions
 // for the public key.
 func (m *ConsensusMsgUpsertSequencer) MustValidator() stakingtypes.Validator {
-	valAddr, err := Bech32ToAddr[sdk.ValAddress](m.Operator)
+	valAddr, err := addressutils.Bech32ToAddr[sdk.ValAddress](m.Operator)
 	if err != nil {
 		panic(err)
 	}
@@ -177,7 +179,7 @@ func (m *ConsensusMsgUpsertSequencer) MustValidator() stakingtypes.Validator {
 }
 
 func (m *ConsensusMsgUpsertSequencer) MustOperatorAddr() sdk.ValAddress {
-	operAddr, err := Bech32ToAddr[sdk.ValAddress](m.Operator)
+	operAddr, err := addressutils.Bech32ToAddr[sdk.ValAddress](m.Operator)
 	if err != nil {
 		panic(err)
 	}
@@ -185,7 +187,7 @@ func (m *ConsensusMsgUpsertSequencer) MustOperatorAddr() sdk.ValAddress {
 }
 
 func (m *ConsensusMsgUpsertSequencer) MustRewardAddr() sdk.AccAddress {
-	rewardAddr, err := Bech32ToAddr[sdk.AccAddress](m.RewardAddr)
+	rewardAddr, err := addressutils.Bech32ToAddr[sdk.AccAddress](m.RewardAddr)
 	if err != nil {
 		panic(err)
 	}

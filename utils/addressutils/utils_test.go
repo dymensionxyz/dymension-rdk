@@ -1,4 +1,4 @@
-package types_test
+package addressutils_test
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
+	"github.com/dymensionxyz/dymension-rdk/utils/addressutils"
 )
 
 func TestBech32ToAddr(t *testing.T) {
@@ -29,7 +29,7 @@ func TestBech32ToAddr(t *testing.T) {
 			require.NoError(t, err)
 
 			// convert the random-prefixed bech32 to the current val oper address
-			valOperAddr, err := types.Bech32ToAddr[sdk.ValAddress](randomPrefixedAddr)
+			valOperAddr, err := addressutils.Bech32ToAddr[sdk.ValAddress](randomPrefixedAddr)
 			require.NoError(t, err)
 
 			// check results
