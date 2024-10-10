@@ -2,7 +2,6 @@ syntax = "proto3";
 package rollapp.sequencers.types;
 
 import "gogoproto/gogo.proto";
-import "cosmos/staking/v1beta1/staking.proto";
 import "cosmos/msg/v1/msg.proto";
 import "google/protobuf/any.proto";
 
@@ -11,8 +10,9 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 // Msg defines the Msg service.
 service Msg {
     rpc CreateSequencer(MsgCreateSequencer) returns (MsgCreateSequencerResponse);
-    rpc UpsertSequencer(MsgUpsertSequencer) returns (MsgUpsertSequencerResponse);
     rpc UpdateSequencer(MsgUpdateSequencer) returns (MsgUpdateSequencerResponse);
+
+    rpc UpsertSequencer(ConsensusMsgUpsertSequencer) returns (ConsensusMsgUpsertSequencerResponse);
 }
 
 message MsgCreateSequencer {
@@ -25,23 +25,7 @@ message MsgCreateSequencer {
     bytes signature = 3;
 }
 
-message MsgCreateSequencerResponse {
-
-}
-
-message MsgUpsertSequencer {
-    option (cosmos.msg.v1.signer) = "operator";
-    // Operator is the bech32-encoded address of the actor sending the update - must be val addr
-    string operator = 1;
-    // ConsPubKey is a tendermint consensus pub key
-    google.protobuf.Any cons_pub_key = 2;
-    // RewardAddrBytes is the bytes representation of the sequencer's reward account
-    bytes reward_addr_bytes = 3;
-}
-
-message MsgUpsertSequencerResponse {
-
-}
+message MsgCreateSequencerResponse {}
 
 message MsgUpdateSequencer {
     option (cosmos.msg.v1.signer) = "operator";
@@ -53,6 +37,17 @@ message MsgUpdateSequencer {
     string reward_addr = 3;
 }
 
-message MsgUpdateSequencerResponse {
+message MsgUpdateSequencerResponse {}
 
+// ConsensusMsgUpsertSequencer is a consensus message to upsert the sequencer.
+message ConsensusMsgUpsertSequencer {
+    option (cosmos.msg.v1.signer) = "operator";
+    // Operator is the bech32-encoded address of the actor sending the update
+    string operator = 1;
+    // ConsPubKey is a tendermint consensus pub key
+    google.protobuf.Any cons_pub_key = 2;
+    // RewardAddr is the bech32-encoded sequencer's reward address
+    string reward_addr = 3;
 }
+
+message ConsensusMsgUpsertSequencerResponse {}

@@ -7,8 +7,6 @@ import (
 	"github.com/dymensionxyz/dymint/block"
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
-	"github.com/tendermint/tendermint/libs/log"
-
 	"github.com/dymensionxyz/dymint/store"
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/node"
@@ -136,7 +134,6 @@ func liteBlockManager(cfg *config.Config, dymintConf *dymintconf.NodeConfig, cli
 		nil,
 		nil,
 		nil,
-		log.NewNopLogger(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("BlockManager initialization error: %w", err)
