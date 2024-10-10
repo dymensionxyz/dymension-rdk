@@ -85,7 +85,7 @@ func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.ConsensusMs
 	// save the reward address
 	rewardAddr := msg.MustRewardAddr()
 	m.SetRewardAddr(ctx, v, rewardAddr)
-	
+
 	// save the whitelisted relayer list
 	err := m.SetWhitelistedRelayers(ctx, v, types.MustNewWhitelistedRelayers(msg.Relayers))
 	if err != nil {

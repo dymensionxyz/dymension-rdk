@@ -12,7 +12,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
-func TestMsgVote(t *testing.T) {
+func TestConsensusMsgUpsertSequencer(t *testing.T) {
 	valAddr := utils.AccAddress()
 	rewardAddr := utils.AccAddress()
 	anyPubKey, err := codectypes.NewAnyWithValue(ed25519.GenPrivKey().PubKey())

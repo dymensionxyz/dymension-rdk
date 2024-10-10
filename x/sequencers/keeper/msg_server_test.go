@@ -3,9 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/stretchr/testify/require"
 
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
@@ -14,47 +12,47 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
-func TestCreateUpdateHappyPath(t *testing.T) {
-	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
+func TestUpsertHappyPath(t *testing.T) {
+	// prepare test
+	var (
+		app       = utils.Setup(t, false)
+		k, ctx    = testkeepers.NewTestSequencerKeeperFromApp(app)
+		msgServer = keeper.NewMsgServerImpl(*k)
+	)
 
-	msgServer := keeper.NewMsgServerImpl(*k)
-
-	wctx := sdk.WrapSDKContext(ctx)
-
-	operator := utils.Proposer.GetOperator()
-	signer := func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
-		bz, err := utils.ConsPrivKey.Sign(msg)
-		return bz, utils.ConsPrivKey.PubKey(), err
-	}
-
-	msgC, err := types.BuildMsgCreateSequencer(signer, operator)
-	require.NoError(t, err)
-
-	err = msgC.ValidateBasic()
-	require.NoError(t, err)
-
-	_, err = msgServer.CreateSequencer(wctx, msgC)
-	require.NoError(t, err)
-
-	for _, rewardAddr := range []sdk.AccAddress{
-		sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()),
-		sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()),
-	} {
-
-		msgU := &types.MsgUpdateSequencer{
-			Operator:   operator.String(),
-			RewardAddr: rewardAddr.String(),
+	// prepare test data
+	var (
+		operator   = utils.Proposer.GetOperator()
+		rewardAddr = utils.AccAddress()
+		relayers   = []string{
+			utils.AccAddress().String(),
+			utils.AccAddress().String(),
+			utils.AccAddress().String(),
 		}
+	)
+	anyPubKey, err := codectypes.NewAnyWithValue(utils.ConsPrivKey.PubKey())
+	require.NoError(t, err)
 
-		err = msgU.ValidateBasic()
-		require.NoError(t, err)
-
-		_, err = msgServer.UpdateSequencer(wctx, msgU)
-		require.NoError(t, err)
-
-		got, ok := k.GetRewardAddrByConsAddr(ctx, utils.ProposerCons())
-		require.True(t, ok)
-		require.Equal(t, rewardAddr, got)
+	msg := &types.ConsensusMsgUpsertSequencer{
+		Operator:   operator.String(),
+		ConsPubKey: anyPubKey,
+		RewardAddr: rewardAddr.String(),
+		Relayers:   relayers,
 	}
+
+	err = msg.ValidateBasic()
+	require.NoError(t, err)
+
+	// call msg server
+	_, err = msgServer.UpsertSequencer(ctx, msg)
+	require.NoError(t, err)
+
+	// validate results
+	actualRewardAddr, ok := app.SequencersKeeper.GetRewardAddr(ctx, operator)
+	require.True(t, ok)
+	require.Equal(t, msg.RewardAddr, actualRewardAddr.String())
+
+	actualRelayers, err := app.SequencersKeeper.GetWhitelistedRelayers(ctx, operator)
+	require.NoError(t, err)
+	require.ElementsMatch(t, msg.Relayers, actualRelayers.Relayers)
 }

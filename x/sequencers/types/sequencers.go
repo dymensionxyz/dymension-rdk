@@ -5,12 +5,14 @@ import (
 	"slices"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"github.com/dymensionxyz/dymension-rdk/utils/addressutils"
 )
 
 func MustNewWhitelistedRelayers(relayers []string) WhitelistedRelayers {
 	convertedRelayers := make([]string, 0, len(relayers))
 	for _, r := range relayers {
-		relayer, err := Bech32ToAddr[sdk.AccAddress](r)
+		relayer, err := addressutils.Bech32ToAddr[sdk.AccAddress](r)
 		if err != nil {
 			panic(fmt.Errorf("convert bech32 to relayer address: %s: %w", r, err))
 		}
@@ -21,14 +23,14 @@ func MustNewWhitelistedRelayers(relayers []string) WhitelistedRelayers {
 }
 
 func (wr WhitelistedRelayers) Validate() error {
-	relayers := make(map[string]struct{}, len(r.Relayers))
+	relayers := make(map[string]struct{}, len(wr.Relayers))
 	for _, r := range wr.Relayers {
 		if _, ok := relayers[r]; ok {
 			return fmt.Errorf("duplicated relayer: %s", r)
 		}
 		relayers[r] = struct{}{}
 
-		relayer, err := Bech32ToAddr[sdk.AccAddress](r)
+		relayer, err := addressutils.Bech32ToAddr[sdk.AccAddress](r)
 		if err != nil {
 			return fmt.Errorf("convert bech32 to relayer address: %s: %w", r, err)
 		}
