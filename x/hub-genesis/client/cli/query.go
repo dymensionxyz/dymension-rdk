@@ -24,6 +24,7 @@ func GetQueryCmd() *cobra.Command {
 	hubGenQueryCmd.AddCommand(
 		GetCmdQueryParams(),
 		GetCmdQueryState(),
+		GetCmdQueryGenesisInfo(),
 	)
 
 	return hubGenQueryCmd
@@ -79,6 +80,35 @@ func GetCmdQueryState() *cobra.Command {
 			}
 
 			return clientCtx.PrintProto(&res.State)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+// GetCmdQueryGenesisInfo implements a command to return the current hub-genesis
+// genesis info.
+func GetCmdQueryGenesisInfo() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "genesis-info",
+		Short: "Query the current hub-genesis genesis info",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			queryClient := types.NewQueryClient(clientCtx)
+
+			genesisInfo := &types.QueryGenesisInfoRequest{}
+			res, err := queryClient.GenesisInfo(context.Background(), genesisInfo)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(&res.GenesisInfo)
 		},
 	}
 
