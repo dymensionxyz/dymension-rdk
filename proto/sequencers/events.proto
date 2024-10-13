@@ -1,0 +1,19 @@
+syntax = "proto3";
+package rollapp.sequencers.types;
+
+import "gogoproto/gogo.proto";
+import "cosmos/staking/v1beta1/staking.proto";
+import "cosmos/msg/v1/msg.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
+
+message EventUpsertSequencer {
+  // Operator is the bech32-encoded address of the actor sending the update
+  string operator = 1;
+  // ConsAddr is a tendermint consensus address
+  string cons_addr = 2;
+  // RewardAddr is the bech32-encoded sequencer's reward address
+  string reward_addr = 3;
+
+}
