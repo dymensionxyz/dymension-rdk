@@ -2,11 +2,14 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+
+	"github.com/dymensionxyz/dymension-rdk/utils/uevent"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 var _ types.MsgServer = msgServer{}
@@ -41,6 +44,32 @@ func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSe
 	))
 
 	return &types.MsgCreateSequencerResponse{}, nil
+}
+
+func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.ConsensusMsgUpsertSequencer) (*types.ConsensusMsgUpsertSequencerResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// all must-methods are safe to use since they're validated in ValidateBasic
+
+	v := msg.MustValidator()
+	m.SetSequencer(ctx, v)
+	m.SetRewardAddr(ctx, v, msg.MustRewardAddr())
+
+	consAddr, err := v.GetConsAddr()
+	if err != nil {
+		return nil, fmt.Errorf("get validator consensus addr: %w", err)
+	}
+
+	err = uevent.EmitTypedEvent(ctx, &types.EventUpsertSequencer{
+		Operator:   msg.MustOperatorAddr().String(),
+		ConsAddr:   consAddr.String(),
+		RewardAddr: msg.MustRewardAddr().String(),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("emit event: %w", err)
+	}
+
+	return &types.ConsensusMsgUpsertSequencerResponse{}, nil
 }
 
 func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSequencer) (*types.MsgUpdateSequencerResponse, error) {

@@ -7,7 +7,6 @@ import (
 	"github.com/dymensionxyz/dymint/block"
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
-
 	"github.com/dymensionxyz/dymint/store"
 	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/node"
@@ -17,8 +16,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/dymensionxyz/dymension-rdk/utils"
 )
 
 // RollbackCmd rollbacks the app multistore to specific height and updates dymint state according to it
