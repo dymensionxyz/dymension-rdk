@@ -45,6 +45,32 @@ func (m msgServer) UpdateRewardAddress(goCtx context.Context, msg *types.MsgUpda
 	return &types.MsgUpdateRewardAddressResponse{}, nil
 }
 
+func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.ConsensusMsgUpsertSequencer) (*types.ConsensusMsgUpsertSequencerResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// all must-methods are safe to use since they're validated in ValidateBasic
+
+	v := msg.MustValidator()
+	m.SetSequencer(ctx, v)
+	m.SetRewardAddr(ctx, v, msg.MustRewardAddr())
+
+	consAddr, err := v.GetConsAddr()
+	if err != nil {
+		return nil, fmt.Errorf("get validator consensus addr: %w", err)
+	}
+
+	err = uevent.EmitTypedEvent(ctx, &types.EventUpsertSequencer{
+		Operator:   msg.MustOperatorAddr().String(),
+		ConsAddr:   consAddr.String(),
+		RewardAddr: msg.MustRewardAddr().String(),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("emit event: %w", err)
+	}
+
+	return &types.ConsensusMsgUpsertSequencerResponse{}, nil
+}
+
 func (m msgServer) UpdateWhitelistedRelayers(goCtx context.Context, msg *types.MsgUpdateWhitelistedRelayers) (*types.MsgUpdateWhitelistedRelayersResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
