@@ -1,8 +1,10 @@
 package keeper
 
 import (
+	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
@@ -92,4 +94,22 @@ func (k Keeper) GetRewardAddrByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddres
 		return sdk.AccAddress{}, false
 	}
 	return k.GetRewardAddr(ctx, seq.GetOperator())
+}
+
+// SetWhitelistedRelayers sets the list of whitelisted relayer addresses
+func (k Keeper) SetWhitelistedRelayers(ctx sdk.Context, sequencer stakingtypes.Validator, relayers types.WhitelistedRelayers) error {
+	return k.whitelistedRelayers.Set(ctx, sequencer.GetOperator(), relayers)
+}
+
+// GetWhitelistedRelayers gets the list of whitelisted relayer addresses
+func (k Keeper) GetWhitelistedRelayers(ctx sdk.Context, operator sdk.ValAddress) (types.WhitelistedRelayers, error) {
+	return k.whitelistedRelayers.Get(ctx, operator)
+}
+
+func (k Keeper) GetWhitelistedRelayersByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (types.WhitelistedRelayers, error) {
+	seq, ok := k.GetSequencerByConsAddr(ctx, consAddr)
+	if !ok {
+		return types.WhitelistedRelayers{}, collections.ErrNotFound
+	}
+	return k.whitelistedRelayers.Get(ctx, seq.GetOperator())
 }

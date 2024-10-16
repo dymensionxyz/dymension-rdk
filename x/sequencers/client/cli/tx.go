@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
@@ -24,77 +24,45 @@ func GetTxCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		UnsafeImportConsensusKeyCmd(),
-		NewCreateCmd(),
-		NewUpdateCmd(),
+		NewUpdateRewardAddressCmd(),
+		NewUpdateWhitelistedRelayersCmd(),
 	)
 
 	return cmd
 }
 
-func NewCreateCmd() *cobra.Command {
-	short := "Create a sequencer object, to claim rewards etc."
-	long := strings.TrimSpace(short +
-		`Requires signature from consensus address public key. Specify consensus key in keyring uid.
-Operator addr should be bech32 encoded. You may supply a different reward addr optionally.`)
-
+func NewUpdateRewardAddressCmd() *cobra.Command {
+	short := "Update a sequencer reward address."
 	cmd := &cobra.Command{
-		Use:     "create-sequencer [key name] {reward addr}",
-		Example: "create-sequencer fooCons --reward-addr ethm1cv7qcksr7cyxv9wgjn3tpxd74n2pffryq7ujw4  --from foo",
+		Use:     "update-reward-address [addr]",
+		Example: "update-reward-address ethm1lhk5cnfrhgh26w5r6qft36qerg4dclfev9nprc --from foouser",
 		Args:    cobra.ExactArgs(1),
 		Short:   short,
-		Long:    long,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			keyID := args[0]
-
-			addr := ctx.GetFromAddress()
-
-			txf := tx.NewFactoryCLI(ctx, cmd.Flags())
-
-			if _, err := txf.Keybase().Key(keyID); err != nil {
-				return fmt.Errorf("keybase key: %w", err)
-			}
-
-			msgs := make([]sdk.Msg, 2)
-
-			msg, err := types.BuildMsgCreateSequencer(func(toSign []byte) ([]byte, cryptotypes.PubKey, error) {
-				return txf.Keybase().Sign(keyID, toSign)
-			}, sdk.ValAddress(addr))
-			if err != nil {
-				return fmt.Errorf("build create seq msg: %w", err)
-			}
-
-			msgs[0] = msg
-
-			rewardAddr, _ := cmd.Flags().GetString(FlagRewardAddr)
-			if rewardAddr == "" {
-				rewardAddr = ctx.GetFromAddress().String()
-			}
-			msgs[1] = &types.MsgUpdateSequencer{
+			msg := &types.MsgUpdateRewardAddress{
 				Operator:   sdk.ValAddress(ctx.GetFromAddress()).String(),
-				RewardAddr: rewardAddr,
+				RewardAddr: args[0],
 			}
 
-			return tx.GenerateOrBroadcastTxWithFactory(ctx, txf, msgs...)
+			return tx.GenerateOrBroadcastTxCLI(ctx, cmd.Flags(), msg)
 		},
 	}
 
-	cmd.Flags().String(FlagRewardAddr, "", "Address to receive rewards for each block proposed.")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
 }
 
-func NewUpdateCmd() *cobra.Command {
-	short := "Update a sequencer object, to claim rewards etc."
+func NewUpdateWhitelistedRelayersCmd() *cobra.Command {
+	short := "Update a sequencer whitelisted relayer list."
 	cmd := &cobra.Command{
-		Use:     "update-sequencer [reward addr]",
-		Example: "update-sequencer ethm1lhk5cnfrhgh26w5r6qft36qerg4dclfev9nprc --from foouser",
+		Use:     "update-whitelisted-relayers [relayers]",
+		Example: "update-whitelisted-relayers ethm1lhk5cnfrhgh26w5r6qft36qerg4dclfev9nprc,ethm1lhasdf8969asdfgj2g3j4,ethmasdfkjhgjkhg123j4hgasv7ghi4v --from foouser",
 		Args:    cobra.ExactArgs(1),
 		Short:   short,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -103,9 +71,9 @@ func NewUpdateCmd() *cobra.Command {
 				return err
 			}
 
-			msg := &types.MsgUpdateSequencer{
-				Operator:   sdk.ValAddress(ctx.GetFromAddress()).String(),
-				RewardAddr: args[0],
+			msg := &types.MsgUpdateWhitelistedRelayers{
+				Operator: sdk.ValAddress(ctx.GetFromAddress()).String(),
+				Relayers: strings.Split(args[0], ","),
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(ctx, cmd.Flags(), msg)
