@@ -13,8 +13,8 @@ import (
 
 func TestMapAdmissionHandler(t *testing.T) {
 	allowedMessages := []string{
-		proto.MessageName(&types.MsgCreateSequencer{}),
-		proto.MessageName(&types.MsgUpdateSequencer{}),
+		proto.MessageName(&types.MsgUpdateRewardAddress{}),
+		proto.MessageName(&types.MsgUpdateWhitelistedRelayers{}),
 	}
 
 	handler := AllowedMessagesHandler(allowedMessages)
@@ -26,12 +26,12 @@ func TestMapAdmissionHandler(t *testing.T) {
 	}{
 		{
 			name:    "Allowed message 1",
-			message: &types.MsgCreateSequencer{},
+			message: &types.MsgUpdateRewardAddress{},
 			wantErr: false,
 		},
 		{
 			name:    "Allowed message 2",
-			message: &types.MsgUpdateSequencer{},
+			message: &types.MsgUpdateWhitelistedRelayers{},
 			wantErr: false,
 		},
 		{

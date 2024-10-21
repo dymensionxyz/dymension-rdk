@@ -3,6 +3,7 @@ package types
 import (
 	"strconv"
 
+	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
 )
@@ -31,6 +32,7 @@ var (
 	SequencersByConsAddrKey = []byte{0x22} // prefix for each key to a sequencer index, by pubkey
 	ValidatorUpdateKey      = []byte{0x23} // prefix for each key to a validator updates list
 	SequencersRewardAddrKey = []byte{0x24} // prefix for each key to a validator reward addr
+	WhitelistedRelayersKey  = []byte{0x25} // prefix for each key to a validator whitelisted relayer list
 
 	HistoricalInfoKey = []byte{0x50} // prefix for the historical info
 )
@@ -52,4 +54,8 @@ func GetSequencerRewardAddrKey(operator sdk.ValAddress) []byte {
 // GetHistoricalInfoKey returns a key prefix for indexing HistoricalInfo objects.
 func GetHistoricalInfoKey(height int64) []byte {
 	return append(HistoricalInfoKey, []byte(strconv.FormatInt(height, 10))...)
+}
+
+func WhitelistedRelayersPrefix() collections.Prefix {
+	return collections.NewPrefix(WhitelistedRelayersKey)
 }

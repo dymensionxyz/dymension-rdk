@@ -3,13 +3,8 @@ package keeper_test
 import (
 	"testing"
 
-	errorsmod "cosmossdk.io/errors"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
-	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	"github.com/stretchr/testify/require"
 
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
@@ -18,85 +13,103 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
-func TestCreateUpdateHappyPath(t *testing.T) {
-	app := utils.Setup(t, false)
-	k, ctx := testkeepers.NewTestSequencerKeeperFromApp(app)
+func TestHappyPath(t *testing.T) {
+	// prepare test
+	var (
+		app       = utils.Setup(t, false)
+		k, ctx    = testkeepers.NewTestSequencerKeeperFromApp(app)
+		msgServer = keeper.NewMsgServerImpl(*k)
+	)
 
-	msgServer := keeper.NewMsgServerImpl(*k)
-
-	wctx := sdk.WrapSDKContext(ctx)
-
-	operator := utils.Proposer.GetOperator()
-	signer := func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
-		bz, err := utils.ConsPrivKey.Sign(msg)
-		return bz, utils.ConsPrivKey.PubKey(), err
-	}
-
-	msgC, err := types.BuildMsgCreateSequencer(signer, operator)
-	require.NoError(t, err)
-
-	err = msgC.ValidateBasic()
-	require.NoError(t, err)
-
-	_, err = msgServer.CreateSequencer(wctx, msgC)
-	require.NoError(t, err)
-
-	for _, rewardAddr := range []sdk.AccAddress{
-		sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()),
-		sdk.AccAddress(secp256k1.GenPrivKey().PubKey().Address()),
-	} {
-
-		msgU := &types.MsgUpdateSequencer{
-			Operator:   operator.String(),
-			RewardAddr: rewardAddr.String(),
+	// prepare test data
+	var (
+		operator    = utils.Proposer.GetOperator()
+		rewardAddr1 = utils.AccAddress()
+		rewardAddr2 = utils.AccAddress()
+		relayers1   = []string{
+			utils.AccAddress().String(),
+			utils.AccAddress().String(),
+			utils.AccAddress().String(),
 		}
+		relayers2 = []string{
+			utils.AccAddress().String(),
+			utils.AccAddress().String(),
+			utils.AccAddress().String(),
+		}
+	)
+	anyPubKey, err := codectypes.NewAnyWithValue(utils.ConsPrivKey.PubKey())
+	require.NoError(t, err)
 
-		err = msgU.ValidateBasic()
-		require.NoError(t, err)
-
-		_, err = msgServer.UpdateSequencer(wctx, msgU)
-		require.NoError(t, err)
-
-		got, ok := k.GetRewardAddrByConsAddr(ctx, utils.ProposerCons())
+	// helper method to validate test results
+	validateResults := func(rewardAddr string, relayers []string) {
+		// validate sequencer
+		actualSequencer, ok := app.SequencersKeeper.GetSequencer(ctx, operator)
 		require.True(t, ok)
-		require.Equal(t, rewardAddr, got)
-	}
-}
+		consAddr, err := actualSequencer.GetConsAddr()
+		require.NoError(t, err)
+		require.Equal(t, consAddr, sdk.ConsAddress(utils.ConsPrivKey.PubKey().Address()))
 
-func TestCreateSecure(t *testing.T) {
-	valid := func() *types.MsgCreateSequencer {
-		operator := utils.Proposer.GetOperator()
-		signer := func(msg []byte) ([]byte, cryptotypes.PubKey, error) {
-			bz, err := utils.ConsPrivKey.Sign(msg)
-			return bz, utils.ConsPrivKey.PubKey(), err
-		}
-		valid, err := types.BuildMsgCreateSequencer(signer, operator)
+		// validate reward address
+		actualRewardAddr, ok := app.SequencersKeeper.GetRewardAddr(ctx, operator)
+		require.True(t, ok)
+		require.Equal(t, rewardAddr, actualRewardAddr.String())
+
+		// validate relayers
+		actualRelayers, err := app.SequencersKeeper.GetWhitelistedRelayers(ctx, operator)
 		require.NoError(t, err)
-		return valid
+		require.ElementsMatch(t, relayers, actualRelayers.Relayers)
 	}
-	t.Run("ok", func(t *testing.T) {
-		m := valid()
-		require.NoError(t, m.ValidateBasic())
-	})
-	t.Run("wrong oper", func(t *testing.T) {
-		m := valid()
-		m.Operator = sdk.ValAddress(secp256k1.GenPrivKey().PubKey().Address()).String()
-		err := m.ValidateBasic()
-		require.True(t, errorsmod.IsOf(err, gerrc.ErrUnauthenticated))
-	})
-	t.Run("wrong pub key", func(t *testing.T) {
-		m := valid()
-		pk := ed25519.GenPrivKey().PubKey()
-		pkA, err := codectypes.NewAnyWithValue(pk)
+
+	t.Run("ConsensusMsgUpsertSequencer", func(t *testing.T) {
+		msg := &types.ConsensusMsgUpsertSequencer{
+			Operator:   operator.String(),
+			ConsPubKey: anyPubKey,
+			RewardAddr: rewardAddr1.String(),
+			Relayers:   relayers1,
+		}
+
+		err = msg.ValidateBasic()
 		require.NoError(t, err)
-		m.PubKey = pkA
-		err = m.ValidateBasic()
-		require.True(t, errorsmod.IsOf(err, gerrc.ErrUnauthenticated))
+
+		// call msg server
+		_, err = msgServer.UpsertSequencer(ctx, msg)
+		require.NoError(t, err)
+
+		// validate results
+		validateResults(rewardAddr1.String(), relayers1)
 	})
-	t.Run("wrong sig", func(t *testing.T) {
-		m := valid()
-		m.Signature = []byte("foo")
-		err := m.ValidateBasic()
-		require.True(t, errorsmod.IsOf(err, gerrc.ErrUnauthenticated))
+
+	t.Run("MsgUpdateRewardAddress", func(t *testing.T) {
+		msg := &types.MsgUpdateRewardAddress{
+			Operator:   operator.String(),
+			RewardAddr: rewardAddr2.String(),
+		}
+
+		err = msg.ValidateBasic()
+		require.NoError(t, err)
+
+		// call msg server
+		_, err = msgServer.UpdateRewardAddress(ctx, msg)
+		require.NoError(t, err)
+
+		// validate results
+		validateResults(rewardAddr2.String(), relayers1)
+	})
+
+	t.Run("MsgUpdateWhitelistedRelayers", func(t *testing.T) {
+		msg := &types.MsgUpdateWhitelistedRelayers{
+			Operator: operator.String(),
+			Relayers: relayers2,
+		}
+
+		err = msg.ValidateBasic()
+		require.NoError(t, err)
+
+		// call msg server
+		_, err = msgServer.UpdateWhitelistedRelayers(ctx, msg)
+		require.NoError(t, err)
+
+		// validate results
+		validateResults(rewardAddr2.String(), relayers2)
 	})
 }

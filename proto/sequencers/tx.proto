@@ -1,7 +1,6 @@
 syntax = "proto3";
 package rollapp.sequencers.types;
 
-import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
 import "google/protobuf/any.proto";
 
@@ -9,35 +8,33 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/sequencers/types";
 
 // Msg defines the Msg service.
 service Msg {
-    rpc CreateSequencer(MsgCreateSequencer) returns (MsgCreateSequencerResponse);
-    rpc UpdateSequencer(MsgUpdateSequencer) returns (MsgUpdateSequencerResponse);
+    // Messages
+    rpc UpdateRewardAddress(MsgUpdateRewardAddress) returns (MsgUpdateRewardAddressResponse);
+    rpc UpdateWhitelistedRelayers(MsgUpdateWhitelistedRelayers) returns (MsgUpdateWhitelistedRelayersResponse);
 
+    // Consensus Messages
     rpc UpsertSequencer(ConsensusMsgUpsertSequencer) returns (ConsensusMsgUpsertSequencerResponse);
 }
 
-message MsgCreateSequencer {
+message MsgUpdateRewardAddress {
     option (cosmos.msg.v1.signer) = "operator";
-    // Operator is the bech32-encoded address of the actor sending the update - must be val addr
+    // Operator is the bech32-encoded address of the actor sending the update
     string operator = 1;
-    // PubKey is a tendermint consensus pub key
-    google.protobuf.Any pub_key = 2;
-    // Signature is operator signed with the private key of pub_key
-    bytes signature = 3;
-}
-
-message MsgCreateSequencerResponse {}
-
-message MsgUpdateSequencer {
-    option (cosmos.msg.v1.signer) = "operator";
-    // Operator is the bech32-encoded address of the actor sending the update - must be val addr
-    string operator = 1;
-    // Field no.2 is missing
-    reserved 2;
     // RewardAddr is a bech32 encoded sdk acc address
-    string reward_addr = 3;
+    string reward_addr = 2;
 }
 
-message MsgUpdateSequencerResponse {}
+message MsgUpdateRewardAddressResponse {}
+
+message MsgUpdateWhitelistedRelayers {
+    option (cosmos.msg.v1.signer) = "operator";
+    // Operator is the bech32-encoded address of the actor sending the update
+    string operator = 1;
+    // Relayers is an array of the whitelisted relayer addresses. Addresses are bech32-encoded strings.
+    repeated string relayers = 2;
+}
+
+message MsgUpdateWhitelistedRelayersResponse {}
 
 // ConsensusMsgUpsertSequencer is a consensus message to upsert the sequencer.
 message ConsensusMsgUpsertSequencer {
@@ -48,6 +45,8 @@ message ConsensusMsgUpsertSequencer {
     google.protobuf.Any cons_pub_key = 2;
     // RewardAddr is the bech32-encoded sequencer's reward address
     string reward_addr = 3;
+    // Relayers is an array of the whitelisted relayer addresses. Addresses are bech32-encoded strings.
+    repeated string relayers = 4;
 }
 
 message ConsensusMsgUpsertSequencerResponse {}

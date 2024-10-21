@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tendermint/tendermint/libs/log"
-
+	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/tendermint/tendermint/libs/log"
+
+	"github.com/dymensionxyz/dymension-rdk/utils/collcompat"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
@@ -28,6 +29,8 @@ type Keeper struct {
 	cdc        codec.BinaryCodec
 	storeKey   storetypes.StoreKey
 	paramstore paramtypes.Subspace
+
+	whitelistedRelayers collections.Map[sdk.ValAddress, types.WhitelistedRelayers]
 }
 
 func NewKeeper(
@@ -40,10 +43,19 @@ func NewKeeper(
 		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 
+	sb := collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey))
+
 	return &Keeper{
 		cdc:        cdc,
 		storeKey:   storeKey,
 		paramstore: ps,
+		whitelistedRelayers: collections.NewMap(
+			sb,
+			types.WhitelistedRelayersPrefix(),
+			"whitelisted_relayers",
+			collcompat.ValAddressKey,
+			collcompat.ProtoValue[types.WhitelistedRelayers](cdc),
+		),
 	}
 }
 
