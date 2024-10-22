@@ -2,7 +2,6 @@ package denommetadata
 
 import (
 	"errors"
-	. "slices"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -83,9 +82,7 @@ func (m *ICS4Wrapper) SendPacket(
 
 	// Check if the hub already contains the denom metadata by matching the base of the denom metadata.
 	// If the denom metadata exists, proceed to the next middleware in the chain.
-	if ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
-		return denom.Base == packet.Denom
-	}) {
+	if _, ok := state.Hub.RegisteredDenoms[packet.Denom]; ok {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
 
@@ -163,12 +160,11 @@ func (im IBCModule) OnAcknowledgementPacket(
 
 	state := im.hubKeeper.GetState(ctx)
 
-	if !ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
-		return denom.Base == dm.Base
-	}) {
-		state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, &hubtypes.RegisteredDenom{
-			Base: dm.Base,
-		})
+	if _, ok := state.Hub.RegisteredDenoms[dm.Base]; !ok {
+		if state.Hub.RegisteredDenoms == nil {
+			state.Hub.RegisteredDenoms = make(map[string]*hubtypes.Empty)
+		}
+		state.Hub.RegisteredDenoms[dm.Base] = &hubtypes.Empty{}
 		im.hubKeeper.SetState(ctx, state)
 	}
 

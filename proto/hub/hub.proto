@@ -7,11 +7,8 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub/types";
 
 // Hub is a proto message that represents the metadata of the Hub
 message Hub {
-  // registeredDenoms is a list of registered denoms on the Hub
-  repeated RegisteredDenom registered_denoms = 1;
+  // registeredDenoms is a set of registered denom bases on this rollapp
+  map<string, Empty> registered_denoms = 10;
 }
 
-message RegisteredDenom {
-  // base is the base of the denom
-  string base = 1;
-}
+message Empty {}
