@@ -63,7 +63,7 @@ func (k Keeper) IterateHubDenoms(ctx sdk.Context, cb func(denom string) (bool, e
 	if err != nil {
 		return err
 	}
-	defer iter.Close()
+	defer iter.Close() // nolint: errcheck
 
 	for iter.Valid() {
 		denom, err := iter.Key()
