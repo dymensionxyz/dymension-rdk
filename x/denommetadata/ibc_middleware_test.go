@@ -3,6 +3,7 @@ package denommetadata_test
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"sync"
 	"testing"
 
@@ -347,12 +348,15 @@ type mockHubKeeper struct {
 	hub hubtypes.Hub
 }
 
-func (m *mockHubKeeper) SetState(ctx sdk.Context, state hubtypes.State) {
-	m.hub = state.Hub
+func (m *mockHubKeeper) SetHubDenom(_ sdk.Context, denom string) error {
+	m.hub.RegisteredDenoms = append(m.hub.RegisteredDenoms, &hubtypes.RegisteredDenom{Base: denom})
+	return nil
 }
 
-func (m *mockHubKeeper) GetState(ctx sdk.Context) hubtypes.State {
-	return hubtypes.State{Hub: m.hub}
+func (m *mockHubKeeper) HasHubDenom(_ sdk.Context, denom string) (bool, error) {
+	return slices.ContainsFunc(m.hub.RegisteredDenoms, func(d *hubtypes.RegisteredDenom) bool {
+		return d.Base == denom
+	}), nil
 }
 
 type mockERC20Hook struct {

@@ -7,11 +7,11 @@ import (
 
 func (s *State) Validate() error {
 	denomMap := make(map[string]struct{})
-	for base := range s.Hub.RegisteredDenoms {
-		if _, ok := denomMap[base]; ok {
-			return errorsmod.Wrapf(gerrc.ErrInvalidArgument, "duplicate denom in registered denoms: %s", base)
+	for _, d := range s.Hub.RegisteredDenoms {
+		if _, ok := denomMap[d.Base]; ok {
+			return errorsmod.Wrapf(gerrc.ErrInvalidArgument, "duplicate denom in registered denoms: %s", d)
 		}
-		denomMap[base] = struct{}{}
+		denomMap[d.Base] = struct{}{}
 	}
 	return nil
 }

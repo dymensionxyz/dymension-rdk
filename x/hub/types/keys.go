@@ -11,4 +11,6 @@ const (
 	QuerierRoute = StoreKey
 )
 
-var StateKey = []byte{0x01}
+const (
+	RegisteredHubDenomsKeyPrefix = "registeredHubDenoms/value/"
+)
