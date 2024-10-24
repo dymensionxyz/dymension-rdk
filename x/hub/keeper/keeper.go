@@ -33,51 +33,16 @@ func NewKeeper(
 }
 
 func (k Keeper) SetHubDenom(ctx sdk.Context, denom string) error {
-	if err := k.registeredHubDenoms.Set(ctx, denom); err != nil {
-		return err
-	}
-	return nil
+	return k.registeredHubDenoms.Set(ctx, denom)
 }
 
 func (k Keeper) HasHubDenom(ctx sdk.Context, denom string) (bool, error) {
-	ok, err := k.registeredHubDenoms.Has(ctx, denom)
-	if err != nil {
-		return false, err
-	}
-	return ok, nil
+	return k.registeredHubDenoms.Has(ctx, denom)
 }
 
-func (k Keeper) GetAllHubDenoms(ctx sdk.Context) ([]string, error) {
-	var denoms []string
-	if err := k.IterateHubDenoms(ctx, func(denom string) (bool, error) {
-		denoms = append(denoms, denom)
-		return false, nil
-	}); err != nil {
-		return nil, err
-	}
-	return denoms, nil
-}
-
-func (k Keeper) IterateHubDenoms(ctx sdk.Context, cb func(denom string) (bool, error)) error {
-	iter, err := k.registeredHubDenoms.Iterate(ctx, new(collections.Range[string]))
-	if err != nil {
-		return err
-	}
-	defer iter.Close() // nolint: errcheck
-
-	for iter.Valid() {
-		denom, err := iter.Key()
-		if err != nil {
-			return err
-		}
-		stop, err := cb(denom)
-		if err != nil {
-			return err
-		}
-		if stop {
-			break
-		}
-		iter.Next()
-	}
-	return nil
+func (k Keeper) GetAllHubDenoms(ctx sdk.Context) (denoms []string, _ error) {
+	return denoms, k.registeredHubDenoms.Walk(ctx, new(collections.Range[string]), func(d string) (_ bool, _ error) {
+		denoms = append(denoms, d)
+		return
+	})
 }
