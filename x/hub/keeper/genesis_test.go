@@ -16,7 +16,17 @@ func TestGenesis(t *testing.T) {
 	k, ctx := testkeepers.NewTestHubKeeperFromApp(app)
 
 	expect := &types.GenesisState{
-		State: types.State{},
+		State: types.State{
+			Hub: types.Hub{
+				RegisteredDenoms: []*types.RegisteredDenom{
+					{
+						Base: "adym",
+					}, {
+						Base: "ibc/7F1D3FCF4AE79E1554D670D1AD949A9BA4E4A3C76C63093E17E446A46061A7A2",
+					},
+				},
+			},
+		},
 	}
 	k.InitGenesis(ctx, expect)
 	got := k.ExportGenesis(ctx)

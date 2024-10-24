@@ -2,7 +2,6 @@ package denommetadata
 
 import (
 	"errors"
-	. "slices"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,7 +19,6 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 	hgtypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 // ICS4Wrapper intercepts outgoing IBC packets and adds token metadata to the memo if the hub doesn't have it.
@@ -79,13 +77,14 @@ func (m *ICS4Wrapper) SendPacket(
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
 
-	state := m.hubKeeper.GetState(ctx)
+	has, err := m.hubKeeper.HasHubDenom(ctx, packet.Denom)
+	if err != nil {
+		return 0, errorsmod.Wrapf(err, "check if hub has denom")
+	}
 
 	// Check if the hub already contains the denom metadata by matching the base of the denom metadata.
 	// If the denom metadata exists, proceed to the next middleware in the chain.
-	if ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
-		return denom.Base == packet.Denom
-	}) {
+	if has {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
 
@@ -161,15 +160,15 @@ func (im IBCModule) OnAcknowledgementPacket(
 		return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
 
-	state := im.hubKeeper.GetState(ctx)
+	has, err := im.hubKeeper.HasHubDenom(ctx, dm.Base)
+	if err != nil {
+		return errorsmod.Wrapf(err, "check if hub has denom")
+	}
 
-	if !ContainsFunc(state.Hub.RegisteredDenoms, func(denom *hubtypes.RegisteredDenom) bool {
-		return denom.Base == dm.Base
-	}) {
-		state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, &hubtypes.RegisteredDenom{
-			Base: dm.Base,
-		})
-		im.hubKeeper.SetState(ctx, state)
+	if !has {
+		if err = im.hubKeeper.SetHubDenom(ctx, dm.Base); err != nil {
+			return errorsmod.Wrapf(err, "set hub denom")
+		}
 	}
 
 	return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
