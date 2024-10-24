@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -21,5 +22,15 @@ func NewQuerier(k Keeper) Querier {
 
 func (q Querier) State(goCtx context.Context, _ *types.QueryStateRequest) (*types.QueryStateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	return &types.QueryStateResponse{State: q.Keeper.GetState(ctx)}, nil
+	denoms, err := q.GetAllHubDenoms(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all hub denoms: %w", err)
+	}
+	var state types.State
+	for _, denom := range denoms {
+		state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, &types.RegisteredDenom{
+			Base: denom,
+		})
+	}
+	return &types.QueryStateResponse{State: state}, nil
 }

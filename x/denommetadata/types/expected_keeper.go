@@ -5,8 +5,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
-
-	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 // BankKeeper defines the expected interface needed to retrieve account balances.
@@ -22,6 +20,6 @@ type TransferKeeper interface {
 }
 
 type HubKeeper interface {
-	SetState(ctx sdk.Context, state hubtypes.State)
-	GetState(ctx sdk.Context) hubtypes.State
+	SetHubDenom(ctx sdk.Context, denom string) error
+	HasHubDenom(ctx sdk.Context, denom string) (bool, error)
 }
