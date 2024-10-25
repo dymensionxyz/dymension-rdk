@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -96,7 +97,7 @@ func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, chann
 		GenesisTransfer: genesisTransferPacket,
 	}
 
-	bz, err := data.Marshal()
+	bz, err := json.Marshal(data)
 	if err != nil {
 		return 0, errorsmod.Wrap(err, "marshal genesis bridge data")
 	}
