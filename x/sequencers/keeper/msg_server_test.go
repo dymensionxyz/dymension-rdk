@@ -9,16 +9,14 @@ import (
 
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 func TestHappyPath(t *testing.T) {
 	// prepare test
 	var (
-		app       = utils.Setup(t, false)
-		k, ctx    = testkeepers.NewTestSequencerKeeperFromApp(app)
-		msgServer = keeper.NewMsgServerImpl(*k)
+		app    = utils.Setup(t, false)
+		_, ctx = testkeepers.NewTestSequencerKeeperFromApp(app)
 	)
 
 	// prepare test data
@@ -72,7 +70,7 @@ func TestHappyPath(t *testing.T) {
 		require.NoError(t, err)
 
 		// call msg server
-		_, err = msgServer.UpsertSequencer(ctx, msg)
+		_, err = app.MsgServiceRouter().Handler(new(types.ConsensusMsgUpsertSequencer))(ctx, msg)
 		require.NoError(t, err)
 
 		// validate results
@@ -89,7 +87,7 @@ func TestHappyPath(t *testing.T) {
 		require.NoError(t, err)
 
 		// call msg server
-		_, err = msgServer.UpdateRewardAddress(ctx, msg)
+		_, err = app.MsgServiceRouter().Handler(new(types.MsgUpdateRewardAddress))(ctx, msg)
 		require.NoError(t, err)
 
 		// validate results
@@ -106,7 +104,7 @@ func TestHappyPath(t *testing.T) {
 		require.NoError(t, err)
 
 		// call msg server
-		_, err = msgServer.UpdateWhitelistedRelayers(ctx, msg)
+		_, err = app.MsgServiceRouter().Handler(new(types.MsgUpdateWhitelistedRelayers))(ctx, msg)
 		require.NoError(t, err)
 
 		// validate results

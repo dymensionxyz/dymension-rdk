@@ -7,6 +7,8 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 
@@ -116,9 +118,11 @@ func (m *ConsensusMsgUpsertSequencer) ValidateBasic() error {
 	return nil
 }
 
+// GetSigners returns signers of the msg. The only signer is the governance which allows this msg
+// to be executed only either by the gov or as part of consensus msgs.
 func (m *ConsensusMsgUpsertSequencer) GetSigners() []sdk.AccAddress {
-	addr, _ := sdk.ValAddressFromBech32(m.Operator)
-	return []sdk.AccAddress{sdk.AccAddress(addr)}
+	govAddr := authtypes.NewModuleAddress(govtypes.ModuleName)
+	return []sdk.AccAddress{govAddr}
 }
 
 // MustValidator is a convenience method - it returns a validator object which already
