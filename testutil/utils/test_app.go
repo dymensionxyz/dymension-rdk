@@ -90,7 +90,8 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.Raw
 	)
 	if withGenesis {
 		// override the rollapp version, so we'll have a valid default genesis
-		rollappparamstypes.Version = "5f8393904fb1e9c616fe89f013cafe7501a63f86"
+		rollappparamstypes.Version = uint64(1)
+		rollappparamstypes.Commit = "5f8393904fb1e9c616fe89f013cafe7501a63f86"
 		return testApp, app.NewDefaultGenesisState(encCdc.Codec)
 	}
 	return testApp, map[string]json.RawMessage{}
