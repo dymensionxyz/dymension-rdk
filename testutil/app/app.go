@@ -414,7 +414,10 @@ func NewRollapp(
 	)
 
 	app.SequencersKeeper = *seqkeeper.NewKeeper(
-		appCodec, keys[seqtypes.StoreKey], app.GetSubspace(seqtypes.ModuleName),
+		appCodec,
+		keys[seqtypes.StoreKey],
+		app.GetSubspace(seqtypes.ModuleName),
+		authtypes.NewModuleAddress(seqtypes.ModuleName).String(),
 	)
 
 	app.IBCKeeper = ibckeeper.NewKeeper(

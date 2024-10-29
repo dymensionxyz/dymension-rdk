@@ -8,9 +8,6 @@ import (
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
-// DefaultIndex is the default capability global index
-const DefaultIndex uint64 = 1
-
 // DefaultGenesis returns the default Capability genesis state
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
@@ -40,6 +37,10 @@ func (gs GenesisState) ValidateGenesis() error {
 			if _, err := s.RewardAcc(); err != nil {
 				return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward acc")
 			}
+		}
+		err = ValidateWhitelistedRelayers(s.Relayers)
+		if err != nil {
+			return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayer")
 		}
 	}
 	return nil

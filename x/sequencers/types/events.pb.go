@@ -5,10 +5,6 @@ package types
 
 import (
 	fmt "fmt"
-	_ "github.com/cosmos/cosmos-sdk/codec/types"
-	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
-	_ "github.com/cosmos/cosmos-sdk/x/staking/types"
-	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
@@ -26,6 +22,114 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+type EventUpdateRewardAddress struct {
+	// Operator is the bech32-encoded address of the actor sending the update
+	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
+	// RewardAddr is a bech32 encoded sdk acc address
+	RewardAddr string `protobuf:"bytes,2,opt,name=reward_addr,json=rewardAddr,proto3" json:"reward_addr,omitempty"`
+}
+
+func (m *EventUpdateRewardAddress) Reset()         { *m = EventUpdateRewardAddress{} }
+func (m *EventUpdateRewardAddress) String() string { return proto.CompactTextString(m) }
+func (*EventUpdateRewardAddress) ProtoMessage()    {}
+func (*EventUpdateRewardAddress) Descriptor() ([]byte, []int) {
+	return fileDescriptor_56f991c7cadf9a70, []int{0}
+}
+func (m *EventUpdateRewardAddress) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventUpdateRewardAddress) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventUpdateRewardAddress.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventUpdateRewardAddress) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventUpdateRewardAddress.Merge(m, src)
+}
+func (m *EventUpdateRewardAddress) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventUpdateRewardAddress) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventUpdateRewardAddress.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventUpdateRewardAddress proto.InternalMessageInfo
+
+func (m *EventUpdateRewardAddress) GetOperator() string {
+	if m != nil {
+		return m.Operator
+	}
+	return ""
+}
+
+func (m *EventUpdateRewardAddress) GetRewardAddr() string {
+	if m != nil {
+		return m.RewardAddr
+	}
+	return ""
+}
+
+type EventUpdateWhitelistedRelayers struct {
+	// Operator is the bech32-encoded address of the actor sending the update
+	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
+	// Relayers is an array of the whitelisted relayer addresses. Addresses are bech32-encoded strings.
+	Relayers []string `protobuf:"bytes,2,rep,name=relayers,proto3" json:"relayers,omitempty"`
+}
+
+func (m *EventUpdateWhitelistedRelayers) Reset()         { *m = EventUpdateWhitelistedRelayers{} }
+func (m *EventUpdateWhitelistedRelayers) String() string { return proto.CompactTextString(m) }
+func (*EventUpdateWhitelistedRelayers) ProtoMessage()    {}
+func (*EventUpdateWhitelistedRelayers) Descriptor() ([]byte, []int) {
+	return fileDescriptor_56f991c7cadf9a70, []int{1}
+}
+func (m *EventUpdateWhitelistedRelayers) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventUpdateWhitelistedRelayers) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventUpdateWhitelistedRelayers.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventUpdateWhitelistedRelayers) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventUpdateWhitelistedRelayers.Merge(m, src)
+}
+func (m *EventUpdateWhitelistedRelayers) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventUpdateWhitelistedRelayers) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventUpdateWhitelistedRelayers.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventUpdateWhitelistedRelayers proto.InternalMessageInfo
+
+func (m *EventUpdateWhitelistedRelayers) GetOperator() string {
+	if m != nil {
+		return m.Operator
+	}
+	return ""
+}
+
+func (m *EventUpdateWhitelistedRelayers) GetRelayers() []string {
+	if m != nil {
+		return m.Relayers
+	}
+	return nil
+}
+
 type EventUpsertSequencer struct {
 	// Operator is the bech32-encoded address of the actor sending the update
 	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
@@ -33,13 +137,15 @@ type EventUpsertSequencer struct {
 	ConsAddr string `protobuf:"bytes,2,opt,name=cons_addr,json=consAddr,proto3" json:"cons_addr,omitempty"`
 	// RewardAddr is the bech32-encoded sequencer's reward address
 	RewardAddr string `protobuf:"bytes,3,opt,name=reward_addr,json=rewardAddr,proto3" json:"reward_addr,omitempty"`
+	// Relayers is an array of the whitelisted relayer addresses. Addresses are bech32-encoded strings.
+	Relayers []string `protobuf:"bytes,4,rep,name=relayers,proto3" json:"relayers,omitempty"`
 }
 
 func (m *EventUpsertSequencer) Reset()         { *m = EventUpsertSequencer{} }
 func (m *EventUpsertSequencer) String() string { return proto.CompactTextString(m) }
 func (*EventUpsertSequencer) ProtoMessage()    {}
 func (*EventUpsertSequencer) Descriptor() ([]byte, []int) {
-	return fileDescriptor_56f991c7cadf9a70, []int{0}
+	return fileDescriptor_56f991c7cadf9a70, []int{2}
 }
 func (m *EventUpsertSequencer) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -89,32 +195,117 @@ func (m *EventUpsertSequencer) GetRewardAddr() string {
 	return ""
 }
 
+func (m *EventUpsertSequencer) GetRelayers() []string {
+	if m != nil {
+		return m.Relayers
+	}
+	return nil
+}
+
 func init() {
+	proto.RegisterType((*EventUpdateRewardAddress)(nil), "rollapp.sequencers.types.EventUpdateRewardAddress")
+	proto.RegisterType((*EventUpdateWhitelistedRelayers)(nil), "rollapp.sequencers.types.EventUpdateWhitelistedRelayers")
 	proto.RegisterType((*EventUpsertSequencer)(nil), "rollapp.sequencers.types.EventUpsertSequencer")
 }
 
 func init() { proto.RegisterFile("sequencers/events.proto", fileDescriptor_56f991c7cadf9a70) }
 
 var fileDescriptor_56f991c7cadf9a70 = []byte{
-	// 276 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x4c, 0x90, 0xb1, 0x4e, 0xc3, 0x30,
-	0x10, 0x86, 0x13, 0x90, 0x10, 0x35, 0x5b, 0x54, 0xa9, 0x21, 0x48, 0x06, 0x21, 0x06, 0x16, 0x62,
-	0x55, 0x2c, 0xac, 0x20, 0xf1, 0x02, 0x45, 0x2c, 0x2c, 0xc8, 0x89, 0x0f, 0x13, 0x35, 0xf1, 0x19,
-	0xdb, 0x29, 0x0d, 0x4f, 0xc1, 0x63, 0x31, 0x76, 0x64, 0x44, 0xc9, 0x8b, 0x20, 0x27, 0x29, 0x65,
-	0xb2, 0xff, 0xfb, 0xbe, 0xe1, 0xee, 0x27, 0x33, 0x0b, 0x6f, 0x35, 0xa8, 0x1c, 0x8c, 0x65, 0xb0,
-	0x02, 0xe5, 0x6c, 0xaa, 0x0d, 0x3a, 0x8c, 0x62, 0x83, 0x65, 0xc9, 0xb5, 0x4e, 0x77, 0x42, 0xea,
-	0x1a, 0x0d, 0x36, 0x99, 0x4a, 0x94, 0xd8, 0x4b, 0xcc, 0xff, 0x06, 0x3f, 0xb9, 0xc8, 0xd1, 0x56,
-	0x68, 0x99, 0x75, 0x7c, 0x59, 0x28, 0xc9, 0x56, 0xf3, 0x0c, 0x1c, 0x9f, 0x6f, 0xf3, 0x68, 0xcd,
-	0x46, 0xab, 0xb2, 0xde, 0xf0, 0xcf, 0x08, 0x8e, 0x25, 0xa2, 0x2c, 0x81, 0xf5, 0x29, 0xab, 0x5f,
-	0x18, 0x57, 0xcd, 0x80, 0xce, 0x35, 0x99, 0xde, 0xfb, 0xcd, 0x1e, 0xb5, 0x05, 0xe3, 0x1e, 0xb6,
-	0xeb, 0x44, 0x09, 0x39, 0x44, 0x0d, 0x86, 0x3b, 0x34, 0x71, 0x78, 0x16, 0x5e, 0x4e, 0x16, 0x7f,
-	0x39, 0x3a, 0x21, 0x93, 0x1c, 0x95, 0x7d, 0xe6, 0x42, 0x98, 0x78, 0x6f, 0x80, 0x7e, 0x70, 0x2b,
-	0x84, 0x89, 0x4e, 0xc9, 0x91, 0x81, 0x77, 0x6e, 0xc4, 0x80, 0xf7, 0x7b, 0x4c, 0x86, 0x91, 0x17,
-	0xee, 0x16, 0x5f, 0x2d, 0x0d, 0x37, 0x2d, 0x0d, 0x7f, 0x5a, 0x1a, 0x7e, 0x76, 0x34, 0xd8, 0x74,
-	0x34, 0xf8, 0xee, 0x68, 0xf0, 0x74, 0x23, 0x0b, 0xf7, 0x5a, 0x67, 0x69, 0x8e, 0x15, 0x13, 0x4d,
-	0x05, 0xca, 0x16, 0xa8, 0xd6, 0xcd, 0xc7, 0x2e, 0x5c, 0x19, 0xb1, 0x64, 0x6b, 0xf6, 0xaf, 0xd6,
-	0xbe, 0xb5, 0xec, 0xa0, 0x3f, 0xe6, 0xfa, 0x37, 0x00, 0x00, 0xff, 0xff, 0xdf, 0xc9, 0x1a, 0xf0,
-	0x71, 0x01, 0x00, 0x00,
+	// 284 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x91, 0xbf, 0x4e, 0xf3, 0x30,
+	0x14, 0xc5, 0xe3, 0xf6, 0xd3, 0xa7, 0xd4, 0x6c, 0x11, 0x12, 0x51, 0x91, 0x4c, 0x95, 0x89, 0x85,
+	0x64, 0x60, 0x61, 0x05, 0x89, 0x17, 0x08, 0x42, 0x45, 0x2c, 0xc8, 0x8d, 0xaf, 0x68, 0x44, 0x6a,
+	0x9b, 0x7b, 0x5d, 0x68, 0x78, 0x06, 0x06, 0x1e, 0x8b, 0xb1, 0x23, 0x23, 0x4a, 0x5e, 0x04, 0x25,
+	0xea, 0x9f, 0xb4, 0x43, 0xc7, 0xe3, 0x7b, 0x7c, 0xf4, 0x3b, 0x3a, 0xfc, 0x84, 0xe0, 0x75, 0x0e,
+	0x3a, 0x03, 0xa4, 0x04, 0xde, 0x40, 0x3b, 0x8a, 0x2d, 0x1a, 0x67, 0x82, 0x10, 0x4d, 0x51, 0x48,
+	0x6b, 0xe3, 0xad, 0x21, 0x76, 0xa5, 0x05, 0x8a, 0xc6, 0x3c, 0xbc, 0x6d, 0x9c, 0xf7, 0x56, 0x49,
+	0x07, 0x29, 0xbc, 0x4b, 0x54, 0xd7, 0x4a, 0x21, 0x10, 0x05, 0x43, 0xee, 0x1b, 0x0b, 0x28, 0x9d,
+	0xc1, 0x90, 0x8d, 0xd8, 0xf9, 0x20, 0xdd, 0xe8, 0xe0, 0x8c, 0x1f, 0x61, 0x6b, 0x7e, 0x92, 0x4a,
+	0x61, 0xd8, 0x6b, 0xcf, 0x1c, 0x37, 0xff, 0xa3, 0x07, 0x2e, 0x3a, 0xc1, 0xe3, 0x69, 0xee, 0xa0,
+	0xc8, 0xc9, 0x81, 0x4a, 0xa1, 0x90, 0x25, 0xe0, 0xe1, 0xf8, 0x21, 0xf7, 0x71, 0xe5, 0x0b, 0x7b,
+	0xa3, 0x7e, 0x73, 0x5b, 0xeb, 0xe8, 0x93, 0xf1, 0xe3, 0x55, 0x34, 0x01, 0xba, 0xbb, 0x75, 0xa5,
+	0x83, 0x81, 0xa7, 0x7c, 0x90, 0x19, 0x4d, 0x5d, 0x5a, 0xbf, 0x79, 0x68, 0x58, 0xf7, 0xcb, 0xf4,
+	0xf7, 0xcb, 0xec, 0xe0, 0xfc, 0xdb, 0xc5, 0xb9, 0x49, 0xbf, 0x2b, 0xc1, 0x96, 0x95, 0x60, 0xbf,
+	0x95, 0x60, 0x5f, 0xb5, 0xf0, 0x96, 0xb5, 0xf0, 0x7e, 0x6a, 0xe1, 0x3d, 0x5e, 0x3d, 0xe7, 0x6e,
+	0x3a, 0x9f, 0xc4, 0x99, 0x99, 0x25, 0xaa, 0x9c, 0x81, 0xa6, 0xdc, 0xe8, 0x45, 0xf9, 0xb1, 0x15,
+	0x17, 0xa8, 0x5e, 0x92, 0x45, 0xd2, 0x99, 0xad, 0x5d, 0x65, 0xf2, 0xbf, 0x9d, 0xed, 0xf2, 0x2f,
+	0x00, 0x00, 0xff, 0xff, 0x9b, 0xce, 0x56, 0x40, 0xd1, 0x01, 0x00, 0x00,
+}
+
+func (m *EventUpdateRewardAddress) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventUpdateRewardAddress) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventUpdateRewardAddress) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.RewardAddr) > 0 {
+		i -= len(m.RewardAddr)
+		copy(dAtA[i:], m.RewardAddr)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.RewardAddr)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Operator) > 0 {
+		i -= len(m.Operator)
+		copy(dAtA[i:], m.Operator)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Operator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventUpdateWhitelistedRelayers) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventUpdateWhitelistedRelayers) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventUpdateWhitelistedRelayers) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Relayers) > 0 {
+		for iNdEx := len(m.Relayers) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Relayers[iNdEx])
+			copy(dAtA[i:], m.Relayers[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Relayers[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.Operator) > 0 {
+		i -= len(m.Operator)
+		copy(dAtA[i:], m.Operator)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Operator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *EventUpsertSequencer) Marshal() (dAtA []byte, err error) {
@@ -137,6 +328,15 @@ func (m *EventUpsertSequencer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.Relayers) > 0 {
+		for iNdEx := len(m.Relayers) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Relayers[iNdEx])
+			copy(dAtA[i:], m.Relayers[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Relayers[iNdEx])))
+			i--
+			dAtA[i] = 0x22
+		}
+	}
 	if len(m.RewardAddr) > 0 {
 		i -= len(m.RewardAddr)
 		copy(dAtA[i:], m.RewardAddr)
@@ -172,6 +372,42 @@ func encodeVarintEvents(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+func (m *EventUpdateRewardAddress) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Operator)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.RewardAddr)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventUpdateWhitelistedRelayers) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Operator)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	if len(m.Relayers) > 0 {
+		for _, s := range m.Relayers {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	return n
+}
+
 func (m *EventUpsertSequencer) Size() (n int) {
 	if m == nil {
 		return 0
@@ -190,6 +426,12 @@ func (m *EventUpsertSequencer) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
 	}
+	if len(m.Relayers) > 0 {
+		for _, s := range m.Relayers {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
 	return n
 }
 
@@ -198,6 +440,234 @@ func sovEvents(x uint64) (n int) {
 }
 func sozEvents(x uint64) (n int) {
 	return sovEvents(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *EventUpdateRewardAddress) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventUpdateRewardAddress: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventUpdateRewardAddress: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Operator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Operator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RewardAddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RewardAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventUpdateWhitelistedRelayers) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventUpdateWhitelistedRelayers: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventUpdateWhitelistedRelayers: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Operator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Operator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Relayers", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Relayers = append(m.Relayers, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *EventUpsertSequencer) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -323,6 +793,38 @@ func (m *EventUpsertSequencer) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.RewardAddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Relayers", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Relayers = append(m.Relayers, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

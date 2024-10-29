@@ -19,6 +19,13 @@ func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) []abc
 		if s.RewardAddr != "" {
 			k.SetRewardAddr(ctx, *s.Validator, s.MustRewardAcc()) // already validated
 		}
+		if len(s.Relayers) != 0 {
+			wlr := types.MustNewWhitelistedRelayers(s.GetRelayers())
+			err := k.SetWhitelistedRelayers(ctx, *s.Validator, wlr)
+			if err != nil {
+				panic(err)
+			}
+		}
 	}
 
 	// return (and delete) the update from init chain
@@ -43,6 +50,11 @@ func (k *Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 		if ok {
 			genesis.Sequencers[i].RewardAddr = rewardAddr.String()
 		}
+		wlr, err := k.GetWhitelistedRelayers(ctx, v.GetOperator())
+		if err == nil {
+			genesis.Sequencers[i].Relayers = wlr.Relayers
+		}
+
 	}
 
 	return genesis

@@ -2,7 +2,6 @@ package types
 
 import (
 	"errors"
-	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -15,116 +14,68 @@ import (
 )
 
 var (
-	_ sdk.Msg                            = (*MsgCreateSequencer)(nil)
-	_ sdk.Msg                            = (*MsgUpdateSequencer)(nil)
+	_ sdk.Msg                            = (*MsgUpdateRewardAddress)(nil)
+	_ sdk.Msg                            = (*MsgUpdateWhitelistedRelayers)(nil)
 	_ sdk.Msg                            = (*ConsensusMsgUpsertSequencer)(nil)
-	_ codectypes.UnpackInterfacesMessage = (*MsgCreateSequencer)(nil)
 	_ codectypes.UnpackInterfacesMessage = (*ConsensusMsgUpsertSequencer)(nil)
 )
 
-func (m *MsgCreateSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
-	return unpacker.UnpackAny(m.PubKey, new(cryptotypes.PubKey))
-}
-
-func (m *MsgCreateSequencer) ValidateBasic() error {
-	if _, err := m.OperatorAccAddr(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
-	}
-	if m.GetPubKey() == nil {
-		return errors.New("pub key is nil")
-	}
-	if m.GetPubKey().GetCachedValue() == nil {
-		return errors.New("pub key cached value is nil")
-	}
-	v := stakingtypes.Validator{
-		ConsensusPubkey: m.GetPubKey(),
-	}
-	tm, err := v.TmConsPublicKey()
+func (m *MsgUpdateRewardAddress) ValidateBasic() error {
+	_, err := sdk.ValAddressFromBech32(m.GetOperator())
 	if err != nil {
-		return errorsmod.Wrap(err, "tm cons pub key")
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get operator addr from bech32")
 	}
-	if tm.GetEd25519() == nil {
-		return errors.New("not ed5519")
-	}
-	operator, err := m.OperatorAddr()
+	_, err = sdk.AccAddressFromBech32(m.RewardAddr)
 	if err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get reward addr from bech32")
 	}
-	pubKey, _ := v.ConsPubKey()
-
-	// We return OK only if the key and sig contains a key and signature where the signature was produced by the key, and the signature
-	// is over the operator account.
-	//
-	// The reasoning is as follows:
-	//
-	// We know from the SDK TX signing mechanism that the account originates from the operator, and on this chain ID.
-	// Therefore, we just need to check that the consensus private key also over this operator. Then we know that
-	// the private key holder of the operator and the consensus keys is the same actor.
-	if !pubKey.VerifySignature(operator, m.GetSignature()) {
-		return errorsmod.Wrap(gerrc.ErrUnauthenticated, "priv key of pub cons key was not used to sign operator addr")
-	}
-
 	return nil
 }
 
-// Validator is a convenience method - it returns a validator object which already
-// has implementations of various useful methods like obtaining various type conversions
-// for the public key.
-func (m *MsgCreateSequencer) Validator() stakingtypes.Validator {
-	return stakingtypes.Validator{ConsensusPubkey: m.PubKey, OperatorAddress: m.MustOperatorAddr().String()}
+func (m *MsgUpdateRewardAddress) GetSigners() []sdk.AccAddress {
+	addr, _ := sdk.ValAddressFromBech32(m.Operator)
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
 }
 
-func (m *MsgCreateSequencer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.MustAccAddr()}
-}
-
-func (m *MsgCreateSequencer) OperatorAccAddr() (sdk.AccAddress, error) {
-	operator, err := m.OperatorAddr()
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "operator addr")
-	}
-	return sdk.AccAddress(operator), nil
-}
-
-func (m *MsgCreateSequencer) MustAccAddr() sdk.AccAddress {
-	return sdk.AccAddress(m.MustOperatorAddr())
-}
-
-func (m *MsgCreateSequencer) OperatorAddr() (sdk.ValAddress, error) {
-	return sdk.ValAddressFromBech32(m.GetOperator())
-}
-
-func (m *MsgCreateSequencer) MustOperatorAddr() sdk.ValAddress {
-	addr, err := m.OperatorAddr()
+func (m *MsgUpdateRewardAddress) MustOperatorAddr() sdk.ValAddress {
+	addr, err := sdk.ValAddressFromBech32(m.Operator)
 	if err != nil {
 		panic(err)
 	}
 	return addr
 }
 
-func BuildMsgCreateSequencer(
-	// Produces a signature over a message
-	signer func(msg []byte) ([]byte, cryptotypes.PubKey, error), // implemented with a wrapper around keyring
-	// Operator, will be signed over by signer
-	operator sdk.ValAddress,
-) (*MsgCreateSequencer, error) {
-	sig, pubKey, err := signer(operator)
+func (m *MsgUpdateRewardAddress) MustRewardAcc() sdk.AccAddress {
+	ret, err := sdk.AccAddressFromBech32(m.RewardAddr)
 	if err != nil {
-		return nil, fmt.Errorf("sign: %w", err)
+		panic(err)
 	}
-	if pubKey == nil {
-		return nil, errorsmod.Wrap(gerrc.ErrInvalidArgument, "signer returned nil pub key")
-	}
+	return ret
+}
 
-	pubKeyAny, err := codectypes.NewAnyWithValue(pubKey)
+func (m *MsgUpdateWhitelistedRelayers) ValidateBasic() error {
+	_, err := sdk.ValAddressFromBech32(m.GetOperator())
 	if err != nil {
-		return nil, errorsmod.Wrap(err, "pubkey to any")
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get operator addr from bech32")
 	}
-	return &MsgCreateSequencer{
-		Operator:  operator.String(),
-		PubKey:    pubKeyAny,
-		Signature: sig,
-	}, nil
+	err = ValidateWhitelistedRelayers(m.Relayers)
+	if err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayers")
+	}
+	return nil
+}
+
+func (m *MsgUpdateWhitelistedRelayers) GetSigners() []sdk.AccAddress {
+	addr, _ := sdk.ValAddressFromBech32(m.Operator)
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
+}
+
+func (m *MsgUpdateWhitelistedRelayers) MustOperatorAddr() sdk.ValAddress {
+	addr, err := sdk.ValAddressFromBech32(m.Operator)
+	if err != nil {
+		panic(err)
+	}
+	return addr
 }
 
 func (m *ConsensusMsgUpsertSequencer) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
@@ -132,6 +83,15 @@ func (m *ConsensusMsgUpsertSequencer) UnpackInterfaces(unpacker codectypes.AnyUn
 }
 
 func (m *ConsensusMsgUpsertSequencer) ValidateBasic() error {
+	signer, err := addressutils.Bech32ToAddr[sdk.AccAddress](m.Signer)
+	if err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer addr from bech32")
+	}
+	err = sdk.VerifyAddressFormat(signer)
+	if err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate bech32 signer addr")
+	}
+
 	operAddr, err := addressutils.Bech32ToAddr[sdk.ValAddress](m.Operator)
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get operator addr from bech32")
@@ -156,12 +116,26 @@ func (m *ConsensusMsgUpsertSequencer) ValidateBasic() error {
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate bech32 reward addr")
 	}
+
+	err = ValidateWhitelistedRelayers(m.Relayers)
+	if err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayers")
+	}
+
 	return nil
 }
 
 func (m *ConsensusMsgUpsertSequencer) GetSigners() []sdk.AccAddress {
-	addr, _ := sdk.ValAddressFromBech32(m.Operator)
+	addr, _ := sdk.AccAddressFromBech32(m.Signer)
 	return []sdk.AccAddress{sdk.AccAddress(addr)}
+}
+
+func (m *ConsensusMsgUpsertSequencer) MustGetSigner() sdk.AccAddress {
+	signer, err := addressutils.Bech32ToAddr[sdk.AccAddress](m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return signer
 }
 
 // MustValidator is a convenience method - it returns a validator object which already
@@ -192,54 +166,4 @@ func (m *ConsensusMsgUpsertSequencer) MustRewardAddr() sdk.AccAddress {
 		panic(err)
 	}
 	return rewardAddr
-}
-
-func (m *MsgUpdateSequencer) ValidateBasic() error {
-	if _, err := m.OperatorAccAddr(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "acc addr")
-	}
-	if _, err := m.RewardAcc(); err != nil {
-		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward addr")
-	}
-	return nil
-}
-
-func (m *MsgUpdateSequencer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{m.MustAccAddr()}
-}
-
-func (m *MsgUpdateSequencer) OperatorAccAddr() (sdk.AccAddress, error) {
-	oper, err := m.OperatorAddr()
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "operator addr")
-	}
-	return sdk.AccAddress(oper), nil
-}
-
-func (m *MsgUpdateSequencer) MustAccAddr() sdk.AccAddress {
-	return sdk.AccAddress(m.MustOperatorAddr())
-}
-
-func (m *MsgUpdateSequencer) OperatorAddr() (sdk.ValAddress, error) {
-	return sdk.ValAddressFromBech32(m.GetOperator())
-}
-
-func (m *MsgUpdateSequencer) MustOperatorAddr() sdk.ValAddress {
-	addr, err := m.OperatorAddr()
-	if err != nil {
-		panic(err)
-	}
-	return addr
-}
-
-func (m *MsgUpdateSequencer) RewardAcc() (sdk.AccAddress, error) {
-	return sdk.AccAddressFromBech32(m.GetRewardAddr())
-}
-
-func (m *MsgUpdateSequencer) MustRewardAcc() sdk.AccAddress {
-	ret, err := m.RewardAcc()
-	if err != nil {
-		panic(err)
-	}
-	return ret
 }
