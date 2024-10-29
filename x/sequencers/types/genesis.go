@@ -38,7 +38,7 @@ func (gs GenesisState) ValidateGenesis() error {
 				return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "reward acc")
 			}
 		}
-		err = WhitelistedRelayers{Relayers: s.Relayers}.Validate()
+		err = ValidateWhitelistedRelayers(s.Relayers)
 		if err != nil {
 			return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayer")
 		}

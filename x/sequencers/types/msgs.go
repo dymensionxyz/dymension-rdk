@@ -59,7 +59,7 @@ func (m *MsgUpdateWhitelistedRelayers) ValidateBasic() error {
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get operator addr from bech32")
 	}
-	err = WhitelistedRelayers{Relayers: m.Relayers}.Validate()
+	err = ValidateWhitelistedRelayers(m.Relayers)
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayers")
 	}
@@ -109,7 +109,7 @@ func (m *ConsensusMsgUpsertSequencer) ValidateBasic() error {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate bech32 reward addr")
 	}
 
-	err = WhitelistedRelayers{Relayers: m.Relayers}.Validate()
+	err = ValidateWhitelistedRelayers(m.Relayers)
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate whitelisted relayers")
 	}

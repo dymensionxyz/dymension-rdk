@@ -9,6 +9,8 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/utils/addressutils"
 )
 
+const maxWhitelistedRelayers = 10
+
 func MustNewWhitelistedRelayers(relayers []string) WhitelistedRelayers {
 	convertedRelayers := make([]string, 0, len(relayers))
 	for _, r := range relayers {
@@ -22,9 +24,12 @@ func MustNewWhitelistedRelayers(relayers []string) WhitelistedRelayers {
 	return WhitelistedRelayers{Relayers: convertedRelayers}
 }
 
-func (wr WhitelistedRelayers) Validate() error {
-	relayers := make(map[string]struct{}, len(wr.Relayers))
-	for _, r := range wr.Relayers {
+func ValidateWhitelistedRelayers(wlr []string) error {
+	if len(wlr) > maxWhitelistedRelayers {
+		return fmt.Errorf("maximum allowed relayers is %d", maxWhitelistedRelayers)
+	}
+	relayers := make(map[string]struct{}, len(wlr))
+	for _, r := range wlr {
 		if _, ok := relayers[r]; ok {
 			return fmt.Errorf("duplicated relayer: %s", r)
 		}
