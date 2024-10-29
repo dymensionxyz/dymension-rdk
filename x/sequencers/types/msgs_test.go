@@ -130,6 +130,7 @@ func TestMsgUpdateWhitelistedRelayers(t *testing.T) {
 }
 
 func TestConsensusMsgUpsertSequencer(t *testing.T) {
+	signerAddr := utils.AccAddress()
 	valAddr := utils.AccAddress()
 	rewardAddr := utils.AccAddress()
 	anyPubKey, err := codectypes.NewAnyWithValue(ed25519.GenPrivKey().PubKey())
@@ -148,6 +149,7 @@ func TestConsensusMsgUpsertSequencer(t *testing.T) {
 		{
 			name: "valid",
 			input: types.ConsensusMsgUpsertSequencer{
+				Signer:     signerAddr.String(),
 				Operator:   valAddr.String(),
 				ConsPubKey: anyPubKey,
 				RewardAddr: rewardAddr.String(),
@@ -159,6 +161,7 @@ func TestConsensusMsgUpsertSequencer(t *testing.T) {
 		{
 			name: "empty cons pub key",
 			input: types.ConsensusMsgUpsertSequencer{
+				Signer:     signerAddr.String(),
 				Operator:   valAddr.String(),
 				ConsPubKey: nil,
 				RewardAddr: rewardAddr.String(),
@@ -168,8 +171,21 @@ func TestConsensusMsgUpsertSequencer(t *testing.T) {
 			errorContains: "pub key is nil",
 		},
 		{
+			name: "invalid signer address",
+			input: types.ConsensusMsgUpsertSequencer{
+				Signer:     "invalid_signer",
+				Operator:   valAddr.String(),
+				ConsPubKey: anyPubKey,
+				RewardAddr: rewardAddr.String(),
+				Relayers:   relayers,
+			},
+			errorIs:       gerrc.ErrInvalidArgument,
+			errorContains: "get signer addr from bech32",
+		},
+		{
 			name: "invalid operator",
 			input: types.ConsensusMsgUpsertSequencer{
+				Signer:     signerAddr.String(),
 				Operator:   "invalid_operator",
 				ConsPubKey: anyPubKey,
 				RewardAddr: rewardAddr.String(),
@@ -181,6 +197,7 @@ func TestConsensusMsgUpsertSequencer(t *testing.T) {
 		{
 			name: "invalid reward addr",
 			input: types.ConsensusMsgUpsertSequencer{
+				Signer:     signerAddr.String(),
 				Operator:   valAddr.String(),
 				ConsPubKey: anyPubKey,
 				RewardAddr: "invalid_reward_addr",
@@ -192,6 +209,7 @@ func TestConsensusMsgUpsertSequencer(t *testing.T) {
 		{
 			name: "invalid relayer addr",
 			input: types.ConsensusMsgUpsertSequencer{
+				Signer:     signerAddr.String(),
 				Operator:   valAddr.String(),
 				ConsPubKey: anyPubKey,
 				RewardAddr: rewardAddr.String(),
@@ -203,6 +221,7 @@ func TestConsensusMsgUpsertSequencer(t *testing.T) {
 		{
 			name: "duplicated relayers",
 			input: types.ConsensusMsgUpsertSequencer{
+				Signer:     signerAddr.String(),
 				Operator:   valAddr.String(),
 				ConsPubKey: anyPubKey,
 				RewardAddr: rewardAddr.String(),

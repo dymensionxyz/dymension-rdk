@@ -5,6 +5,7 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/stretchr/testify/require"
 
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
@@ -15,8 +16,9 @@ import (
 func TestHappyPath(t *testing.T) {
 	// prepare test
 	var (
-		app    = utils.Setup(t, false)
-		_, ctx = testkeepers.NewTestSequencerKeeperFromApp(app)
+		app       = utils.Setup(t, false)
+		_, ctx    = testkeepers.NewTestSequencerKeeperFromApp(app)
+		authority = authtypes.NewModuleAddress(types.ModuleName).String()
 	)
 
 	// prepare test data
@@ -60,6 +62,7 @@ func TestHappyPath(t *testing.T) {
 
 	t.Run("ConsensusMsgUpsertSequencer", func(t *testing.T) {
 		msg := &types.ConsensusMsgUpsertSequencer{
+			Signer:     authority,
 			Operator:   operator.String(),
 			ConsPubKey: anyPubKey,
 			RewardAddr: rewardAddr1.String(),
@@ -74,6 +77,26 @@ func TestHappyPath(t *testing.T) {
 		require.NoError(t, err)
 
 		// validate results
+		validateResults(rewardAddr1.String(), relayers1)
+	})
+
+	t.Run("ConsensusMsgUpsertSequencer: Unauthorized", func(t *testing.T) {
+		msg := &types.ConsensusMsgUpsertSequencer{
+			Signer:     utils.AccAddress().String(),
+			Operator:   operator.String(),
+			ConsPubKey: anyPubKey,
+			RewardAddr: rewardAddr1.String(),
+			Relayers:   relayers1,
+		}
+
+		err = msg.ValidateBasic()
+		require.NoError(t, err)
+
+		// call msg server
+		_, err = app.MsgServiceRouter().Handler(new(types.ConsensusMsgUpsertSequencer))(ctx, msg)
+		require.Error(t, err)
+
+		// previous values are unchanged
 		validateResults(rewardAddr1.String(), relayers1)
 	})
 

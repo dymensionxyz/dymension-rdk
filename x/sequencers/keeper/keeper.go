@@ -29,6 +29,7 @@ type Keeper struct {
 	cdc        codec.BinaryCodec
 	storeKey   storetypes.StoreKey
 	paramstore paramtypes.Subspace
+	authority  string // address of the authorized actor that can execute consensus msgs
 
 	whitelistedRelayers collections.Map[sdk.ValAddress, types.WhitelistedRelayers]
 }
@@ -37,6 +38,7 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
+	authority string,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -49,6 +51,7 @@ func NewKeeper(
 		cdc:        cdc,
 		storeKey:   storeKey,
 		paramstore: ps,
+		authority:  authority,
 		whitelistedRelayers: collections.NewMap(
 			sb,
 			types.WhitelistedRelayersPrefix(),

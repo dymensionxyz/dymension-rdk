@@ -7,7 +7,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 
@@ -84,6 +83,15 @@ func (m *ConsensusMsgUpsertSequencer) UnpackInterfaces(unpacker codectypes.AnyUn
 }
 
 func (m *ConsensusMsgUpsertSequencer) ValidateBasic() error {
+	signer, err := addressutils.Bech32ToAddr[sdk.AccAddress](m.Signer)
+	if err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get signer addr from bech32")
+	}
+	err = sdk.VerifyAddressFormat(signer)
+	if err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "validate bech32 signer addr")
+	}
+
 	operAddr, err := addressutils.Bech32ToAddr[sdk.ValAddress](m.Operator)
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get operator addr from bech32")
@@ -117,11 +125,17 @@ func (m *ConsensusMsgUpsertSequencer) ValidateBasic() error {
 	return nil
 }
 
-// GetSigners returns signers of the msg. The only signer is x/sequencers which allows this msg
-// to be executed only as part of consensus msgs.
 func (m *ConsensusMsgUpsertSequencer) GetSigners() []sdk.AccAddress {
-	authority := authtypes.NewModuleAddress(ModuleName)
-	return []sdk.AccAddress{authority}
+	addr, _ := sdk.AccAddressFromBech32(m.Signer)
+	return []sdk.AccAddress{sdk.AccAddress(addr)}
+}
+
+func (m *ConsensusMsgUpsertSequencer) MustGetSigner() sdk.AccAddress {
+	signer, err := addressutils.Bech32ToAddr[sdk.AccAddress](m.Signer)
+	if err != nil {
+		panic(err)
+	}
+	return signer
 }
 
 // MustValidator is a convenience method - it returns a validator object which already

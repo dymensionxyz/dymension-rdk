@@ -6,6 +6,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 
 	"github.com/dymensionxyz/dymension-rdk/utils/uevent"
@@ -77,6 +78,10 @@ func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.ConsensusMs
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// all must-methods are safe to use since they're validated in ValidateBasic
+
+	if msg.MustGetSigner().String() != m.authority {
+		return nil, sdkerrors.ErrorInvalidSigner.Wrapf("only an authorized actor can upsert a sequencer")
+	}
 
 	// save the validator
 	v := msg.MustValidator()
