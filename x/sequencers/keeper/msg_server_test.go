@@ -21,6 +21,8 @@ func TestHappyPath(t *testing.T) {
 		authority = authtypes.NewModuleAddress(types.ModuleName).String()
 	)
 
+	t.Log(authority)
+
 	// prepare test data
 	var (
 		operator    = utils.Proposer.GetOperator()
