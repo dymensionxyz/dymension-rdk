@@ -6,6 +6,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 
 	"github.com/dymensionxyz/dymension-rdk/utils/uevent"
@@ -14,36 +15,63 @@ import (
 
 var _ types.MsgServer = msgServer{}
 
-type msgServer struct {
-	Keeper
-}
+type msgServer struct{ Keeper }
 
 func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
-func (m msgServer) CreateSequencer(goCtx context.Context, msg *types.MsgCreateSequencer) (*types.MsgCreateSequencerResponse, error) {
+func (m msgServer) UpdateRewardAddress(goCtx context.Context, msg *types.MsgUpdateRewardAddress) (*types.MsgUpdateRewardAddressResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	operator := msg.MustOperatorAddr() // checked in validate basic
-	if _, ok := m.GetSequencer(ctx, operator); ok {
-		return nil, gerrc.ErrAlreadyExists
+
+	// all must-methods are safe to use since they're validated in ValidateBasic
+
+	operator := msg.MustOperatorAddr()
+	seq, ok := m.GetSequencer(ctx, operator)
+	if !ok {
+		return nil, errorsmod.Wrap(gerrc.ErrNotFound, "sequencer")
 	}
 
-	v := msg.Validator()
-	m.SetSequencer(ctx, v)
+	rewardAddr := msg.MustRewardAcc()
+	m.SetRewardAddr(ctx, seq, rewardAddr)
 
-	consAddr, err := v.GetConsAddr()
+	err := uevent.EmitTypedEvent(ctx, &types.EventUpdateRewardAddress{
+		Operator:   operator.String(),
+		RewardAddr: rewardAddr.String(),
+	})
 	if err != nil {
-		panic(err) // it must be ok because we used it to check sig
+		return nil, fmt.Errorf("emit event: %w", err)
 	}
 
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventCreateSequencer,
-		sdk.NewAttribute(types.AttributeKeyConsAddr, consAddr.String()),
-		sdk.NewAttribute(types.AttributeKeyOperatorAddr, v.OperatorAddress),
-	))
+	return &types.MsgUpdateRewardAddressResponse{}, nil
+}
 
-	return &types.MsgCreateSequencerResponse{}, nil
+func (m msgServer) UpdateWhitelistedRelayers(goCtx context.Context, msg *types.MsgUpdateWhitelistedRelayers) (*types.MsgUpdateWhitelistedRelayersResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// all must-methods are safe to use since they're validated in ValidateBasic
+
+	operator := msg.MustOperatorAddr()
+	seq, ok := m.GetSequencer(ctx, operator)
+	if !ok {
+		return nil, errorsmod.Wrap(gerrc.ErrNotFound, "sequencer")
+	}
+
+	relayers := types.MustNewWhitelistedRelayers(msg.Relayers)
+	err := m.SetWhitelistedRelayers(ctx, seq, relayers)
+	if err != nil {
+		return nil, fmt.Errorf("set whitelisted relayers: %w", err)
+	}
+
+	err = uevent.EmitTypedEvent(ctx, &types.EventUpdateWhitelistedRelayers{
+		Operator: seq.OperatorAddress,
+		Relayers: relayers.Relayers,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("emit event: %w", err)
+	}
+
+	return &types.MsgUpdateWhitelistedRelayersResponse{}, nil
 }
 
 func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.ConsensusMsgUpsertSequencer) (*types.ConsensusMsgUpsertSequencerResponse, error) {
@@ -51,9 +79,23 @@ func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.ConsensusMs
 
 	// all must-methods are safe to use since they're validated in ValidateBasic
 
+	if msg.MustGetSigner().String() != m.authority {
+		return nil, sdkerrors.ErrorInvalidSigner.Wrapf("only an authorized actor can upsert a sequencer")
+	}
+
+	// save the validator
 	v := msg.MustValidator()
 	m.SetSequencer(ctx, v)
-	m.SetRewardAddr(ctx, v, msg.MustRewardAddr())
+
+	// save the reward address
+	rewardAddr := msg.MustRewardAddr()
+	m.SetRewardAddr(ctx, v, rewardAddr)
+
+	// save the whitelisted relayer list
+	err := m.SetWhitelistedRelayers(ctx, v, types.MustNewWhitelistedRelayers(msg.Relayers))
+	if err != nil {
+		return nil, fmt.Errorf("set whitelisted relayers: %w", err)
+	}
 
 	consAddr, err := v.GetConsAddr()
 	if err != nil {
@@ -63,36 +105,11 @@ func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.ConsensusMs
 	err = uevent.EmitTypedEvent(ctx, &types.EventUpsertSequencer{
 		Operator:   msg.MustOperatorAddr().String(),
 		ConsAddr:   consAddr.String(),
-		RewardAddr: msg.MustRewardAddr().String(),
+		RewardAddr: rewardAddr.String(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("emit event: %w", err)
 	}
 
 	return &types.ConsensusMsgUpsertSequencerResponse{}, nil
-}
-
-func (m msgServer) UpdateSequencer(goCtx context.Context, msg *types.MsgUpdateSequencer) (*types.MsgUpdateSequencerResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
-	operator := msg.MustOperatorAddr() // checked in validate basic
-
-	seq, ok := m.GetSequencer(ctx, operator)
-	if !ok {
-		return nil, errorsmod.Wrap(gerrc.ErrNotFound, "sequencer")
-	}
-
-	m.SetRewardAddr(ctx, seq, msg.MustRewardAcc()) // checked in validate basic
-
-	consAddr, err := seq.GetConsAddr()
-	if err != nil {
-		return nil, errorsmod.Wrap(gerrc.ErrInternal, "expected to get valid cons addr")
-	}
-
-	ctx.EventManager().EmitEvent(sdk.NewEvent(
-		types.EventUpdateSequencer,
-		sdk.NewAttribute(types.AttributeKeyConsAddr, consAddr.String()),
-		sdk.NewAttribute(types.AttributeKeyOperatorAddr, seq.OperatorAddress),
-		sdk.NewAttribute(types.AttributeKeyRewardAddr, msg.MustRewardAcc().String()),
-	))
-	return &types.MsgUpdateSequencerResponse{}, nil
 }
