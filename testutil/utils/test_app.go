@@ -21,7 +21,6 @@ import (
 	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
 
 	hubgenesistypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	rollappparamstypes "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types"
 
 	"github.com/stretchr/testify/require"
 
@@ -89,8 +88,6 @@ func setup(withGenesis bool, invCheckPeriod uint) (*app.App, map[string]json.Raw
 		log.NewNopLogger(), db, nil, true, map[int64]bool{}, "/tmp", invCheckPeriod, encCdc, app.GetEnabledProposals(), EmptyAppOptions{}, emptyWasmOpts,
 	)
 	if withGenesis {
-		// override the rollapp version, so we'll have a valid default genesis
-		rollappparamstypes.Version = "5f8393904fb1e9c616fe89f013cafe7501a63f86"
 		return testApp, app.NewDefaultGenesisState(encCdc.Codec)
 	}
 	return testApp, map[string]json.RawMessage{}

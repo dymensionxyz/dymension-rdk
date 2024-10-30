@@ -10,7 +10,7 @@ import (
 
 func TestGenesisState(t *testing.T) {
 
-	testParams := types.NewParams("mock", "5f8393904fb1e9c616fe89f013cafe7501a63f86")
+	testParams := types.NewParams("mock", 1)
 	testCases := []struct {
 		name        string
 		params      func() types.Params
@@ -24,28 +24,10 @@ func TestGenesisState(t *testing.T) {
 			},
 		},
 		{
-			name: "missing version",
+			name: "wrong drs version",
 			params: func() types.Params {
 				p := testParams
-				p.Version = ""
-				return p
-			},
-			expectedErr: true,
-		},
-		{
-			name: "wrong length version",
-			params: func() types.Params {
-				p := testParams
-				p.Version = "fdasfewkq102382w523"
-				return p
-			},
-			expectedErr: true,
-		},
-		{
-			name: "version not alphanumeric",
-			params: func() types.Params {
-				p := testParams
-				p.Version = "3a19edd887_9b576a866750bc9d480ada53d2c0d"
+				p.DrsVersion = 0
 				return p
 			},
 			expectedErr: true,
@@ -56,7 +38,7 @@ func TestGenesisState(t *testing.T) {
 		state := types.NewGenesisState(tc.params())
 		err := types.ValidateGenesis(state)
 		if tc.expectedErr {
-			require.ErrorIs(t, err, gerrc.ErrInvalidArgument)
+			require.Error(t, err, gerrc.ErrInvalidArgument)
 		} else {
 			require.NoError(t, err)
 		}
