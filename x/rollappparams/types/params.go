@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"strconv"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/dymensionxyz/dymint/da/registry"
@@ -12,14 +13,14 @@ const (
 
 	// Data availability used by the RollApp. Default value used is mock da.
 	DefaultDA = "mock"
-	// Default version set
-	DefaultVersion = uint64(0)
 )
 
 // Parameter store keys.
 var (
 	KeyDa      = []byte("da")
 	KeyVersion = []byte("version")
+	// Default version set
+	DrsVersion = "<drs-version>"
 )
 
 func ParamKeyTable() paramtypes.KeyTable {
@@ -29,19 +30,23 @@ func ParamKeyTable() paramtypes.KeyTable {
 // NewParams creates a new Params object
 func NewParams(
 	da string,
-	version uint64,
+	drsVersion uint32,
 ) Params {
 	return Params{
-		Da:      da,
-		Version: version,
+		Da:         da,
+		DrsVersion: drsVersion,
 	}
 }
 
 // DefaultParams returns default x/rollappparams module parameters.
 func DefaultParams() Params {
+	drsVersion, err := strconv.ParseUint(DrsVersion, 10, 32)
+	if err != nil {
+		panic(err)
+	}
 	return Params{
-		Da:      DefaultDA,
-		Version: DefaultVersion,
+		Da:         DefaultDA,
+		DrsVersion: uint32(drsVersion),
 	}
 }
 
@@ -50,7 +55,7 @@ func (p Params) Validate() error {
 	if err != nil {
 		return err
 	}
-	err = ValidateVersion(p.Version)
+	err = ValidateVersion(p.DrsVersion)
 	if err != nil {
 		return err
 	}
@@ -68,7 +73,7 @@ func ValidateDa(i any) error {
 }
 
 func ValidateVersion(i any) error {
-	version, ok := i.(uint64)
+	version, ok := i.(uint32)
 	if !ok {
 		return fmt.Errorf("invalid version type param type: %w", gerrc.ErrInvalidArgument)
 	}
@@ -84,6 +89,6 @@ func ValidateVersion(i any) error {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, ValidateDa),
-		paramtypes.NewParamSetPair(KeyVersion, &p.Version, ValidateVersion),
+		paramtypes.NewParamSetPair(KeyVersion, &p.DrsVersion, ValidateVersion),
 	}
 }
