@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"strconv"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/dymensionxyz/dymint/da/registry"
@@ -20,7 +19,7 @@ var (
 	KeyDa      = []byte("da")
 	KeyVersion = []byte("version")
 	// Default version set
-	DrsVersion = "<drs-version>"
+	DrsVersion = uint32(1)
 )
 
 func ParamKeyTable() paramtypes.KeyTable {
@@ -40,13 +39,9 @@ func NewParams(
 
 // DefaultParams returns default x/rollappparams module parameters.
 func DefaultParams() Params {
-	drsVersion, err := strconv.ParseUint(DrsVersion, 10, 32)
-	if err != nil {
-		panic(err)
-	}
 	return Params{
 		Da:         DefaultDA,
-		DrsVersion: uint32(drsVersion),
+		DrsVersion: DrsVersion,
 	}
 }
 

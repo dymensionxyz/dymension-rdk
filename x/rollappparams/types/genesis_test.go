@@ -38,7 +38,7 @@ func TestGenesisState(t *testing.T) {
 		state := types.NewGenesisState(tc.params())
 		err := types.ValidateGenesis(state)
 		if tc.expectedErr {
-			require.ErrorIs(t, err, gerrc.ErrInvalidArgument)
+			require.Error(t, err, gerrc.ErrInvalidArgument)
 		} else {
 			require.NoError(t, err)
 		}
