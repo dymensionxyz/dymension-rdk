@@ -46,8 +46,3 @@ func (k Keeper) Version(ctx sdk.Context) (res uint64) {
 	k.paramSpace.Get(ctx, types.KeyVersion, &res)
 	return
 }
-
-func (k Keeper) Commit(ctx sdk.Context) (res string) {
-	k.paramSpace.Get(ctx, types.KeyCommit, &res)
-	return
-}
