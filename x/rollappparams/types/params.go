@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"regexp"
 
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/dymensionxyz/dymint/da/registry"
@@ -10,8 +9,7 @@ import (
 )
 
 const (
-	// length of the version commit string.
-	VersionLength = 40
+
 	// Data availability used by the RollApp. Default value used is mock da.
 	DefaultDA = "mock"
 )
@@ -20,12 +18,8 @@ const (
 var (
 	KeyDa      = []byte("da")
 	KeyVersion = []byte("version")
-
-	// git commit for the version used for the rollapp binary. it must be overwritten in the build process
-	Version = "<version>"
-	// default max block size accepted (equivalent to block max size it can fit into a celestia blob).
-	// regexp used to validate version commit
-	VersionRegExp = regexp.MustCompile(`^[a-z0-9]*$`)
+	// Default version set
+	DrsVersion = uint32(1)
 )
 
 func ParamKeyTable() paramtypes.KeyTable {
@@ -35,19 +29,19 @@ func ParamKeyTable() paramtypes.KeyTable {
 // NewParams creates a new Params object
 func NewParams(
 	da string,
-	version string,
+	drsVersion uint32,
 ) Params {
 	return Params{
-		Da:      da,
-		Version: version,
+		Da:         da,
+		DrsVersion: drsVersion,
 	}
 }
 
 // DefaultParams returns default x/rollappparams module parameters.
 func DefaultParams() Params {
 	return Params{
-		Da:      DefaultDA,
-		Version: Version,
+		Da:         DefaultDA,
+		DrsVersion: DrsVersion,
 	}
 }
 
@@ -56,10 +50,11 @@ func (p Params) Validate() error {
 	if err != nil {
 		return err
 	}
-	err = ValidateVersion(p.Version)
+	err = ValidateVersion(p.DrsVersion)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -73,25 +68,22 @@ func ValidateDa(i any) error {
 }
 
 func ValidateVersion(i any) error {
-
-	version, ok := i.(string)
+	version, ok := i.(uint32)
 	if !ok {
 		return fmt.Errorf("invalid version type param type: %w", gerrc.ErrInvalidArgument)
 	}
-	if len(version) != VersionLength {
-		return fmt.Errorf("invalid version length: param length: %d accepted: %d: %w", len(version), VersionLength, gerrc.ErrInvalidArgument)
-	}
-	if !VersionRegExp.MatchString(version) {
-		return fmt.Errorf("invalid version: it must be alphanumeric %w", gerrc.ErrInvalidArgument)
+	if version <= 0 {
+		return fmt.Errorf("invalid DRS version: Version must be positive")
 	}
 
 	return nil
+
 }
 
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, ValidateDa),
-		paramtypes.NewParamSetPair(KeyVersion, &p.Version, ValidateVersion),
+		paramtypes.NewParamSetPair(KeyVersion, &p.DrsVersion, ValidateVersion),
 	}
 }
