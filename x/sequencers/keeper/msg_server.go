@@ -2,12 +2,16 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+	"github.com/gogo/protobuf/proto"
 
 	"github.com/dymensionxyz/dymension-rdk/utils/uevent"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
@@ -112,4 +116,62 @@ func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.ConsensusMs
 	}
 
 	return &types.ConsensusMsgUpsertSequencerResponse{}, nil
+}
+
+// defines the list of accounts we want to bump the sequence
+var handleAccounts = map[string]struct{}{
+	proto.MessageName(&authtypes.BaseAccount{}):                 {},
+	proto.MessageName(&vestingtypes.BaseVestingAccount{}):       {},
+	proto.MessageName(&vestingtypes.ContinuousVestingAccount{}): {},
+	proto.MessageName(&vestingtypes.DelayedVestingAccount{}):    {},
+	proto.MessageName(&vestingtypes.PeriodicVestingAccount{}):   {},
+	proto.MessageName(&vestingtypes.PermanentLockedAccount{}):   {},
+}
+
+const BumpSequence = 1_000_000_000
+
+func (m msgServer) BumpAccountSequences(goCtx context.Context, msg *types.MsgBumpAccountSequences) (*types.MsgBumpAccountSequencesResponse, error) {
+	if msg.Authority != m.authority {
+		return nil, sdkerrors.ErrorInvalidSigner.Wrapf("only an authorized actor can bump account sequences")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	var allErrors error
+	m.accountKeeper.IterateAccounts(ctx, func(account authtypes.AccountI) bool {
+		// handle well known accounts
+		accType := proto.MessageName(account)
+		_, toHandle := handleAccounts[accType]
+		if toHandle {
+			err := m.bumpAccountSequence(ctx, account)
+			allErrors = errors.Join(allErrors, err)
+		} else {
+			// check if it can be handled by something custom
+			for _, f := range m.accountBumpFilters {
+				toBump, err := f(accType, account)
+				if err != nil {
+					allErrors = errors.Join(allErrors, fmt.Errorf("filter account: %w", err))
+					return false
+				}
+				if toBump {
+					err := m.bumpAccountSequence(ctx, account)
+					allErrors = errors.Join(allErrors, err)
+					break
+				}
+			}
+		}
+		return false
+	})
+
+	// we could decide to stop or continue
+	return &types.MsgBumpAccountSequencesResponse{}, allErrors
+}
+
+func (m msgServer) bumpAccountSequence(ctx sdk.Context, acc authtypes.AccountI) error {
+	err := acc.SetSequence(acc.GetSequence() + BumpSequence)
+	if err != nil {
+		return fmt.Errorf("set account sequence: %w", err)
+	}
+	m.accountKeeper.SetAccount(ctx, acc)
+	return nil
 }
