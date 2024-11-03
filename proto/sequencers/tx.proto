@@ -15,7 +15,7 @@ service Msg {
     // Consensus Messages
     rpc UpsertSequencer(ConsensusMsgUpsertSequencer) returns (ConsensusMsgUpsertSequencerResponse);
     rpc BumpAccountSequences(MsgBumpAccountSequences) returns (MsgBumpAccountSequencesResponse);
-    rpc NewDRS(MsgNewDRS) returns (MsgNewDRSResponse);
+    rpc UpgradeDRS(MsgUpgradeDRS) returns (MsgUpgradeDRSResponse);
 }
 
 message MsgUpdateRewardAddress {
@@ -67,11 +67,13 @@ message MsgBumpAccountSequences {
 
 message MsgBumpAccountSequencesResponse {}
 
-message MsgNewDRS {
+message MsgUpgradeDRS {
     option (cosmos.msg.v1.signer) = "authority";
-    // authority defines the address of the authority that is allowed to create a new DRS.
+    // authority defines the address of the authority that is allowed to bump the account sequences.
     // this is gov but it can be triggered by a consensus message.
     string authority = 1;
+
+    uint64 drs_version = 2;
 }
 
-message MsgNewDRSResponse {}
+message MsgUpgradeDRSResponse {}
