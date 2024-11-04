@@ -11,7 +11,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.46.16
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/cosmos/ibc-go/v6 v6.2.1
-	github.com/dymensionxyz/dymint v1.2.0-rc01.0.20241024144934-db109b2859b4
+	github.com/dymensionxyz/dymint v1.2.0-rc01.0.20241104141005-2101cd9b62e6
 	github.com/dymensionxyz/gerr-cosmos v1.0.0
 	github.com/dymensionxyz/sdk-utils v0.1.2-0.20240909101947-e1b483ada9c8
 	github.com/gogo/protobuf v1.3.3
@@ -315,7 +315,6 @@ replace (
 	github.com/CosmWasm/wasmd => github.com/decentrio/wasmd v0.33.0-sdk46.2
 	github.com/centrifuge/go-substrate-rpc-client/v4 => github.com/availproject/go-substrate-rpc-client/v4 v4.0.12-avail-1.4.0-rc1-5e286e3
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
-	github.com/dymensionxyz/dymint => github.com/dymensionxyz/dymint v1.2.0-rc01.0.20241103153941-2dd008a65b25
 	github.com/evmos/evmos/v12 => github.com/dymensionxyz/evmos/v12 v12.1.6-dymension-v0.3
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
