@@ -17,8 +17,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
-	"github.com/dymensionxyz/dymension-rdk/utils"
 	"github.com/spf13/cobra"
+
+	"github.com/dymensionxyz/dymension-rdk/utils"
 )
 
 // RollbackCmd rollbacks the app multistore to specific height and updates dymint state according to it
@@ -129,6 +130,7 @@ func liteBlockManager(cfg *config.Config, dymintConf *dymintconf.NodeConfig, cli
 		signingKey,
 		*dymintConf,
 		genesis,
+		"",
 		s,
 		nil,
 		proxyApp,
