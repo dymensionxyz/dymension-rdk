@@ -774,10 +774,13 @@ func (app *App) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Respo
 // InitChainer application update at chain initialization
 func (app *App) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
 	var genesisState GenesisState
-
 	if err := tmjson.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
+
+	genesisInfo := app.HubGenesisKeeper.GetGenesisInfo(ctx)
+	genesisInfo.GenesisChecksum = req.GenesisChecksum
+	app.HubGenesisKeeper.SetGenesisInfo(ctx, genesisInfo)
 
 	// Passing the dymint sequencers to the sequencer module from RequestInitChain
 	app.SequencersKeeper.MustSetDymintValidatorUpdates(ctx, req.Validators)

@@ -5,33 +5,27 @@ import (
 	"testing"
 	"time"
 
-	tmprotocrypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
-
 	"github.com/CosmWasm/wasmd/x/wasm"
-	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	"github.com/stretchr/testify/require"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-
-	app "github.com/dymensionxyz/dymension-rdk/testutil/app"
-
-	hubgenesistypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-
-	"github.com/stretchr/testify/require"
-
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
-	tmtypes "github.com/tendermint/tendermint/types"
-
-	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
-
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/log"
+	tmprotocrypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmtypes "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
+
+	"github.com/dymensionxyz/dymension-rdk/testutil/app"
+	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	hubgenesistypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
 var DefaultConsensusParams = &abci.ConsensusParams{
@@ -131,8 +125,9 @@ func setGenesisAndInitChain(t *testing.T, app *app.App, genesisState map[string]
 			Validators: []abci.ValidatorUpdate{
 				{PubKey: ProposerTMCons(), Power: 1},
 			},
-			AppStateBytes: stateBytes,
-			InitialHeight: 0,
+			AppStateBytes:   stateBytes,
+			InitialHeight:   0,
+			GenesisChecksum: "notempty",
 		},
 	)
 }
