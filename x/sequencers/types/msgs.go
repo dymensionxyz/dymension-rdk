@@ -17,8 +17,9 @@ var (
 	_ sdk.Msg                            = (*MsgUpdateRewardAddress)(nil)
 	_ sdk.Msg                            = (*MsgUpdateWhitelistedRelayers)(nil)
 	_ sdk.Msg                            = (*ConsensusMsgUpsertSequencer)(nil)
-	_ sdk.Msg                            = (*MsgUpgradeDRS)(nil)
 	_ codectypes.UnpackInterfacesMessage = (*ConsensusMsgUpsertSequencer)(nil)
+	_ sdk.Msg                            = (*MsgBumpAccountSequences)(nil)
+	_ sdk.Msg                            = (*MsgUpgradeDRS)(nil)
 )
 
 func (m *MsgUpdateRewardAddress) ValidateBasic() error {
