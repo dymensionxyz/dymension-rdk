@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	"time"
 
 	"cosmossdk.io/collections"
@@ -40,6 +41,7 @@ type Keeper struct {
 	accountKeeper      types.AccountKeeper
 	rollapParamsKeeper types.RollappParamsKeeper
 	accountBumpFilters []AccountBumpFilterFunc
+	upgradeKeeper      upgradekeeper.Keeper
 
 	whitelistedRelayers collections.Map[sdk.ValAddress, types.WhitelistedRelayers]
 }
@@ -51,6 +53,7 @@ func NewKeeper(
 	authority string,
 	accountKeeper types.AccountKeeper,
 	rollapParamsKeeper types.RollappParamsKeeper,
+	upgradeKeeper upgradekeeper.Keeper,
 	accountBumpFilters []AccountBumpFilterFunc,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -68,6 +71,7 @@ func NewKeeper(
 		accountKeeper:      accountKeeper,
 		rollapParamsKeeper: rollapParamsKeeper,
 		accountBumpFilters: accountBumpFilters,
+		upgradeKeeper:      upgradeKeeper,
 		whitelistedRelayers: collections.NewMap(
 			sb,
 			types.WhitelistedRelayersPrefix(),
