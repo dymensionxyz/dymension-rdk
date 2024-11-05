@@ -175,3 +175,17 @@ func (m msgServer) bumpAccountSequence(ctx sdk.Context, acc authtypes.AccountI) 
 	m.accountKeeper.SetAccount(ctx, acc)
 	return nil
 }
+
+func (m msgServer) UpgradeDRS(goCtx context.Context, drs *types.MsgUpgradeDRS) (*types.MsgUpgradeDRSResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	m.updateDrsVersion(ctx, drs.DrsVersion)
+
+	return &types.MsgUpgradeDRSResponse{}, nil
+}
+
+func (m msgServer) updateDrsVersion(ctx sdk.Context, drsVersion uint64) {
+	oldParams := m.rollapParamsKeeper.GetParams(ctx)
+	oldParams.DrsVersion = uint32(drsVersion)
+	m.rollapParamsKeeper.SetParams(ctx, oldParams)
+}

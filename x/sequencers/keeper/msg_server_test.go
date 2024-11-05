@@ -136,3 +136,84 @@ func TestHappyPath(t *testing.T) {
 		validateResults(rewardAddr2.String(), relayers2)
 	})
 }
+
+func TestUpgradeDRS(t *testing.T) {
+	// prepare test
+	var (
+		app    = utils.Setup(t, false)
+		_, ctx = testkeepers.NewTestSequencerKeeperFromApp(app)
+	)
+
+	tests := []struct {
+		name        string
+		drsVersion  uint64
+		expectError bool
+	}{
+		{
+			name:        "Success: Update DRS version",
+			drsVersion:  2,
+			expectError: false,
+		},
+		{
+			name:        "Success: Update to higher version",
+			drsVersion:  10,
+			expectError: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// Get initial params
+			initialParams := app.RollappParamsKeeper.GetParams(ctx)
+
+			// Create message
+			msg := &types.MsgUpgradeDRS{
+				Authority:  authtypes.NewModuleAddress("gov").String(),
+				DrsVersion: tc.drsVersion,
+			}
+
+			// Validate basic
+			err := msg.ValidateBasic()
+			require.NoError(t, err)
+
+			// Execute message
+			handler := app.MsgServiceRouter().Handler(new(types.MsgUpgradeDRS))
+			_, err = handler(ctx, msg)
+
+			if tc.expectError {
+				require.Error(t, err)
+				// Verify params haven't changed
+				currentParams := app.RollappParamsKeeper.GetParams(ctx)
+				require.Equal(t, initialParams.DrsVersion, currentParams.DrsVersion)
+			} else {
+				require.NoError(t, err)
+				// Verify params have been updated
+				currentParams := app.RollappParamsKeeper.GetParams(ctx)
+				require.Equal(t, uint32(tc.drsVersion), currentParams.DrsVersion)
+				require.NotEqual(t, initialParams.DrsVersion, currentParams.DrsVersion)
+			}
+		})
+	}
+
+	t.Run("Multiple updates", func(t *testing.T) {
+		versions := []uint64{3, 5, 8}
+
+		for _, version := range versions {
+			msg := &types.MsgUpgradeDRS{
+				Authority:  authtypes.NewModuleAddress("gov").String(),
+				DrsVersion: version,
+			}
+
+			err := msg.ValidateBasic()
+			require.NoError(t, err)
+
+			handler := app.MsgServiceRouter().Handler(new(types.MsgUpgradeDRS))
+			_, err = handler(ctx, msg)
+			require.NoError(t, err)
+
+			// Verify version was updated
+			currentParams := app.RollappParamsKeeper.GetParams(ctx)
+			require.Equal(t, uint32(version), currentParams.DrsVersion)
+		}
+	})
+}

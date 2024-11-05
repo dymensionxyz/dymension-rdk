@@ -38,6 +38,7 @@ type Keeper struct {
 	authority  string // address of the authorized actor that can execute consensus msgs
 
 	accountKeeper      types.AccountKeeper
+	rollapParamsKeeper types.RollappParamsKeeper
 	accountBumpFilters []AccountBumpFilterFunc
 
 	whitelistedRelayers collections.Map[sdk.ValAddress, types.WhitelistedRelayers]
@@ -49,6 +50,7 @@ func NewKeeper(
 	ps paramtypes.Subspace,
 	authority string,
 	accountKeeper types.AccountKeeper,
+	rollapParamsKeeper types.RollappParamsKeeper,
 	accountBumpFilters []AccountBumpFilterFunc,
 ) *Keeper {
 	// set KeyTable if it has not already been set
@@ -64,6 +66,7 @@ func NewKeeper(
 		paramstore:         ps,
 		authority:          authority,
 		accountKeeper:      accountKeeper,
+		rollapParamsKeeper: rollapParamsKeeper,
 		accountBumpFilters: accountBumpFilters,
 		whitelistedRelayers: collections.NewMap(
 			sb,
