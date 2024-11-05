@@ -2,8 +2,9 @@ package keeper
 
 import (
 	"fmt"
-	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	"time"
+
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/codec"
