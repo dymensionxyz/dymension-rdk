@@ -175,3 +175,7 @@ func (m msgServer) bumpAccountSequence(ctx sdk.Context, acc authtypes.AccountI) 
 	m.accountKeeper.SetAccount(ctx, acc)
 	return nil
 }
+
+func (m msgServer) UpgradeDRS(ctx context.Context, drs *types.MsgUpgradeDRS) (*types.MsgUpgradeDRSResponse, error) {
+	panic("to be implemented")
+}
