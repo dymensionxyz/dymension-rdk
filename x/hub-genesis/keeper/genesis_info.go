@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
@@ -42,19 +43,20 @@ func (k Keeper) PopulateGenesisInfo(ctx sdk.Context, gAccounts []types.GenesisAc
 	// Query the initial supply
 	initialSupply := k.bk.GetSupply(ctx, nativeDenom).Amount
 
+	genesisInfo := k.GetGenesisInfo(ctx)
+
 	// Create the genesis info
-	genesisInfo := types.GenesisInfo{
-		// TODO: populate checksum value (https://github.com/dymensionxyz/dymension-rdk/issues/569)
-		GenesisChecksum: "checksum", // currently using a placeholder as we don't allow empty strings
-		Bech32Prefix:    bech32Prefix,
-		NativeDenom: &types.DenomMetadata{
-			Display:  metadata.Display,
-			Base:     metadata.Base,
-			Exponent: decimals,
-		},
-		InitialSupply:   initialSupply,
-		GenesisAccounts: gAccounts,
+	if genesisInfo.GenesisChecksum == "" {
+		return fmt.Errorf("genesis checksum is empty")
 	}
+	genesisInfo.Bech32Prefix = bech32Prefix
+	genesisInfo.NativeDenom = &types.DenomMetadata{
+		Display:  metadata.Display,
+		Base:     metadata.Base,
+		Exponent: decimals,
+	}
+	genesisInfo.InitialSupply = initialSupply
+	genesisInfo.GenesisAccounts = gAccounts
 
 	// Set the genesis info
 	k.SetGenesisInfo(ctx, genesisInfo)

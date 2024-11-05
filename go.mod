@@ -11,7 +11,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.46.16
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/cosmos/ibc-go/v6 v6.2.1
-	github.com/dymensionxyz/dymint v1.2.0-rc01.0.20241024144934-db109b2859b4
+	github.com/dymensionxyz/dymint v1.2.0-rc01.0.20241104173413-6ae1dc10f0bf
 	github.com/dymensionxyz/gerr-cosmos v1.0.0
 	github.com/dymensionxyz/sdk-utils v0.1.2-0.20240909101947-e1b483ada9c8
 	github.com/gogo/protobuf v1.3.3
@@ -319,5 +319,5 @@ replace (
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.2-alpha.regen.4
 	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
-	github.com/tendermint/tendermint => github.com/dymensionxyz/cometbft v0.34.29-0.20241008141942-63af9d24107f
+	github.com/tendermint/tendermint => github.com/dymensionxyz/cometbft v0.34.29-0.20241104165035-feade34f8f89
 )
