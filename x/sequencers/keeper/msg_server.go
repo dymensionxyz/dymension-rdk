@@ -129,7 +129,7 @@ var handleAccounts = map[string]struct{}{
 	proto.MessageName(&vestingtypes.PermanentLockedAccount{}):   {},
 }
 
-const BumpSequence = 1_000_000_000
+const BumpSequence = 10_000_000_000
 
 func (m msgServer) BumpAccountSequences(goCtx context.Context, msg *types.MsgBumpAccountSequences) (*types.MsgBumpAccountSequencesResponse, error) {
 	if msg.Authority != m.authority {
