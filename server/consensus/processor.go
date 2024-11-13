@@ -76,7 +76,7 @@ func ProcessConsensusMessages(
 		}
 
 		anyResp := &prototypes.Any{
-			TypeUrl: proto.MessageName(resp),
+			TypeUrl: "/" + proto.MessageName(resp),
 			Value:   theType,
 		}
 
