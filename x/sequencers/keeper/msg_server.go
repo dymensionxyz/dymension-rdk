@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	"github.com/gogo/protobuf/proto"
 
@@ -180,22 +180,35 @@ func (m msgServer) bumpAccountSequence(ctx sdk.Context, acc authtypes.AccountI) 
 func (m msgServer) UpgradeDRS(goCtx context.Context, drs *types.MsgUpgradeDRS) (*types.MsgUpgradeDRSResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	m.updateDrsVersion(ctx, drs.DrsVersion)
+	needUpgrade := m.updateDrsVersion(ctx, drs.DrsVersion)
 
-	err := m.upgradeKeeper.ScheduleUpgrade(ctx, upgradetypes.Plan{
-		Name:   fmt.Sprintf("upgrade-drs-%d", drs.DrsVersion),
-		Height: ctx.BlockHeight(),
-		Info:   fmt.Sprintf("upgrade to DRS version %d", drs.DrsVersion),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("schedule upgrade: %w", err)
+	if needUpgrade {
+		err := m.upgradeKeeper.ScheduleUpgrade(ctx, upgradetypes.Plan{
+			Name:   fmt.Sprintf("upgrade-drs-%d", drs.DrsVersion),
+			Height: ctx.BlockHeight(),
+			Info:   fmt.Sprintf("upgrade to DRS version %d", drs.DrsVersion),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("schedule upgrade: %w", err)
+		}
 	}
 
 	return &types.MsgUpgradeDRSResponse{}, nil
 }
 
-func (m msgServer) updateDrsVersion(ctx sdk.Context, drsVersion uint64) {
-	oldParams := m.rollapParamsKeeper.GetParams(ctx)
-	oldParams.DrsVersion = uint32(drsVersion)
-	m.rollapParamsKeeper.SetParams(ctx, oldParams)
+// updateDrsVersion updates the DRS (Dynamic Rollup System) protocol version if it differs from the current version.
+// The function compares the new version against the existing one and updates the parameters if they differ.
+//
+// Returns:
+//   - bool: true if the version was updated, false if no update was needed (versions were identical)
+func (m msgServer) updateDrsVersion(ctx sdk.Context, newVersion uint64) bool {
+	currentParams := m.rollapParamsKeeper.GetParams(ctx)
+	if currentParams.DrsVersion == uint32(newVersion) {
+		return false
+	}
+
+	currentParams.DrsVersion = uint32(newVersion)
+	m.rollapParamsKeeper.SetParams(ctx, currentParams)
+
+	return true
 }
