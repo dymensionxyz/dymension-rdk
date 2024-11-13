@@ -32,6 +32,7 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		ShowNodeIDCmd(),
 		commands.InspectStateCmd(),
 		commands.ShowP2PInfoCmd(),
+		commands.RollbackCmd(appCreator),
 		ResetAll(),
 		server.VersionCmd(),
 		ResetState(),
@@ -41,7 +42,6 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		dymintCmd,
 		server.ExportCmd(appExport, defaultNodeHome),
 		version.NewVersionCommand(),
-		server.NewRollbackCmd(appCreator, defaultNodeHome),
 		pruning.Cmd(appCreator, defaultNodeHome),
 	)
 }
