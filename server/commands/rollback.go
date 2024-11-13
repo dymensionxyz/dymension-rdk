@@ -72,24 +72,22 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 				return fmt.Errorf("app rollback to specific height: %w", err)
 			}
 
-			block, err := blockManager.Store.LoadBlock(uint64(heightInt))
-			if err != nil {
-				return fmt.Errorf("load block header: %w", err)
-			}
-			// rollback dymint state according to the app
-			if err := blockManager.UpdateStateFromApp(); err != nil {
-				return fmt.Errorf("updating dymint from app state: %w", err)
-			}
-			fmt.Printf("Pruning store from height %d to %d\n", block.Header.Height+1, blockManager.State.Height())
-
-			blockManager.Store.PruneBlocks(block.Header.Height+1, blockManager.State.Height())
-
 			state, err := blockManager.Store.LoadState()
 			if err != nil {
 				return fmt.Errorf("load state: %w", err)
 			}
-			if state.BaseHeight > block.Header.Height {
-				state.BaseHeight = block.Header.Height
+
+			fmt.Printf("Pruning store from height %d to %d\n", heightInt+1, blockManager.State.Height())
+
+			blockManager.Store.PruneBlocks(heightInt+1, blockManager.State.Height())
+
+			// rollback dymint state according to the app
+			if err := blockManager.UpdateStateFromApp(); err != nil {
+				return fmt.Errorf("updating dymint from app state: %w", err)
+			}
+
+			if state.BaseHeight > heightInt+1 {
+				state.BaseHeight = heightInt + 1
 				_, err := blockManager.Store.SaveState(state, nil)
 				if err != nil {
 					return fmt.Errorf("save state: %w", err)
