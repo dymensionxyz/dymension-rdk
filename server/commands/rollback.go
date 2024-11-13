@@ -79,8 +79,11 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 			fmt.Printf("Pruning store from height %d to %d\n", heightInt+1, blockManager.State.Height()+1)
 
-			blockManager.Store.PruneBlocks(uint64(heightInt+1), blockManager.State.Height()+1)
-
+			pruned, err := blockManager.Store.PruneBlocks(uint64(heightInt+1), blockManager.State.Height()+1)
+			if err != nil {
+				return fmt.Errorf("pruning: %w", err)
+			}
+			fmt.Println("Pruned blocks:%d", pruned)
 			// rollback dymint state according to the app
 			if err := blockManager.UpdateStateFromApp(); err != nil {
 				return fmt.Errorf("updating dymint from app state: %w", err)
