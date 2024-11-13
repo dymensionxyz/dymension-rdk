@@ -10,7 +10,7 @@ require (
 	github.com/cometbft/cometbft v0.37.2
 	github.com/cosmos/cosmos-sdk v0.46.16
 	github.com/cosmos/ibc-go/v6 v6.2.1
-	github.com/dymensionxyz/dymint v1.2.0-rc01.0.20241024144934-db109b2859b4
+	github.com/dymensionxyz/dymint  v1.2.0-rc05
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
@@ -306,4 +306,5 @@ replace (
 	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/tendermint/tendermint => github.com/cometbft/cometbft v0.34.28
+
 )
