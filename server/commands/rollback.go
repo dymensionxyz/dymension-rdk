@@ -67,19 +67,19 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 				return fmt.Errorf("start lite block manager: %w", err)
 			}
 
-			// rollback the app multistore
-			if err := app.CommitMultiStore().RollbackToVersion(heightInt); err != nil {
-				return fmt.Errorf("app rollback to specific height: %w", err)
-			}
-
 			state, err := blockManager.Store.LoadState()
 			if err != nil {
 				return fmt.Errorf("load state: %w", err)
 			}
 
-			fmt.Printf("Pruning store from height %d to %d\n", heightInt+1, blockManager.State.Height())
+			// rollback the app multistore
+			if err := app.CommitMultiStore().RollbackToVersion(heightInt); err != nil {
+				return fmt.Errorf("app rollback to specific height: %w", err)
+			}
 
-			blockManager.Store.PruneBlocks(uint64(heightInt+1), blockManager.State.Height())
+			fmt.Printf("Pruning store from height %d to %d\n", heightInt+1, blockManager.State.Height()+1)
+
+			blockManager.Store.PruneBlocks(uint64(heightInt+1), blockManager.State.Height()+1)
 
 			// rollback dymint state according to the app
 			if err := blockManager.UpdateStateFromApp(); err != nil {
