@@ -36,10 +36,23 @@ func InspectStateCmd() *cobra.Command {
 			fmt.Println("========================================")
 			fmt.Println("========================================")
 
-			heightInt, _ := strconv.ParseUint(args[0], 10, 64)
+			var height uint64
+			switch len(args) {
+			case 0:
+				// use latest height
+				height = state.Height()
+				fmt.Println("USING LATEST HEIGHT: ", height)
+			case 1:
+				// use height from args
+				height, err = strconv.ParseUint(args[0], 10, 64)
+				if err != nil {
+					return fmt.Errorf("failed to parse height: %w", err)
+				}
+				fmt.Println("USING PROVIDED HEIGHT: ", height)
+			}
 
-			fmt.Println("LOADING BLOCK AT HEIGHT: ", heightInt)
-			block, err := s.LoadBlock(heightInt)
+			fmt.Println("LOADING BLOCK AT HEIGHT: ", height)
+			block, err := s.LoadBlock(height)
 			if err != nil {
 				fmt.Printf("Failed to retrieve block from KVStore: %v\n", err)
 				return err
@@ -48,8 +61,8 @@ func InspectStateCmd() *cobra.Command {
 			fmt.Println("========================================")
 			fmt.Println("========================================")
 
-			fmt.Println("LOADING BLOCK RESPONSES AT HEIGHT: ", heightInt)
-			resp, err := s.LoadBlockResponses(heightInt)
+			fmt.Println("LOADING BLOCK RESPONSES AT HEIGHT: ", height)
+			resp, err := s.LoadBlockResponses(height)
 			if err != nil {
 				fmt.Printf("Failed to retrieve block responses from KVStore: %v\n", err)
 				return err
