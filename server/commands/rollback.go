@@ -7,6 +7,7 @@ import (
 	"github.com/dymensionxyz/dymint/block"
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	dymintconv "github.com/dymensionxyz/dymint/conv"
+	daregistry "github.com/dymensionxyz/dymint/da/registry"
 
 	"github.com/dymensionxyz/dymint/store"
 	"github.com/tendermint/tendermint/config"
@@ -140,6 +141,10 @@ func liteBlockManager(cfg *config.Config, dymintConf *dymintconf.NodeConfig, cli
 	mainKV := store.NewPrefixKV(baseKV, []byte{0})
 	s := store.New(mainKV)
 
+	dalc := daregistry.GetClient("mock")
+	if dalc == nil {
+		return nil, fmt.Errorf("get data availability client")
+	}
 	blockManager, err := block.NewManager(
 		signingKey,
 		dymintConf.BlockManagerConfig,
@@ -147,7 +152,7 @@ func liteBlockManager(cfg *config.Config, dymintConf *dymintconf.NodeConfig, cli
 		s,
 		nil,
 		proxyApp,
-		nil,
+		dalc,
 		nil,
 		nil,
 		nil,
