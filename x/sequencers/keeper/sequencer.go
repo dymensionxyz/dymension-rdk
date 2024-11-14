@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"errors"
+
 	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -103,13 +105,9 @@ func (k Keeper) SetWhitelistedRelayers(ctx sdk.Context, sequencer stakingtypes.V
 
 // GetWhitelistedRelayers gets the list of whitelisted relayer addresses
 func (k Keeper) GetWhitelistedRelayers(ctx sdk.Context, operator sdk.ValAddress) (types.WhitelistedRelayers, error) {
-	return k.whitelistedRelayers.Get(ctx, operator)
-}
-
-func (k Keeper) GetWhitelistedRelayersByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (types.WhitelistedRelayers, error) {
-	seq, ok := k.GetSequencerByConsAddr(ctx, consAddr)
-	if !ok {
-		return types.WhitelistedRelayers{}, collections.ErrNotFound
+	relayers, err := k.whitelistedRelayers.Get(ctx, operator)
+	if err != nil && errors.Is(err, collections.ErrNotFound) {
+		return types.WhitelistedRelayers{}, types.ErrWhitelistedRelayersNotFound
 	}
-	return k.whitelistedRelayers.Get(ctx, seq.GetOperator())
+	return relayers, err
 }

@@ -7,6 +7,7 @@ import (
 
 	distrkeeper "github.com/dymensionxyz/dymension-rdk/x/dist/keeper"
 	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 type anteHandler interface {
@@ -53,9 +54,14 @@ func (n BypassIBCFeeDecorator) isWhitelistedRelayer(ctx sdk.Context, msgs []sdk.
 	}
 
 	consAddr := n.dk.GetPreviousProposerConsAddr(ctx)
-	wlRelayers, err := n.sk.GetWhitelistedRelayersByConsAddr(ctx, consAddr)
+	seq, ok := n.sk.GetSequencerByConsAddr(ctx, consAddr)
+	if !ok {
+		return false, fmt.Errorf("get sequencer by consensus addr: %s: %w", consAddr.String(), types.ErrSequencerNotFound)
+	}
+	operatorAddr := seq.GetOperator()
+	wlRelayers, err := n.sk.GetWhitelistedRelayers(ctx, operatorAddr)
 	if err != nil {
-		return false, fmt.Errorf("get whitelisted relayers by consensus addr: %w", err)
+		return false, fmt.Errorf("get whitelisted relayers: sequencer address %s: %w", consAddr.String(), err)
 	}
 
 	wlRelayersMap := make(map[string]struct{}, len(msgs))
