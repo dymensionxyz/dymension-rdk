@@ -58,6 +58,17 @@ func TestGenesisState_ValidateBasic(t *testing.T) {
 			wantErr: true,
 			errMsg:  "invalid amount",
 		},
+		{
+			name: "invalid state - duplicate accounts",
+			genesisState: GenesisState{
+				GenesisAccounts: []GenesisAccount{
+					{Address: "dym17g9cn4ss0h0dz5qhg2cg4zfnee6z3ftg3q6v58", Amount: sdk.NewInt(100)},
+					{Address: "dym17g9cn4ss0h0dz5qhg2cg4zfnee6z3ftg3q6v58", Amount: sdk.NewInt(100)},
+				},
+			},
+			wantErr: true,
+			errMsg:  "duplicate genesis account",
+		},
 	}
 
 	for _, tt := range tests {
