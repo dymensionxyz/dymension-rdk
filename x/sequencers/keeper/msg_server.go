@@ -2,8 +2,8 @@ package keeper
 
 import (
 	"context"
-	"errors"
 	"fmt"
+
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	errorsmod "cosmossdk.io/errors"
@@ -138,34 +138,28 @@ func (m msgServer) BumpAccountSequences(goCtx context.Context, msg *types.MsgBum
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	var allErrors error
+	var err error
 	m.accountKeeper.IterateAccounts(ctx, func(account authtypes.AccountI) bool {
-		// handle well known accounts
 		accType := proto.MessageName(account)
-		_, toHandle := handleAccounts[accType]
-		if toHandle {
-			err := m.bumpAccountSequence(ctx, account)
-			allErrors = errors.Join(allErrors, err)
-		} else {
-			// check if it can be handled by something custom
-			for _, f := range m.accountBumpFilters {
-				toBump, err := f(accType, account)
-				if err != nil {
-					allErrors = errors.Join(allErrors, fmt.Errorf("filter account: %w", err))
-					return false
-				}
-				if toBump {
-					err := m.bumpAccountSequence(ctx, account)
-					allErrors = errors.Join(allErrors, err)
-					break
-				}
+		_, ok := handleAccounts[accType]
+		i := 0
+		for !ok && i < len(m.accountBumpFilters) {
+			ok, err = m.accountBumpFilters[i](accType, account)
+			if err != nil {
+				return true
+			}
+			i++
+		}
+		if ok {
+			err = m.bumpAccountSequence(ctx, account)
+			if err != nil {
+				return true
 			}
 		}
 		return false
 	})
 
-	// we could decide to stop or continue
-	return &types.MsgBumpAccountSequencesResponse{}, allErrors
+	return &types.MsgBumpAccountSequencesResponse{}, err
 }
 
 func (m msgServer) bumpAccountSequence(ctx sdk.Context, acc authtypes.AccountI) error {
