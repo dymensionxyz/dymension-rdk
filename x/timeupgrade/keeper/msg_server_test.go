@@ -1,16 +1,18 @@
 package keeper_test
 
 import (
+	"testing"
+	"time"
+
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	types2 "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+	types3 "github.com/gogo/protobuf/types"
+	"github.com/stretchr/testify/require"
+
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
-	types3 "github.com/gogo/protobuf/types"
-	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {

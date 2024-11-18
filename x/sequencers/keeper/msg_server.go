@@ -4,10 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
+	"github.com/gogo/protobuf/proto"
 
 	"github.com/dymensionxyz/dymension-rdk/utils/uevent"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
@@ -112,4 +117,92 @@ func (m msgServer) UpsertSequencer(goCtx context.Context, msg *types.ConsensusMs
 	}
 
 	return &types.ConsensusMsgUpsertSequencerResponse{}, nil
+}
+
+// defines the list of accounts we want to bump the sequence
+var handleAccounts = map[string]struct{}{
+	proto.MessageName(&authtypes.BaseAccount{}):                 {},
+	proto.MessageName(&vestingtypes.BaseVestingAccount{}):       {},
+	proto.MessageName(&vestingtypes.ContinuousVestingAccount{}): {},
+	proto.MessageName(&vestingtypes.DelayedVestingAccount{}):    {},
+	proto.MessageName(&vestingtypes.PeriodicVestingAccount{}):   {},
+	proto.MessageName(&vestingtypes.PermanentLockedAccount{}):   {},
+}
+
+const BumpSequence = 10_000_000_000
+
+func (m msgServer) BumpAccountSequences(goCtx context.Context, msg *types.MsgBumpAccountSequences) (*types.MsgBumpAccountSequencesResponse, error) {
+	if msg.Authority != m.authority {
+		return nil, sdkerrors.ErrorInvalidSigner.Wrapf("only an authorized actor can bump account sequences")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	var err error
+	m.accountKeeper.IterateAccounts(ctx, func(account authtypes.AccountI) bool {
+		accType := proto.MessageName(account)
+		_, ok := handleAccounts[accType]
+		i := 0
+		for !ok && i < len(m.accountBumpFilters) {
+			ok, err = m.accountBumpFilters[i](accType, account)
+			if err != nil {
+				return true
+			}
+			i++
+		}
+		if ok {
+			err = m.bumpAccountSequence(ctx, account)
+			if err != nil {
+				return true
+			}
+		}
+		return false
+	})
+
+	return &types.MsgBumpAccountSequencesResponse{}, err
+}
+
+func (m msgServer) bumpAccountSequence(ctx sdk.Context, acc authtypes.AccountI) error {
+	err := acc.SetSequence(acc.GetSequence() + BumpSequence)
+	if err != nil {
+		return fmt.Errorf("set account sequence: %w", err)
+	}
+	m.accountKeeper.SetAccount(ctx, acc)
+	return nil
+}
+
+func (m msgServer) UpgradeDRS(goCtx context.Context, drs *types.MsgUpgradeDRS) (*types.MsgUpgradeDRSResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	needUpgrade := m.updateDrsVersion(ctx, drs.DrsVersion)
+
+	if needUpgrade {
+		err := m.upgradeKeeper.ScheduleUpgrade(ctx, upgradetypes.Plan{
+			Name:   fmt.Sprintf("upgrade-drs-%d", drs.DrsVersion),
+			Height: ctx.BlockHeight(),
+			Info:   fmt.Sprintf("upgrade to DRS version %d", drs.DrsVersion),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("schedule upgrade: %w", err)
+		}
+	}
+
+	return &types.MsgUpgradeDRSResponse{}, nil
+}
+
+// updateDrsVersion updates the DRS (Dynamic Rollup System) protocol version if it differs from the current version.
+// The function compares the new version against the existing one and updates the parameters if they differ.
+//
+// Returns:
+//   - bool: true if the version was updated, false if no update was needed (versions were identical)
+func (m msgServer) updateDrsVersion(ctx sdk.Context, newVersion uint64) bool {
+	currentParams := m.rollapParamsKeeper.GetParams(ctx)
+	if currentParams.DrsVersion == uint32(newVersion) {
+		return false
+	}
+
+	currentParams.DrsVersion = uint32(newVersion)
+	m.rollapParamsKeeper.SetParams(ctx, currentParams)
+
+	return true
 }

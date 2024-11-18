@@ -418,6 +418,10 @@ func NewRollapp(
 		keys[seqtypes.StoreKey],
 		app.GetSubspace(seqtypes.ModuleName),
 		authtypes.NewModuleAddress(seqtypes.ModuleName).String(),
+		app.AccountKeeper,
+		app.RollappParamsKeeper,
+		app.UpgradeKeeper,
+		nil,
 	)
 
 	app.IBCKeeper = ibckeeper.NewKeeper(

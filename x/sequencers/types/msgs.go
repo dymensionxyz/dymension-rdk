@@ -18,6 +18,8 @@ var (
 	_ sdk.Msg                            = (*MsgUpdateWhitelistedRelayers)(nil)
 	_ sdk.Msg                            = (*ConsensusMsgUpsertSequencer)(nil)
 	_ codectypes.UnpackInterfacesMessage = (*ConsensusMsgUpsertSequencer)(nil)
+	_ sdk.Msg                            = (*MsgBumpAccountSequences)(nil)
+	_ sdk.Msg                            = (*MsgUpgradeDRS)(nil)
 )
 
 func (m *MsgUpdateRewardAddress) ValidateBasic() error {
@@ -166,4 +168,28 @@ func (m *ConsensusMsgUpsertSequencer) MustRewardAddr() sdk.AccAddress {
 		panic(err)
 	}
 	return rewardAddr
+}
+
+func (m *MsgBumpAccountSequences) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{sdk.MustAccAddressFromBech32(m.Authority)}
+}
+
+func (m *MsgBumpAccountSequences) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Authority)
+	if err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get authority addr from bech32")
+	}
+	return nil
+}
+
+func (m *MsgUpgradeDRS) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(m.Authority)
+	if err != nil {
+		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get authority addr from bech32")
+	}
+	return nil
+}
+
+func (m *MsgUpgradeDRS) GetSigners() []sdk.AccAddress {
+	return []sdk.AccAddress{sdk.MustAccAddressFromBech32(m.Authority)}
 }

@@ -329,6 +329,178 @@ func (m *ConsensusMsgUpsertSequencerResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ConsensusMsgUpsertSequencerResponse proto.InternalMessageInfo
 
+type MsgBumpAccountSequences struct {
+	// authority defines the address of the authority that is allowed to bump the account sequences.
+	// this is gov but it can be triggered by a consensus message.
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+}
+
+func (m *MsgBumpAccountSequences) Reset()         { *m = MsgBumpAccountSequences{} }
+func (m *MsgBumpAccountSequences) String() string { return proto.CompactTextString(m) }
+func (*MsgBumpAccountSequences) ProtoMessage()    {}
+func (*MsgBumpAccountSequences) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aee37376ffafeb0a, []int{6}
+}
+func (m *MsgBumpAccountSequences) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgBumpAccountSequences) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgBumpAccountSequences.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgBumpAccountSequences) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBumpAccountSequences.Merge(m, src)
+}
+func (m *MsgBumpAccountSequences) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgBumpAccountSequences) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBumpAccountSequences.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgBumpAccountSequences proto.InternalMessageInfo
+
+func (m *MsgBumpAccountSequences) GetAuthority() string {
+	if m != nil {
+		return m.Authority
+	}
+	return ""
+}
+
+type MsgBumpAccountSequencesResponse struct {
+}
+
+func (m *MsgBumpAccountSequencesResponse) Reset()         { *m = MsgBumpAccountSequencesResponse{} }
+func (m *MsgBumpAccountSequencesResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgBumpAccountSequencesResponse) ProtoMessage()    {}
+func (*MsgBumpAccountSequencesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aee37376ffafeb0a, []int{7}
+}
+func (m *MsgBumpAccountSequencesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgBumpAccountSequencesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgBumpAccountSequencesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgBumpAccountSequencesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgBumpAccountSequencesResponse.Merge(m, src)
+}
+func (m *MsgBumpAccountSequencesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgBumpAccountSequencesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgBumpAccountSequencesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgBumpAccountSequencesResponse proto.InternalMessageInfo
+
+type MsgUpgradeDRS struct {
+	// authority defines the address of the authority that is allowed to bump the account sequences.
+	// this is gov but it can be triggered by a consensus message.
+	Authority  string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	DrsVersion uint64 `protobuf:"varint,2,opt,name=drs_version,json=drsVersion,proto3" json:"drs_version,omitempty"`
+}
+
+func (m *MsgUpgradeDRS) Reset()         { *m = MsgUpgradeDRS{} }
+func (m *MsgUpgradeDRS) String() string { return proto.CompactTextString(m) }
+func (*MsgUpgradeDRS) ProtoMessage()    {}
+func (*MsgUpgradeDRS) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aee37376ffafeb0a, []int{8}
+}
+func (m *MsgUpgradeDRS) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUpgradeDRS) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpgradeDRS.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUpgradeDRS) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpgradeDRS.Merge(m, src)
+}
+func (m *MsgUpgradeDRS) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUpgradeDRS) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpgradeDRS.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpgradeDRS proto.InternalMessageInfo
+
+func (m *MsgUpgradeDRS) GetAuthority() string {
+	if m != nil {
+		return m.Authority
+	}
+	return ""
+}
+
+func (m *MsgUpgradeDRS) GetDrsVersion() uint64 {
+	if m != nil {
+		return m.DrsVersion
+	}
+	return 0
+}
+
+type MsgUpgradeDRSResponse struct {
+}
+
+func (m *MsgUpgradeDRSResponse) Reset()         { *m = MsgUpgradeDRSResponse{} }
+func (m *MsgUpgradeDRSResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgUpgradeDRSResponse) ProtoMessage()    {}
+func (*MsgUpgradeDRSResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_aee37376ffafeb0a, []int{9}
+}
+func (m *MsgUpgradeDRSResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUpgradeDRSResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpgradeDRSResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUpgradeDRSResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpgradeDRSResponse.Merge(m, src)
+}
+func (m *MsgUpgradeDRSResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUpgradeDRSResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpgradeDRSResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpgradeDRSResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgUpdateRewardAddress)(nil), "rollapp.sequencers.types.MsgUpdateRewardAddress")
 	proto.RegisterType((*MsgUpdateRewardAddressResponse)(nil), "rollapp.sequencers.types.MsgUpdateRewardAddressResponse")
@@ -336,43 +508,54 @@ func init() {
 	proto.RegisterType((*MsgUpdateWhitelistedRelayersResponse)(nil), "rollapp.sequencers.types.MsgUpdateWhitelistedRelayersResponse")
 	proto.RegisterType((*ConsensusMsgUpsertSequencer)(nil), "rollapp.sequencers.types.ConsensusMsgUpsertSequencer")
 	proto.RegisterType((*ConsensusMsgUpsertSequencerResponse)(nil), "rollapp.sequencers.types.ConsensusMsgUpsertSequencerResponse")
+	proto.RegisterType((*MsgBumpAccountSequences)(nil), "rollapp.sequencers.types.MsgBumpAccountSequences")
+	proto.RegisterType((*MsgBumpAccountSequencesResponse)(nil), "rollapp.sequencers.types.MsgBumpAccountSequencesResponse")
+	proto.RegisterType((*MsgUpgradeDRS)(nil), "rollapp.sequencers.types.MsgUpgradeDRS")
+	proto.RegisterType((*MsgUpgradeDRSResponse)(nil), "rollapp.sequencers.types.MsgUpgradeDRSResponse")
 }
 
 func init() { proto.RegisterFile("sequencers/tx.proto", fileDescriptor_aee37376ffafeb0a) }
 
 var fileDescriptor_aee37376ffafeb0a = []byte{
-	// 481 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x94, 0xcf, 0x8b, 0xd3, 0x50,
-	0x10, 0xc7, 0xfb, 0x5a, 0x5d, 0xd6, 0xa9, 0x22, 0x64, 0x65, 0xed, 0x46, 0x89, 0xa5, 0xfe, 0x60,
-	0x11, 0x7c, 0xd1, 0x15, 0x97, 0x45, 0x50, 0x58, 0x3d, 0xca, 0x82, 0x44, 0x44, 0xf0, 0x52, 0x92,
-	0xbe, 0x31, 0x1b, 0x36, 0x7d, 0x2f, 0xbe, 0x79, 0xd1, 0xc6, 0x9b, 0x5e, 0xbc, 0x0a, 0xfe, 0x15,
-	0xde, 0xfc, 0x33, 0x3c, 0x2e, 0x78, 0xf1, 0x28, 0xed, 0xc1, 0x7f, 0x43, 0x92, 0x36, 0x59, 0x37,
-	0xb4, 0xc5, 0xdd, 0x53, 0x3b, 0xcc, 0x7c, 0xdf, 0x7c, 0x66, 0xe6, 0x4b, 0x60, 0x8d, 0xf0, 0x6d,
-	0x8a, 0x72, 0x80, 0x9a, 0x5c, 0x33, 0xe2, 0x89, 0x56, 0x46, 0x59, 0x1d, 0xad, 0xe2, 0xd8, 0x4f,
-	0x12, 0x7e, 0x94, 0xe4, 0x26, 0x4b, 0x90, 0xec, 0xcb, 0x03, 0x45, 0x43, 0x45, 0xee, 0x90, 0x42,
-	0xf7, 0xdd, 0xbd, 0xfc, 0x67, 0x2a, 0xb1, 0x37, 0x42, 0xa5, 0xc2, 0x18, 0xdd, 0x22, 0x0a, 0xd2,
-	0x37, 0xae, 0x2f, 0xb3, 0x69, 0xaa, 0x27, 0x60, 0x7d, 0x8f, 0xc2, 0x97, 0x89, 0xf0, 0x0d, 0x7a,
-	0xf8, 0xde, 0xd7, 0x62, 0x57, 0x08, 0x8d, 0x44, 0x96, 0x0d, 0xab, 0x2a, 0x41, 0xed, 0x1b, 0xa5,
-	0x3b, 0xac, 0xcb, 0x36, 0xcf, 0x79, 0x55, 0x6c, 0x5d, 0x83, 0xb6, 0x2e, 0x8a, 0xfb, 0xbe, 0x10,
-	0xba, 0xd3, 0x2c, 0xd2, 0xa0, 0x2b, 0xfd, 0xc3, 0x0b, 0x9f, 0xfe, 0x7c, 0xbf, 0x5d, 0xd5, 0xf7,
-	0xba, 0xe0, 0xcc, 0xef, 0xe2, 0x21, 0x25, 0x4a, 0x12, 0xf6, 0x10, 0xae, 0x56, 0x15, 0xaf, 0xf6,
-	0x23, 0x83, 0x71, 0x44, 0x06, 0x85, 0x87, 0xb1, 0x9f, 0xa1, 0x5e, 0x4e, 0x63, 0xc3, 0xaa, 0x9e,
-	0xd5, 0x75, 0x9a, 0xdd, 0x56, 0x9e, 0x2b, 0xe3, 0x3a, 0xc8, 0x2d, 0xb8, 0xb1, 0xac, 0x4d, 0x85,
-	0xf3, 0x93, 0xc1, 0x95, 0xa7, 0xf9, 0x3f, 0x49, 0x29, 0x15, 0x0a, 0x42, 0x6d, 0x5e, 0x94, 0x1b,
-	0xb7, 0xd6, 0x61, 0x85, 0xa2, 0x50, 0x62, 0x09, 0x33, 0x8b, 0x8e, 0x61, 0x36, 0x6b, 0x98, 0xdb,
-	0x70, 0x7e, 0xa0, 0x24, 0xf5, 0x93, 0x34, 0xe8, 0x1f, 0x60, 0xd6, 0x69, 0x75, 0xd9, 0x66, 0x7b,
-	0xeb, 0x12, 0x9f, 0x1e, 0x87, 0x97, 0xc7, 0xe1, 0xbb, 0x32, 0xf3, 0x20, 0xaf, 0x7c, 0x9e, 0x06,
-	0xcf, 0x30, 0xab, 0x2f, 0xfb, 0x4c, 0x7d, 0xd9, 0xc7, 0xe6, 0x3f, 0x5b, 0x9b, 0xbf, 0x9d, 0xcf,
-	0x3f, 0xa3, 0xeb, 0xdd, 0x84, 0xeb, 0x4b, 0x86, 0x2a, 0x87, 0xdf, 0xfa, 0xd6, 0x82, 0xd6, 0x1e,
-	0x85, 0xd6, 0x47, 0x06, 0x6b, 0xf3, 0x9c, 0x71, 0x97, 0x2f, 0xb2, 0x20, 0x9f, 0x7f, 0x65, 0x7b,
-	0xe7, 0xa4, 0x8a, 0x92, 0xc5, 0xfa, 0xca, 0x60, 0x63, 0xb1, 0x2b, 0xb6, 0xff, 0xe3, 0xdd, 0x39,
-	0x3a, 0xfb, 0xf1, 0xe9, 0x74, 0x15, 0xd5, 0x67, 0x06, 0x17, 0xeb, 0x96, 0x78, 0xb0, 0xf8, 0xcd,
-	0x25, 0x4b, 0xb7, 0x1f, 0x9d, 0x4a, 0x56, 0x92, 0x3c, 0xf1, 0x7e, 0x8c, 0x1d, 0x76, 0x38, 0x76,
-	0xd8, 0xef, 0xb1, 0xc3, 0xbe, 0x4c, 0x9c, 0xc6, 0xe1, 0xc4, 0x69, 0xfc, 0x9a, 0x38, 0x8d, 0xd7,
-	0x3b, 0x61, 0x64, 0xf6, 0xd3, 0x80, 0x0f, 0xd4, 0xd0, 0x15, 0xd9, 0x10, 0x25, 0x45, 0x4a, 0x8e,
-	0xb2, 0x0f, 0x47, 0xc1, 0x1d, 0x2d, 0x0e, 0xdc, 0x91, 0xfb, 0xef, 0x47, 0x26, 0xef, 0x1b, 0xac,
-	0x14, 0x56, 0xbc, 0xff, 0x37, 0x00, 0x00, 0xff, 0xff, 0xbf, 0x23, 0xf0, 0x76, 0x7f, 0x04, 0x00,
-	0x00,
+	// 602 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x55, 0xdf, 0x6b, 0xd3, 0x50,
+	0x14, 0x5e, 0xf6, 0x8b, 0xed, 0xcc, 0x29, 0x64, 0x73, 0xeb, 0xe2, 0xc8, 0x6a, 0xfd, 0x35, 0x04,
+	0x13, 0x37, 0x71, 0xcc, 0x81, 0xc2, 0xa6, 0xe0, 0x83, 0x14, 0x24, 0x43, 0x05, 0x1f, 0x2c, 0x69,
+	0xee, 0x59, 0x1a, 0xd6, 0xe6, 0xc6, 0x7b, 0x92, 0xd9, 0xf8, 0xa6, 0x08, 0xbe, 0x0a, 0xbe, 0xf8,
+	0x67, 0xf8, 0x67, 0xf8, 0x38, 0xf0, 0xc5, 0x47, 0x69, 0x1f, 0xfc, 0x37, 0x24, 0x69, 0x93, 0xae,
+	0x31, 0x8d, 0xdb, 0x9e, 0xda, 0x93, 0xfb, 0x7d, 0xe7, 0xfb, 0xce, 0xb9, 0x5f, 0x1b, 0x58, 0x20,
+	0x7c, 0x1b, 0xa0, 0x6b, 0xa1, 0x20, 0xdd, 0x6f, 0x6b, 0x9e, 0xe0, 0x3e, 0x97, 0x4b, 0x82, 0x37,
+	0x9b, 0xa6, 0xe7, 0x69, 0x83, 0x43, 0xcd, 0x0f, 0x3d, 0x24, 0x65, 0xd9, 0xe2, 0xd4, 0xe2, 0xa4,
+	0xb7, 0xc8, 0xd6, 0x8f, 0x36, 0xa2, 0x8f, 0x1e, 0x45, 0x59, 0xb1, 0x39, 0xb7, 0x9b, 0xa8, 0xc7,
+	0x55, 0x3d, 0x38, 0xd0, 0x4d, 0x37, 0xec, 0x1d, 0x55, 0x18, 0x2c, 0x55, 0xc9, 0x7e, 0xe1, 0x31,
+	0xd3, 0x47, 0x03, 0xdf, 0x99, 0x82, 0xed, 0x32, 0x26, 0x90, 0x48, 0x56, 0x60, 0x86, 0x7b, 0x28,
+	0x4c, 0x9f, 0x8b, 0x92, 0x54, 0x96, 0xd6, 0x67, 0x8d, 0xb4, 0x96, 0xd7, 0x60, 0x4e, 0xc4, 0xe0,
+	0x9a, 0xc9, 0x98, 0x28, 0x8d, 0xc7, 0xc7, 0x20, 0x52, 0xfe, 0xce, 0xfc, 0xc7, 0x3f, 0xdf, 0x6f,
+	0xa7, 0xf8, 0x4a, 0x19, 0xd4, 0x7c, 0x15, 0x03, 0xc9, 0xe3, 0x2e, 0x61, 0x05, 0x61, 0x35, 0x45,
+	0xbc, 0x6a, 0x38, 0x3e, 0x36, 0x1d, 0xf2, 0x91, 0x19, 0xd8, 0x34, 0x43, 0x14, 0xc5, 0x6e, 0x14,
+	0x98, 0x11, 0x7d, 0x5c, 0x69, 0xbc, 0x3c, 0x11, 0x9d, 0x25, 0x75, 0xd6, 0xc8, 0x4d, 0xb8, 0x5e,
+	0x24, 0x93, 0xda, 0xf9, 0x29, 0xc1, 0x95, 0xc7, 0xd1, 0x37, 0x97, 0x02, 0x8a, 0x19, 0x84, 0xc2,
+	0xdf, 0x4f, 0x36, 0x2e, 0x2f, 0xc1, 0x34, 0x39, 0xb6, 0x8b, 0x89, 0x99, 0x7e, 0x35, 0x64, 0x73,
+	0x3c, 0x63, 0x73, 0x0b, 0x2e, 0x58, 0xdc, 0xa5, 0x9a, 0x17, 0xd4, 0x6b, 0x87, 0x18, 0x96, 0x26,
+	0xca, 0xd2, 0xfa, 0xdc, 0xe6, 0xa2, 0xd6, 0xbb, 0x1c, 0x2d, 0xb9, 0x1c, 0x6d, 0xd7, 0x0d, 0x0d,
+	0x88, 0x90, 0xcf, 0x83, 0xfa, 0x33, 0x0c, 0xb3, 0xcb, 0x9e, 0xcc, 0x2e, 0x7b, 0x68, 0xfe, 0xa9,
+	0xcc, 0xfc, 0x73, 0xd1, 0xfc, 0x7d, 0x77, 0x95, 0x1b, 0x70, 0xad, 0x60, 0xa8, 0x74, 0xf8, 0xa7,
+	0xb0, 0x5c, 0x25, 0x7b, 0x2f, 0x68, 0x79, 0xbb, 0x96, 0xc5, 0x03, 0x37, 0x85, 0x90, 0xbc, 0x0a,
+	0xb3, 0x66, 0xe0, 0x37, 0xb8, 0x70, 0xfc, 0xb0, 0x3f, 0xfa, 0xe0, 0xc1, 0xce, 0xc5, 0x48, 0x6c,
+	0x50, 0x57, 0xae, 0xc2, 0xda, 0x88, 0x46, 0xa9, 0xd6, 0x1b, 0x98, 0x8f, 0x9d, 0xd8, 0xc2, 0x64,
+	0xf8, 0xc4, 0xd8, 0x2f, 0x56, 0x88, 0x76, 0xc1, 0x04, 0xd5, 0x8e, 0x50, 0x90, 0xc3, 0xdd, 0x78,
+	0xc5, 0x93, 0x06, 0x30, 0x41, 0x2f, 0x7b, 0x4f, 0xfe, 0xb1, 0xb0, 0x0c, 0x97, 0x87, 0xfa, 0x27,
+	0xc2, 0x9b, 0xdf, 0xa6, 0x60, 0xa2, 0x4a, 0xb6, 0xfc, 0x41, 0x82, 0x85, 0xbc, 0xf8, 0xdf, 0xd5,
+	0x46, 0xfd, 0xce, 0xb4, 0xfc, 0x28, 0x2b, 0xdb, 0x67, 0x65, 0x24, 0x5e, 0xe4, 0xaf, 0x12, 0xac,
+	0x8c, 0x8e, 0xfe, 0xd6, 0x29, 0xfa, 0xe6, 0xf0, 0x94, 0x47, 0xe7, 0xe3, 0xa5, 0xae, 0x3e, 0x4b,
+	0x70, 0x29, 0x9b, 0xfb, 0xfb, 0xa3, 0x7b, 0x16, 0x24, 0x4b, 0x79, 0x78, 0x2e, 0x5a, 0xea, 0xe4,
+	0x93, 0x04, 0x8b, 0xb9, 0x71, 0xdc, 0x28, 0x1c, 0x31, 0x8f, 0xa2, 0x3c, 0x38, 0x33, 0x25, 0xb5,
+	0x71, 0x00, 0x70, 0x22, 0xa8, 0xb7, 0xfe, 0xb3, 0xde, 0x04, 0xa8, 0xe8, 0xa7, 0x04, 0x26, 0x3a,
+	0x7b, 0xc6, 0x8f, 0x8e, 0x2a, 0x1d, 0x77, 0x54, 0xe9, 0x77, 0x47, 0x95, 0xbe, 0x74, 0xd5, 0xb1,
+	0xe3, 0xae, 0x3a, 0xf6, 0xab, 0xab, 0x8e, 0xbd, 0xde, 0xb6, 0x1d, 0xbf, 0x11, 0xd4, 0x35, 0x8b,
+	0xb7, 0x74, 0x16, 0xb6, 0xd0, 0x8d, 0x32, 0xdf, 0x0e, 0xdf, 0x0f, 0x8a, 0x3b, 0x82, 0x1d, 0xea,
+	0x6d, 0xfd, 0xe4, 0x8b, 0x23, 0x52, 0xaa, 0x4f, 0xc7, 0x7f, 0x2f, 0xf7, 0xfe, 0x06, 0x00, 0x00,
+	0xff, 0xff, 0x4a, 0x17, 0x94, 0xf5, 0x53, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -392,6 +575,8 @@ type MsgClient interface {
 	UpdateWhitelistedRelayers(ctx context.Context, in *MsgUpdateWhitelistedRelayers, opts ...grpc.CallOption) (*MsgUpdateWhitelistedRelayersResponse, error)
 	// Consensus Messages
 	UpsertSequencer(ctx context.Context, in *ConsensusMsgUpsertSequencer, opts ...grpc.CallOption) (*ConsensusMsgUpsertSequencerResponse, error)
+	BumpAccountSequences(ctx context.Context, in *MsgBumpAccountSequences, opts ...grpc.CallOption) (*MsgBumpAccountSequencesResponse, error)
+	UpgradeDRS(ctx context.Context, in *MsgUpgradeDRS, opts ...grpc.CallOption) (*MsgUpgradeDRSResponse, error)
 }
 
 type msgClient struct {
@@ -429,6 +614,24 @@ func (c *msgClient) UpsertSequencer(ctx context.Context, in *ConsensusMsgUpsertS
 	return out, nil
 }
 
+func (c *msgClient) BumpAccountSequences(ctx context.Context, in *MsgBumpAccountSequences, opts ...grpc.CallOption) (*MsgBumpAccountSequencesResponse, error) {
+	out := new(MsgBumpAccountSequencesResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.sequencers.types.Msg/BumpAccountSequences", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) UpgradeDRS(ctx context.Context, in *MsgUpgradeDRS, opts ...grpc.CallOption) (*MsgUpgradeDRSResponse, error) {
+	out := new(MsgUpgradeDRSResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.sequencers.types.Msg/UpgradeDRS", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	// Messages
@@ -436,6 +639,8 @@ type MsgServer interface {
 	UpdateWhitelistedRelayers(context.Context, *MsgUpdateWhitelistedRelayers) (*MsgUpdateWhitelistedRelayersResponse, error)
 	// Consensus Messages
 	UpsertSequencer(context.Context, *ConsensusMsgUpsertSequencer) (*ConsensusMsgUpsertSequencerResponse, error)
+	BumpAccountSequences(context.Context, *MsgBumpAccountSequences) (*MsgBumpAccountSequencesResponse, error)
+	UpgradeDRS(context.Context, *MsgUpgradeDRS) (*MsgUpgradeDRSResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -450,6 +655,12 @@ func (*UnimplementedMsgServer) UpdateWhitelistedRelayers(ctx context.Context, re
 }
 func (*UnimplementedMsgServer) UpsertSequencer(ctx context.Context, req *ConsensusMsgUpsertSequencer) (*ConsensusMsgUpsertSequencerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpsertSequencer not implemented")
+}
+func (*UnimplementedMsgServer) BumpAccountSequences(ctx context.Context, req *MsgBumpAccountSequences) (*MsgBumpAccountSequencesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BumpAccountSequences not implemented")
+}
+func (*UnimplementedMsgServer) UpgradeDRS(ctx context.Context, req *MsgUpgradeDRS) (*MsgUpgradeDRSResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpgradeDRS not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -510,6 +721,42 @@ func _Msg_UpsertSequencer_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_BumpAccountSequences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgBumpAccountSequences)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).BumpAccountSequences(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rollapp.sequencers.types.Msg/BumpAccountSequences",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).BumpAccountSequences(ctx, req.(*MsgBumpAccountSequences))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_UpgradeDRS_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUpgradeDRS)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).UpgradeDRS(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rollapp.sequencers.types.Msg/UpgradeDRS",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).UpgradeDRS(ctx, req.(*MsgUpgradeDRS))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "rollapp.sequencers.types.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -525,6 +772,14 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpsertSequencer",
 			Handler:    _Msg_UpsertSequencer_Handler,
+		},
+		{
+			MethodName: "BumpAccountSequences",
+			Handler:    _Msg_BumpAccountSequences_Handler,
+		},
+		{
+			MethodName: "UpgradeDRS",
+			Handler:    _Msg_UpgradeDRS_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -741,6 +996,117 @@ func (m *ConsensusMsgUpsertSequencerResponse) MarshalToSizedBuffer(dAtA []byte) 
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgBumpAccountSequences) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgBumpAccountSequences) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgBumpAccountSequences) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgBumpAccountSequencesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgBumpAccountSequencesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgBumpAccountSequencesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUpgradeDRS) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpgradeDRS) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpgradeDRS) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.DrsVersion != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.DrsVersion))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUpgradeDRSResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpgradeDRSResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpgradeDRSResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -838,6 +1204,53 @@ func (m *ConsensusMsgUpsertSequencer) Size() (n int) {
 }
 
 func (m *ConsensusMsgUpsertSequencerResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgBumpAccountSequences) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	return n
+}
+
+func (m *MsgBumpAccountSequencesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgUpgradeDRS) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.DrsVersion != 0 {
+		n += 1 + sovTx(uint64(m.DrsVersion))
+	}
+	return n
+}
+
+func (m *MsgUpgradeDRSResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1421,6 +1834,289 @@ func (m *ConsensusMsgUpsertSequencerResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: ConsensusMsgUpsertSequencerResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgBumpAccountSequences) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgBumpAccountSequences: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgBumpAccountSequences: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgBumpAccountSequencesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgBumpAccountSequencesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgBumpAccountSequencesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUpgradeDRS) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpgradeDRS: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpgradeDRS: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DrsVersion", wireType)
+			}
+			m.DrsVersion = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DrsVersion |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUpgradeDRSResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpgradeDRSResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpgradeDRSResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

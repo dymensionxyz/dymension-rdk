@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
+
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/tendermint/tendermint/libs/log"
@@ -25,11 +28,21 @@ type StakingKeeper interface {
 
 var _ StakingKeeper = (*Keeper)(nil)
 
+// AccountBumpFilterFunc is a function signature that filters accounts whose sequence should be bumped.
+// IT is passed the account proto name to avoid re-computing it, it is also passed the account in case
+// casting is needed.
+type AccountBumpFilterFunc = func(accountProtoName string, account authtypes.AccountI) (bool, error)
+
 type Keeper struct {
 	cdc        codec.BinaryCodec
 	storeKey   storetypes.StoreKey
 	paramstore paramtypes.Subspace
 	authority  string // address of the authorized actor that can execute consensus msgs
+
+	accountKeeper      types.AccountKeeper
+	rollapParamsKeeper types.RollappParamsKeeper
+	accountBumpFilters []AccountBumpFilterFunc
+	upgradeKeeper      upgradekeeper.Keeper
 
 	whitelistedRelayers collections.Map[sdk.ValAddress, types.WhitelistedRelayers]
 }
@@ -39,6 +52,10 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	authority string,
+	accountKeeper types.AccountKeeper,
+	rollapParamsKeeper types.RollappParamsKeeper,
+	upgradeKeeper upgradekeeper.Keeper,
+	accountBumpFilters []AccountBumpFilterFunc,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -48,10 +65,14 @@ func NewKeeper(
 	sb := collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey))
 
 	return &Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		paramstore: ps,
-		authority:  authority,
+		cdc:                cdc,
+		storeKey:           storeKey,
+		paramstore:         ps,
+		authority:          authority,
+		accountKeeper:      accountKeeper,
+		rollapParamsKeeper: rollapParamsKeeper,
+		accountBumpFilters: accountBumpFilters,
+		upgradeKeeper:      upgradeKeeper,
 		whitelistedRelayers: collections.NewMap(
 			sb,
 			types.WhitelistedRelayersPrefix(),
