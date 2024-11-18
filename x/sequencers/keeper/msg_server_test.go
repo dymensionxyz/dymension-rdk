@@ -6,6 +6,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	"github.com/stretchr/testify/require"
 
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
@@ -19,9 +20,8 @@ func TestHappyPath(t *testing.T) {
 		app       = utils.Setup(t, false)
 		_, ctx    = testkeepers.NewTestSequencerKeeperFromApp(app)
 		authority = authtypes.NewModuleAddress(types.ModuleName).String()
+		msgServer = keeper.NewMsgServerImpl(app.SequencersKeeper)
 	)
-
-	t.Log(authority)
 
 	// prepare test data
 	var (
@@ -134,5 +134,122 @@ func TestHappyPath(t *testing.T) {
 
 		// validate results
 		validateResults(rewardAddr2.String(), relayers2)
+	})
+
+	t.Run("MsgBumpAccountSequences", func(t *testing.T) {
+		// all accounts are module accounts. this ensures if the assumption
+		// change in the future we will realize it.
+		accs := app.AccountKeeper.GetAllAccounts(ctx)
+		for _, acc := range accs {
+			require.IsType(t, acc, &authtypes.ModuleAccount{})
+		}
+
+		// add a new account
+		newAcc := utils.AccAddress()
+		acc := app.AccountKeeper.NewAccountWithAddress(ctx, newAcc)
+		app.AccountKeeper.SetAccount(ctx, acc)
+
+		// now we invoke bump account sequences and we should see this new acc
+		// sequence bumped.
+		msg := &types.MsgBumpAccountSequences{
+			Authority: authority,
+		}
+		resp, err := msgServer.BumpAccountSequences(sdk.WrapSDKContext(ctx), msg)
+		require.NoError(t, err)
+		require.NotNil(t, resp)
+
+		// ensure accounts are correctly bumped
+		accs = app.AccountKeeper.GetAllAccounts(ctx)
+		for _, acc := range accs {
+			switch concreteAccount := acc.(type) {
+			case *authtypes.ModuleAccount:
+				// module accounts should not be bumped
+				require.Zero(t, concreteAccount.GetSequence())
+			case *authtypes.BaseAccount:
+				// base accounts should be bumped
+				require.Equal(t, uint64(keeper.BumpSequence), concreteAccount.GetSequence())
+			}
+		}
+	})
+}
+
+func TestUpgradeDRS(t *testing.T) {
+	// prepare test
+	var (
+		app    = utils.Setup(t, false)
+		_, ctx = testkeepers.NewTestSequencerKeeperFromApp(app)
+	)
+
+	tests := []struct {
+		name        string
+		drsVersion  uint64
+		expectError bool
+	}{
+		{
+			name:        "Success: Update DRS version",
+			drsVersion:  2,
+			expectError: false,
+		},
+		{
+			name:        "Success: Update to higher version",
+			drsVersion:  10,
+			expectError: false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// Get initial params
+			initialParams := app.RollappParamsKeeper.GetParams(ctx)
+
+			// Create message
+			msg := &types.MsgUpgradeDRS{
+				Authority:  authtypes.NewModuleAddress("gov").String(),
+				DrsVersion: tc.drsVersion,
+			}
+
+			// Validate basic
+			err := msg.ValidateBasic()
+			require.NoError(t, err)
+
+			// Execute message
+			handler := app.MsgServiceRouter().Handler(new(types.MsgUpgradeDRS))
+			_, err = handler(ctx, msg)
+
+			if tc.expectError {
+				require.Error(t, err)
+				// Verify params haven't changed
+				currentParams := app.RollappParamsKeeper.GetParams(ctx)
+				require.Equal(t, initialParams.DrsVersion, currentParams.DrsVersion)
+			} else {
+				require.NoError(t, err)
+				// Verify params have been updated
+				currentParams := app.RollappParamsKeeper.GetParams(ctx)
+				require.Equal(t, uint32(tc.drsVersion), currentParams.DrsVersion)
+				require.NotEqual(t, initialParams.DrsVersion, currentParams.DrsVersion)
+			}
+		})
+	}
+
+	t.Run("Multiple updates", func(t *testing.T) {
+		versions := []uint64{3, 5, 8}
+
+		for _, version := range versions {
+			msg := &types.MsgUpgradeDRS{
+				Authority:  authtypes.NewModuleAddress("gov").String(),
+				DrsVersion: version,
+			}
+
+			err := msg.ValidateBasic()
+			require.NoError(t, err)
+
+			handler := app.MsgServiceRouter().Handler(new(types.MsgUpgradeDRS))
+			_, err = handler(ctx, msg)
+			require.NoError(t, err)
+
+			// Verify version was updated
+			currentParams := app.RollappParamsKeeper.GetParams(ctx)
+			require.Equal(t, uint32(version), currentParams.DrsVersion)
+		}
 	})
 }
