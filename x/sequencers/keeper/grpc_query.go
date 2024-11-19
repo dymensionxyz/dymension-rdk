@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
@@ -46,7 +47,7 @@ func (k Querier) Sequencer(c context.Context, req *types.QuerySequencerRequest) 
 
 	addr, err := sdk.ValAddressFromBech32(req.SequencerAddr)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("ValAddressFromBech32: %w", err)
 	}
 
 	val, found := k.GetSequencer(ctx, addr)
@@ -54,8 +55,14 @@ func (k Querier) Sequencer(c context.Context, req *types.QuerySequencerRequest) 
 		return nil, types.ErrSequencerNotFound
 	}
 
+	// don't return error if the reward address or whitelisted relayers are not found
+	rewardAddr, _ := k.GetRewardAddr(ctx, addr)
+	wlr, _ := k.GetWhitelistedRelayers(ctx, addr)
+
 	return &types.QuerySequencerResponse{
-		Sequencer: val,
+		Sequencer:  val,
+		RewardAddr: rewardAddr.String(),
+		Relayers:   wlr.Relayers,
 	}, nil
 }
 
@@ -71,5 +78,45 @@ func (k Querier) HistoricalInfo(c context.Context, req *types.QueryHistoricalInf
 
 	return &types.QueryHistoricalInfoResponse{
 		Hist: &histInfo,
+	}, nil
+}
+
+func (k Querier) RewardAddress(goCtx context.Context, req *types.QueryRewardAddressRequest) (*types.QueryRewardAddressResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	addr, err := sdk.ValAddressFromBech32(req.SequencerAddr)
+	if err != nil {
+		return nil, fmt.Errorf("ValAddressFromBech32: %s", err.Error())
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	rewardAddr, found := k.GetRewardAddr(ctx, addr)
+	if !found {
+		return nil, types.ErrRewardAddressNotFound
+	}
+
+	return &types.QueryRewardAddressResponse{
+		RewardAddr: rewardAddr.String(),
+	}, nil
+}
+
+func (k Querier) WhitelistedRelayers(goCtx context.Context, req *types.QueryWhitelistedRelayersRequest) (*types.QueryWhitelistedRelayersResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+	addr, err := sdk.ValAddressFromBech32(req.SequencerAddr)
+	if err != nil {
+		return nil, fmt.Errorf("ValAddressFromBech32: %w", err)
+	}
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	wlr, err := k.GetWhitelistedRelayers(ctx, addr)
+	if err != nil {
+		return nil, fmt.Errorf("GetWhitelistedRelayers: %w", err)
+	}
+
+	return &types.QueryWhitelistedRelayersResponse{
+		Relayers: wlr.Relayers,
 	}, nil
 }

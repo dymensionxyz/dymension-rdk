@@ -1,14 +1,12 @@
 package cli
 
 import (
-
-	// "strings"
-
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 	"github.com/spf13/cobra"
+
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 // GetQueryCmd returns the cli query commands for this module
@@ -24,6 +22,8 @@ func GetQueryCmd() *cobra.Command {
 	cmd.AddCommand(CmdQueryParams())
 	cmd.AddCommand(CmdQuerySequencers())
 	cmd.AddCommand(CmdQuerySequencer())
+	cmd.AddCommand(CmdQueryRewardAddress())
+	cmd.AddCommand(CmdQueryWhitelistedRelayers())
 
 	// TODO: historical info
 	// TODO: Add queries for specific sequencer (num of blocks, rewards, etc..)
