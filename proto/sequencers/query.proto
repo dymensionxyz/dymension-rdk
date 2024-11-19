@@ -33,6 +33,18 @@ service Query {
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/cosmos/staking/v1beta1/params";
   }
+
+  // RewardAddress queries reward address for given validator address.
+  rpc RewardAddress(QueryRewardAddressRequest) returns (QueryRewardAddressResponse) {
+    option (google.api.http).get =
+        "/dymensionxyz/dymension-rdk/sequencers/reward-address/{sequencer_addr}";
+  }
+
+  // WhitelistedRelayers queries whitelisted relayers for given validator address.
+  rpc WhitelistedRelayers(QueryWhitelistedRelayersRequest) returns (QueryWhitelistedRelayersResponse) {
+    option (google.api.http).get =
+        "/dymensionxyz/dymension-rdk/sequencers/whitelisted-relayers/{sequencer_addr}";
+  }
 }
 
 // QuerySequencersRequest is request type for Query/Sequencers RPC method.
@@ -63,8 +75,12 @@ message QuerySequencerRequest {
 // QuerySequencerResponse is response type for the Query/Sequencer RPC method
 message QuerySequencerResponse {
   // Sequencer defines the the sequencer info.
-  cosmos.staking.v1beta1.Validator sequencer = 1
-      [ (gogoproto.nullable) = false ];
+  cosmos.staking.v1beta1.Validator sequencer = 1 [ (gogoproto.nullable) = false ];
+  // RewardAddr is the bech32-encoded sequencer's reward address
+  string reward_addr = 2;
+  // Relayers is an array of the whitelisted relayer addresses of the sequencer.
+  // Addresses are bech32-encoded strings.
+  repeated string relayers = 3;
 }
 
 // QueryHistoricalInfoRequest is request type for the Query/HistoricalInfo RPC
@@ -90,3 +106,23 @@ message QueryParamsResponse {
   Params params = 1 [ (gogoproto.nullable) = false ];
 }
 
+message QueryRewardAddressRequest {
+  // SequencerAddr defines the sequencer address to query for.
+  string sequencer_addr = 1;
+}
+
+message QueryRewardAddressResponse {
+  // RewardAddr is the bech32-encoded sequencer's reward address
+  string reward_addr = 1;
+}
+
+message QueryWhitelistedRelayersRequest {
+  // SequencerAddr defines the sequencer address to query for.
+  string sequencer_addr = 1;
+}
+
+message QueryWhitelistedRelayersResponse {
+  // Relayers is an array of the whitelisted relayer addresses of the sequencer.
+  // Addresses are bech32-encoded strings.
+  repeated string relayers = 1;
+}
