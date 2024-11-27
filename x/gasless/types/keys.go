@@ -24,15 +24,8 @@ var (
 	LastGasTankIDKey                     = []byte{0xa1}
 	GasTankKeyPrefix                     = []byte{0xa2}
 	GasConsumerKeyPrefix                 = []byte{0xa3}
+	LastUsedGasTankKey                   = []byte{0xa4}
 )
-
-func GetUsageIdentifierToGasTankIdsKey(usageIdentifier string) []byte {
-	return append(UsageIdentifierToGasTankIdsKeyPrefix, LengthPrefixString(usageIdentifier)...)
-}
-
-func GetAllUsageIdentifierToGasTankIdsKey() []byte {
-	return UsageIdentifierToGasTankIdsKeyPrefix
-}
 
 func GetLastGasTankIDKey() []byte {
 	return LastGasTankIDKey
@@ -52,15 +45,4 @@ func GetGasConsumerKey(consumer sdk.AccAddress) []byte {
 
 func GetAllGasConsumersKey() []byte {
 	return GasConsumerKeyPrefix
-}
-
-// LengthPrefixString returns length-prefixed bytes representation
-// of a string.
-func LengthPrefixString(s string) []byte {
-	bz := []byte(s)
-	bzLen := len(bz)
-	if bzLen == 0 {
-		return bz
-	}
-	return append([]byte{byte(bzLen)}, bz...)
 }

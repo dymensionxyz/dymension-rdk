@@ -6,7 +6,8 @@ import (
 
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	errors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/errors"
+
 	"github.com/dymensionxyz/dymension-rdk/utils/sliceutils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
@@ -95,7 +96,9 @@ func (k Keeper) CreateGasTank(ctx sdk.Context, msg *types.MsgCreateGasTank) (typ
 		return types.GasTank{}, err
 	}
 
-	k.AddGasTankIdToUsageIdentifiers(ctx, gasTank.UsageIdentifiers, gasTank.Id)
+	if err := k.AddGasTankIdToUsageIdentifiers(ctx, gasTank.UsageIdentifiers, gasTank.Id); err != nil {
+		return types.GasTank{}, err
+	}
 	k.SetGasTank(ctx, gasTank)
 
 	ctx.EventManager().EmitEvents(sdk.Events{
@@ -165,7 +168,6 @@ func (k Keeper) ValidateMsgUpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUp
 			if !k.IsValidUsageIdentifier(ctx, identifier) {
 				return sdkerrors.Wrapf(errors.ErrInvalidRequest, "invalid usage identifier - %s", identifier)
 			}
-
 		}
 	}
 
@@ -183,7 +185,9 @@ func (k Keeper) UpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTank
 	if !gasTank.MaxFeeUsagePerConsumer.Equal(msg.MaxFeeUsagePerConsumer) {
 		consumerUpdateRequire = true
 	}
-	k.RemoveGasTankIdFromUsageIdentifiers(ctx, gasTank.UsageIdentifiers, gasTank.Id)
+	if err := k.RemoveGasTankIdFromUsageIdentifiers(ctx, gasTank.UsageIdentifiers, gasTank.Id); err != nil {
+		return gasTank, err
+	}
 
 	gasTank.MaxFeeUsagePerTx = msg.MaxFeeUsagePerTx
 	gasTank.MaxFeeUsagePerConsumer = msg.MaxFeeUsagePerConsumer
@@ -193,7 +197,9 @@ func (k Keeper) UpdateGasTankConfig(ctx sdk.Context, msg *types.MsgUpdateGasTank
 	if consumerUpdateRequire {
 		k.UpdateConsumerAllowance(ctx, gasTank)
 	}
-	k.AddGasTankIdToUsageIdentifiers(ctx, gasTank.UsageIdentifiers, gasTank.Id)
+	if err := k.AddGasTankIdToUsageIdentifiers(ctx, gasTank.UsageIdentifiers, gasTank.Id); err != nil {
+		return gasTank, err
+	}
 
 	k.SetGasTank(ctx, gasTank)
 

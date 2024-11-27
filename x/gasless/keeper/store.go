@@ -1,64 +1,67 @@
 package keeper
 
 import (
+	"fmt"
+
+	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	gogotypes "github.com/cosmos/gogoproto/types"
 
-	"github.com/dymensionxyz/dymension-rdk/utils/sliceutils"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
-func (k Keeper) GetUsageIdentifierToGasTankIds(ctx sdk.Context, usageIdentifier string) (usageIdentifierToGasTankIds types.UsageIdentifierToGasTankIds, found bool) {
-	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.GetUsageIdentifierToGasTankIdsKey(usageIdentifier))
-	if bz == nil {
-		return
+func (k Keeper) GetUsageIdentifierToGasTankIds(ctx sdk.Context, usageIdentifier string) (types.UsageIdentifierToGasTankIds, bool) {
+	var gasTankIDs []uint64
+	ranger := collections.NewPrefixedPairRange[string, uint64](usageIdentifier)
+	err := k.usageIdentifierToGasTankIDSet.Walk(ctx, ranger, func(key collections.Pair[string, uint64]) (bool, error) {
+		gasTankIDs = append(gasTankIDs, key.K2())
+		return false, nil
+	})
+	if err != nil || len(gasTankIDs) == 0 {
+		return types.UsageIdentifierToGasTankIds{}, false
 	}
-	usageIdentifierToGasTankIds = types.MustUnmarshalUsageIdentifierToGastankIds(k.cdc, bz)
-	return usageIdentifierToGasTankIds, true
+	return types.UsageIdentifierToGasTankIds{
+		UsageIdentifier: usageIdentifier,
+		GasTankIds:      gasTankIDs,
+	}, true
 }
 
-func (k Keeper) IterateAllUsageIdentifierToGasTankIds(ctx sdk.Context, cb func(usageIdentifierToGasTankIds types.UsageIdentifierToGasTankIds) (stop bool, err error)) error {
-	store := ctx.KVStore(k.storeKey)
-	iter := sdk.KVStorePrefixIterator(store, types.GetAllUsageIdentifierToGasTankIdsKey())
-	defer func(iter sdk.Iterator) {
-		err := iter.Close()
-		if err != nil {
-			return
+func (k Keeper) GetAllUsageIdentifierToGasTankIds(ctx sdk.Context) (allUsageIdentifierToGasTankIds []types.UsageIdentifierToGasTankIds, err error) {
+	err = k.usageIdentifierToGasTankIDSet.Walk(ctx, nil, func(key collections.Pair[string, uint64]) (stop bool, err error) {
+		for i, usageIdentifierToGasTankIds := range allUsageIdentifierToGasTankIds {
+			if usageIdentifierToGasTankIds.UsageIdentifier == key.K1() {
+				allUsageIdentifierToGasTankIds[i].GasTankIds = append(usageIdentifierToGasTankIds.GasTankIds, key.K2())
+				return
+			}
 		}
-	}(iter)
-	for ; iter.Valid(); iter.Next() {
-		usageIdentifierToGasTankIds := types.MustUnmarshalUsageIdentifierToGastankIds(k.cdc, iter.Value())
-		stop, err := cb(usageIdentifierToGasTankIds)
+		allUsageIdentifierToGasTankIds = append(allUsageIdentifierToGasTankIds, types.UsageIdentifierToGasTankIds{
+			UsageIdentifier: key.K1(),
+			GasTankIds:      []uint64{key.K2()},
+		})
+		return
+	})
+	return
+}
+
+func (k Keeper) SetUsageIdentifierToGasTankIds(ctx sdk.Context, usageIdentifierToGasTankIds types.UsageIdentifierToGasTankIds) error {
+	usageIdentifier := usageIdentifierToGasTankIds.UsageIdentifier
+	err := k.RemoveAllGasTankIdsForUsageIdentifier(ctx, usageIdentifier)
+	if err != nil {
+		return err
+	}
+	for _, gasTankID := range usageIdentifierToGasTankIds.GasTankIds {
+		key := collections.Join(usageIdentifier, gasTankID)
+		err := k.usageIdentifierToGasTankIDSet.Set(ctx, key)
 		if err != nil {
 			return err
-		}
-		if stop {
-			break
 		}
 	}
 	return nil
 }
 
-func (k Keeper) GetAllUsageIdentifierToGasTankIds(ctx sdk.Context) (allUsageIdentifierToGasTankIds []types.UsageIdentifierToGasTankIds) {
-	allUsageIdentifierToGasTankIds = []types.UsageIdentifierToGasTankIds{}
-	_ = k.IterateAllUsageIdentifierToGasTankIds(ctx, func(usageIdentifierToGasTankIds types.UsageIdentifierToGasTankIds) (stop bool, err error) {
-		allUsageIdentifierToGasTankIds = append(allUsageIdentifierToGasTankIds, usageIdentifierToGasTankIds)
-		return false, nil
-	})
-	return allUsageIdentifierToGasTankIds
-}
-
-func (k Keeper) SetUsageIdentifierToGasTankIds(ctx sdk.Context, usageIdentifierToGasTankIds types.UsageIdentifierToGasTankIds) {
-	store := ctx.KVStore(k.storeKey)
-	bz := types.MustMarshalUsageIdentifierToGastankIds(k.cdc, usageIdentifierToGasTankIds)
-	store.Set(types.GetUsageIdentifierToGasTankIdsKey(usageIdentifierToGasTankIds.UsageIdentifier), bz)
-}
-
 // DeleteUsageIdentifierToGasTankIds deletes an UsageIdentifierToGasTankIds.
-func (k Keeper) DeleteUsageIdentifierToGasTankIds(ctx sdk.Context, usageIdentifierToGasTankIds types.UsageIdentifierToGasTankIds) {
-	store := ctx.KVStore(k.storeKey)
-	store.Delete(types.GetUsageIdentifierToGasTankIdsKey(usageIdentifierToGasTankIds.UsageIdentifier))
+func (k Keeper) DeleteUsageIdentifierToGasTankIds(ctx sdk.Context, usageIdentifierToGasTankIds types.UsageIdentifierToGasTankIds) error {
+	return k.RemoveAllGasTankIdsForUsageIdentifier(ctx, usageIdentifierToGasTankIds.UsageIdentifier)
 }
 
 func (k Keeper) GetLastGasTankID(ctx sdk.Context) (id uint64) {
@@ -203,31 +206,29 @@ func (k Keeper) GetOrCreateGasConsumer(ctx sdk.Context, consumer sdk.AccAddress,
 	return gasConsumer, consumptionLength
 }
 
-func (k Keeper) AddGasTankIdToUsageIdentifiers(ctx sdk.Context, usageIdentifiers []string, gasTankID uint64) {
+func (k Keeper) AddGasTankIdToUsageIdentifiers(ctx sdk.Context, usageIdentifiers []string, gasTankID uint64) error {
 	for _, usageIdentifier := range usageIdentifiers {
-		usageIdentifierToGasTankIds, found := k.GetUsageIdentifierToGasTankIds(ctx, usageIdentifier)
-		if !found {
-			usageIdentifierToGasTankIds = types.NewUsageIdentifierToGastankIds(usageIdentifier)
+		key := collections.Join(usageIdentifier, gasTankID)
+		if err := k.usageIdentifierToGasTankIDSet.Set(ctx, key); err != nil {
+			return fmt.Errorf("set gas tank id to usage identifier: %w", err)
 		}
-		usageIdentifierToGasTankIds.GasTankIds = append(usageIdentifierToGasTankIds.GasTankIds, gasTankID)
-		usageIdentifierToGasTankIds.GasTankIds = sliceutils.RemoveDuplicates(usageIdentifierToGasTankIds.GasTankIds)
-		k.SetUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 	}
+	return nil
 }
 
-func (k Keeper) RemoveGasTankIdFromUsageIdentifiers(ctx sdk.Context, usageIdentifiers []string, gasTankID uint64) {
+func (k Keeper) RemoveGasTankIdFromUsageIdentifiers(ctx sdk.Context, usageIdentifiers []string, gasTankID uint64) error {
 	for _, usageIdentifier := range usageIdentifiers {
-		usageIdentifierToGasTankIds, found := k.GetUsageIdentifierToGasTankIds(ctx, usageIdentifier)
-		if !found {
-			continue
+		key := collections.Join(usageIdentifier, gasTankID)
+		if err := k.usageIdentifierToGasTankIDSet.Remove(ctx, key); err != nil {
+			return fmt.Errorf("remove gas tank id from usage identifier: %w", err)
 		}
-		usageIdentifierToGasTankIds.GasTankIds = sliceutils.RemoveValue(usageIdentifierToGasTankIds.GasTankIds, gasTankID)
-		if len(usageIdentifierToGasTankIds.GasTankIds) == 0 {
-			k.DeleteUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
-			continue
-		}
-		k.SetUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 	}
+	return nil
+}
+
+func (k Keeper) RemoveAllGasTankIdsForUsageIdentifier(ctx sdk.Context, usageIdentifier string) error {
+	ranger := collections.NewPrefixedPairRange[string, uint64](usageIdentifier)
+	return k.usageIdentifierToGasTankIDSet.Clear(ctx, ranger)
 }
 
 func (k Keeper) UpdateConsumerAllowance(ctx sdk.Context, gasTank types.GasTank) {
@@ -241,4 +242,12 @@ func (k Keeper) UpdateConsumerAllowance(ctx sdk.Context, gasTank types.GasTank) 
 			}
 		}
 	}
+}
+
+func (k Keeper) LastUsedGasTankID(ctx sdk.Context, usageIdentifier string) (uint64, error) {
+	lastUsedGasTankID, err := k.lastUsedGasTankIDMap.Get(ctx, usageIdentifier)
+	if err != nil {
+		return 0, err
+	}
+	return lastUsedGasTankID, nil
 }

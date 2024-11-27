@@ -7,9 +7,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
 // Querier is used as Keeper will have duplicate methods if used directly, and gRPC names take precedence over keeper.
@@ -211,11 +212,15 @@ func (k Querier) GasConsumersByGasTankID(goCtx context.Context, req *types.Query
 
 func (k Querier) GasTankIdsForAllUsageIdentifiers(goCtx context.Context, _ *types.QueryGasTankIdsForAllUsageIdentifiersRequest) (*types.QueryGasTankIdsForAllUsageIdentifiersResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	usageIdentifierToGasTankIds := []*types.UsageIdentifierToGasTankIds{}
-	allusageIdentifierToGasTankIds := k.GetAllUsageIdentifierToGasTankIds(ctx)
-	for _, val := range allusageIdentifierToGasTankIds {
+	allUsageIdentifierToGasTankIds, err := k.GetAllUsageIdentifierToGasTankIds(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	var usageIdentifierToGasTankIds = make([]*types.UsageIdentifierToGasTankIds, len(allUsageIdentifierToGasTankIds))
+	for i, val := range allUsageIdentifierToGasTankIds {
 		gtids := val
-		usageIdentifierToGasTankIds = append(usageIdentifierToGasTankIds, &gtids)
+		usageIdentifierToGasTankIds[i] = &gtids
 	}
 	return &types.QueryGasTankIdsForAllUsageIdentifiersResponse{
 		UsageIdentifierToGastankIds: usageIdentifierToGasTankIds,
