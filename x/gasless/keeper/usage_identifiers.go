@@ -60,11 +60,7 @@ func (k Keeper) IsValidUsageIdentifier(ctx sdk.Context, usageIdentifier string) 
 
 	// check if usageIdentifier is a registered message type
 	_, err := k.interfaceRegistry.Resolve(usageIdentifier)
-	if err == nil {
-		return true
-	}
-
-	return false
+	return err == nil
 }
 
 func (k Keeper) ExtractUsageIdentifierFromTx(ctx sdk.Context, sdkTx sdk.Tx) string {
