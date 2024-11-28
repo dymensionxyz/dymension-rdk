@@ -180,7 +180,9 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 			}
 			break
 		}
-		failedGtidErrors = append(failedGtidErrors, err)
+		if err != nil {
+			failedGtidErrors = append(failedGtidErrors, err)
+		}
 		failedGtids = append(failedGtids, gtid)
 	}
 
@@ -201,6 +203,7 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 		if usageDetail.UsageIdentifier == usageIdentifier {
 			usageIdentifierFound = true
 			usageIdentifierIndex = index
+			break
 		}
 	}
 
@@ -220,12 +223,6 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 	// assign the updated-existingUsage usage and set it to the store
 	gasConsumer.Consumptions[consumptionIndex].Usage = existingUsage
 	k.SetGasConsumer(ctx, gasConsumer)
-
-	// Update the last used GasTankID for the UsageIdentifier
-	if err = k.lastUsedGasTankIDMap.Set(ctx, usageIdentifier, gasTank.Id); err != nil {
-		k.EmitFeeConsumptionEvent(ctx, originalFeePayer, failedGtids, []error{fmt.Errorf("update last used gas tank ID: %w", err)}, gasTank.Id)
-		return originalFeePayer
-	}
 
 	feeSource := gasTank.GetGasTankReserveAddress()
 	k.EmitFeeConsumptionEvent(ctx, feeSource, failedGtids, failedGtidErrors, gasTank.Id)
