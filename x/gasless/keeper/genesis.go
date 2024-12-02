@@ -15,7 +15,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
 
 	for _, uigids := range genState.UsageIdentifierToGastankIds {
-		k.SetUsageIdentifierToGasTankIds(ctx, uigids)
+		if err := k.SetUsageIdentifierToGasTankIds(ctx, uigids); err != nil {
+			panic(err)
+		}
 	}
 
 	k.SetLastGasTankID(ctx, genState.LastGasTankId)
@@ -31,9 +33,13 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 
 // ExportGenesis returns the capability module's exported genesis.
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
+	gasTankIds, err := k.GetAllUsageIdentifierToGasTankIds(ctx)
+	if err != nil {
+		panic(err)
+	}
 	return &types.GenesisState{
 		Params:                      k.GetParams(ctx),
-		UsageIdentifierToGastankIds: k.GetAllUsageIdentifierToGasTankIds(ctx),
+		UsageIdentifierToGastankIds: gasTankIds,
 		LastGasTankId:               k.GetLastGasTankID(ctx),
 		GasTanks:                    k.GetAllGasTanks(ctx),
 		GasConsumers:                k.GetAllGasConsumers(ctx),

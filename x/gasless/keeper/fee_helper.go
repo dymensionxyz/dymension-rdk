@@ -1,13 +1,17 @@
 package keeper
 
 import (
+	"errors"
+	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
+	"cosmossdk.io/collections"
 	sdkerrors "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/dymensionxyz/dymension-rdk/utils/sliceutils"
+
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -144,13 +148,41 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 		err              error
 	)
 
+	lastUsedID, err := k.LastUsedGasTankID(ctx, usageIdentifier)
+	if err != nil {
+		if !errors.Is(err, collections.ErrNotFound) {
+			k.EmitFeeConsumptionEvent(ctx, originalFeePayer, []uint64{}, []error{fmt.Errorf("last used gas tank ID: %w", err)}, 0)
+			return originalFeePayer
+		}
+	}
+
 	gasTankIds := usageIdentifierToGasTankIds.GasTankIds
-	for _, gtid := range gasTankIds {
+	var startIndex int
+	index := slices.Index(gasTankIds, lastUsedID)
+	if index == -1 {
+		startIndex = 0
+	} else {
+		startIndex = (index + 1) % len(gasTankIds)
+	}
+
+	n := len(gasTankIds)
+	for i := 0; i < n; i++ {
+		idx := (startIndex + i) % n
+		gtid := gasTankIds[idx]
+
 		gasTank, isValid, err = k.CanGasTankBeUsedAsSource(ctx, gtid, tempConsumer, fee)
 		if isValid {
+			// update the last used GasTankID
+			err = k.lastUsedGasTankIDMap.Set(ctx, usageIdentifier, gtid)
+			if err != nil {
+				k.EmitFeeConsumptionEvent(ctx, originalFeePayer, failedGtids, []error{fmt.Errorf("update last used gas tank ID: %w", err)}, gtid)
+				return originalFeePayer
+			}
 			break
 		}
-		failedGtidErrors = append(failedGtidErrors, err)
+		if err != nil {
+			failedGtidErrors = append(failedGtidErrors, err)
+		}
 		failedGtids = append(failedGtids, gtid)
 	}
 
@@ -171,6 +203,7 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 		if usageDetail.UsageIdentifier == usageIdentifier {
 			usageIdentifierFound = true
 			usageIdentifierIndex = index
+			break
 		}
 	}
 
@@ -190,12 +223,6 @@ func (k Keeper) GetFeeSource(ctx sdk.Context, sdkTx sdk.Tx, originalFeePayer sdk
 	// assign the updated-existingUsage usage and set it to the store
 	gasConsumer.Consumptions[consumptionIndex].Usage = existingUsage
 	k.SetGasConsumer(ctx, gasConsumer)
-
-	// Move the used gas tank to the end of the list of all gas tanks. This ensures that in the next cycle,
-	// a different gas tank can be selected for the same usage identifier if available,
-	// spreading out the usage of fees across different tanks.
-	usageIdentifierToGasTankIds.GasTankIds = sliceutils.ShiftValueToEnd(usageIdentifierToGasTankIds.GasTankIds, gasTank.Id)
-	k.SetUsageIdentifierToGasTankIds(ctx, usageIdentifierToGasTankIds)
 
 	feeSource := gasTank.GetGasTankReserveAddress()
 	k.EmitFeeConsumptionEvent(ctx, feeSource, failedGtids, failedGtidErrors, gasTank.Id)

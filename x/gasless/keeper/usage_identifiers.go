@@ -3,6 +3,7 @@ package keeper
 import (
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -52,21 +53,14 @@ func (k Keeper) GetAvailableUsageIdentifiers(ctx sdk.Context) types.UsageIdentif
 }
 
 func (k Keeper) IsValidUsageIdentifier(ctx sdk.Context, usageIdentifier string) bool {
-	allUsageIdentifiers := k.GetAvailableUsageIdentifiers(ctx)
-
-	for _, msgType := range allUsageIdentifiers.MessageTypes {
-		if msgType == usageIdentifier {
-			return true
-		}
+	// check if usageIdentifier is a WASM contract address
+	if k.wasmKeeper.HasContractInfo(ctx, sdk.AccAddress(usageIdentifier)) {
+		return true
 	}
 
-	for _, contractDetail := range allUsageIdentifiers.Contracts {
-		if contractDetail.Address == usageIdentifier {
-			return true
-		}
-	}
-
-	return false
+	// check if usageIdentifier is a registered message type
+	_, err := k.interfaceRegistry.Resolve(usageIdentifier)
+	return err == nil
 }
 
 func (k Keeper) ExtractUsageIdentifierFromTx(ctx sdk.Context, sdkTx sdk.Tx) string {

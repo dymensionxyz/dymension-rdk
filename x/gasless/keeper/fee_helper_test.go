@@ -6,12 +6,13 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
 func UpdateCtxAndValidateFeeConsumptionEvent(s *KeeperTestSuite, feePayer, failedGasTankIds, failedGasTankErrors, succeededGasTankID string) sdk.Context {
 	feeConsumptionEventFound := false
-	attrKV := make(map[string]string, 0)
+	attrKV := make(map[string]string)
 	events := s.ctx.EventManager().Events()
 	for _, event := range events {
 		if event.Type == types.EventTypeFeeConsumption {
@@ -40,7 +41,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err := txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	feeSource := s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), multiSendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(multiSendMsg.GetSigners()[0], feeSource)
 	s.ctx = UpdateCtxAndValidateFeeConsumptionEvent(s, multiSendMsg.GetSigners()[0].String(), "", "asked fee != 1: fee cannot be deducted from gas tank", "0")
@@ -54,7 +56,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(25000)), sdk.NewCoin("stake2", sdkmath.NewInt(25000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), multiSendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(multiSendMsg.GetSigners()[0], feeSource)
@@ -84,7 +87,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(25000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), multiSendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(multiSendMsg.GetSigners()[0], feeSource)
@@ -104,7 +108,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(25000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), multiSendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(multiSendMsg.GetSigners()[0], feeSource)
@@ -119,7 +124,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 	// denom mismatch
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg := banktypes.NewMsgSend(s.addr(1001), s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("ustk", sdkmath.NewInt(25000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(sendMsg.GetSigners()[0], feeSource)
@@ -131,7 +137,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 	// asked fee amount is more than the allowed fee usage for tx.
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg = banktypes.NewMsgSend(s.addr(1001), s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", activeGasTank2.MaxFeeUsagePerTx.Add(sdkmath.NewInt(1)))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(sendMsg.GetSigners()[0], feeSource)
@@ -146,7 +153,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 	// insufficient reserve in the gas tank
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg = banktypes.NewMsgSend(s.addr(1001), s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", activeGasTank3.MaxFeeUsagePerTx)))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(sendMsg.GetSigners()[0], feeSource)
@@ -160,7 +168,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 	// blocked consumer
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg = banktypes.NewMsgSend(s.addr(1001), s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(2000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(sendMsg.GetSigners()[0], feeSource)
@@ -175,7 +184,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 	// consumption limit insufficient
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg = banktypes.NewMsgSend(s.addr(1001), s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(22000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(sendMsg.GetSigners()[0], feeSource)
@@ -187,7 +197,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 	// success
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg = banktypes.NewMsgSend(s.addr(1001), s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(2000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(activeGasTank4.GetGasTankReserveAddress(), feeSource)
@@ -215,7 +226,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 	// success
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg = banktypes.NewMsgSend(s.addr(1001), s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(2000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(activeGasTank4.GetGasTankReserveAddress(), feeSource)
@@ -237,7 +249,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 	// success
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg = banktypes.NewMsgSend(s.addr(1001), s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(7000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(activeGasTank4.GetGasTankReserveAddress(), feeSource)
@@ -262,7 +275,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(5000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(activeGasTank4.GetGasTankReserveAddress(), feeSource)
@@ -288,7 +302,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(1000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(activeGasTank4.GetGasTankReserveAddress(), feeSource)
@@ -300,7 +315,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(1000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(activeGasTank4.GetGasTankReserveAddress(), feeSource)
@@ -326,7 +342,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(3000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(multiSendMsg.GetSigners()[0], feeSource)
@@ -352,7 +369,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(2000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(activeGasTank4.GetGasTankReserveAddress(), feeSource)
@@ -378,7 +396,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 		[]banktypes.Input{{Address: s.addr(1001).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(10))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(multiSendMsg.GetSigners()[0], feeSource)
@@ -401,7 +420,8 @@ func (s *KeeperTestSuite) TestGetFeeSource() {
 	// success
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg = banktypes.NewMsgSend(s.addr(1001), s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(1000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(activeGasTank2.GetGasTankReserveAddress(), feeSource)
@@ -437,14 +457,17 @@ func (s *KeeperTestSuite) TestTankIDSelection() {
 	provider5 := s.addr(5)
 	_ = s.CreateNewGasTank(provider5, "stake", sdkmath.NewInt(2000000), sdkmath.NewInt(200000000), []string{"/cosmos.bank.v1beta1.MsgSend", "/cosmos.bank.v1beta1.MsgMultiSend"}, "100000000stake")
 
-	usageIdentifiersToTankIds := s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	usageIdentifiersToTankIds, err := s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	s.Require().Nil(err)
 
 	s.Equal(2, len(usageIdentifiersToTankIds))
-	s.Equal("/cosmos.bank.v1beta1.MsgSend", usageIdentifiersToTankIds[0].UsageIdentifier)
-	s.Equal([]uint64{1, 2, 3, 4, 5}, usageIdentifiersToTankIds[0].GasTankIds)
-
-	s.Equal("/cosmos.bank.v1beta1.MsgMultiSend", usageIdentifiersToTankIds[1].UsageIdentifier)
-	s.Equal([]uint64{1, 2, 3, 4, 5}, usageIdentifiersToTankIds[1].GasTankIds)
+	var identifiersList []string
+	for _, usageIdentifierToTankId := range usageIdentifiersToTankIds {
+		identifiersList = append(identifiersList, usageIdentifierToTankId.UsageIdentifier)
+		s.Equal([]uint64{1, 2, 3, 4, 5}, usageIdentifierToTankId.GasTankIds)
+	}
+	s.Contains(identifiersList, "/cosmos.bank.v1beta1.MsgMultiSend")
+	s.Contains(identifiersList, "/cosmos.bank.v1beta1.MsgSend")
 
 	consumers := s.keeper.GetAllGasConsumers(s.ctx)
 	s.Equal(0, len(consumers))
@@ -453,7 +476,8 @@ func (s *KeeperTestSuite) TestTankIDSelection() {
 	consumer1 := s.addr(3001)
 	txBuilder := s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg := banktypes.NewMsgSend(consumer1, s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(1000000))))
 	feeSource := s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(tank1.GetGasTankReserveAddress(), feeSource)
@@ -475,20 +499,24 @@ func (s *KeeperTestSuite) TestTankIDSelection() {
 	s.Equal(1, len(consumer.Consumptions[0].Usage))
 	s.Equal(1, len(consumer.Consumptions[0].Usage[0].Details))
 
-	usageIdentifiersToTankIds = s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	usageIdentifiersToTankIds, err = s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	s.Require().Nil(err)
 
 	s.Equal(2, len(usageIdentifiersToTankIds))
-	s.Equal("/cosmos.bank.v1beta1.MsgSend", usageIdentifiersToTankIds[0].UsageIdentifier)
-	s.Equal([]uint64{2, 3, 4, 5, 1}, usageIdentifiersToTankIds[0].GasTankIds)
-
-	s.Equal("/cosmos.bank.v1beta1.MsgMultiSend", usageIdentifiersToTankIds[1].UsageIdentifier)
-	s.Equal([]uint64{1, 2, 3, 4, 5}, usageIdentifiersToTankIds[1].GasTankIds)
+	var identifiersList2 []string
+	for _, usageIdentifierToTankId := range usageIdentifiersToTankIds {
+		identifiersList2 = append(identifiersList2, usageIdentifierToTankId.UsageIdentifier)
+		s.Equal([]uint64{1, 2, 3, 4, 5}, usageIdentifierToTankId.GasTankIds)
+	}
+	s.Contains(identifiersList2, "/cosmos.bank.v1beta1.MsgMultiSend")
+	s.Contains(identifiersList2, "/cosmos.bank.v1beta1.MsgSend")
 
 	// success
 	consumer2 := s.addr(3002)
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
 	sendMsg = banktypes.NewMsgSend(consumer2, s.addr(1002), sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100))))
-	txBuilder.SetMsgs(sendMsg)
+	err = txBuilder.SetMsgs(sendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(1000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), sendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(tank2.GetGasTankReserveAddress(), feeSource)
@@ -509,14 +537,17 @@ func (s *KeeperTestSuite) TestTankIDSelection() {
 	s.Equal(1, len(consumer.Consumptions[0].Usage))
 	s.Equal(1, len(consumer.Consumptions[0].Usage[0].Details))
 
-	usageIdentifiersToTankIds = s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	usageIdentifiersToTankIds, err = s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	s.Require().Nil(err)
 
 	s.Equal(2, len(usageIdentifiersToTankIds))
-	s.Equal("/cosmos.bank.v1beta1.MsgSend", usageIdentifiersToTankIds[0].UsageIdentifier)
-	s.Equal([]uint64{3, 4, 5, 1, 2}, usageIdentifiersToTankIds[0].GasTankIds)
-
-	s.Equal("/cosmos.bank.v1beta1.MsgMultiSend", usageIdentifiersToTankIds[1].UsageIdentifier)
-	s.Equal([]uint64{1, 2, 3, 4, 5}, usageIdentifiersToTankIds[1].GasTankIds)
+	var identifiersList3 []string
+	for _, usageIdentifierToTankId := range usageIdentifiersToTankIds {
+		identifiersList3 = append(identifiersList3, usageIdentifierToTankId.UsageIdentifier)
+		s.Equal([]uint64{1, 2, 3, 4, 5}, usageIdentifierToTankId.GasTankIds)
+	}
+	s.Contains(identifiersList3, "/cosmos.bank.v1beta1.MsgSend")
+	s.Contains(identifiersList3, "/cosmos.bank.v1beta1.MsgMultiSend")
 
 	// success
 	consumer3 := s.addr(3003)
@@ -525,7 +556,8 @@ func (s *KeeperTestSuite) TestTankIDSelection() {
 		[]banktypes.Input{{Address: consumer3.String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(1000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), multiSendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(tank1.GetGasTankReserveAddress(), feeSource)
@@ -546,14 +578,17 @@ func (s *KeeperTestSuite) TestTankIDSelection() {
 	s.Equal(1, len(consumer.Consumptions[0].Usage))
 	s.Equal(1, len(consumer.Consumptions[0].Usage[0].Details))
 
-	usageIdentifiersToTankIds = s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	usageIdentifiersToTankIds, err = s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	s.Require().Nil(err)
 
 	s.Equal(2, len(usageIdentifiersToTankIds))
-	s.Equal("/cosmos.bank.v1beta1.MsgSend", usageIdentifiersToTankIds[0].UsageIdentifier)
-	s.Equal([]uint64{3, 4, 5, 1, 2}, usageIdentifiersToTankIds[0].GasTankIds)
-
-	s.Equal("/cosmos.bank.v1beta1.MsgMultiSend", usageIdentifiersToTankIds[1].UsageIdentifier)
-	s.Equal([]uint64{2, 3, 4, 5, 1}, usageIdentifiersToTankIds[1].GasTankIds)
+	var identifiersList4 []string
+	for _, usageIdentifierToTankId := range usageIdentifiersToTankIds {
+		identifiersList4 = append(identifiersList4, usageIdentifierToTankId.UsageIdentifier)
+		s.Equal([]uint64{1, 2, 3, 4, 5}, usageIdentifierToTankId.GasTankIds)
+	}
+	s.Contains(identifiersList4, "/cosmos.bank.v1beta1.MsgSend")
+	s.Contains(identifiersList4, "/cosmos.bank.v1beta1.MsgMultiSend")
 
 	// success
 	txBuilder = s.encodingConfig.TxConfig.NewTxBuilder()
@@ -561,7 +596,8 @@ func (s *KeeperTestSuite) TestTankIDSelection() {
 		[]banktypes.Input{{Address: consumer1.String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 		[]banktypes.Output{{Address: s.addr(1002).String(), Coins: sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(100)))}},
 	)
-	txBuilder.SetMsgs(multiSendMsg)
+	err = txBuilder.SetMsgs(multiSendMsg)
+	s.Require().NoError(err)
 	txBuilder.SetFeeAmount(sdk.NewCoins(sdk.NewCoin("stake", sdkmath.NewInt(1000000))))
 	feeSource = s.keeper.GetFeeSource(s.ctx, txBuilder.GetTx(), multiSendMsg.GetSigners()[0], txBuilder.GetTx().GetFee())
 	s.Require().Equal(tank2.GetGasTankReserveAddress(), feeSource)
@@ -590,13 +626,17 @@ func (s *KeeperTestSuite) TestTankIDSelection() {
 	s.Equal(1, len(consumer.Consumptions[1].Usage))
 	s.Equal(1, len(consumer.Consumptions[1].Usage[0].Details))
 
-	usageIdentifiersToTankIds = s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	usageIdentifiersToTankIds, err = s.keeper.GetAllUsageIdentifierToGasTankIds(s.ctx)
+	s.Require().Nil(err)
 
 	s.Equal(2, len(usageIdentifiersToTankIds))
-	s.Equal("/cosmos.bank.v1beta1.MsgSend", usageIdentifiersToTankIds[0].UsageIdentifier)
-	s.Equal([]uint64{3, 4, 5, 1, 2}, usageIdentifiersToTankIds[0].GasTankIds)
 
-	s.Equal("/cosmos.bank.v1beta1.MsgMultiSend", usageIdentifiersToTankIds[1].UsageIdentifier)
-	s.Equal([]uint64{3, 4, 5, 1, 2}, usageIdentifiersToTankIds[1].GasTankIds)
+	var identifiersList5 []string
+	for _, usageIdentifierToTankId := range usageIdentifiersToTankIds {
+		identifiersList5 = append(identifiersList5, usageIdentifierToTankId.UsageIdentifier)
+		s.Equal([]uint64{1, 2, 3, 4, 5}, usageIdentifierToTankId.GasTankIds)
+	}
+	s.Equal("/cosmos.bank.v1beta1.MsgMultiSend", usageIdentifiersToTankIds[0].UsageIdentifier)
+	s.Equal("/cosmos.bank.v1beta1.MsgSend", usageIdentifiersToTankIds[1].UsageIdentifier)
 
 }
