@@ -3,6 +3,7 @@ package keeper
 import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
@@ -15,32 +16,42 @@ const (
 	hubRecipient = "dym1mk7pw34ypusacm29m92zshgxee3yreums8avur"
 )
 
-// PrepareGenesisTransfer prepares the genesis transfer packet.
-// It returns the packet data if the genesis accounts are defined, otherwise it returns nil.
-// The transfer funds are escrowed explicitly in this method.
-func (k Keeper) PrepareGenesisTransfer(ctx sdk.Context, portID, channelID string) (*transfertypes.FungibleTokenPacketData, error) {
-	gAccounts := k.GetGenesisInfo(ctx).GenesisAccounts
+// PrepareGenesisBridgeData prepares the genesis bridge data.
+// Bridge data contains the genesis transfer packet data if the genesis accounts are defined, otherwise it's nil.
+// Additionally, the method returns the packet coin (if any) that will be used for the escrow.
+func (k Keeper) PrepareGenesisBridgeData(ctx sdk.Context) (types.GenesisBridgeData, error) {
+	gInfo := k.GetGenesisInfo(ctx)
+
+	denomMeta, ok := k.bk.GetDenomMetaData(ctx, gInfo.BaseDenom())
+	if !ok {
+		return types.GenesisBridgeData{}, errorsmod.Wrap(gerrc.ErrInternal, "denom metadata not found")
+	}
+
 	amount := math.ZeroInt()
-	for _, acc := range gAccounts {
+	for _, acc := range gInfo.GenesisAccounts {
 		amount = amount.Add(acc.Amount)
 	}
 
 	// no genesis accounts defined => no genesis transfer needed
 	if amount.IsZero() {
-		return nil, nil
+		return types.GenesisBridgeData{
+			GenesisInfo:     gInfo,
+			NativeDenom:     denomMeta,
+			GenesisTransfer: nil,
+		}, nil
 	}
 
-	sender := k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress().String()
-	denom := k.GetBaseDenom(ctx)
+	var (
+		sender = k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress().String()
+		denom  = gInfo.BaseDenom()
+		packet = transfertypes.NewFungibleTokenPacketData(denom, amount.String(), sender, hubRecipient, "")
+	)
 
-	// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
-	err := k.EscrowGenesisTransferFunds(ctx, portID, channelID, sdk.NewCoin(denom, amount))
-	if err != nil {
-		return nil, errorsmod.Wrap(err, "escrow genesis transfer funds")
-	}
-
-	packet := transfertypes.NewFungibleTokenPacketData(denom, amount.String(), sender, hubRecipient, "")
-	return &packet, nil
+	return types.GenesisBridgeData{
+		GenesisInfo:     gInfo,
+		NativeDenom:     denomMeta,
+		GenesisTransfer: &packet,
+	}, nil
 }
 
 // EscrowGenesisTransferFunds escrows the genesis transfer funds.

@@ -13,7 +13,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 var transferTimeout = (time.Duration(24*365) * time.Hour) // very long timeout
@@ -76,25 +75,17 @@ func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, chann
 		return
 	}
 
-	// prepare genesis info
-	gInfo := w.k.GetGenesisInfo(ctx)
-
-	// prepare the denom metadata
-	d, ok := w.bank.GetDenomMetaData(ctx, gInfo.BaseDenom())
-	if !ok {
-		return 0, errorsmod.Wrap(gerrc.ErrInternal, "denom metadata not found")
-	}
-
-	// prepare the genesis transfer
-	genesisTransferPacket, err := w.k.PrepareGenesisTransfer(ctx, portID, channelID)
+	data, err := w.k.PrepareGenesisBridgeData(ctx)
 	if err != nil {
-		return 0, errorsmod.Wrap(err, "genesis transfer")
+		return 0, errorsmod.Wrap(err, "prepare genesis bridge data")
 	}
 
-	data := &types.GenesisBridgeData{
-		GenesisInfo:     gInfo,
-		NativeDenom:     d,
-		GenesisTransfer: genesisTransferPacket,
+	if data.GenesisTransfer != nil {
+		// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
+		err = w.k.EscrowGenesisTransferFunds(ctx, portID, channelID, data.GenesisInfo.BaseCoinSupply())
+		if err != nil {
+			return 0, errorsmod.Wrap(err, "escrow genesis transfer funds")
+		}
 	}
 
 	bz, err := json.Marshal(data)

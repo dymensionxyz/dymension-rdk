@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "hub-genesis/params.proto";
 import "hub-genesis/state.proto";
 import "hub-genesis/genesis_info.proto";
+import "hub-genesis/genesis_bridge_data.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
@@ -27,6 +28,12 @@ service Query {
   rpc GenesisInfo(QueryGenesisInfoRequest) returns (QueryGenesisInfoResponse) {
     option (google.api.http).get =
         "/dymensionxyz/dymension-rdk/hub-genesis/genesis_info";
+  }
+
+  // GenesisInfo returns the genesis info of the rollapp.
+  rpc GenesisBridgeData(QueryGenesisBridgeDataRequest) returns (QueryGenesisBridgeDataResponse) {
+    option (google.api.http).get =
+        "/dymensionxyz/dymension-rdk/hub-genesis/genesis_bridge_data";
   }
 }
 
@@ -57,4 +64,15 @@ message QueryGenesisInfoRequest {}
 message QueryGenesisInfoResponse {
   // genesis_info holds the genesis info of the rollapp
   GenesisInfo genesis_info = 1 [ (gogoproto.nullable) = false ];
+}
+
+// QueryGenesisInfoRequest is the request type for the Query/GenesisBridgeData RPC
+// method.
+message QueryGenesisBridgeDataRequest {}
+
+// QueryGenesisInfoResponse is the response type for the Query/GenesisBridgeData RPC
+// method.
+message QueryGenesisBridgeDataResponse {
+  // genesis_info holds the genesis info of the rollapp
+  GenesisBridgeData data = 1 [ (gogoproto.nullable) = false ];
 }
