@@ -5,11 +5,12 @@ import (
 
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGenesisTransferCreation(t *testing.T) {
@@ -28,8 +29,9 @@ func TestGenesisTransferCreation(t *testing.T) {
 	app := utils.SetupWithGenesisBridge(t, genesisBridgeFunds, genAccounts)
 	k, ctx := testkeepers.NewTestHubGenesisKeeperFromApp(app)
 
-	packet, err := k.PrepareGenesisTransfer(ctx, "porttransfer", "channel-0")
+	data, err := k.PrepareGenesisBridgeData(ctx)
 	require.NoError(t, err)
+	packet := data.GenesisTransfer
 	require.NotNil(t, packet)
 
 	assert.Equal(t, "stake", packet.Denom)
@@ -41,7 +43,7 @@ func TestGenesisTransferCreation_NoGenesisAccounts(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestHubGenesisKeeperFromApp(app)
 
-	packet, err := k.PrepareGenesisTransfer(ctx, "porttransfer", "channel-0")
+	data, err := k.PrepareGenesisBridgeData(ctx)
 	require.NoError(t, err)
-	require.Nil(t, packet)
+	require.Nil(t, data.GenesisTransfer)
 }

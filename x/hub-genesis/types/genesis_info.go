@@ -31,3 +31,12 @@ func (a GenesisAccount) ValidateBasic() error {
 func (g GenesisInfo) BaseDenom() string {
 	return g.NativeDenom.Base
 }
+
+// BaseCoinSupply returns the total supply of the base denom: the sum of all the genesis account amounts.
+func (g GenesisInfo) BaseCoinSupply() sdk.Coin {
+	amount := sdk.ZeroInt()
+	for _, acc := range g.GenesisAccounts {
+		amount = amount.Add(acc.Amount)
+	}
+	return sdk.NewCoin(g.BaseDenom(), amount)
+}
