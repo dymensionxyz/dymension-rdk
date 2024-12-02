@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -11,6 +12,8 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+
+	"github.com/dymensionxyz/dymension-rdk/utils/collcompat"
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
@@ -24,6 +27,9 @@ type Keeper struct {
 	// accountKeeper types.AccountKeeper
 	bankKeeper types.BankKeeper
 	wasmKeeper *wasmkeeper.Keeper
+
+	usageIdentifierToGasTankIDSet collections.KeySet[collections.Pair[string, uint64]]
+	lastUsedGasTankIDMap          collections.Map[string, uint64]
 }
 
 // NewKeeper creates a new gasless Keeper instance.
@@ -46,6 +52,18 @@ func NewKeeper(
 		interfaceRegistry: interfaceRegistry,
 		bankKeeper:        bankKeeper,
 		wasmKeeper:        wasmKeeper,
+		usageIdentifierToGasTankIDSet: collections.NewKeySet[collections.Pair[string, uint64]](
+			collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey)),
+			types.UsageIdentifierToGasTankIdsKeyPrefix,
+			"usageIdentifierToGasTankID",
+			collections.PairKeyCodec(collections.StringKey, collections.Uint64Key)),
+		lastUsedGasTankIDMap: collections.NewMap(
+			collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey)),
+			types.LastUsedGasTankKey,
+			"lastUsedGasTankID",
+			collections.StringKey,
+			collections.Uint64Value,
+		),
 	}
 }
 

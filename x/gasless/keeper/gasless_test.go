@@ -4,11 +4,10 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	errors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
-
-	// _ "github.com/stretchr/testify/suite"
+	"github.com/cosmos/cosmos-sdk/types/errors"
 	"golang.org/x/exp/slices"
+
+	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
 
 func (s *KeeperTestSuite) TestCreateGasTank() {
