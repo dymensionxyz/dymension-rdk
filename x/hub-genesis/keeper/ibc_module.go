@@ -75,14 +75,14 @@ func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, chann
 		return
 	}
 
-	data, genesisTransferCoin, err := w.k.PrepareGenesisBridgeData(ctx)
+	data, err := w.k.PrepareGenesisBridgeData(ctx)
 	if err != nil {
 		return 0, errorsmod.Wrap(err, "prepare genesis bridge data")
 	}
 
 	if data.GenesisTransfer != nil {
 		// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
-		err = w.k.EscrowGenesisTransferFunds(ctx, portID, channelID, genesisTransferCoin)
+		err = w.k.EscrowGenesisTransferFunds(ctx, portID, channelID, data.GenesisInfo.BaseCoinSupply())
 		if err != nil {
 			return 0, errorsmod.Wrap(err, "escrow genesis transfer funds")
 		}

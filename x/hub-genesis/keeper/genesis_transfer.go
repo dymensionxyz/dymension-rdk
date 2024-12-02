@@ -19,12 +19,12 @@ const (
 // PrepareGenesisBridgeData prepares the genesis bridge data.
 // Bridge data contains the genesis transfer packet data if the genesis accounts are defined, otherwise it's nil.
 // Additionally, the method returns the packet coin (if any) that will be used for the escrow.
-func (k Keeper) PrepareGenesisBridgeData(ctx sdk.Context) (types.GenesisBridgeData, sdk.Coin, error) {
+func (k Keeper) PrepareGenesisBridgeData(ctx sdk.Context) (types.GenesisBridgeData, error) {
 	gInfo := k.GetGenesisInfo(ctx)
 
 	denomMeta, ok := k.bk.GetDenomMetaData(ctx, gInfo.BaseDenom())
 	if !ok {
-		return types.GenesisBridgeData{}, sdk.Coin{}, errorsmod.Wrap(gerrc.ErrInternal, "denom metadata not found")
+		return types.GenesisBridgeData{}, errorsmod.Wrap(gerrc.ErrInternal, "denom metadata not found")
 	}
 
 	amount := math.ZeroInt()
@@ -38,21 +38,20 @@ func (k Keeper) PrepareGenesisBridgeData(ctx sdk.Context) (types.GenesisBridgeDa
 			GenesisInfo:     gInfo,
 			NativeDenom:     denomMeta,
 			GenesisTransfer: nil,
-		}, sdk.Coin{}, nil
+		}, nil
 	}
 
 	var (
-		sender     = k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress().String()
-		denom      = gInfo.BaseDenom()
-		packetCoin = sdk.NewCoin(denom, amount)
-		packet     = transfertypes.NewFungibleTokenPacketData(denom, amount.String(), sender, hubRecipient, "")
+		sender = k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress().String()
+		denom  = gInfo.BaseDenom()
+		packet = transfertypes.NewFungibleTokenPacketData(denom, amount.String(), sender, hubRecipient, "")
 	)
 
 	return types.GenesisBridgeData{
 		GenesisInfo:     gInfo,
 		NativeDenom:     denomMeta,
 		GenesisTransfer: &packet,
-	}, packetCoin, nil
+	}, nil
 }
 
 // EscrowGenesisTransferFunds escrows the genesis transfer funds.

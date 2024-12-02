@@ -29,7 +29,7 @@ func TestGenesisTransferCreation(t *testing.T) {
 	app := utils.SetupWithGenesisBridge(t, genesisBridgeFunds, genAccounts)
 	k, ctx := testkeepers.NewTestHubGenesisKeeperFromApp(app)
 
-	data, _, err := k.PrepareGenesisBridgeData(ctx)
+	data, err := k.PrepareGenesisBridgeData(ctx)
 	require.NoError(t, err)
 	packet := data.GenesisTransfer
 	require.NotNil(t, packet)
@@ -43,7 +43,7 @@ func TestGenesisTransferCreation_NoGenesisAccounts(t *testing.T) {
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestHubGenesisKeeperFromApp(app)
 
-	data, _, err := k.PrepareGenesisBridgeData(ctx)
+	data, err := k.PrepareGenesisBridgeData(ctx)
 	require.NoError(t, err)
 	require.Nil(t, data.GenesisTransfer)
 }

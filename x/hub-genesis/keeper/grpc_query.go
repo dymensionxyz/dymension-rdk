@@ -36,7 +36,7 @@ func (q Querier) GenesisInfo(ctx context.Context, _ *types.QueryGenesisInfoReque
 
 func (q Querier) GenesisBridgeData(goCtx context.Context, _ *types.QueryGenesisBridgeDataRequest) (*types.QueryGenesisBridgeDataResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	data, _, err := q.PrepareGenesisBridgeData(ctx)
+	data, err := q.PrepareGenesisBridgeData(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
