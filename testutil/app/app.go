@@ -3,13 +3,14 @@ package app
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dymensionxyz/dymension-rdk/x/tokenfactory"
-	tokenfactorykeeper "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/keeper"
-	tokenfactorytypes "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/types"
 	"io"
 	"net/http"
 	"path/filepath"
 	"strings"
+
+	"github.com/dymensionxyz/dymension-rdk/x/tokenfactory"
+	tokenfactorykeeper "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata"
 	denommetadatamoduletypes "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"

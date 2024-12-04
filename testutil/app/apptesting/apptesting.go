@@ -2,9 +2,10 @@ package apptesting
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	"time"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
