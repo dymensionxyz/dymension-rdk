@@ -8,6 +8,10 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dymensionxyz/dymension-rdk/x/tokenfactory"
+	tokenfactorykeeper "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/keeper"
+	tokenfactorytypes "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/denommetadata"
 	denommetadatamoduletypes "github.com/dymensionxyz/dymension-rdk/x/denommetadata/types"
 	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
@@ -146,7 +150,7 @@ var kvstorekeys = []string{
 	ibchost.StoreKey, upgradetypes.StoreKey,
 	epochstypes.StoreKey, hubgentypes.StoreKey, hubtypes.StoreKey,
 	ibctransfertypes.StoreKey, capabilitytypes.StoreKey, gaslesstypes.StoreKey, wasmtypes.StoreKey,
-	rollappparamstypes.StoreKey, timeupgradetypes.StoreKey,
+	tokenfactorytypes.StoreKey, rollappparamstypes.StoreKey, timeupgradetypes.StoreKey,
 }
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -192,6 +196,7 @@ var (
 		hubgenesis.AppModuleBasic{},
 		gasless.AppModuleBasic{},
 		wasm.AppModuleBasic{},
+		tokenfactory.NewAppModuleBasic(),
 		rollappparams.AppModuleBasic{},
 	)
 
@@ -208,6 +213,7 @@ var (
 		gaslesstypes.ModuleName:        nil,
 		wasmtypes.ModuleName:           {authtypes.Burner},
 		rollappparamstypes.ModuleName:  nil,
+		tokenfactorytypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
 	}
 )
 
@@ -248,6 +254,7 @@ type App struct {
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
 	TransferKeeper      ibctransferkeeper.Keeper
 	WasmKeeper          wasmkeeper.Keeper
+	TokenFactoryKeeper  tokenfactorykeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -495,6 +502,16 @@ func NewRollapp(
 		scopedTransferKeeper,
 	)
 
+	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
+		keys[tokenfactorytypes.StoreKey],
+		app.GetSubspace(tokenfactorytypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.DistrKeeper,
+	)
+
+	app.TokenFactoryKeeper = tokenFactoryKeeper
+
 	var transferStack ibcporttypes.IBCModule
 	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
 	transferStack = denommetadata.NewIBCModule(
@@ -585,6 +602,7 @@ func NewRollapp(
 		epochs.NewAppModule(appCodec, app.EpochsKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
+		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		ibctransfer.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
@@ -618,6 +636,7 @@ func NewRollapp(
 		paramstypes.ModuleName,
 		hubgentypes.ModuleName,
 		wasm.ModuleName,
+		tokenfactorytypes.ModuleName,
 		gaslesstypes.ModuleName,
 		rollappparamstypes.ModuleName,
 	}
@@ -641,6 +660,7 @@ func NewRollapp(
 		ibctransfertypes.ModuleName,
 		hubgentypes.ModuleName,
 		wasm.ModuleName,
+		tokenfactorytypes.ModuleName,
 		gaslesstypes.ModuleName,
 		rollappparamstypes.ModuleName,
 	}
@@ -670,6 +690,7 @@ func NewRollapp(
 		ibctransfertypes.ModuleName,
 		hubgentypes.ModuleName,
 		wasm.ModuleName,
+		tokenfactorytypes.ModuleName,
 		gaslesstypes.ModuleName,
 		rollappparamstypes.ModuleName,
 	}
@@ -975,6 +996,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(hubgentypes.ModuleName)
 	paramsKeeper.Subspace(gaslesstypes.ModuleName)
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
+	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
 	paramsKeeper.Subspace(rollappparamstypes.ModuleName)
 
 	return paramsKeeper
