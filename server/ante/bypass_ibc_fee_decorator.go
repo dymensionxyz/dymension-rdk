@@ -4,9 +4,11 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
+	"github.com/cosmos/cosmos-sdk/x/group"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	distrkeeper "github.com/dymensionxyz/dymension-rdk/x/dist/keeper"
-	seqkeeper "github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
@@ -16,11 +18,20 @@ type anteHandler interface {
 
 type BypassIBCFeeDecorator struct {
 	nextAnte anteHandler
-	dk       distrkeeper.Keeper
-	sk       seqkeeper.Keeper
+	dk       distrKeeper
+	sk       sequencerKeeper
 }
 
-func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrkeeper.Keeper, sk seqkeeper.Keeper) BypassIBCFeeDecorator {
+type distrKeeper interface {
+	GetPreviousProposerConsAddr(ctx sdk.Context) sdk.ConsAddress
+}
+
+type sequencerKeeper interface {
+	GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (stakingtypes.Validator, bool)
+	GetWhitelistedRelayers(ctx sdk.Context, operatorAddr sdk.ValAddress) (types.WhitelistedRelayers, error)
+}
+
+func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencerKeeper) BypassIBCFeeDecorator {
 	return BypassIBCFeeDecorator{
 		nextAnte: nextAnte,
 		dk:       dk,
@@ -28,18 +39,31 @@ func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrkeeper.Keeper, sk se
 	}
 }
 
-// AnteHandle skips fee deduct and min gas price ante handlers for whitelisted relayer messages
+// AnteHandle allows IBC relayer messages and skips fee deduct and min gas price ante handlers for whitelisted relayer messages
 func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	// Check if the tx is from whitelisted relayer
-	ibcWhitelisted, err := n.isIBCWhitelistedRelayer(ctx, tx.GetMsgs())
+	msgs := tx.GetMsgs()
+	var err error
+	msgs, err = n.getAllFinalMsgs(ctx, msgs, 0)
 	if err != nil {
-		ctx.Logger().With("module", "BypassIBCFeeDecorator", "err", err).
-			Error("Failed to check if the tx is from the whitelisted relayer")
-		return ctx, fmt.Errorf("check if the tx is from the whitelisted relayer: %w", err)
+		return ctx, err
 	}
-	if ibcWhitelisted {
-		// The tx is from the whitelisted relayer, so it's eligible for the fee exemption for IBC relayer messages
-		return next(ctx, tx, simulate)
+
+	totalMsgs := len(msgs)
+	ibcCount := countIBCMsgs(msgs)
+
+	if ibcCount == totalMsgs {
+		// all are IBC messages
+		ibcWhitelisted, err := n.isIBCWhitelistedRelayer(ctx, msgs)
+		if err != nil {
+			return ctx, err
+		}
+		if ibcWhitelisted {
+			return next(ctx, tx, simulate)
+		}
+		return ctx, fmt.Errorf("not all signers whitelisted")
+	} else if ibcCount > 0 {
+		// mixed: some IBC and some non-IBC
+		return ctx, fmt.Errorf("mixed IBC and non-IBC messages in the same transaction not allowed")
 	}
 
 	// The tx if not from the whitelisted relayer; proceed with the default fee handling
@@ -81,4 +105,49 @@ func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []s
 	}
 
 	return true, nil
+}
+
+const maxDepth = 6
+
+// getAllFinalMsgs recursively extracts all final messages from possibly nested messages.
+func (n BypassIBCFeeDecorator) getAllFinalMsgs(ctx sdk.Context, msgs []sdk.Msg, depth int) ([]sdk.Msg, error) {
+	if depth >= maxDepth {
+		return nil, fmt.Errorf("found more nested msgs than permitted. Limit is : %d", maxDepth)
+	}
+
+	var final []sdk.Msg
+	for _, msg := range msgs {
+		inner, err := n.getInnerMsgs(ctx, msg, depth)
+		if err != nil {
+			return nil, err
+		}
+		final = append(final, inner...)
+	}
+	return final, nil
+}
+
+// getInnerMsgs handles nested messages and returns the final messages contained inside them.
+func (n BypassIBCFeeDecorator) getInnerMsgs(ctx sdk.Context, msg sdk.Msg, depth int) ([]sdk.Msg, error) {
+	if depth >= maxDepth {
+		return nil, fmt.Errorf("found more nested msgs than permitted. Limit is : %d", maxDepth)
+	}
+
+	var f func() ([]sdk.Msg, error)
+	switch m := msg.(type) {
+	case *authz.MsgExec:
+		f = m.GetMessages
+	case *govtypesv1.MsgSubmitProposal:
+		f = m.GetMsgs
+	case *group.MsgSubmitProposal:
+		f = m.GetMsgs
+	}
+	if f != nil {
+		messages, err := f()
+		if err != nil {
+			return nil, err
+		}
+		return n.getAllFinalMsgs(ctx, messages, depth+1)
+	}
+	// it's a final message
+	return []sdk.Msg{msg}, nil
 }
