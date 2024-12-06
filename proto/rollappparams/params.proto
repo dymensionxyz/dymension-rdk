@@ -1,6 +1,8 @@
 syntax = "proto3";
 package rollapp.params.types;
+
 import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types";
 
@@ -10,4 +12,30 @@ message Params {
   string da = 1;
   // drs version
   uint32 drs_version = 2;
+  // MinGasPrices is globally-specified minimum gas prices for transactions. These values
+  // determine which denoms validators can use for accepting fees as well as minimum gas prices
+  // for fees in each denom. Values from this list overwrite the validator-specified minimum
+  // gas prices if greater. If the list is empty, then validators can accept any denom they specify.
+  //
+  // For example:
+  //
+  //  Global:    [10adym 1stake  5uatom] <- Validator could only accept fees in these denoms.
+  //  Validator: [1adym  10stake        1uosmo]
+  //  Final:     [10adym 10stake]
+  //
+  // After merging, the validator would only be able to accept fees greater than 10adym or 10stake.
+  // If a validator attempted to accept a fee of 6uatom or 2uosmo, the transaction would be rejected.
+  //
+  // Possible cases:
+  //
+  //  | Global    | Validator | Result                       |
+  //  |-----------|-----------|------------------------------|
+  //  | empty     | empty     | all txs are accepted         |
+  //  | empty     | non-empty | validator values             |
+  //  | non-empty | empty     | global values                |
+  //  | non-empty | non-empty | intersect(global, validator) |
+  repeated cosmos.base.v1beta1.DecCoin min_gas_prices = 3 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
+    (gogoproto.nullable) = false
+  ];
 }
