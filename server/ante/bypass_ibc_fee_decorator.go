@@ -31,14 +31,14 @@ func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrkeeper.Keeper, sk se
 // AnteHandle skips fee deduct and min gas price ante handlers for whitelisted relayer messages
 func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	// Check if the tx is from whitelisted relayer
-	whitelisted, err := n.isWhitelistedRelayer(ctx, tx.GetMsgs())
+	ibcWhitelisted, err := n.isIBCWhitelistedRelayer(ctx, tx.GetMsgs())
 	if err != nil {
-		// This error is not critical; just log and fall into the default fee handling
 		ctx.Logger().With("module", "BypassIBCFeeDecorator", "err", err).
 			Error("Failed to check if the tx is from the whitelisted relayer")
+		return ctx, fmt.Errorf("check if the tx is from the whitelisted relayer: %w", err)
 	}
-	if whitelisted {
-		// The tx is from the whitelisted relayer, so it's eligible for the fee exemption
+	if ibcWhitelisted {
+		// The tx is from the whitelisted relayer, so it's eligible for the fee exemption for IBC relayer messages
 		return next(ctx, tx, simulate)
 	}
 
@@ -46,8 +46,8 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	return n.nextAnte.AnteHandle(ctx, tx, simulate, next)
 }
 
-// isWhitelistedRelayer checks if all the messages in the transaction are from whitelisted IBC relayer
-func (n BypassIBCFeeDecorator) isWhitelistedRelayer(ctx sdk.Context, msgs []sdk.Msg) (bool, error) {
+// isIBCWhitelistedRelayer checks if all the messages in the transaction are from whitelisted IBC relayer
+func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []sdk.Msg) (bool, error) {
 	// Check if the tx is from IBC relayer
 	if !IsIBCRelayerMsg(msgs) {
 		return false, nil
@@ -74,7 +74,8 @@ func (n BypassIBCFeeDecorator) isWhitelistedRelayer(ctx sdk.Context, msgs []sdk.
 		for _, signer := range signers {
 			_, ok := wlRelayersMap[signer.String()]
 			if !ok {
-				return false, nil
+				// if not a whitelisted relayer, we block them from sending the IBC relayer messages
+				return false, fmt.Errorf("signer %s is not a whitelisted relayer", signer.String())
 			}
 		}
 	}
