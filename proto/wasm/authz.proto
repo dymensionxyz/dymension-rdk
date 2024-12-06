@@ -1,0 +1,22 @@
+syntax = "proto3";
+package rollapp.wasm;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/wasm";
+
+// ContractExecutionAuthorization defines authorization for wasm execute.
+message ContractExecutionAuthorization {
+  option (cosmos_proto.implements_interface) = "cosmos.authz.v1beta1.Authorization";
+
+  // Contracts is a list of allowed contracts. Optional.
+  repeated string contracts = 1;
+
+  // SpendLimits defines spending limits for contracts interactions.
+  repeated cosmos.base.v1beta1.Coin spend_limit = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
