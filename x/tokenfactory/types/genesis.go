@@ -1,6 +1,9 @@
 package types
 
 import (
+	"fmt"
+	"strings"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -34,9 +37,8 @@ func (gs GenesisState) Validate() error {
 		}
 		seenDenoms[denom.GetDenom()] = true
 
-		_, _, err := DeconstructDenom(denom.GetDenom())
-		if err != nil {
-			return err
+		if strings.HasPrefix(denom.Denom, "ibc") {
+			return fmt.Errorf("IBC denoms are not allowed in denom metadata")
 		}
 
 		if denom.AuthorityMetadata.Admin != "" {
