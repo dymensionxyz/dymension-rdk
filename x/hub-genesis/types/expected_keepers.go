@@ -30,3 +30,7 @@ type BankKeeper interface {
 type MintKeeper interface {
 	MintDenom(ctx sdk.Context) string
 }
+
+type GenesisBridgeSubmitter interface {
+	SubmitGenesisBridgeData(ctx sdk.Context, portID string, channelID string) (seq uint64, err error)
+}

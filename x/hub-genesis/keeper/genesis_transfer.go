@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"strings"
+
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
@@ -60,4 +62,42 @@ func (k Keeper) EscrowGenesisTransferFunds(ctx sdk.Context, portID, channelID st
 	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
 	sender := k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress()
 	return k.bk.SendCoins(ctx, sender, escrowAddress, sdk.NewCoins(token))
+}
+
+// enableBridge enables the bridge after successful genesis bridge phase.
+func (k Keeper) enableBridge(ctx sdk.Context, state types.State, portID, channelID string) {
+	state.SetCanonicalTransferChannel(portID, channelID)
+	state.OutboundTransfersEnabled = true
+	k.SetState(ctx, state)
+}
+
+// ResubmitPendingGenesisBridges attempts to resubmit genesis bridge data for all pending channels
+func (k Keeper) ResubmitPendingGenesisBridges(ctx sdk.Context) {
+	state := k.GetState(ctx)
+	// If canonical channel is set, we don't need to resubmit
+	if state.CanonicalHubTransferChannelHasBeenSet() {
+		return
+	}
+
+	// Iterate over all pending channels
+	for portChannel, required := range k.onGoingChannels {
+		// Skip if channel is not acked yet
+		if !required {
+			continue
+		}
+
+		port, channel, found := strings.Cut(portChannel, "/")
+		if !found {
+			k.Logger(ctx).Error("invalid port/channel key in onGoingChannels", "key", portChannel)
+			continue
+		}
+
+		seq, err := k.gb.SubmitGenesisBridgeData(ctx, port, channel)
+		if err != nil {
+			k.Logger(ctx).Error("error submitting genesis bridge data", "port", port, "channel", channel, "error", err)
+			continue
+		}
+
+		k.Logger(ctx).Info("resubmitted genesis bridge data", "sequence", seq, "port", port, "channel", channel)
+	}
 }

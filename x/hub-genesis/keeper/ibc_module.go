@@ -15,7 +15,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
-var transferTimeout = (time.Duration(24*365) * time.Hour) // very long timeout
+var transferTimeout = (time.Hour) // we use short timeout as we have retry mechanism
 
 type IBCModule struct {
 	porttypes.IBCModule
@@ -54,13 +54,18 @@ func (w IBCModule) OnChanOpenConfirm(
 		return nil
 	}
 
+	// if already ongoing, do nothing (not sure it can happen. maybe on retries?)
+	if w.k.IsPendingChannel(portID, channelID) {
+		return nil
+	}
+
 	seq, err := w.SubmitGenesisBridgeData(ctx, portID, channelID)
 	if err != nil {
 		return errorsmod.Wrap(err, "submit genesis bridge data")
 	}
 
-	state.SetCanonicalTransferChannel(portID, channelID)
-	w.k.SetState(ctx, state)
+	// Mark this channel as having a pending genesis bridge submission
+	w.k.AddPendingChannel(portID, channelID)
 
 	w.logger(ctx).Info("genesis bridge data submitted", "sequence", seq, "port", portID, "channel", channelID)
 	return nil
@@ -116,20 +121,51 @@ func (w IBCModule) OnAcknowledgementPacket(
 		return err
 	}
 
+	if !w.k.IsPendingChannel(packet.SourcePort, packet.SourceChannel) {
+		// error?????
+		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	}
+
 	if !ack.Success() {
+		// need to mark the packet as acked, so it will be retried
+		w.k.onGoingChannels[packet.SourcePort+"/"+packet.SourceChannel] = true
 		w.logger(ctx).Error("acknowledgement failed for genesis transfer", "packet", packet, "ack", ack)
 		return errors.New("acknowledgement failed for genesis transfer")
 	}
 
-	w.k.enableBridge(ctx, state)
+	// If ack success, enable the bridge for the successful channel
+	w.k.enableBridge(ctx, state, packet.SourcePort, packet.SourceChannel)
+
+	// clean retry queue
+	w.k.ClearPendingChannels()
+
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
 	w.logger(ctx).Info("genesis bridge phase completed successfully")
 
 	return nil
 }
 
-// enableBridge enables the bridge after successful genesis bridge phase.
-func (k Keeper) enableBridge(ctx sdk.Context, state types.State) {
-	state.OutboundTransfersEnabled = true
-	k.SetState(ctx, state)
+// ontimeout packet
+func (w IBCModule) OnTimeoutPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
+) error {
+
+	state := w.k.GetState(ctx)
+
+	// if outbound transfers are enabled, no-op
+	if state.OutboundTransfersEnabled {
+		return w.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
+	}
+
+	if !w.k.IsPendingChannel(packet.SourcePort, packet.SourceChannel) {
+		w.logger(ctx).Error("timeout for unknown channel", "packet", packet)
+		return errors.New("timeout for unknown channel")
+	}
+
+	// set the channel as retry required
+	w.k.onGoingChannels[packet.SourcePort+"/"+packet.SourceChannel] = true
+
+	return w.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
 }

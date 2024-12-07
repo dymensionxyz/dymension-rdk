@@ -21,6 +21,11 @@ type Keeper struct {
 	ak types.AccountKeeper
 	bk types.BankKeeper
 	mk types.MintKeeper
+
+	gb types.GenesisBridgeSubmitter
+
+	// FIXME: change to collection
+	onGoingChannels map[string]bool // key is port/channel. bool is wether retransmission required
 }
 
 func NewKeeper(
@@ -30,6 +35,7 @@ func NewKeeper(
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
 	mk types.MintKeeper,
+	gb types.GenesisBridgeSubmitter,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -45,14 +51,19 @@ func NewKeeper(
 	if mk == nil {
 		panic("mint keeper cannot be nil")
 	}
+	if gb == nil {
+		panic("genesis bridge submitter cannot be nil")
+	}
 
 	return Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		paramstore: ps,
-		ak:         ak,
-		bk:         bk,
-		mk:         mk,
+		cdc:             cdc,
+		storeKey:        storeKey,
+		paramstore:      ps,
+		ak:              ak,
+		bk:              bk,
+		mk:              mk,
+		gb:              gb,
+		onGoingChannels: make(map[string]bool),
 	}
 }
 
@@ -105,4 +116,19 @@ func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 	var gInfo types.GenesisInfo
 	k.cdc.MustUnmarshal(bz, &gInfo)
 	return gInfo
+}
+
+func (k Keeper) AddPendingChannel(port, channel string) {
+	key := port + "/" + channel
+	k.onGoingChannels[key] = false
+}
+
+func (k *Keeper) ClearPendingChannels() {
+	k.onGoingChannels = make(map[string]bool)
+}
+
+func (k Keeper) IsPendingChannel(port, channel string) bool {
+	key := port + "/" + channel
+	_, ok := k.onGoingChannels[key]
+	return ok
 }
