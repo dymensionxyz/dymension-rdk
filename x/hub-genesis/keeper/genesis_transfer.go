@@ -1,8 +1,6 @@
 package keeper
 
 import (
-	"strings"
-
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
@@ -57,11 +55,17 @@ func (k Keeper) PrepareGenesisBridgeData(ctx sdk.Context) (types.GenesisBridgeDa
 }
 
 // EscrowGenesisTransferFunds escrows the genesis transfer funds.
-// The code is copied from the `transfer` module's `Keeper.sendTransfer` method.
 func (k Keeper) EscrowGenesisTransferFunds(ctx sdk.Context, portID, channelID string, token sdk.Coin) error {
 	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
 	sender := k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress()
 	return k.bk.SendCoins(ctx, sender, escrowAddress, sdk.NewCoins(token))
+}
+
+// UnescrowGenesisTransferFunds unescrows the genesis transfer funds.
+func (k Keeper) UnescrowGenesisTransferFunds(ctx sdk.Context, portID, channelID string, token sdk.Coin) error {
+	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
+	sender := k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress()
+	return k.bk.SendCoins(ctx, escrowAddress, sender, sdk.NewCoins(token))
 }
 
 // enableBridge enables the bridge after successful genesis bridge phase.
@@ -80,24 +84,36 @@ func (k Keeper) ResubmitPendingGenesisBridges(ctx sdk.Context) {
 	}
 
 	// Iterate over all pending channels
-	for portChannel, required := range k.onGoingChannels {
+	err := k.OngoingChannels.Walk(ctx, nil, func(portChannel string, retryRequired bool) (stop bool, err error) {
 		// Skip if channel is not acked yet
-		if !required {
-			continue
+		if !retryRequired {
+			return false, nil
 		}
 
-		port, channel, found := strings.Cut(portChannel, "/")
-		if !found {
-			k.Logger(ctx).Error("invalid port/channel key in onGoingChannels", "key", portChannel)
-			continue
-		}
-
-		seq, err := k.gb.SubmitGenesisBridgeData(ctx, port, channel)
+		portChan, err := types.FromPortAndChannelKey(portChannel)
 		if err != nil {
-			k.Logger(ctx).Error("error submitting genesis bridge data", "port", port, "channel", channel, "error", err)
-			continue
+			k.Logger(ctx).Error("invalid port/channel key", "portChannel", portChannel)
+			return false, nil
 		}
 
-		k.Logger(ctx).Info("resubmitted genesis bridge data", "sequence", seq, "port", port, "channel", channel)
+		seq, err := k.gb.SubmitGenesisBridgeData(ctx, portChan.Port, portChan.Channel)
+		if err != nil {
+			k.Logger(ctx).Error("failed to resubmit genesis bridge data", "port", portChan.Port, "channel", portChan.Channel, "error", err)
+			return false, nil
+		}
+
+		// disable further retries
+		err = k.SetPendingChannel(ctx, portChan, false)
+		if err != nil {
+			k.Logger(ctx).Error("failed to disable further retries", "port", portChan.Port, "channel", portChan.Channel, "error", err)
+			return false, nil
+		}
+
+		k.Logger(ctx).Info("resubmitted genesis bridge data", "sequence", seq, "port", portChan.Port, "channel", portChan.Channel)
+		return false, nil
+	})
+
+	if err != nil {
+		k.Logger(ctx).Error("failed to resubmit genesis bridge data", "error", err)
 	}
 }

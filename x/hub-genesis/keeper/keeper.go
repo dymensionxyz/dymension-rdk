@@ -7,10 +7,13 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 
+	"cosmossdk.io/collections"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/dymensionxyz/dymension-rdk/utils/collcompat"
 )
 
 type Keeper struct {
@@ -24,8 +27,9 @@ type Keeper struct {
 
 	gb types.GenesisBridgeSubmitter
 
-	// FIXME: change to collection
-	onGoingChannels map[string]bool // key is port/channel. bool is wether retransmission required
+	// Collections-based state
+	// fixme: change bool to enum
+	OngoingChannels collections.Map[string, bool] // key is port/channel. bool is whether retransmission required
 }
 
 func NewKeeper(
@@ -39,8 +43,7 @@ func NewKeeper(
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
-		table := types.ParamKeyTable()
-		ps = ps.WithKeyTable(table)
+		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 	if ak == nil {
 		panic("account keeper cannot be nil")
@@ -51,24 +54,34 @@ func NewKeeper(
 	if mk == nil {
 		panic("mint keeper cannot be nil")
 	}
-	if gb == nil {
-		panic("genesis bridge submitter cannot be nil")
-	}
 
-	return Keeper{
-		cdc:             cdc,
-		storeKey:        storeKey,
-		paramstore:      ps,
-		ak:              ak,
-		bk:              bk,
-		mk:              mk,
-		gb:              gb,
-		onGoingChannels: make(map[string]bool),
+	sb := collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey))
+
+	k := Keeper{
+		cdc:        cdc,
+		storeKey:   storeKey,
+		paramstore: ps,
+		ak:         ak,
+		bk:         bk,
+		mk:         mk,
+		gb:         gb,
+		OngoingChannels: collections.NewMap(
+			sb,
+			types.OngoingChannelsPrefix(),
+			"ongoing_channels",
+			collections.StringKey,
+			collections.BoolValue,
+		),
 	}
+	return k
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+func (k *Keeper) SetICS4Submitter(submitter types.GenesisBridgeSubmitter) {
+	k.gb = submitter
 }
 
 // SetState sets the state.
@@ -118,17 +131,14 @@ func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 	return gInfo
 }
 
-func (k Keeper) AddPendingChannel(port, channel string) {
-	key := port + "/" + channel
-	k.onGoingChannels[key] = false
+func (k Keeper) SetPendingChannel(ctx sdk.Context, portChannel types.PortAndChannel, retryRequired bool) error {
+	return k.OngoingChannels.Set(ctx, portChannel.Key(), retryRequired)
 }
 
-func (k *Keeper) ClearPendingChannels() {
-	k.onGoingChannels = make(map[string]bool)
+func (k Keeper) ClearPendingChannels(ctx sdk.Context) error {
+	return k.OngoingChannels.Clear(ctx, nil)
 }
 
-func (k Keeper) IsPendingChannel(port, channel string) bool {
-	key := port + "/" + channel
-	_, ok := k.onGoingChannels[key]
-	return ok
+func (k Keeper) IsPendingChannel(ctx sdk.Context, portChannel types.PortAndChannel) (bool, error) {
+	return k.OngoingChannels.Has(ctx, portChannel.Key())
 }

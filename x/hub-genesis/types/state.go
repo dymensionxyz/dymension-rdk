@@ -1,8 +1,11 @@
 package types
 
 import (
+	"strings"
+
 	errorsmod "cosmossdk.io/errors"
 	host "github.com/cosmos/ibc-go/v6/modules/core/24-host"
+	gerrc "github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 func (s *State) Validate() error {
@@ -31,4 +34,22 @@ func (s *State) SetCanonicalTransferChannel(port, channel string) {
 		Port:    port,
 		Channel: channel,
 	}
+}
+
+// PortAndChannel
+func (p *PortAndChannel) Key() string {
+	return p.Port + "/" + p.Channel
+}
+
+// FromKey
+func FromPortAndChannelKey(key string) (PortAndChannel, error) {
+	port, channel, found := strings.Cut(key, "/")
+	if !found {
+		return PortAndChannel{}, errorsmod.Wrapf(gerrc.ErrInvalidArgument, "invalid port/channel key in onGoingChannels: %s", key)
+	}
+
+	return PortAndChannel{
+		Port:    port,
+		Channel: channel,
+	}, nil
 }

@@ -49,13 +49,6 @@ func (w IBCModule) OnChanOpenConfirm(
 
 	state := w.k.GetState(ctx)
 	if state.CanonicalHubTransferChannelHasBeenSet() {
-		// We only set the canonical channel in this function, so if it's already been set, we don't need
-		// to send the transfers again.
-		return nil
-	}
-
-	// if already ongoing, do nothing (not sure it can happen. maybe on retries?)
-	if w.k.IsPendingChannel(portID, channelID) {
 		return nil
 	}
 
@@ -65,9 +58,128 @@ func (w IBCModule) OnChanOpenConfirm(
 	}
 
 	// Mark this channel as having a pending genesis bridge submission
-	w.k.AddPendingChannel(portID, channelID)
+	if err := w.k.SetPendingChannel(ctx, types.PortAndChannel{Port: portID, Channel: channelID}, false); err != nil {
+		return errorsmod.Wrap(err, "add pending channel")
+	}
 
 	w.logger(ctx).Info("genesis bridge data submitted", "sequence", seq, "port", portID, "channel", channelID)
+	return nil
+}
+
+func (w IBCModule) OnAcknowledgementPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	acknowledgement []byte,
+	relayer sdk.AccAddress,
+) error {
+	state := w.k.GetState(ctx)
+
+	// if outbound transfers are enabled, we past the genesis phase. nothing to do here.
+	if state.CanonicalHubTransferChannelHasBeenSet() {
+		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	}
+
+	var ack channeltypes.Acknowledgement
+	err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack)
+	if err != nil {
+		return err
+	}
+
+	// validate it's a channel we are expecting
+	portChannel := types.PortAndChannel{Port: packet.SourcePort, Channel: packet.SourceChannel}
+	isPending, err := w.k.IsPendingChannel(ctx, portChannel)
+	if err != nil {
+		return errorsmod.Wrap(err, "check pending channel")
+	}
+	if !isPending {
+		// Not supposed to happen anyway
+		w.logger(ctx).Error("acknowledgement failed for unknown channel", "packet", packet, "ack", ack)
+		return errors.New("acknowledgement failed for unknown channel")
+	}
+
+	if !ack.Success() {
+		w.logger(ctx).Error("acknowledgement failed for genesis transfer", "packet", packet, "ack", ack)
+
+		// Mark the channel for retry
+		portChan := types.PortAndChannel{Port: packet.SourcePort, Channel: packet.SourceChannel}
+		if err := w.k.SetPendingChannel(ctx, portChan, true); err != nil {
+			return errorsmod.Wrap(err, "set channel retry required")
+		}
+
+		var gbData types.GenesisBridgeData
+		err := json.Unmarshal(packet.Data, &gbData)
+		if err != nil {
+			return errorsmod.Wrap(err, "unmarshal genesis bridge data")
+		}
+
+		if gbData.GenesisTransfer != nil {
+			// unescrow and refund the funds
+			err = w.k.UnescrowGenesisTransferFunds(ctx, packet.SourcePort, packet.SourceChannel, gbData.GenesisInfo.BaseCoinSupply())
+			if err != nil {
+				return errorsmod.Wrap(err, "unescrow genesis transfer funds")
+			}
+		}
+
+		return nil
+	}
+
+	// If ack success, enable the bridge for the successful channel and clean up pending state
+	if err := w.k.ClearPendingChannels(ctx); err != nil {
+		return errorsmod.Wrap(err, "clear pending channels")
+	}
+	w.k.enableBridge(ctx, state, packet.SourcePort, packet.SourceChannel)
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
+	w.logger(ctx).Info("genesis bridge phase completed successfully")
+
+	return nil
+}
+
+// OnTimeoutPacket handles IBC packet timeouts
+func (w IBCModule) OnTimeoutPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
+) error {
+	state := w.k.GetState(ctx)
+
+	// if outbound transfers are enabled, no-op
+	if state.CanonicalHubTransferChannelHasBeenSet() {
+		return w.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
+	}
+
+	// validate it's a channel we are expecting
+	portChannel := types.PortAndChannel{Port: packet.SourcePort, Channel: packet.SourceChannel}
+	isPending, err := w.k.IsPendingChannel(ctx, portChannel)
+	if err != nil {
+		return errorsmod.Wrap(err, "check pending channel")
+	}
+	if !isPending {
+		// Not supposed to happen anyway
+		w.logger(ctx).Error("timeout for unknown channel", "packet", packet)
+		return errors.New("timeout for unknown channel")
+	}
+
+	// Mark the channel for retry
+	portChan := types.PortAndChannel{Port: packet.SourcePort, Channel: packet.SourceChannel}
+	if err := w.k.SetPendingChannel(ctx, portChan, true); err != nil {
+		return errorsmod.Wrap(err, "set channel retry required")
+	}
+
+	var gbData types.GenesisBridgeData
+	err = json.Unmarshal(packet.Data, &gbData)
+	if err != nil {
+		return errorsmod.Wrap(err, "unmarshal genesis bridge data")
+	}
+
+	if gbData.GenesisTransfer != nil {
+		// unescrow and refund the funds
+		err = w.k.UnescrowGenesisTransferFunds(ctx, packet.SourcePort, packet.SourceChannel, gbData.GenesisInfo.BaseCoinSupply())
+		if err != nil {
+			return errorsmod.Wrap(err, "unescrow genesis transfer funds")
+		}
+	}
+
 	return nil
 }
 
@@ -100,72 +212,4 @@ func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, chann
 
 	timeoutTimestamp := ctx.BlockTime().Add(transferTimeout).UnixNano()
 	return w.channelKeeper.SendPacket(ctx, chanCap, portID, channelID, clienttypes.ZeroHeight(), uint64(timeoutTimestamp), bz)
-}
-
-func (w IBCModule) OnAcknowledgementPacket(
-	ctx sdk.Context,
-	packet channeltypes.Packet,
-	acknowledgement []byte,
-	relayer sdk.AccAddress,
-) error {
-	state := w.k.GetState(ctx)
-
-	// if outbound transfers are enabled, we past the genesis phase. nothing to do here.
-	if state.OutboundTransfersEnabled {
-		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
-	}
-
-	var ack channeltypes.Acknowledgement
-	err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack)
-	if err != nil {
-		return err
-	}
-
-	if !w.k.IsPendingChannel(packet.SourcePort, packet.SourceChannel) {
-		// error?????
-		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
-	}
-
-	if !ack.Success() {
-		// need to mark the packet as acked, so it will be retried
-		w.k.onGoingChannels[packet.SourcePort+"/"+packet.SourceChannel] = true
-		w.logger(ctx).Error("acknowledgement failed for genesis transfer", "packet", packet, "ack", ack)
-		return errors.New("acknowledgement failed for genesis transfer")
-	}
-
-	// If ack success, enable the bridge for the successful channel
-	w.k.enableBridge(ctx, state, packet.SourcePort, packet.SourceChannel)
-
-	// clean retry queue
-	w.k.ClearPendingChannels()
-
-	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
-	w.logger(ctx).Info("genesis bridge phase completed successfully")
-
-	return nil
-}
-
-// ontimeout packet
-func (w IBCModule) OnTimeoutPacket(
-	ctx sdk.Context,
-	packet channeltypes.Packet,
-	relayer sdk.AccAddress,
-) error {
-
-	state := w.k.GetState(ctx)
-
-	// if outbound transfers are enabled, no-op
-	if state.OutboundTransfersEnabled {
-		return w.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
-	}
-
-	if !w.k.IsPendingChannel(packet.SourcePort, packet.SourceChannel) {
-		w.logger(ctx).Error("timeout for unknown channel", "packet", packet)
-		return errors.New("timeout for unknown channel")
-	}
-
-	// set the channel as retry required
-	w.k.onGoingChannels[packet.SourcePort+"/"+packet.SourceChannel] = true
-
-	return w.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
 }
