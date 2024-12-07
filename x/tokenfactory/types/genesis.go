@@ -37,7 +37,7 @@ func (gs GenesisState) Validate() error {
 		}
 		seenDenoms[denom.GetDenom()] = true
 
-		if strings.HasPrefix(denom.Denom, "ibc") {
+		if strings.HasPrefix(strings.ToLower(denom.Denom), "ibc") {
 			return fmt.Errorf("IBC denoms are not allowed in denom metadata")
 		}
 
