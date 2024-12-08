@@ -1,0 +1,53 @@
+package types
+
+import (
+	"fmt"
+	"strings"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+)
+
+// this line is used by starport scaffolding # genesis/types/import
+
+// DefaultIndex is the default capability global index
+const DefaultIndex uint64 = 1
+
+// DefaultGenesis returns the default Capability genesis state
+func DefaultGenesis() *GenesisState {
+	return &GenesisState{
+		Params:        DefaultParams(),
+		FactoryDenoms: []GenesisDenom{},
+	}
+}
+
+// Validate performs basic genesis state validation returning an error upon any
+// failure.
+func (gs GenesisState) Validate() error {
+	err := gs.Params.Validate()
+	if err != nil {
+		return err
+	}
+
+	seenDenoms := map[string]bool{}
+
+	for _, denom := range gs.GetFactoryDenoms() {
+		if seenDenoms[denom.GetDenom()] {
+			return sdkerrors.Wrapf(ErrInvalidGenesis, "duplicate denom: %s", denom.GetDenom())
+		}
+		seenDenoms[denom.GetDenom()] = true
+
+		if strings.HasPrefix(strings.ToLower(denom.Denom), "ibc") {
+			return fmt.Errorf("IBC denoms are not allowed in denom metadata")
+		}
+
+		if denom.AuthorityMetadata.Admin != "" {
+			_, err = sdk.AccAddressFromBech32(denom.AuthorityMetadata.Admin)
+			if err != nil {
+				return sdkerrors.Wrapf(ErrInvalidAuthorityMetadata, "Invalid admin address (%s)", err)
+			}
+		}
+	}
+
+	return nil
+}

@@ -1,23 +1,26 @@
 package types
 
 import (
+	"errors"
 	"fmt"
 
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/dymensionxyz/dymint/da/registry"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 const (
-
 	// Data availability used by the RollApp. Default value used is mock da.
 	DefaultDA = "mock"
 )
 
 // Parameter store keys.
 var (
-	KeyDa      = []byte("da")
-	KeyVersion = []byte("version")
+	KeyDa           = []byte("da")
+	KeyVersion      = []byte("version")
+	KeyMinGasPrices = []byte("minGasPrices")
+
 	// Default version set
 	DrsVersion = uint32(1)
 )
@@ -32,16 +35,18 @@ func NewParams(
 	drsVersion uint32,
 ) Params {
 	return Params{
-		Da:         da,
-		DrsVersion: drsVersion,
+		Da:           da,
+		DrsVersion:   drsVersion,
+		MinGasPrices: nil,
 	}
 }
 
 // DefaultParams returns default x/rollappparams module parameters.
 func DefaultParams() Params {
 	return Params{
-		Da:         DefaultDA,
-		DrsVersion: DrsVersion,
+		Da:           DefaultDA,
+		DrsVersion:   DrsVersion,
+		MinGasPrices: nil,
 	}
 }
 
@@ -54,7 +59,10 @@ func (p Params) Validate() error {
 	if err != nil {
 		return err
 	}
-
+	err = p.MinGasPrices.Validate()
+	if err != nil {
+		return errors.Join(gerrc.ErrInvalidArgument, err)
+	}
 	return nil
 }
 
@@ -62,9 +70,7 @@ func ValidateDa(i any) error {
 	if registry.GetClient(i.(string)) == nil {
 		return fmt.Errorf("invalid DA type: DA %s: %w", i, gerrc.ErrInvalidArgument)
 	}
-
 	return nil
-
 }
 
 func ValidateVersion(i any) error {
@@ -75,9 +81,18 @@ func ValidateVersion(i any) error {
 	if version <= 0 {
 		return fmt.Errorf("invalid DRS version: Version must be positive")
 	}
-
 	return nil
+}
 
+func ValidateMinGasPrices(i any) error {
+	minGasPrices, ok := i.(sdk.DecCoins)
+	if !ok {
+		return fmt.Errorf("invalid min gas prices type: %w", gerrc.ErrInvalidArgument)
+	}
+	if err := minGasPrices.Validate(); err != nil {
+		return fmt.Errorf("invalid min gas prices: %w", err)
+	}
+	return nil
 }
 
 // Implements params.ParamSet.
@@ -85,5 +100,6 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, ValidateDa),
 		paramtypes.NewParamSetPair(KeyVersion, &p.DrsVersion, ValidateVersion),
+		paramtypes.NewParamSetPair(KeyMinGasPrices, &p.MinGasPrices, ValidateMinGasPrices),
 	}
 }

@@ -57,7 +57,6 @@ func (k Keeper) ValidateMsgCreateGasTank(ctx sdk.Context, msg *types.MsgCreateGa
 			if !k.IsValidUsageIdentifier(ctx, identifier) {
 				return sdkerrors.Wrapf(errors.ErrInvalidRequest, "invalid usage identifier - %s", identifier)
 			}
-
 		}
 	}
 
