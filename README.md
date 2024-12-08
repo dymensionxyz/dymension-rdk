@@ -3,7 +3,7 @@
 ![banner](https://user-images.githubusercontent.com/109034310/204804891-bdc0f7bc-4b17-4b4a-99ff-25153d3887ee.jpg)
 [![license](https://img.shields.io/github/license/cosmos/cosmos-sdk.svg#thumbnail)](https://github.com/dymensionxyz/rdk/blob/main/LICENSE)
 
-Dymension RDK, which stands for *RollApp Development Kit* is based on the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk) framework, modified and enhanced for building autonomous RollApps (app-specific-rollups) on top of the [Dymension Hub](https://github.com/dymensionxyz/dymension).
+The Dymension RollApp Development Kit (RDK), built on the [Cosmos SDK](https://github.com/cosmos/cosmos-sdk), is a modified and enhanced tool specifically designed for creating and deploying autonomous, application-specific rollups (RollApps) on the [Dymension Hub](https://github.com/dymensionxyz/dymension).
 
 ## Learn more
 
