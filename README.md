@@ -19,6 +19,6 @@ Get started with [building RollApps](https://docs.dymension.xyz/build/adv-guide/
 
 ### Tools and frameworks
 
-+ [roller](https://github.com/dymensionxyz/roller) is a command-line interface tool to create and operate a RollApp
-+ [rollapp](https://github.com/dymensionxyz/rollapp) is a template rollapp chain ready to run
-+ [rollapp-evm](https://github.com/dymensionxyz/rollapp-evm) is a template rollapp, wired with EVM and ERC20 modules by [Evmos](https://github.com/evmos/evmos)
++ [roller](https://github.com/dymensionxyz/roller) - is a command-line interface tool to create and operate a RollApps.
++ [rollapp-wasm](https://github.com/dymensionxyz/rollapp-wasm) - Rollapp for developing wasm applications.
++ [rollapp-evm](https://github.com/dymensionxyz/rollapp-evm) - Rollapp for developing EVM applications.
