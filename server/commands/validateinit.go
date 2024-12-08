@@ -17,8 +17,8 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/utils"
 )
 
-// ValidateInitCmd runs init chain and validation bridge against the hub
-func ValidateInitCmd(appCreator types.AppCreator) *cobra.Command {
+// ValidateGenesisBridgeCmd runs init chain and genesis bridge validation against the hub
+func ValidateGenesisBridgeCmd(appCreator types.AppCreator) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "validate-genesis-bridge",
 		Short: "validate init chain and genesis bridge against the hub.",
