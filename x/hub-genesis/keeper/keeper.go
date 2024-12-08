@@ -27,9 +27,8 @@ type Keeper struct {
 
 	gb types.GenesisBridgeSubmitter
 
-	// Collections-based state
-	// fixme: change bool to enum
-	OngoingChannels collections.Map[string, bool] // key is port/channel. bool is whether retransmission required
+	// key is port/channel. bool is types.ChannelState
+	OngoingChannels collections.Map[string, bool]
 }
 
 func NewKeeper(
@@ -131,8 +130,8 @@ func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 	return gInfo
 }
 
-func (k Keeper) SetPendingChannel(ctx sdk.Context, portChannel types.PortAndChannel, retryRequired bool) error {
-	return k.OngoingChannels.Set(ctx, portChannel.Key(), retryRequired)
+func (k Keeper) SetPendingChannel(ctx sdk.Context, portChannel types.PortAndChannel, status types.ChannelState) error {
+	return k.OngoingChannels.Set(ctx, portChannel.Key(), bool(status))
 }
 
 func (k Keeper) ClearPendingChannels(ctx sdk.Context) error {

@@ -8,6 +8,16 @@ import (
 	gerrc "github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
+// ChannelState represents the state of a channel in the genesis bridge process
+type ChannelState bool
+
+const (
+	// WaitingForAck indicates the channel is waiting for acknowledgment
+	WaitingForAck ChannelState = false
+	// NeedsRetry indicates the channel needs to retry the genesis bridge
+	NeedsRetry ChannelState = true
+)
+
 func (s *State) Validate() error {
 	if s.HubPortAndChannel != nil {
 		if err := host.PortIdentifierValidator(s.HubPortAndChannel.Port); err != nil {

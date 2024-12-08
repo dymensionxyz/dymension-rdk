@@ -58,12 +58,44 @@ func (w IBCModule) OnChanOpenConfirm(
 	}
 
 	// Mark this channel as having a pending genesis bridge submission
-	if err := w.k.SetPendingChannel(ctx, types.PortAndChannel{Port: portID, Channel: channelID}, false); err != nil {
+	portChan := types.PortAndChannel{Port: portID, Channel: channelID}
+	if err := w.k.SetPendingChannel(ctx, portChan, types.WaitingForAck); err != nil {
 		return errorsmod.Wrap(err, "add pending channel")
 	}
 
 	w.logger(ctx).Info("genesis bridge data submitted", "sequence", seq, "port", portID, "channel", channelID)
 	return nil
+}
+
+// SubmitGenesisBridgeData sends the genesis bridge data over the channel.
+// The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
+// It uses the channel keeper to send the packet, instead of transfer keeper, as we are not sending fungible token directly.
+func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, channelID string) (seq uint64, err error) {
+	_, chanCap, err := w.channelKeeper.LookupModuleByChannel(ctx, portID, channelID)
+	if err != nil {
+		return
+	}
+
+	data, err := w.k.PrepareGenesisBridgeData(ctx)
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "prepare genesis bridge data")
+	}
+
+	if data.GenesisTransfer != nil {
+		// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
+		err = w.k.EscrowGenesisTransferFunds(ctx, portID, channelID, data.GenesisInfo.BaseCoinSupply())
+		if err != nil {
+			return 0, errorsmod.Wrap(err, "escrow genesis transfer funds")
+		}
+	}
+
+	bz, err := json.Marshal(data)
+	if err != nil {
+		return 0, errorsmod.Wrap(err, "marshal genesis bridge data")
+	}
+
+	timeoutTimestamp := ctx.BlockTime().Add(transferTimeout).UnixNano()
+	return w.channelKeeper.SendPacket(ctx, chanCap, portID, channelID, clienttypes.ZeroHeight(), uint64(timeoutTimestamp), bz)
 }
 
 func (w IBCModule) OnAcknowledgementPacket(
@@ -102,7 +134,7 @@ func (w IBCModule) OnAcknowledgementPacket(
 
 		// Mark the channel for retry
 		portChan := types.PortAndChannel{Port: packet.SourcePort, Channel: packet.SourceChannel}
-		if err := w.k.SetPendingChannel(ctx, portChan, true); err != nil {
+		if err := w.k.SetPendingChannel(ctx, portChan, types.NeedsRetry); err != nil {
 			return errorsmod.Wrap(err, "set channel retry required")
 		}
 
@@ -162,7 +194,7 @@ func (w IBCModule) OnTimeoutPacket(
 
 	// Mark the channel for retry
 	portChan := types.PortAndChannel{Port: packet.SourcePort, Channel: packet.SourceChannel}
-	if err := w.k.SetPendingChannel(ctx, portChan, true); err != nil {
+	if err := w.k.SetPendingChannel(ctx, portChan, types.NeedsRetry); err != nil {
 		return errorsmod.Wrap(err, "set channel retry required")
 	}
 
@@ -181,35 +213,4 @@ func (w IBCModule) OnTimeoutPacket(
 	}
 
 	return nil
-}
-
-// SubmitGenesisBridgeData sends the genesis bridge data over the channel.
-// The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
-// It uses the channel keeper to send the packet, instead of transfer keeper, as we are not sending fungible token directly.
-func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, channelID string) (seq uint64, err error) {
-	_, chanCap, err := w.channelKeeper.LookupModuleByChannel(ctx, portID, channelID)
-	if err != nil {
-		return
-	}
-
-	data, err := w.k.PrepareGenesisBridgeData(ctx)
-	if err != nil {
-		return 0, errorsmod.Wrap(err, "prepare genesis bridge data")
-	}
-
-	if data.GenesisTransfer != nil {
-		// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
-		err = w.k.EscrowGenesisTransferFunds(ctx, portID, channelID, data.GenesisInfo.BaseCoinSupply())
-		if err != nil {
-			return 0, errorsmod.Wrap(err, "escrow genesis transfer funds")
-		}
-	}
-
-	bz, err := json.Marshal(data)
-	if err != nil {
-		return 0, errorsmod.Wrap(err, "marshal genesis bridge data")
-	}
-
-	timeoutTimestamp := ctx.BlockTime().Add(transferTimeout).UnixNano()
-	return w.channelKeeper.SendPacket(ctx, chanCap, portID, channelID, clienttypes.ZeroHeight(), uint64(timeoutTimestamp), bz)
 }

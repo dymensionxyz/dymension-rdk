@@ -103,7 +103,7 @@ func (k Keeper) ResubmitPendingGenesisBridges(ctx sdk.Context) {
 		}
 
 		// disable further retries
-		err = k.SetPendingChannel(ctx, portChan, false)
+		err = k.SetPendingChannel(ctx, portChan, types.WaitingForAck)
 		if err != nil {
 			k.Logger(ctx).Error("failed to disable further retries", "port", portChan.Port, "channel", portChan.Channel, "error", err)
 			return false, nil
