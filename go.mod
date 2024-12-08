@@ -1,6 +1,8 @@
 module github.com/dymensionxyz/dymension-rdk
 
-go 1.22.4
+go 1.23.1
+
+toolchain go1.23.2
 
 require (
 	cosmossdk.io/collections v0.4.0
@@ -13,7 +15,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.46.16
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/cosmos/ibc-go/v6 v6.2.1
-	github.com/dymensionxyz/dymint v1.2.0-rc01.0.20241104173413-6ae1dc10f0bf
+	github.com/dymensionxyz/dymint v1.2.0-rc01.0.20241208124948-7de4e892a304
 	github.com/dymensionxyz/gerr-cosmos v1.0.0
 	github.com/dymensionxyz/sdk-utils v0.1.2-0.20240909101947-e1b483ada9c8
 	github.com/gogo/protobuf v1.3.3
@@ -114,7 +116,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
-	github.com/dymensionxyz/cosmosclient v0.4.2-beta.0.20240821081230-b4018b2bac13 // indirect
+	github.com/dymensionxyz/cosmosclient v0.4.2-beta.0.20241121093220-e0d7ad456fbd // indirect
 	github.com/elastic/gosigar v0.14.2 // indirect
 	github.com/ethereum/go-ethereum v1.12.0 // indirect
 	github.com/evmos/evmos/v12 v12.1.6 // indirect
