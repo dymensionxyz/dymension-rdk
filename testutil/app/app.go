@@ -475,6 +475,7 @@ func NewRollapp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.MintKeeper,
+		nil,
 	)
 
 	// The IBC tranfer submit is wrapped with:
@@ -521,12 +522,14 @@ func NewRollapp(
 		app.HubKeeper,
 		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
 	)
-	transferStack = hubgenkeeper.NewIBCModule(
+	gbBridgeMiddleware := hubgenkeeper.NewIBCModule(
 		transferStack,
 		app.HubGenesisKeeper,
 		app.BankKeeper,
 		app.IBCKeeper.ChannelKeeper,
 	)
+	app.HubGenesisKeeper.SetICS4Submitter(gbBridgeMiddleware)
+	transferStack = gbBridgeMiddleware
 
 	app.GaslessKeeper = gaslesskeeper.NewKeeper(
 		appCodec,

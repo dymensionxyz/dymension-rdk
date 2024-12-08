@@ -7,10 +7,13 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 
+	"cosmossdk.io/collections"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/dymensionxyz/dymension-rdk/utils/collcompat"
 )
 
 type Keeper struct {
@@ -21,6 +24,11 @@ type Keeper struct {
 	ak types.AccountKeeper
 	bk types.BankKeeper
 	mk types.MintKeeper
+
+	gb types.GenesisBridgeSubmitter
+
+	// key is port/channel. value is types.ChannelState
+	PendingChannels collections.Map[string, uint64]
 }
 
 func NewKeeper(
@@ -30,11 +38,11 @@ func NewKeeper(
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
 	mk types.MintKeeper,
+	gb types.GenesisBridgeSubmitter,
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
-		table := types.ParamKeyTable()
-		ps = ps.WithKeyTable(table)
+		ps = ps.WithKeyTable(types.ParamKeyTable())
 	}
 	if ak == nil {
 		panic("account keeper cannot be nil")
@@ -46,18 +54,33 @@ func NewKeeper(
 		panic("mint keeper cannot be nil")
 	}
 
-	return Keeper{
+	sb := collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey))
+
+	k := Keeper{
 		cdc:        cdc,
 		storeKey:   storeKey,
 		paramstore: ps,
 		ak:         ak,
 		bk:         bk,
 		mk:         mk,
+		gb:         gb,
+		PendingChannels: collections.NewMap(
+			sb,
+			types.OngoingChannelsPrefix(),
+			"ongoing_channels",
+			collections.StringKey,
+			collections.Uint64Value,
+		),
 	}
+	return k
 }
 
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+}
+
+func (k *Keeper) SetICS4Submitter(submitter types.GenesisBridgeSubmitter) {
+	k.gb = submitter
 }
 
 // SetState sets the state.
@@ -105,4 +128,16 @@ func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 	var gInfo types.GenesisInfo
 	k.cdc.MustUnmarshal(bz, &gInfo)
 	return gInfo
+}
+
+func (k Keeper) SetPendingChannel(ctx sdk.Context, portChannel types.PortAndChannel, status types.ChannelState) error {
+	return k.PendingChannels.Set(ctx, portChannel.Key(), uint64(status))
+}
+
+func (k Keeper) ClearPendingChannels(ctx sdk.Context) error {
+	return k.PendingChannels.Clear(ctx, nil)
+}
+
+func (k Keeper) IsPendingChannel(ctx sdk.Context, portChannel types.PortAndChannel) (bool, error) {
+	return k.PendingChannels.Has(ctx, portChannel.Key())
 }

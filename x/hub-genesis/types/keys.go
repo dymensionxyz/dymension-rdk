@@ -1,5 +1,7 @@
 package types
 
+import "cosmossdk.io/collections"
+
 const (
 	ModuleName = "hubgenesis"
 
@@ -11,6 +13,11 @@ const (
 )
 
 var (
-	StateKey       = []byte{0x01}
-	GenesisInfoKey = []byte{0x02}
+	StateKey           = []byte{0x01}
+	GenesisInfoKey     = []byte{0x02}
+	OngoingChannelsKey = []byte{0x03}
 )
+
+func OngoingChannelsPrefix() collections.Prefix {
+	return collections.NewPrefix(OngoingChannelsKey)
+}
