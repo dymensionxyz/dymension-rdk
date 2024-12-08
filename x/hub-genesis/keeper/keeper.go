@@ -27,8 +27,8 @@ type Keeper struct {
 
 	gb types.GenesisBridgeSubmitter
 
-	// key is port/channel. bool is types.ChannelState
-	OngoingChannels collections.Map[string, bool]
+	// key is port/channel. value is types.ChannelState
+	PendingChannels collections.Map[string, uint64]
 }
 
 func NewKeeper(
@@ -64,12 +64,12 @@ func NewKeeper(
 		bk:         bk,
 		mk:         mk,
 		gb:         gb,
-		OngoingChannels: collections.NewMap(
+		PendingChannels: collections.NewMap(
 			sb,
 			types.OngoingChannelsPrefix(),
 			"ongoing_channels",
 			collections.StringKey,
-			collections.BoolValue,
+			collections.Uint64Value,
 		),
 	}
 	return k
@@ -131,13 +131,13 @@ func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 }
 
 func (k Keeper) SetPendingChannel(ctx sdk.Context, portChannel types.PortAndChannel, status types.ChannelState) error {
-	return k.OngoingChannels.Set(ctx, portChannel.Key(), bool(status))
+	return k.PendingChannels.Set(ctx, portChannel.Key(), uint64(status))
 }
 
 func (k Keeper) ClearPendingChannels(ctx sdk.Context) error {
-	return k.OngoingChannels.Clear(ctx, nil)
+	return k.PendingChannels.Clear(ctx, nil)
 }
 
 func (k Keeper) IsPendingChannel(ctx sdk.Context, portChannel types.PortAndChannel) (bool, error) {
-	return k.OngoingChannels.Has(ctx, portChannel.Key())
+	return k.PendingChannels.Has(ctx, portChannel.Key())
 }

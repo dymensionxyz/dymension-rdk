@@ -9,13 +9,14 @@ import (
 )
 
 // ChannelState represents the state of a channel in the genesis bridge process
-type ChannelState bool
+type ChannelState uint64
 
 const (
+	Undefined ChannelState = 0
 	// WaitingForAck indicates the channel is waiting for acknowledgment
-	WaitingForAck ChannelState = false
-	// NeedsRetry indicates the channel needs to retry the genesis bridge
-	NeedsRetry ChannelState = true
+	WaitingForAck ChannelState = 1
+	// Failed indicates the channel has failed and can be retried
+	Failed ChannelState = 2
 )
 
 func (s *State) Validate() error {

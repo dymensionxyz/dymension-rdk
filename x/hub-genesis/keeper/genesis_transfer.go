@@ -61,13 +61,6 @@ func (k Keeper) EscrowGenesisTransferFunds(ctx sdk.Context, portID, channelID st
 	return k.bk.SendCoins(ctx, sender, escrowAddress, sdk.NewCoins(token))
 }
 
-// UnescrowGenesisTransferFunds unescrows the genesis transfer funds.
-func (k Keeper) UnescrowGenesisTransferFunds(ctx sdk.Context, portID, channelID string, token sdk.Coin) error {
-	escrowAddress := transfertypes.GetEscrowAddress(portID, channelID)
-	sender := k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress()
-	return k.bk.SendCoins(ctx, escrowAddress, sender, sdk.NewCoins(token))
-}
-
 // enableBridge enables the bridge after successful genesis bridge phase.
 func (k Keeper) enableBridge(ctx sdk.Context, state types.State, portID, channelID string) {
 	state.SetCanonicalTransferChannel(portID, channelID)
@@ -84,9 +77,9 @@ func (k Keeper) ResubmitPendingGenesisBridges(ctx sdk.Context) {
 	}
 
 	// Iterate over all pending channels
-	err := k.OngoingChannels.Walk(ctx, nil, func(portChannel string, retryRequired bool) (stop bool, err error) {
-		// Skip if channel is not acked yet
-		if !retryRequired {
+	err := k.PendingChannels.Walk(ctx, nil, func(portChannel string, retryRequired uint64) (stop bool, err error) {
+		// Skip if channel is not failed yet
+		if types.ChannelState(retryRequired) != types.Failed {
 			return false, nil
 		}
 
