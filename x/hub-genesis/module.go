@@ -98,8 +98,7 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper                 keeper.Keeper
-	genesisBridgeSubmitter types.GenesisBridgeSubmitter
+	keeper keeper.Keeper
 }
 
 // NewAppModule creates a new AppModule object.

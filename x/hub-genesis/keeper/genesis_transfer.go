@@ -112,7 +112,6 @@ func (k Keeper) ResubmitPendingGenesisBridges(ctx sdk.Context) {
 		k.Logger(ctx).Info("resubmitted genesis bridge data", "sequence", seq, "port", portChan.Port, "channel", portChan.Channel)
 		return false, nil
 	})
-
 	if err != nil {
 		k.Logger(ctx).Error("failed to resubmit genesis bridge data", "error", err)
 	}
