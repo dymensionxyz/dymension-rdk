@@ -20,8 +20,8 @@ import (
 // ValidateInitCmd runs init chain and validation bridge against the hub
 func ValidateInitCmd(appCreator types.AppCreator) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "validateinitbridge",
-		Short: " init chain and validation bridge against the hub.",
+		Use:   "validate-genesis-bridge",
+		Short: "validate init chain and genesis bridge against the hub.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := server.GetServerContextFromCmd(cmd)
 			cfg := ctx.Config
