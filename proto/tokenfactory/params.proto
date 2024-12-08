@@ -1,5 +1,5 @@
 syntax = "proto3";
-package rollapp.tokenfactory.types;
+package rollapp.tokenfactory;
 
 import "gogoproto/gogo.proto";
 import "tokenfactory/authorityMetadata.proto";
