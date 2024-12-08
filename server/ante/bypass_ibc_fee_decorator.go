@@ -5,7 +5,6 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
-	govtypesv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -53,14 +52,10 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 
 	if ibcCount == totalMsgs {
 		// all are IBC messages
-		ibcWhitelisted, err := n.isIBCWhitelistedRelayer(ctx, msgs)
-		if err != nil {
+		if err = n.isIBCWhitelistedRelayer(ctx, msgs); err != nil {
 			return ctx, err
 		}
-		if ibcWhitelisted {
-			return next(ctx, tx, simulate)
-		}
-		return ctx, fmt.Errorf("not all signers whitelisted")
+		return next(ctx, tx, simulate)
 	} else if ibcCount > 0 {
 		// mixed: some IBC and some non-IBC
 		return ctx, fmt.Errorf("mixed IBC and non-IBC messages in the same transaction not allowed")
@@ -71,21 +66,16 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 }
 
 // isIBCWhitelistedRelayer checks if all the messages in the transaction are from whitelisted IBC relayer
-func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []sdk.Msg) (bool, error) {
-	// Check if the tx is from IBC relayer
-	if !IsIBCRelayerMsg(msgs) {
-		return false, nil
-	}
-
+func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []sdk.Msg) error {
 	consAddr := n.dk.GetPreviousProposerConsAddr(ctx)
 	seq, ok := n.sk.GetSequencerByConsAddr(ctx, consAddr)
 	if !ok {
-		return false, fmt.Errorf("get sequencer by consensus addr: %s: %w", consAddr.String(), types.ErrSequencerNotFound)
+		return fmt.Errorf("get sequencer by consensus addr: %s: %w", consAddr.String(), types.ErrSequencerNotFound)
 	}
 	operatorAddr := seq.GetOperator()
 	wlRelayers, err := n.sk.GetWhitelistedRelayers(ctx, operatorAddr)
 	if err != nil {
-		return false, fmt.Errorf("get whitelisted relayers: sequencer address %s: %w", consAddr.String(), err)
+		return fmt.Errorf("get whitelisted relayers: sequencer address %s: %w", consAddr.String(), err)
 	}
 
 	wlRelayersMap := make(map[string]struct{}, len(msgs))
@@ -99,17 +89,31 @@ func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []s
 			_, ok := wlRelayersMap[signer.String()]
 			if !ok {
 				// if not a whitelisted relayer, we block them from sending the IBC relayer messages
-				return false, fmt.Errorf("signer %s is not a whitelisted relayer", signer.String())
+				return fmt.Errorf("signer %s is not a whitelisted relayer", signer.String())
 			}
 		}
 	}
 
-	return true, nil
+	return nil
 }
 
 const maxDepth = 6
 
-// getAllFinalMsgs recursively extracts all final messages from possibly nested messages.
+// getAllFinalMsgs recursively unpacks container messages (like MsgExec or MsgSubmitProposal) to extract all "final" (non-container) messages.
+//
+// Container messages may nest other container messages, potentially multiple levels deep.
+// This function traverses these nested structures until it reaches only final messages that cannot be further expanded.
+//
+// Parameters:
+//   - ctx:   The current context.
+//   - msgs:  The slice of sdk.Msg to unpack.
+//   - depth: The current recursion depth, with depth=0 meaning top-level messages.
+//
+// Returns:
+//   - A slice of final sdk.Msg that are not containers.
+//   - An error if the nesting exceeds maxDepth or if an error occurs while retrieving inner messages.
+//
+// If the maximum depth (maxDepth) is exceeded, it returns an error to prevent infinite recursion or overly deep nesting.
 func (n BypassIBCFeeDecorator) getAllFinalMsgs(ctx sdk.Context, msgs []sdk.Msg, depth int) ([]sdk.Msg, error) {
 	if depth >= maxDepth {
 		return nil, fmt.Errorf("found more nested msgs than permitted. Limit is : %d", maxDepth)
@@ -128,16 +132,10 @@ func (n BypassIBCFeeDecorator) getAllFinalMsgs(ctx sdk.Context, msgs []sdk.Msg, 
 
 // getInnerMsgs handles nested messages and returns the final messages contained inside them.
 func (n BypassIBCFeeDecorator) getInnerMsgs(ctx sdk.Context, msg sdk.Msg, depth int) ([]sdk.Msg, error) {
-	if depth >= maxDepth {
-		return nil, fmt.Errorf("found more nested msgs than permitted. Limit is : %d", maxDepth)
-	}
-
 	var f func() ([]sdk.Msg, error)
 	switch m := msg.(type) {
 	case *authz.MsgExec:
 		f = m.GetMessages
-	case *govtypesv1.MsgSubmitProposal:
-		f = m.GetMsgs
 	case *group.MsgSubmitProposal:
 		f = m.GetMsgs
 	}

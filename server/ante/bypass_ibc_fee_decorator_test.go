@@ -114,17 +114,49 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 			expectedIBCNoFee: false,
 		},
 		{
-			name: "Nested scenario: multi-level. MsgExec containing a MsgSubmitProposal(gov) that returns [ibcMsg2]",
+			name: "Nested scenario: multi-level. MsgExec containing a MsgSubmitProposal(group) that returns [ibcMsg2]",
 			msgs: []sdk.Msg{
 				&authz.MsgExec{
 					Grantee: whitelistedSigner.String(),
+					Msgs: []*cdctypes.Any{
+						func() *cdctypes.Any {
+							msg, _ := cdctypes.NewAnyWithValue(&group.MsgSubmitProposal{
+								Proposers: []string{whitelistedSigner.String()},
+								Metadata:  "==",
+								Messages: []*cdctypes.Any{
+									func() *cdctypes.Any {
+										ibcMsg2V := *ibcMsg2
+										ibcMsg2V.Signer = whitelistedSigner.String()
+										msg, _ := cdctypes.NewAnyWithValue(&ibcMsg2V)
+										return msg
+									}(),
+								},
+								Exec: 0,
+							})
+							return msg
+						}(),
+					},
+				},
+			},
+			signer:           whitelistedSigner,
+			sequencerExists:  true,
+			sequencerOper:    operatorAddr,
+			wlRelayers:       []string{whitelistedSigner.String()},
+			expectedErr:      false,
+			expectedIBCNoFee: true, // all final msgs are IBC and whitelisted
+		},
+		{
+			name: "Nested scenario: not checked. MsgExec containing MsgSubmitProposal(gov) with ibcMsg2 but signer not whitelisted",
+			msgs: []sdk.Msg{
+				&authz.MsgExec{
+					Grantee: nonWhitelistedSigner.String(),
 					Msgs: []*cdctypes.Any{
 						func() *cdctypes.Any {
 							msg, _ := cdctypes.NewAnyWithValue(&govtypesv1.MsgSubmitProposal{
 								Messages: []*cdctypes.Any{
 									func() *cdctypes.Any {
 										ibcMsg2V := *ibcMsg2
-										ibcMsg2V.Signer = whitelistedSigner.String()
+										ibcMsg2V.Signer = nonWhitelistedSigner.String()
 										msg, _ := cdctypes.NewAnyWithValue(&ibcMsg2V)
 										return msg
 									}(),
@@ -143,16 +175,17 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 			sequencerOper:    operatorAddr,
 			wlRelayers:       []string{whitelistedSigner.String()},
 			expectedErr:      false,
-			expectedIBCNoFee: true, // all final msgs are IBC and whitelisted
+			expectedIBCNoFee: false, // signer not whitelisted
 		},
 		{
-			name: "Nested scenario: multi-level. MsgExec containing MsgSubmitProposal(gov) with ibcMsg2 but signer not whitelisted",
+			name: "Nested scenario: multi-level. MsgExec containing MsgSubmitProposal(group) with ibcMsg2 but signer not whitelisted",
 			msgs: []sdk.Msg{
 				&authz.MsgExec{
 					Grantee: nonWhitelistedSigner.String(),
 					Msgs: []*cdctypes.Any{
 						func() *cdctypes.Any {
-							msg, _ := cdctypes.NewAnyWithValue(&govtypesv1.MsgSubmitProposal{
+							msg, _ := cdctypes.NewAnyWithValue(&group.MsgSubmitProposal{
+								Proposers: []string{whitelistedSigner.String()},
 								Messages: []*cdctypes.Any{
 									func() *cdctypes.Any {
 										ibcMsg2V := *ibcMsg2
@@ -161,9 +194,7 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 										return msg
 									}(),
 								},
-								InitialDeposit: sdk.NewCoins(sdk.NewCoin("stake", sdk.NewInt(100))),
-								Proposer:       whitelistedSigner.String(),
-								Metadata:       "==",
+								Metadata: "==",
 							})
 							return msg
 						}(),
