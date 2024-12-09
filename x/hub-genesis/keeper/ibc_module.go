@@ -13,6 +13,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 var transferTimeout = (time.Duration(24*365) * time.Hour) // very long timeout
@@ -32,11 +33,9 @@ func (w IBCModule) logger(ctx sdk.Context) log.Logger {
 	return w.k.Logger(ctx)
 }
 
-// On successful OnChanOpenConfirm for the canonical channel, the genesis bridge flow will be initiated.
+// While no canonical channel is set, On successful OnChanOpenConfirm, the genesis bridge flow will be initiated.
 // It will prepare the genesis bridge data and send it over the channel.
 // The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
-// Since transfers are only sent once, it does not matter if someone else tries to open
-// a channel in future (it will no-op).
 func (w IBCModule) OnChanOpenConfirm(
 	ctx sdk.Context,
 	portID,
@@ -47,10 +46,7 @@ func (w IBCModule) OnChanOpenConfirm(
 		return err
 	}
 
-	state := w.k.GetState(ctx)
-	if state.CanonicalHubTransferChannelHasBeenSet() {
-		// We only set the canonical channel in this function, so if it's already been set, we don't need
-		// to send the transfers again.
+	if w.k.IsBridgeOpen(ctx) {
 		return nil
 	}
 
@@ -59,8 +55,11 @@ func (w IBCModule) OnChanOpenConfirm(
 		return errorsmod.Wrap(err, "submit genesis bridge data")
 	}
 
-	state.SetCanonicalTransferChannel(portID, channelID)
-	w.k.SetState(ctx, state)
+	// Mark this channel as having a pending genesis bridge submission
+	portChan := types.PortAndChannel{Port: portID, Channel: channelID}
+	if err := w.k.SetPendingChannel(ctx, portChan, types.WaitingForAck); err != nil {
+		return errorsmod.Wrap(err, "add pending channel")
+	}
 
 	w.logger(ctx).Info("genesis bridge data submitted", "sequence", seq, "port", portID, "channel", channelID)
 	return nil
@@ -80,14 +79,6 @@ func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, chann
 		return 0, errorsmod.Wrap(err, "prepare genesis bridge data")
 	}
 
-	if data.GenesisTransfer != nil {
-		// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
-		err = w.k.EscrowGenesisTransferFunds(ctx, portID, channelID, data.GenesisInfo.BaseCoinSupply())
-		if err != nil {
-			return 0, errorsmod.Wrap(err, "escrow genesis transfer funds")
-		}
-	}
-
 	bz, err := json.Marshal(data)
 	if err != nil {
 		return 0, errorsmod.Wrap(err, "marshal genesis bridge data")
@@ -97,16 +88,18 @@ func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, chann
 	return w.channelKeeper.SendPacket(ctx, chanCap, portID, channelID, clienttypes.ZeroHeight(), uint64(timeoutTimestamp), bz)
 }
 
+// OnAcknowledgementPacket handles the genesis bridge ack.
+// If the ack is not successful, it will mark the channel as failed.
+// If the ack is successful, it will enable outbound transfers and clear the pending channels.
+// It will also escrow the genesis transfer funds.
 func (w IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	state := w.k.GetState(ctx)
-
-	// if outbound transfers are enabled, we past the genesis phase. nothing to do here.
-	if state.OutboundTransfersEnabled {
+	// if canonical channel is set, we past the genesis phase. nothing to do here.
+	if w.k.IsBridgeOpen(ctx) {
 		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
 
@@ -116,20 +109,65 @@ func (w IBCModule) OnAcknowledgementPacket(
 		return err
 	}
 
-	if !ack.Success() {
-		w.logger(ctx).Error("acknowledgement failed for genesis transfer", "packet", packet, "ack", ack)
-		return errors.New("acknowledgement failed for genesis transfer")
+	// validate it's a channel we are expecting
+	portChannel := types.PortAndChannel{Port: packet.SourcePort, Channel: packet.SourceChannel}
+	isPending, err := w.k.IsPendingChannel(ctx, portChannel)
+	if err != nil {
+		return errorsmod.Wrap(err, "check pending channel")
+	}
+	if !isPending {
+		// Not supposed to happen
+		w.logger(ctx).Error("genesis bridge acknowledgement for unknown channel", "packet", packet, "ack", ack)
+		return errors.New("acknowledgement failed for unknown channel")
 	}
 
-	w.k.enableBridge(ctx, state)
+	// Mark the channel as failed
+	if !ack.Success() {
+		w.logger(ctx).Error("acknowledgement failed for genesis transfer", "packet", packet, "ack", ack)
+		portChan := types.PortAndChannel{Port: packet.SourcePort, Channel: packet.SourceChannel}
+		if err := w.k.SetPendingChannel(ctx, portChan, types.Failed); err != nil {
+			return errorsmod.Wrap(err, "set channel retry required")
+		}
+
+		return nil
+	}
+
+	var gbData types.GenesisBridgeData
+	err = json.Unmarshal(packet.Data, &gbData)
+	if err != nil {
+		return errorsmod.Wrap(err, "unmarshal genesis bridge data")
+	}
+
+	if gbData.GenesisTransfer != nil {
+		// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
+		err = w.k.EscrowGenesisTransferFunds(ctx, packet.SourcePort, packet.SourceChannel, gbData.GenesisInfo.BaseCoinSupply())
+		if err != nil {
+			return errorsmod.Wrap(err, "escrow genesis transfer funds")
+		}
+	}
+
+	w.k.enableBridge(ctx, packet.SourcePort, packet.SourceChannel)
+
+	if err := w.k.ClearPendingChannels(ctx); err != nil {
+		return errorsmod.Wrap(err, "clear pending channels")
+	}
+
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
 	w.logger(ctx).Info("genesis bridge phase completed successfully")
 
 	return nil
 }
 
-// enableBridge enables the bridge after successful genesis bridge phase.
-func (k Keeper) enableBridge(ctx sdk.Context, state types.State) {
-	state.OutboundTransfersEnabled = true
-	k.SetState(ctx, state)
+// OnTimeoutPacket handles IBC packet timeouts
+// shouldn't happen in the genesis bridge phase
+func (w IBCModule) OnTimeoutPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
+) error {
+	if !w.k.IsBridgeOpen(ctx) {
+		return errorsmod.Wrapf(gerrc.ErrUnknown, "unexpected packet timeout: %s", packet.String())
+	}
+
+	return w.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
 }
