@@ -19,11 +19,12 @@ type Keeper struct {
 	storeKey   storetypes.StoreKey
 	paramstore paramtypes.Subspace
 
-	ak types.AccountKeeper
-	bk types.BankKeeper
-	mk types.MintKeeper
-	dk whitelistedrelayer.DistrK
-	sk whitelistedrelayer.SeqK
+	ak            types.AccountKeeper
+	bk            types.BankKeeper
+	mk            types.MintKeeper
+	dk            whitelistedrelayer.DistrK
+	sk            whitelistedrelayer.SeqK
+	channelKeeper types.ChannelKeeper
 }
 
 func NewKeeper(
@@ -35,6 +36,7 @@ func NewKeeper(
 	mk types.MintKeeper,
 	dk whitelistedrelayer.DistrK,
 	sk whitelistedrelayer.SeqK,
+	ck types.ChannelKeeper,
 
 ) Keeper {
 	// set KeyTable if it has not already been set
@@ -53,14 +55,15 @@ func NewKeeper(
 	}
 
 	return Keeper{
-		cdc:        cdc,
-		storeKey:   storeKey,
-		paramstore: ps,
-		ak:         ak,
-		bk:         bk,
-		mk:         mk,
-		sk:         sk,
-		dk:         dk,
+		cdc:           cdc,
+		storeKey:      storeKey,
+		paramstore:    ps,
+		ak:            ak,
+		bk:            bk,
+		mk:            mk,
+		sk:            sk,
+		dk:            dk,
+		channelKeeper: ck,
 	}
 }
 
