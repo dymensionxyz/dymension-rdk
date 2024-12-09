@@ -13,7 +13,8 @@ var (
 )
 
 func (m *MsgSendTransfer) GetSigners() []sdk.AccAddress {
-	return []sdk.AccAddress{sdk.MustAccAddressFromBech32(m.Relayer)}
+	a, _ := sdk.AccAddressFromBech32(m.Relayer)
+	return []sdk.AccAddress{a}
 }
 
 func (m *MsgSendTransfer) ValidateBasic() error {
@@ -21,5 +22,6 @@ func (m *MsgSendTransfer) ValidateBasic() error {
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get relayer addr from bech32")
 	}
+	// TODO: anything?
 	return nil
 }
