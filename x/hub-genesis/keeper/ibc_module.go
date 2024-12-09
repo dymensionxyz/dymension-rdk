@@ -146,7 +146,7 @@ func (w IBCModule) OnAcknowledgementPacket(
 		}
 	}
 
-	w.k.enableBridge(ctx, state, packet.SourcePort, packet.SourceChannel)
+	w.k.enableBridge(ctx, packet.SourcePort, packet.SourceChannel)
 
 	if err := w.k.ClearPendingChannels(ctx); err != nil {
 		return errorsmod.Wrap(err, "clear pending channels")
