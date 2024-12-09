@@ -43,6 +43,8 @@ func (m *MsgSendTransfer) ValidateBasic() error {
 	if err != nil {
 		return errorsmod.Wrap(errors.Join(gerrc.ErrInvalidArgument, err), "get relayer addr from bech32")
 	}
-	// TODO: anything?
+	if m.ChannelId == "" {
+		return errorsmod.Wrap(gerrc.ErrInvalidArgument, "channel id is empty")
+	}
 	return nil
 }
