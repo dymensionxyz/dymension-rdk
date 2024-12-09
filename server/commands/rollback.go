@@ -4,14 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/dymensionxyz/dymint/block"
 	dymintconf "github.com/dymensionxyz/dymint/config"
-	dymintconv "github.com/dymensionxyz/dymint/conv"
 
-	"github.com/dymensionxyz/dymint/store"
-	"github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -62,7 +57,14 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 			proxyApp := proxy.NewLocalClientCreator(app)
 			ctx.Logger.Info("starting block manager with ABCI in-process")
-			blockManager, err := liteBlockManager(cfg, nodeConfig, proxyApp)
+
+			genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
+			genesis, err := genDocProvider()
+			if err != nil {
+				return err
+			}
+
+			blockManager, err := liteBlockManager(cfg, nodeConfig, genesis, nil, proxyApp, ctx.Logger)
 			if err != nil {
 				return fmt.Errorf("start lite block manager: %w", err)
 			}
@@ -87,64 +89,4 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 	dymintconf.AddNodeFlags(cmd)
 	return cmd
-}
-
-func liteBlockManager(cfg *config.Config, dymintConf *dymintconf.NodeConfig, clientCreator proxy.ClientCreator) (*block.Manager, error) {
-
-	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
-
-	privValKey, err := p2p.LoadOrGenNodeKey(cfg.PrivValidatorKeyFile())
-	if err != nil {
-		return nil, err
-	}
-	signingKey, err := dymintconv.GetNodeKey(privValKey)
-	if err != nil {
-		return nil, err
-	}
-	genesis, err := genDocProvider()
-	if err != nil {
-		return nil, err
-	}
-
-	err = dymintconv.GetNodeConfig(dymintConf, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	proxyApp := proxy.NewAppConns(clientCreator)
-	if err := proxyApp.Start(); err != nil {
-		return nil, fmt.Errorf("starting proxy app connections: %w", err)
-	}
-
-	var baseKV store.KV
-	if dymintConf.RootDir == "" && dymintConf.DBPath == "" { // this is used for testing
-		baseKV = store.NewDefaultInMemoryKVStore()
-	} else {
-		// TODO(omritoptx): Move dymint to const
-		baseKV = store.NewDefaultKVStore(dymintConf.RootDir, dymintConf.DBPath, "dymint")
-	}
-	mainKV := store.NewPrefixKV(baseKV, []byte{0})
-	s := store.New(mainKV)
-
-	blockManager, err := block.NewManager(
-		signingKey,
-		*dymintConf,
-		genesis,
-		"",
-		s,
-		nil,
-		proxyApp,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("BlockManager initialization error: %w", err)
-	}
-
-	return blockManager, nil
 }
