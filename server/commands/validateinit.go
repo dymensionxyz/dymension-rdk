@@ -5,7 +5,9 @@ import (
 
 	dymintconf "github.com/dymensionxyz/dymint/config"
 	"github.com/tendermint/tendermint/crypto/ed25519"
+	"github.com/tendermint/tendermint/node"
 
+	slregistry "github.com/dymensionxyz/dymint/settlement/registry"
 	"github.com/tendermint/tendermint/proxy"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -45,7 +47,23 @@ func ValidateGenesisBridgeCmd(appCreator types.AppCreator) *cobra.Command {
 
 			proxyApp := proxy.NewLocalClientCreator(app)
 			ctx.Logger.Info("starting block manager with ABCI in-process")
-			blockManager, err := liteBlockManager(cfg, nodeConfig, proxyApp, ctx.Logger)
+
+			genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
+			genesis, err := genDocProvider()
+			if err != nil {
+				return err
+			}
+
+			slclient := slregistry.GetClient(slregistry.Client(nodeConfig.SettlementLayer))
+			if slclient == nil {
+				return fmt.Errorf("get settlement client: named: %s", nodeConfig.SettlementLayer)
+			}
+			err = slclient.Init(nodeConfig.SettlementConfig, genesis.ChainID, nil, ctx.Logger.With("module", "settlement_client"))
+			if err != nil {
+				return fmt.Errorf("settlement layer client initialization: %w", err)
+			}
+
+			blockManager, err := liteBlockManager(cfg, nodeConfig, genesis, slclient, proxyApp, ctx.Logger)
 			if err != nil {
 				return fmt.Errorf("start lite block manager: %w", err)
 			}
@@ -53,16 +71,16 @@ func ValidateGenesisBridgeCmd(appCreator types.AppCreator) *cobra.Command {
 			valset := []*tmtypes.Validator{tmtypes.NewValidator(ed25519.GenPrivKey().PubKey(), 1)}
 			res, err := blockManager.Executor.InitChain(blockManager.Genesis, blockManager.GenesisChecksum, valset)
 			if err != nil {
-				return err
+				return fmt.Errorf("Cannot validate genesis bridge data: %w.", err)
 			}
 
 			// validate the resulting genesis bridge data against the hub
 			err = blockManager.ValidateGenesisBridgeData(res.GenesisBridgeDataBytes)
 			if err != nil {
-				return fmt.Errorf("Cannot validate genesis bridge data: %w. Please call `$EXECUTABLE dymint unsafe-reset-all` before the next launch to reset this node to genesis state.", err)
+				return fmt.Errorf("Cannot validate genesis bridge data: %w.", err)
 			}
 
-			fmt.Printf("Genesis validated successfully")
+			fmt.Println("Genesis bridge validated successfully.")
 
 			return nil
 		},

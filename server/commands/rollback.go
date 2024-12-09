@@ -4,22 +4,14 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/dymensionxyz/dymint/block"
-	"github.com/dymensionxyz/dymint/cmd/dymint/commands"
 	dymintconf "github.com/dymensionxyz/dymint/config"
-	dymintconv "github.com/dymensionxyz/dymint/conv"
 
-	"github.com/dymensionxyz/dymint/store"
-	"github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/libs/log"
 	"github.com/tendermint/tendermint/node"
-	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/proxy"
 
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/server/types"
-	slregistry "github.com/dymensionxyz/dymint/settlement/registry"
 	"github.com/spf13/cobra"
 
 	"github.com/dymensionxyz/dymension-rdk/utils"
@@ -66,7 +58,13 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 			proxyApp := proxy.NewLocalClientCreator(app)
 			ctx.Logger.Info("starting block manager with ABCI in-process")
 
-			blockManager, err := liteBlockManager(cfg, nodeConfig, proxyApp, ctx.Logger)
+			genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
+			genesis, err := genDocProvider()
+			if err != nil {
+				return err
+			}
+
+			blockManager, err := liteBlockManager(cfg, nodeConfig, genesis, nil, proxyApp, ctx.Logger)
 			if err != nil {
 				return fmt.Errorf("start lite block manager: %w", err)
 			}
@@ -91,78 +89,4 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 	dymintconf.AddNodeFlags(cmd)
 	return cmd
-}
-
-func liteBlockManager(cfg *config.Config, dymintConf *dymintconf.NodeConfig, clientCreator proxy.ClientCreator, logger log.Logger) (*block.Manager, error) {
-
-	genDocProvider := node.DefaultGenesisDocProviderFunc(cfg)
-
-	privValKey, err := p2p.LoadOrGenNodeKey(cfg.PrivValidatorKeyFile())
-	if err != nil {
-		return nil, err
-	}
-	signingKey, err := dymintconv.GetNodeKey(privValKey)
-	if err != nil {
-		return nil, err
-	}
-	genesis, err := genDocProvider()
-	if err != nil {
-		return nil, err
-	}
-
-	err = dymintconv.GetNodeConfig(dymintConf, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	proxyApp := proxy.NewAppConns(clientCreator)
-	if err := proxyApp.Start(); err != nil {
-		return nil, fmt.Errorf("starting proxy app connections: %w", err)
-	}
-
-	var baseKV store.KV
-	if dymintConf.RootDir == "" && dymintConf.DBPath == "" { // this is used for testing
-		baseKV = store.NewDefaultInMemoryKVStore()
-	} else {
-		// TODO(omritoptx): Move dymint to const
-		baseKV = store.NewDefaultKVStore(dymintConf.RootDir, dymintConf.DBPath, "dymint")
-	}
-	mainKV := store.NewPrefixKV(baseKV, []byte{0})
-	s := store.New(mainKV)
-
-	settlementlc := slregistry.GetClient(slregistry.Client(dymintConf.SettlementLayer))
-	if settlementlc == nil {
-		return nil, fmt.Errorf("get settlement client: named: %s", dymintConf.SettlementLayer)
-	}
-	err = settlementlc.Init(dymintConf.SettlementConfig, genesis.ChainID, nil, logger.With("module", "settlement_client"))
-	if err != nil {
-		return nil, fmt.Errorf("settlement layer client initialization: %w", err)
-	}
-
-	genesisChecksum, err := commands.ComputeGenesisHash(cfg.GenesisFile())
-	if err != nil {
-		return nil, fmt.Errorf("failed to compute genesis checksum: %w", err)
-	}
-
-	blockManager, err := block.NewManager(
-		signingKey,
-		*dymintConf,
-		genesis,
-		genesisChecksum,
-		s,
-		nil,
-		proxyApp,
-		settlementlc,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-		logger,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("BlockManager initialization error: %w", err)
-	}
-
-	return blockManager, nil
 }
