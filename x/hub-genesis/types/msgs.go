@@ -8,7 +8,9 @@ import (
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
-var _ sdk.Msg = (*MsgSendTransfer)(nil)
+var (
+	_ sdk.Msg = (*MsgSendTransfer)(nil)
+)
 
 func (m *MsgSendTransfer) GetSigners() []sdk.AccAddress {
 	return []sdk.AccAddress{sdk.MustAccAddressFromBech32(m.Relayer)}
