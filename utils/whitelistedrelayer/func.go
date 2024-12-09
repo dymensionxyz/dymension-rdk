@@ -8,20 +8,27 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
-type distr interface {
+type DistrK interface {
 	GetPreviousProposerConsAddr(ctx sdk.Context) sdk.ConsAddress
 }
 
-type seq interface {
+type SeqK interface {
 	GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (stakingtypes.Validator, bool)
 	GetWhitelistedRelayers(ctx sdk.Context, operatorAddr sdk.ValAddress) (types.WhitelistedRelayers, error)
 }
 
-func GetMap(
+type List map[string]struct{}
+
+func (l List) Has(addr string) bool {
+	_, ok := l[addr]
+	return ok
+}
+
+func GetList(
 	ctx sdk.Context,
-	d distr,
-	s seq,
-) (map[string]struct{}, error) {
+	d DistrK,
+	s SeqK,
+) (List, error) {
 	consAddr := d.GetPreviousProposerConsAddr(ctx)
 	seq, ok := s.GetSequencerByConsAddr(ctx, consAddr)
 	if !ok {

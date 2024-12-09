@@ -3,11 +3,9 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
-	seqtypes "github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
-
-	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
 
 // AccountKeeper defines the contract required for account APIs.
@@ -30,8 +28,4 @@ type BankKeeper interface {
 
 type MintKeeper interface {
 	MintDenom(ctx sdk.Context) string
-}
-
-type SeqKeeper interface {
-	GetWhitelistedRelayers(ctx sdk.Context, operator sdk.ValAddress) (seqtypes.WhitelistedRelayers, error)
 }

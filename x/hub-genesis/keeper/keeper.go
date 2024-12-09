@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 
+	"github.com/dymensionxyz/dymension-rdk/utils/whitelistedrelayer"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
@@ -21,7 +22,8 @@ type Keeper struct {
 	ak types.AccountKeeper
 	bk types.BankKeeper
 	mk types.MintKeeper
-	sk types.SeqKeeper
+	dk whitelistedrelayer.DistrK
+	sk whitelistedrelayer.SeqK
 }
 
 func NewKeeper(
@@ -31,7 +33,9 @@ func NewKeeper(
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
 	mk types.MintKeeper,
-	sk types.SeqKeeper,
+	dk whitelistedrelayer.DistrK,
+	sk whitelistedrelayer.SeqK,
+
 ) Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -56,6 +60,7 @@ func NewKeeper(
 		bk:         bk,
 		mk:         mk,
 		sk:         sk,
+		dk:         dk,
 	}
 }
 
