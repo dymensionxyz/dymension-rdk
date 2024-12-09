@@ -2,7 +2,6 @@ package keeper
 
 import (
 	errorsmod "cosmossdk.io/errors"
-	"cosmossdk.io/math"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -27,13 +26,10 @@ func (k Keeper) PrepareGenesisBridgeData(ctx sdk.Context) (types.GenesisBridgeDa
 		return types.GenesisBridgeData{}, errorsmod.Wrap(gerrc.ErrInternal, "denom metadata not found")
 	}
 
-	amount := math.ZeroInt()
-	for _, acc := range gInfo.GenesisAccounts {
-		amount = amount.Add(acc.Amount)
-	}
+	amount := gInfo.Amt()
 
 	// no genesis accounts defined => no genesis transfer needed
-	if amount.IsZero() {
+	if gInfo.Amt().IsZero() {
 		return types.GenesisBridgeData{
 			GenesisInfo:     gInfo,
 			NativeDenom:     denomMeta,
