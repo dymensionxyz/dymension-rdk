@@ -33,11 +33,9 @@ func (w IBCModule) logger(ctx sdk.Context) log.Logger {
 	return w.k.Logger(ctx)
 }
 
-// On successful OnChanOpenConfirm for the canonical channel, the genesis bridge flow will be initiated.
+// While no canonical channel is set, On successful OnChanOpenConfirm, the genesis bridge flow will be initiated.
 // It will prepare the genesis bridge data and send it over the channel.
 // The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
-// Since transfers are only sent once, it does not matter if someone else tries to open
-// a channel in future (it will no-op).
 func (w IBCModule) OnChanOpenConfirm(
 	ctx sdk.Context,
 	portID,
@@ -48,8 +46,7 @@ func (w IBCModule) OnChanOpenConfirm(
 		return err
 	}
 
-	state := w.k.GetState(ctx)
-	if state.CanonicalHubTransferChannelHasBeenSet() {
+	if w.k.IsBridgeOpen(ctx) {
 		return nil
 	}
 
@@ -91,16 +88,18 @@ func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, chann
 	return w.channelKeeper.SendPacket(ctx, chanCap, portID, channelID, clienttypes.ZeroHeight(), uint64(timeoutTimestamp), bz)
 }
 
+// OnAcknowledgementPacket handles the genesis bridge ack.
+// If the ack is not successful, it will mark the channel as failed.
+// If the ack is successful, it will enable outbound transfers and clear the pending channels.
+// It will also escrow the genesis transfer funds.
 func (w IBCModule) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-	state := w.k.GetState(ctx)
-
 	// if canonical channel is set, we past the genesis phase. nothing to do here.
-	if state.CanonicalHubTransferChannelHasBeenSet() {
+	if w.k.IsBridgeOpen(ctx) {
 		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
 
@@ -160,17 +159,15 @@ func (w IBCModule) OnAcknowledgementPacket(
 }
 
 // OnTimeoutPacket handles IBC packet timeouts
+// shouldn't happen in the genesis bridge phase
 func (w IBCModule) OnTimeoutPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	state := w.k.GetState(ctx)
-
-	// if outbound transfers are enabled, no-op
-	if state.CanonicalHubTransferChannelHasBeenSet() {
-		return w.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
+	if !w.k.IsBridgeOpen(ctx) {
+		return errorsmod.Wrapf(gerrc.ErrUnknown, "unexpected packet timeout: %s", packet.String())
 	}
 
-	return errorsmod.Wrapf(gerrc.ErrUnknown, "unexpected packet timeout: %s", packet.String())
+	return w.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
 }

@@ -32,15 +32,15 @@ func (s *State) Validate() error {
 	return nil
 }
 
-func (s *State) IsCanonicalHubTransferChannel(port, channel string) bool {
-	return s.CanonicalHubTransferChannelHasBeenSet() && s.HubPortAndChannel.Port == port && s.HubPortAndChannel.Channel == channel
+func (s *State) IsCanonicalBridgeChannel(port, channel string) bool {
+	return s.IsCanonicalBridgeOpen() && s.HubPortAndChannel.Port == port && s.HubPortAndChannel.Channel == channel
 }
 
-func (s *State) CanonicalHubTransferChannelHasBeenSet() bool {
+func (s *State) IsCanonicalBridgeOpen() bool {
 	return s.HubPortAndChannel != nil
 }
 
-func (s *State) SetCanonicalTransferChannel(port, channel string) {
+func (s *State) SetCanonicalBridgeChannel(port, channel string) {
 	s.HubPortAndChannel = &PortAndChannel{
 		Port:    port,
 		Channel: channel,

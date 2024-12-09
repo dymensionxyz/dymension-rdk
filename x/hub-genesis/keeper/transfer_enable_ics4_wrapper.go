@@ -35,8 +35,7 @@ func (w ICS4Wrapper) SendPacket(
 	timeoutTimestamp uint64,
 	data []byte,
 ) (sequence uint64, err error) {
-	state := w.k.GetState(ctx)
-	if !state.CanonicalHubTransferChannelHasBeenSet() {
+	if !w.k.IsBridgeOpen(ctx) {
 		w.logger(ctx).Info("Transfer rejected: outbound transfers are disabled.")
 		return 0, errorsmod.Wrap(gerrc.ErrFailedPrecondition, "genesis phase not finished")
 	}

@@ -141,3 +141,8 @@ func (k Keeper) ClearPendingChannels(ctx sdk.Context) error {
 func (k Keeper) IsPendingChannel(ctx sdk.Context, portChannel types.PortAndChannel) (bool, error) {
 	return k.PendingChannels.Has(ctx, portChannel.Key())
 }
+
+func (k Keeper) IsBridgeOpen(ctx sdk.Context) bool {
+	state := k.GetState(ctx)
+	return state.IsCanonicalBridgeOpen()
+}

@@ -65,7 +65,7 @@ func (m *ICS4Wrapper) SendPacket(
 	}
 
 	// don't send metadata on non-canonical channels
-	if hubGenState := m.getHubGenState(ctx); !hubGenState.IsCanonicalHubTransferChannel(destinationPort, destinationChannel) {
+	if hubGenState := m.getHubGenState(ctx); !hubGenState.IsCanonicalBridgeChannel(destinationPort, destinationChannel) {
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}
 

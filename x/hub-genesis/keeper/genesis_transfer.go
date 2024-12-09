@@ -62,24 +62,25 @@ func (k Keeper) EscrowGenesisTransferFunds(ctx sdk.Context, portID, channelID st
 }
 
 // enableBridge enables the bridge after successful genesis bridge phase.
+// It sets the canonical transfer channel and enables outbound transfers
 func (k Keeper) enableBridge(ctx sdk.Context, state types.State, portID, channelID string) {
-	state.SetCanonicalTransferChannel(portID, channelID)
+	state.SetCanonicalBridgeChannel(portID, channelID)
 	state.OutboundTransfersEnabled = true
 	k.SetState(ctx, state)
 }
 
 // ResubmitPendingGenesisBridges attempts to resubmit genesis bridge data for all pending channels
+// that are in the Failed state
+// It's no-op after the genesis bridge phase is finished
 func (k Keeper) ResubmitPendingGenesisBridges(ctx sdk.Context) {
-	state := k.GetState(ctx)
-	// If canonical channel is set, we don't need to resubmit
-	if state.CanonicalHubTransferChannelHasBeenSet() {
+	if k.IsBridgeOpen(ctx) {
 		return
 	}
 
 	// Iterate over all pending channels
-	err := k.PendingChannels.Walk(ctx, nil, func(portChannel string, retryRequired uint64) (stop bool, err error) {
+	err := k.PendingChannels.Walk(ctx, nil, func(portChannel string, status uint64) (stop bool, err error) {
 		// Skip if channel is not failed yet
-		if types.ChannelState(retryRequired) != types.Failed {
+		if types.ChannelState(status) != types.Failed {
 			return false, nil
 		}
 
