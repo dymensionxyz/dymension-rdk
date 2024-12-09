@@ -5,3 +5,4 @@ release/
 .idea/
 .vscode/
 .DS_Store
+repomix.config.json

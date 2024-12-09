@@ -2,6 +2,7 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
@@ -39,4 +40,12 @@ func (g GenesisInfo) BaseCoinSupply() sdk.Coin {
 		amount = amount.Add(acc.Amount)
 	}
 	return sdk.NewCoin(g.BaseDenom(), amount)
+}
+
+func (g GenesisInfo) Amt() math.Int {
+	amount := math.ZeroInt()
+	for _, acc := range g.GenesisAccounts {
+		amount = amount.Add(acc.Amount)
+	}
+	return amount
 }
