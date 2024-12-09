@@ -18,5 +18,6 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 func (m msgServer) SendTransfer(goCtx context.Context, transfer *types.MsgSendTransfer) (*types.MsgSendTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	_ = ctx
+	wl, err := m.sk.GetWhitelistedRelayers(ctx, transfer.R)
 	return &types.MsgSendTransferResponse{}, nil
 }

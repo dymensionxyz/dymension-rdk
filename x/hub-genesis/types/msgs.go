@@ -13,13 +13,17 @@ var (
 )
 
 const (
-	TypeMsgSendTransfer = "set_canonical_client"
+	TypeMsgSendTransfer = "send_transfer"
 )
 
 var (
 	_ sdk.Msg = &MsgSendTransfer{}
 	//_ legacytx.LegacyMsg = &MsgSendTransfer{}
 )
+
+//func RegisterCodec(cdc *codec.LegacyAmino) {
+//	cdc.RegisterConcrete(&MsgSetCanonicalClient{}, "lightclient/SetCanonicalClient", nil)
+//}
 
 //func (msg *MsgSetCanonicalClient) Route() string {
 //	return ModuleName
