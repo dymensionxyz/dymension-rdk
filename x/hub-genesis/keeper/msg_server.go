@@ -42,10 +42,14 @@ func (k Keeper) SendGenesisTransfer(ctx sdk.Context, relayer, channelID string) 
 		return gerrc.ErrPermissionDenied.Wrap("not whitelisted")
 	}
 	state := k.GetState(ctx)
+	if state.InFlight {
+		return gerrc.ErrFailedPrecondition.Wrap("sent transfer is already in flight")
+	}
 	if !state.CanonicalHubTransferChannelHasBeenSet() {
 		state.SetCanonicalTransferChannel(port, channelID)
-		k.SetState(ctx, state)
 	}
+	state.InFlight = true
+	k.SetState(ctx, state)
 
 	if err := k.SubmitGenesisBridgeData(ctx, channelID); err != nil {
 		return errorsmod.Wrap(err, "submit genesis bridge data")
