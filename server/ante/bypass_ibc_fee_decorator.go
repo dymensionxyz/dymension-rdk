@@ -7,6 +7,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
@@ -53,6 +54,7 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	if ibcCount == totalMsgs {
 		// all are IBC messages
 		if err = n.isIBCWhitelistedRelayer(ctx, msgs); err != nil {
+			ctx.Logger().Debug("BypassIBCFeeDecorator: IBC relayer message not from whitelisted relayer", "error", err)
 			return ctx, err
 		}
 		return next(ctx, tx, simulate)
@@ -89,7 +91,7 @@ func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []s
 			_, ok := wlRelayersMap[signer.String()]
 			if !ok {
 				// if not a whitelisted relayer, we block them from sending the IBC relayer messages
-				return fmt.Errorf("signer %s is not a whitelisted relayer", signer.String())
+				return gerrc.ErrPermissionDenied.Wrapf("signer is not a whitelisted relayer: %s", signer.String())
 			}
 		}
 	}

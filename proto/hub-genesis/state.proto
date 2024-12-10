@@ -14,6 +14,9 @@ message State {
   bool outbound_transfers_enabled = 6;
   // the canonical transfer port and channel for the hub
   PortAndChannel hub_port_and_channel = 7;
+
+  // are we awaiting a timeout or ack for the sent genesis transfer?
+  bool in_flight = 8;
 }
 
 message PortAndChannel {

@@ -1,100 +1,33 @@
 package keeper
 
 import (
-	"encoding/json"
 	"errors"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
-var transferTimeout = (time.Duration(24*365) * time.Hour) // very long timeout
+var transferTimeout = time.Duration(24*365*10) * time.Hour // very long timeout
 
 type IBCModule struct {
 	porttypes.IBCModule
-	k             Keeper
-	bank          types.BankKeeper
-	channelKeeper types.ChannelKeeper
+	k    Keeper
+	bank types.BankKeeper
 }
 
-func NewIBCModule(next porttypes.IBCModule, k Keeper, bank types.BankKeeper, chanKeeper types.ChannelKeeper) *IBCModule {
-	return &IBCModule{next, k, bank, chanKeeper}
+func NewIBCModule(next porttypes.IBCModule, k Keeper, bank types.BankKeeper) *IBCModule {
+	return &IBCModule{next, k, bank}
 }
 
 func (w IBCModule) logger(ctx sdk.Context) log.Logger {
 	return w.k.Logger(ctx)
-}
-
-// On successful OnChanOpenConfirm for the canonical channel, the genesis bridge flow will be initiated.
-// It will prepare the genesis bridge data and send it over the channel.
-// The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
-// Since transfers are only sent once, it does not matter if someone else tries to open
-// a channel in future (it will no-op).
-func (w IBCModule) OnChanOpenConfirm(
-	ctx sdk.Context,
-	portID,
-	channelID string,
-) error {
-	err := w.IBCModule.OnChanOpenConfirm(ctx, portID, channelID)
-	if err != nil {
-		return err
-	}
-
-	state := w.k.GetState(ctx)
-	if state.CanonicalHubTransferChannelHasBeenSet() {
-		// We only set the canonical channel in this function, so if it's already been set, we don't need
-		// to send the transfers again.
-		return nil
-	}
-
-	seq, err := w.SubmitGenesisBridgeData(ctx, portID, channelID)
-	if err != nil {
-		return errorsmod.Wrap(err, "submit genesis bridge data")
-	}
-
-	state.SetCanonicalTransferChannel(portID, channelID)
-	w.k.SetState(ctx, state)
-
-	w.logger(ctx).Info("genesis bridge data submitted", "sequence", seq, "port", portID, "channel", channelID)
-	return nil
-}
-
-// SubmitGenesisBridgeData sends the genesis bridge data over the channel.
-// The genesis bridge data includes the genesis info, the native denom metadata, and the genesis transfer packet.
-// It uses the channel keeper to send the packet, instead of transfer keeper, as we are not sending fungible token directly.
-func (w IBCModule) SubmitGenesisBridgeData(ctx sdk.Context, portID string, channelID string) (seq uint64, err error) {
-	_, chanCap, err := w.channelKeeper.LookupModuleByChannel(ctx, portID, channelID)
-	if err != nil {
-		return
-	}
-
-	data, err := w.k.PrepareGenesisBridgeData(ctx)
-	if err != nil {
-		return 0, errorsmod.Wrap(err, "prepare genesis bridge data")
-	}
-
-	if data.GenesisTransfer != nil {
-		// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
-		err = w.k.EscrowGenesisTransferFunds(ctx, portID, channelID, data.GenesisInfo.BaseCoinSupply())
-		if err != nil {
-			return 0, errorsmod.Wrap(err, "escrow genesis transfer funds")
-		}
-	}
-
-	bz, err := json.Marshal(data)
-	if err != nil {
-		return 0, errorsmod.Wrap(err, "marshal genesis bridge data")
-	}
-
-	timeoutTimestamp := ctx.BlockTime().Add(transferTimeout).UnixNano()
-	return w.channelKeeper.SendPacket(ctx, chanCap, portID, channelID, clienttypes.ZeroHeight(), uint64(timeoutTimestamp), bz)
 }
 
 func (w IBCModule) OnAcknowledgementPacket(
@@ -102,6 +35,7 @@ func (w IBCModule) OnAcknowledgementPacket(
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
+	// NOTE: non nil errors will abort transaction
 ) error {
 	state := w.k.GetState(ctx)
 
@@ -110,26 +44,50 @@ func (w IBCModule) OnAcknowledgementPacket(
 		return w.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	}
 
+	expect := state.GetHubPortAndChannel()
+	got := types.PortAndChannel{
+		Port:    packet.SourcePort,
+		Channel: packet.SourceChannel,
+	}
+	if expect == nil || *expect != got {
+		err := errorsmod.Wrap(gerrc.ErrInvalidArgument, "unexpected non genesis transfer packet before genesis bridge open")
+		w.logger(ctx).Error("OnAcknowledgementPacket", "error", err)
+		return err
+	}
+
+	state.InFlight = false
+	w.k.SetState(ctx, state)
+
 	var ack channeltypes.Acknowledgement
 	err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack)
 	if err != nil {
+		// should never happen
+		err = errorsmod.Wrap(errors.Join(gerrc.ErrInternal, err), "unmarshal ack on genesis transfer")
+		w.logger(ctx).Error("OnAcknowledgementPacket", "error", err)
 		return err
 	}
 
 	if !ack.Success() {
-		w.logger(ctx).Error("acknowledgement failed for genesis transfer", "packet", packet, "ack", ack)
-		return errors.New("acknowledgement failed for genesis transfer")
+		// something wrong - need to fix the hub with gov prop and try to send transfer again
+		return nil
 	}
 
-	w.k.enableBridge(ctx, state)
+	gfo := w.k.GetGenesisInfo(ctx)
+	if !gfo.Amt().IsZero() {
+		// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
+		err = w.k.EscrowGenesisTransferFunds(ctx, port, packet.SourceChannel, gfo.BaseCoinSupply())
+		if err != nil {
+			err := errorsmod.Wrap(errors.Join(err, gerrc.ErrInternal), "escrow genesis transfer funds : rollapp is corrupted")
+			w.logger(ctx).Error("OnAcknowledgementPacket", "error", err)
+			return err
+		}
+	}
+
+	// open the bridge
+	state.OutboundTransfersEnabled = true
+	w.k.SetState(ctx, state)
+
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeOutboundTransfersEnabled))
 	w.logger(ctx).Info("genesis bridge phase completed successfully")
-
 	return nil
-}
-
-// enableBridge enables the bridge after successful genesis bridge phase.
-func (k Keeper) enableBridge(ctx sdk.Context, state types.State) {
-	state.OutboundTransfersEnabled = true
-	k.SetState(ctx, state)
 }

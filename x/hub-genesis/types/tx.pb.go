@@ -6,6 +6,8 @@ package types
 import (
 	context "context"
 	fmt "fmt"
+	_ "github.com/cosmos/cosmos-sdk/codec/types"
+	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
 	grpc "google.golang.org/grpc"
@@ -27,28 +29,27 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// MsgHubGenesisEvent is the message type for triggering the hub genesis event
-type MsgHubGenesisEvent struct {
-	// address is the bech32-encoded address of the sender
-	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	// channel_id is the hub channel id on the rollapp
+// Try to send the genesis transfer
+// Must be whitelisted relayer, and channel must be open
+// Must have tokens available to send
+type MsgSendTransfer struct {
+	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
+	// ID of the canonical channel, as queried from the hub
 	ChannelId string `protobuf:"bytes,2,opt,name=channel_id,json=channelId,proto3" json:"channel_id,omitempty"`
-	// hub_id is the hub's chainid
-	HubId string `protobuf:"bytes,3,opt,name=hub_id,json=hubId,proto3" json:"hub_id,omitempty"`
 }
 
-func (m *MsgHubGenesisEvent) Reset()         { *m = MsgHubGenesisEvent{} }
-func (m *MsgHubGenesisEvent) String() string { return proto.CompactTextString(m) }
-func (*MsgHubGenesisEvent) ProtoMessage()    {}
-func (*MsgHubGenesisEvent) Descriptor() ([]byte, []int) {
+func (m *MsgSendTransfer) Reset()         { *m = MsgSendTransfer{} }
+func (m *MsgSendTransfer) String() string { return proto.CompactTextString(m) }
+func (*MsgSendTransfer) ProtoMessage()    {}
+func (*MsgSendTransfer) Descriptor() ([]byte, []int) {
 	return fileDescriptor_9b8a59dbc89b5c59, []int{0}
 }
-func (m *MsgHubGenesisEvent) XXX_Unmarshal(b []byte) error {
+func (m *MsgSendTransfer) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgHubGenesisEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgSendTransfer) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgHubGenesisEvent.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgSendTransfer.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -58,54 +59,47 @@ func (m *MsgHubGenesisEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *MsgHubGenesisEvent) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgHubGenesisEvent.Merge(m, src)
+func (m *MsgSendTransfer) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSendTransfer.Merge(m, src)
 }
-func (m *MsgHubGenesisEvent) XXX_Size() int {
+func (m *MsgSendTransfer) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgHubGenesisEvent) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgHubGenesisEvent.DiscardUnknown(m)
+func (m *MsgSendTransfer) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSendTransfer.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgHubGenesisEvent proto.InternalMessageInfo
+var xxx_messageInfo_MsgSendTransfer proto.InternalMessageInfo
 
-func (m *MsgHubGenesisEvent) GetAddress() string {
+func (m *MsgSendTransfer) GetSigner() string {
 	if m != nil {
-		return m.Address
+		return m.Signer
 	}
 	return ""
 }
 
-func (m *MsgHubGenesisEvent) GetChannelId() string {
+func (m *MsgSendTransfer) GetChannelId() string {
 	if m != nil {
 		return m.ChannelId
 	}
 	return ""
 }
 
-func (m *MsgHubGenesisEvent) GetHubId() string {
-	if m != nil {
-		return m.HubId
-	}
-	return ""
+type MsgSendTransferResponse struct {
 }
 
-type MsgHubGenesisEventResponse struct {
-}
-
-func (m *MsgHubGenesisEventResponse) Reset()         { *m = MsgHubGenesisEventResponse{} }
-func (m *MsgHubGenesisEventResponse) String() string { return proto.CompactTextString(m) }
-func (*MsgHubGenesisEventResponse) ProtoMessage()    {}
-func (*MsgHubGenesisEventResponse) Descriptor() ([]byte, []int) {
+func (m *MsgSendTransferResponse) Reset()         { *m = MsgSendTransferResponse{} }
+func (m *MsgSendTransferResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgSendTransferResponse) ProtoMessage()    {}
+func (*MsgSendTransferResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_9b8a59dbc89b5c59, []int{1}
 }
-func (m *MsgHubGenesisEventResponse) XXX_Unmarshal(b []byte) error {
+func (m *MsgSendTransferResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *MsgHubGenesisEventResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *MsgSendTransferResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_MsgHubGenesisEventResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_MsgSendTransferResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -115,44 +109,45 @@ func (m *MsgHubGenesisEventResponse) XXX_Marshal(b []byte, deterministic bool) (
 		return b[:n], nil
 	}
 }
-func (m *MsgHubGenesisEventResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MsgHubGenesisEventResponse.Merge(m, src)
+func (m *MsgSendTransferResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgSendTransferResponse.Merge(m, src)
 }
-func (m *MsgHubGenesisEventResponse) XXX_Size() int {
+func (m *MsgSendTransferResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *MsgHubGenesisEventResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_MsgHubGenesisEventResponse.DiscardUnknown(m)
+func (m *MsgSendTransferResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgSendTransferResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_MsgHubGenesisEventResponse proto.InternalMessageInfo
+var xxx_messageInfo_MsgSendTransferResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*MsgHubGenesisEvent)(nil), "rollapp.hub_genesis.MsgHubGenesisEvent")
-	proto.RegisterType((*MsgHubGenesisEventResponse)(nil), "rollapp.hub_genesis.MsgHubGenesisEventResponse")
+	proto.RegisterType((*MsgSendTransfer)(nil), "rollapp.hub_genesis.MsgSendTransfer")
+	proto.RegisterType((*MsgSendTransferResponse)(nil), "rollapp.hub_genesis.MsgSendTransferResponse")
 }
 
 func init() { proto.RegisterFile("hub-genesis/tx.proto", fileDescriptor_9b8a59dbc89b5c59) }
 
 var fileDescriptor_9b8a59dbc89b5c59 = []byte{
-	// 262 bytes of a gzipped FileDescriptorProto
+	// 284 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xc9, 0x28, 0x4d, 0xd2,
 	0x4d, 0x4f, 0xcd, 0x4b, 0x2d, 0xce, 0x2c, 0xd6, 0x2f, 0xa9, 0xd0, 0x2b, 0x28, 0xca, 0x2f, 0xc9,
 	0x17, 0x12, 0x2e, 0xca, 0xcf, 0xc9, 0x49, 0x2c, 0x28, 0xd0, 0xcb, 0x28, 0x4d, 0x8a, 0x87, 0xca,
-	0x2a, 0xa5, 0x70, 0x09, 0xf9, 0x16, 0xa7, 0x7b, 0x94, 0x26, 0xb9, 0x43, 0x04, 0x5c, 0xcb, 0x52,
-	0xf3, 0x4a, 0x84, 0x24, 0xb8, 0xd8, 0x13, 0x53, 0x52, 0x8a, 0x52, 0x8b, 0x8b, 0x25, 0x18, 0x15,
-	0x18, 0x35, 0x38, 0x83, 0x60, 0x5c, 0x21, 0x59, 0x2e, 0xae, 0xe4, 0x8c, 0xc4, 0xbc, 0xbc, 0xd4,
-	0x9c, 0xf8, 0xcc, 0x14, 0x09, 0x26, 0xb0, 0x24, 0x27, 0x54, 0xc4, 0x33, 0x45, 0x48, 0x94, 0x8b,
-	0x0d, 0x64, 0x7a, 0x66, 0x8a, 0x04, 0x33, 0x58, 0x8a, 0x35, 0xa3, 0x34, 0xc9, 0x33, 0x45, 0x49,
-	0x86, 0x4b, 0x0a, 0xd3, 0x96, 0xa0, 0xd4, 0xe2, 0x82, 0xfc, 0xbc, 0xe2, 0x54, 0xa3, 0x32, 0x2e,
-	0x66, 0xdf, 0xe2, 0x74, 0xa1, 0x7c, 0x2e, 0xe1, 0x90, 0xa2, 0xcc, 0xf4, 0xf4, 0xd4, 0x22, 0x14,
-	0xb7, 0xa8, 0xeb, 0x61, 0x71, 0xb7, 0x1e, 0xa6, 0x71, 0x52, 0xfa, 0x44, 0x2a, 0x84, 0xd9, 0xeb,
-	0x14, 0x7c, 0xe2, 0x91, 0x1c, 0xe3, 0x85, 0x47, 0x72, 0x8c, 0x0f, 0x1e, 0xc9, 0x31, 0x4e, 0x78,
-	0x2c, 0xc7, 0x70, 0xe1, 0xb1, 0x1c, 0xc3, 0x8d, 0xc7, 0x72, 0x0c, 0x51, 0x96, 0xe9, 0x99, 0x25,
-	0x19, 0xa5, 0x49, 0x7a, 0xc9, 0xf9, 0xb9, 0xfa, 0x29, 0x95, 0xb9, 0xa9, 0x79, 0xc5, 0x99, 0xf9,
-	0x79, 0x15, 0x95, 0x55, 0x08, 0x8e, 0x6e, 0x51, 0x4a, 0xb6, 0x7e, 0x85, 0x3e, 0x4a, 0x40, 0x57,
-	0x16, 0xa4, 0x16, 0x27, 0xb1, 0x81, 0x03, 0xdb, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x43, 0xad,
-	0x71, 0xfc, 0x84, 0x01, 0x00, 0x00,
+	0x4a, 0x89, 0x27, 0xe7, 0x17, 0xe7, 0xe6, 0x17, 0xeb, 0xe7, 0x16, 0xa7, 0xeb, 0x97, 0x19, 0x82,
+	0x28, 0x88, 0x6a, 0x29, 0xc9, 0xf4, 0xfc, 0xfc, 0xf4, 0x9c, 0x54, 0x7d, 0x30, 0x2f, 0xa9, 0x34,
+	0x4d, 0x3f, 0x31, 0xaf, 0x12, 0x22, 0xa5, 0x14, 0xca, 0xc5, 0xef, 0x5b, 0x9c, 0x1e, 0x9c, 0x9a,
+	0x97, 0x12, 0x52, 0x94, 0x98, 0x57, 0x9c, 0x96, 0x5a, 0x24, 0x24, 0xc6, 0xc5, 0x56, 0x9c, 0x99,
+	0x9e, 0x97, 0x5a, 0x24, 0xc1, 0xa8, 0xc0, 0xa8, 0xc1, 0x19, 0x04, 0xe5, 0x09, 0xc9, 0x72, 0x71,
+	0x25, 0x67, 0x24, 0xe6, 0xe5, 0xa5, 0xe6, 0xc4, 0x67, 0xa6, 0x48, 0x30, 0x81, 0xe5, 0x38, 0xa1,
+	0x22, 0x9e, 0x29, 0x56, 0xdc, 0x4d, 0xcf, 0x37, 0x68, 0x41, 0xd5, 0x2a, 0x49, 0x72, 0x89, 0xa3,
+	0x19, 0x1b, 0x94, 0x5a, 0x5c, 0x90, 0x9f, 0x57, 0x9c, 0x6a, 0x94, 0xc9, 0xc5, 0xec, 0x5b, 0x9c,
+	0x2e, 0x94, 0xc4, 0xc5, 0x83, 0x62, 0xab, 0x8a, 0x1e, 0x16, 0x2f, 0xe9, 0xa1, 0x19, 0x22, 0xa5,
+	0x43, 0x8c, 0x2a, 0x98, 0x55, 0x4e, 0xc1, 0x27, 0x1e, 0xc9, 0x31, 0x5e, 0x78, 0x24, 0xc7, 0xf8,
+	0xe0, 0x91, 0x1c, 0xe3, 0x84, 0xc7, 0x72, 0x0c, 0x17, 0x1e, 0xcb, 0x31, 0xdc, 0x78, 0x2c, 0xc7,
+	0x10, 0x65, 0x99, 0x9e, 0x59, 0x92, 0x51, 0x9a, 0xa4, 0x97, 0x9c, 0x9f, 0xab, 0x9f, 0x52, 0x99,
+	0x9b, 0x9a, 0x57, 0x9c, 0x99, 0x9f, 0x57, 0x51, 0x59, 0x85, 0xe0, 0xe8, 0x16, 0xa5, 0x64, 0xeb,
+	0x57, 0xe8, 0xa3, 0x84, 0x7e, 0x65, 0x41, 0x6a, 0x71, 0x12, 0x1b, 0x38, 0xe0, 0x8c, 0x01, 0x01,
+	0x00, 0x00, 0xff, 0xff, 0x2d, 0x5c, 0xba, 0xf8, 0x99, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -167,7 +162,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MsgClient interface {
-	TriggerGenesisEvent(ctx context.Context, in *MsgHubGenesisEvent, opts ...grpc.CallOption) (*MsgHubGenesisEventResponse, error)
+	SendTransfer(ctx context.Context, in *MsgSendTransfer, opts ...grpc.CallOption) (*MsgSendTransferResponse, error)
 }
 
 type msgClient struct {
@@ -178,9 +173,9 @@ func NewMsgClient(cc grpc1.ClientConn) MsgClient {
 	return &msgClient{cc}
 }
 
-func (c *msgClient) TriggerGenesisEvent(ctx context.Context, in *MsgHubGenesisEvent, opts ...grpc.CallOption) (*MsgHubGenesisEventResponse, error) {
-	out := new(MsgHubGenesisEventResponse)
-	err := c.cc.Invoke(ctx, "/rollapp.hub_genesis.Msg/TriggerGenesisEvent", in, out, opts...)
+func (c *msgClient) SendTransfer(ctx context.Context, in *MsgSendTransfer, opts ...grpc.CallOption) (*MsgSendTransferResponse, error) {
+	out := new(MsgSendTransferResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.hub_genesis.Msg/SendTransfer", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -189,35 +184,35 @@ func (c *msgClient) TriggerGenesisEvent(ctx context.Context, in *MsgHubGenesisEv
 
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
-	TriggerGenesisEvent(context.Context, *MsgHubGenesisEvent) (*MsgHubGenesisEventResponse, error)
+	SendTransfer(context.Context, *MsgSendTransfer) (*MsgSendTransferResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
-func (*UnimplementedMsgServer) TriggerGenesisEvent(ctx context.Context, req *MsgHubGenesisEvent) (*MsgHubGenesisEventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TriggerGenesisEvent not implemented")
+func (*UnimplementedMsgServer) SendTransfer(ctx context.Context, req *MsgSendTransfer) (*MsgSendTransferResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendTransfer not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
 	s.RegisterService(&_Msg_serviceDesc, srv)
 }
 
-func _Msg_TriggerGenesisEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MsgHubGenesisEvent)
+func _Msg_SendTransfer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgSendTransfer)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MsgServer).TriggerGenesisEvent(ctx, in)
+		return srv.(MsgServer).SendTransfer(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/rollapp.hub_genesis.Msg/TriggerGenesisEvent",
+		FullMethod: "/rollapp.hub_genesis.Msg/SendTransfer",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MsgServer).TriggerGenesisEvent(ctx, req.(*MsgHubGenesisEvent))
+		return srv.(MsgServer).SendTransfer(ctx, req.(*MsgSendTransfer))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -227,15 +222,15 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "TriggerGenesisEvent",
-			Handler:    _Msg_TriggerGenesisEvent_Handler,
+			MethodName: "SendTransfer",
+			Handler:    _Msg_SendTransfer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "hub-genesis/tx.proto",
 }
 
-func (m *MsgHubGenesisEvent) Marshal() (dAtA []byte, err error) {
+func (m *MsgSendTransfer) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -245,23 +240,16 @@ func (m *MsgHubGenesisEvent) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgHubGenesisEvent) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgSendTransfer) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgHubGenesisEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgSendTransfer) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if len(m.HubId) > 0 {
-		i -= len(m.HubId)
-		copy(dAtA[i:], m.HubId)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.HubId)))
-		i--
-		dAtA[i] = 0x1a
-	}
 	if len(m.ChannelId) > 0 {
 		i -= len(m.ChannelId)
 		copy(dAtA[i:], m.ChannelId)
@@ -269,17 +257,17 @@ func (m *MsgHubGenesisEvent) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x12
 	}
-	if len(m.Address) > 0 {
-		i -= len(m.Address)
-		copy(dAtA[i:], m.Address)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Address)))
+	if len(m.Signer) > 0 {
+		i -= len(m.Signer)
+		copy(dAtA[i:], m.Signer)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Signer)))
 		i--
 		dAtA[i] = 0xa
 	}
 	return len(dAtA) - i, nil
 }
 
-func (m *MsgHubGenesisEventResponse) Marshal() (dAtA []byte, err error) {
+func (m *MsgSendTransferResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -289,12 +277,12 @@ func (m *MsgHubGenesisEventResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *MsgHubGenesisEventResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *MsgSendTransferResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *MsgHubGenesisEventResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *MsgSendTransferResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -313,13 +301,13 @@ func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *MsgHubGenesisEvent) Size() (n int) {
+func (m *MsgSendTransfer) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.Address)
+	l = len(m.Signer)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -327,14 +315,10 @@ func (m *MsgHubGenesisEvent) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.HubId)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
-	}
 	return n
 }
 
-func (m *MsgHubGenesisEventResponse) Size() (n int) {
+func (m *MsgSendTransferResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -349,7 +333,7 @@ func sovTx(x uint64) (n int) {
 func sozTx(x uint64) (n int) {
 	return sovTx(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *MsgHubGenesisEvent) Unmarshal(dAtA []byte) error {
+func (m *MsgSendTransfer) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -372,15 +356,15 @@ func (m *MsgHubGenesisEvent) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgHubGenesisEvent: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgSendTransfer: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgHubGenesisEvent: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgSendTransfer: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Address", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Signer", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -408,7 +392,7 @@ func (m *MsgHubGenesisEvent) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Address = string(dAtA[iNdEx:postIndex])
+			m.Signer = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -442,38 +426,6 @@ func (m *MsgHubGenesisEvent) Unmarshal(dAtA []byte) error {
 			}
 			m.ChannelId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field HubId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTx
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.HubId = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -495,7 +447,7 @@ func (m *MsgHubGenesisEvent) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *MsgHubGenesisEventResponse) Unmarshal(dAtA []byte) error {
+func (m *MsgSendTransferResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -518,10 +470,10 @@ func (m *MsgHubGenesisEventResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: MsgHubGenesisEventResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: MsgSendTransferResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: MsgHubGenesisEventResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: MsgSendTransferResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
