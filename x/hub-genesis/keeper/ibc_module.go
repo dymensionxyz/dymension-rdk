@@ -14,7 +14,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
-var transferTimeout = time.Duration(24*365) * time.Hour // very long timeout
+var transferTimeout = time.Duration(24*365*10) * time.Hour // very long timeout
 
 type IBCModule struct {
 	porttypes.IBCModule

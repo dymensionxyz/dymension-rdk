@@ -28,9 +28,9 @@ func GetTxCmd() *cobra.Command {
 
 func NewSendTransferCmd() *cobra.Command {
 	short := "Send genesis transfer"
-	long := "Send genesis transfer - intended for debugging, since only relayer enabled and relayer uses RPC"
+	long := "Send genesis transfer - intended for debugging, since only whitelisted relayer enabled and relayer uses RPC"
 	cmd := &cobra.Command{
-		Use:   "send-transfer [client-id]",
+		Use:   "send-transfer [channel id]",
 		Args:  cobra.ExactArgs(1),
 		Short: short,
 		Long:  long,
@@ -40,9 +40,8 @@ func NewSendTransferCmd() *cobra.Command {
 				return err
 			}
 			msg := &hubgentypes.MsgSendTransfer{
-				// TODO:
-				//Relayer:  ctx.GetFromAddress(),
-				//ClientID: args[0],
+				Relayer:   ctx.GetFromAddress().String(),
+				ChannelId: args[0],
 			}
 
 			return tx.GenerateOrBroadcastTxCLI(ctx, cmd.Flags(), msg)
