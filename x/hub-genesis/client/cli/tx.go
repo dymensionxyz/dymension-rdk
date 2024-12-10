@@ -40,7 +40,7 @@ func NewSendTransferCmd() *cobra.Command {
 				return err
 			}
 			msg := &hubgentypes.MsgSendTransfer{
-				Relayer:   ctx.GetFromAddress().String(),
+				Signer:    ctx.GetFromAddress().String(),
 				ChannelId: args[0],
 			}
 
