@@ -190,7 +190,7 @@ func (m msgServer) UpgradeDRS(goCtx context.Context, drs *types.MsgUpgradeDRS) (
 	return &types.MsgUpgradeDRSResponse{}, nil
 }
 
-// IsDrsUpgradeRequired checks if the DRS (Dynamic Rollup System) protocol version differs from the current version.
+// IsDrsUpgradeRequired checks if the DRS (Dymension Rollapp Standard) protocol version differs from the current version.
 // The function compares the new version against the existing one and returns true if they differ.
 func (m msgServer) IsDrsUpgradeRequired(ctx sdk.Context, newVersion uint64) bool {
 	currentVersion := m.rollapParamsKeeper.Version(ctx)
