@@ -8,7 +8,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
-	"github.com/dymensionxyz/dymension-rdk/utils/whitelistedrelayer"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
@@ -23,24 +22,17 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
 
+// note that this is only allowed by the whitelisted relayer (enforced in ante)
 func (m msgServer) SendTransfer(goCtx context.Context, msg *types.MsgSendTransfer) (*types.MsgSendTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	relayer := msg.GetSigners()[0] // guaranteed length 1
-	err := m.SendGenesisTransfer(ctx, relayer, msg.ChannelId)
+	err := m.SendGenesisTransfer(ctx, msg.ChannelId)
 	if err != nil {
 		return nil, err
 	}
 	return &types.MsgSendTransferResponse{}, nil
 }
 
-func (k Keeper) SendGenesisTransfer(ctx sdk.Context, relayer sdk.AccAddress, channelID string) error {
-	wl, err := whitelistedrelayer.GetList(ctx, k.dk, k.sk)
-	if err != nil {
-		return errorsmod.Wrap(err, "get whitelisted relayers")
-	}
-	if !wl.Has(relayer.String()) {
-		return gerrc.ErrPermissionDenied.Wrap("not whitelisted")
-	}
+func (k Keeper) SendGenesisTransfer(ctx sdk.Context, channelID string) error {
 	state := k.GetState(ctx)
 	if state.InFlight {
 		return gerrc.ErrFailedPrecondition.Wrap("sent transfer is already in flight")
