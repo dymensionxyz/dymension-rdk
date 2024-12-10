@@ -6,7 +6,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/group"
-	"github.com/dymensionxyz/dymension-rdk/utils/whitelistedrelayer"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
 type anteHandler interface {
@@ -15,11 +17,20 @@ type anteHandler interface {
 
 type BypassIBCFeeDecorator struct {
 	nextAnte anteHandler
-	dk       whitelistedrelayer.DistrK
-	sk       whitelistedrelayer.SeqK
+	dk       distrKeeper
+	sk       sequencerKeeper
 }
 
-func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk whitelistedrelayer.DistrK, sk whitelistedrelayer.SeqK) BypassIBCFeeDecorator {
+type distrKeeper interface {
+	GetPreviousProposerConsAddr(ctx sdk.Context) sdk.ConsAddress
+}
+
+type sequencerKeeper interface {
+	GetSequencerByConsAddr(ctx sdk.Context, consAddr sdk.ConsAddress) (stakingtypes.Validator, bool)
+	GetWhitelistedRelayers(ctx sdk.Context, operatorAddr sdk.ValAddress) (types.WhitelistedRelayers, error)
+}
+
+func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencerKeeper) BypassIBCFeeDecorator {
 	return BypassIBCFeeDecorator{
 		nextAnte: nextAnte,
 		dk:       dk,
@@ -56,16 +67,27 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 
 // isIBCWhitelistedRelayer checks if all the messages in the transaction are from whitelisted IBC relayer
 func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []sdk.Msg) error {
-
-	wl, err := whitelistedrelayer.GetList(ctx, n.dk, n.sk)
+	consAddr := n.dk.GetPreviousProposerConsAddr(ctx)
+	seq, ok := n.sk.GetSequencerByConsAddr(ctx, consAddr)
+	if !ok {
+		return fmt.Errorf("get sequencer by consensus addr: %s: %w", consAddr.String(), types.ErrSequencerNotFound)
+	}
+	operatorAddr := seq.GetOperator()
+	wlRelayers, err := n.sk.GetWhitelistedRelayers(ctx, operatorAddr)
 	if err != nil {
-		return fmt.Errorf("get whitelisted relayers: %w", err)
+		return fmt.Errorf("get whitelisted relayers: sequencer address %s: %w", consAddr.String(), err)
+	}
+
+	wlRelayersMap := make(map[string]struct{}, len(msgs))
+	for _, relayerAddr := range wlRelayers.Relayers {
+		wlRelayersMap[relayerAddr] = struct{}{}
 	}
 
 	for _, msg := range msgs {
 		signers := msg.GetSigners()
 		for _, signer := range signers {
-			if !wl.Has(signer.String()) {
+			_, ok := wlRelayersMap[signer.String()]
+			if !ok {
 				// if not a whitelisted relayer, we block them from sending the IBC relayer messages
 				return fmt.Errorf("signer %s is not a whitelisted relayer", signer.String())
 			}
