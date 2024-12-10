@@ -174,7 +174,7 @@ func (m msgServer) bumpAccountSequence(ctx sdk.Context, acc authtypes.AccountI) 
 func (m msgServer) UpgradeDRS(goCtx context.Context, drs *types.MsgUpgradeDRS) (*types.MsgUpgradeDRSResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	needUpgrade := m.updateDrsVersion(ctx, drs.DrsVersion)
+	needUpgrade := m.IsDrsUpgradeRequired(ctx, drs.DrsVersion)
 
 	if needUpgrade {
 		err := m.upgradeKeeper.ScheduleUpgrade(ctx, upgradetypes.Plan{
@@ -190,19 +190,13 @@ func (m msgServer) UpgradeDRS(goCtx context.Context, drs *types.MsgUpgradeDRS) (
 	return &types.MsgUpgradeDRSResponse{}, nil
 }
 
-// updateDrsVersion updates the DRS (Dynamic Rollup System) protocol version if it differs from the current version.
-// The function compares the new version against the existing one and updates the parameters if they differ.
-//
-// Returns:
-//   - bool: true if the version was updated, false if no update was needed (versions were identical)
-func (m msgServer) updateDrsVersion(ctx sdk.Context, newVersion uint64) bool {
-	currentParams := m.rollapParamsKeeper.GetParams(ctx)
-	if currentParams.DrsVersion == uint32(newVersion) {
+// IsDrsUpgradeRequired checks if the DRS (Dynamic Rollup System) protocol version differs from the current version.
+// The function compares the new version against the existing one and returns true if they differ.
+func (m msgServer) IsDrsUpgradeRequired(ctx sdk.Context, newVersion uint64) bool {
+	currentVersion := m.rollapParamsKeeper.Version(ctx)
+	if currentVersion == uint32(newVersion) {
 		return false
 	}
-
-	currentParams.DrsVersion = uint32(newVersion)
-	m.rollapParamsKeeper.SetParams(ctx, currentParams)
 
 	return true
 }
