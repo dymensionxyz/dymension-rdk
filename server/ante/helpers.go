@@ -5,6 +5,7 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	conntypes "github.com/cosmos/ibc-go/v6/modules/core/03-connection/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
+	hubgenesistypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
 // IsIBCRelayerMsg checks if all the messages in the transaction are IBC relayer messages
@@ -35,6 +36,10 @@ func countIBCMsgs(msgs []sdk.Msg) int {
 		// IBC Packet Messages
 		case *channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
 			*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose:
+			count++
+
+		// Not strictly an IBC message, but rather a custom message for dymension
+		case *hubgenesistypes.MsgSendTransfer:
 			count++
 		}
 	}

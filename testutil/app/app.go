@@ -475,6 +475,7 @@ func NewRollapp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.MintKeeper,
+		app.IBCKeeper.ChannelKeeper,
 	)
 
 	// The IBC tranfer submit is wrapped with:
@@ -525,7 +526,6 @@ func NewRollapp(
 		transferStack,
 		app.HubGenesisKeeper,
 		app.BankKeeper,
-		app.IBCKeeper.ChannelKeeper,
 	)
 
 	app.GaslessKeeper = gaslesskeeper.NewKeeper(
