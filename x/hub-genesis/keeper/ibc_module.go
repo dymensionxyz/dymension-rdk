@@ -35,7 +35,7 @@ func (w IBCModule) OnAcknowledgementPacket(
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
-// NOTE: non nil errors will abort transaction
+	// NOTE: non nil errors will abort transaction
 ) error {
 	state := w.k.GetState(ctx)
 
