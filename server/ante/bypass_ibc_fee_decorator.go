@@ -41,9 +41,9 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 
 	if ibcCount == totalMsgs {
 		// all are IBC messages
-		if err = n.isIBCWhitelistedRelayer(ctx, msgs); err != nil {
-			return ctx, err
-		}
+		//if err = n.isIBCWhitelistedRelayer(ctx, msgs); err != nil {
+		//	return ctx, err
+		//}
 		return next(ctx, tx, simulate)
 	} else if ibcCount > 0 {
 		// mixed: some IBC and some non-IBC
