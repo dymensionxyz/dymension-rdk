@@ -35,6 +35,7 @@ func (w IBCModule) OnAcknowledgementPacket(
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
+// NOTE: non nil errors will abort transaction
 ) error {
 	state := w.k.GetState(ctx)
 
@@ -60,12 +61,15 @@ func (w IBCModule) OnAcknowledgementPacket(
 	var ack channeltypes.Acknowledgement
 	err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack)
 	if err != nil {
+		// should never happen
+		err = errorsmod.Wrap(errors.Join(gerrc.ErrInternal, err), "unmarshal ack on genesis transfer")
+		w.logger(ctx).Error("OnAcknowledgementPacket", "error", err)
 		return err
 	}
 
 	if !ack.Success() {
-		w.logger(ctx).Error("acknowledgement failed for genesis transfer", "packet", packet, "ack", ack)
-		return errors.New("acknowledgement failed for genesis transfer")
+		// something wrong - need to fix the hub with gov prop and try to send transfer again
+		return nil
 	}
 
 	gfo := w.k.GetGenesisInfo(ctx)
@@ -73,7 +77,9 @@ func (w IBCModule) OnAcknowledgementPacket(
 		// As we don't use the `ibc/transfer` module, we need to handle the funds escrow ourselves
 		err = w.k.EscrowGenesisTransferFunds(ctx, port, packet.SourceChannel, gfo.BaseCoinSupply())
 		if err != nil {
-			return errorsmod.Wrap(errors.Join(err, gerrc.ErrInternal), "escrow genesis transfer funds : rollapp is corrupted")
+			err := errorsmod.Wrap(errors.Join(err, gerrc.ErrInternal), "escrow genesis transfer funds : rollapp is corrupted")
+			w.logger(ctx).Error("OnAcknowledgementPacket", "error", err)
+			return err
 		}
 	}
 
