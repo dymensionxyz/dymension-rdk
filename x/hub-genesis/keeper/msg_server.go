@@ -38,6 +38,9 @@ func (k Keeper) SendGenesisTransfer(ctx sdk.Context, channelID string) error {
 	if state.InFlight {
 		return gerrc.ErrFailedPrecondition.Wrap("sent transfer is already in flight")
 	}
+	if state.OutboundTransfersEnabled {
+		return gerrc.ErrInvalidArgument.Wrap("bridge already open")
+	}
 	c, ok := k.channelKeeper.GetChannel(ctx, port, channelID)
 	if !ok {
 		return gerrc.ErrNotFound.Wrap("channel")
@@ -45,12 +48,7 @@ func (k Keeper) SendGenesisTransfer(ctx sdk.Context, channelID string) error {
 	if c.State != channeltypes.OPEN {
 		return gerrc.ErrFailedPrecondition.Wrap("channel not open")
 	}
-	if !state.CanonicalHubTransferChannelHasBeenSet() {
-		state.SetCanonicalTransferChannel(port, channelID)
-	}
-	if state.HubPortAndChannel.Channel != channelID {
-		return gerrc.ErrFailedPrecondition.Wrapf("channel id mismatch with existing canonical channel: got: %s, expect: %s", channelID, state.HubPortAndChannel.Channel)
-	}
+	state.SetCanonicalTransferChannel(port, channelID)
 	state.InFlight = true
 	k.SetState(ctx, state)
 
