@@ -3,7 +3,6 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/dymensionxyz/dymension-rdk/x/rollappparams/types"
 )
 
 type AccountKeeper interface {
@@ -12,6 +11,5 @@ type AccountKeeper interface {
 }
 
 type RollappParamsKeeper interface {
-	GetParams(ctx sdk.Context) (params types.Params)
-	SetParams(ctx sdk.Context, params types.Params)
+	Version(ctx sdk.Context) uint32
 }

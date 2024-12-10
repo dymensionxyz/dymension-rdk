@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"fmt"
 	"testing"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -181,24 +182,22 @@ func TestUpgradeDRS(t *testing.T) {
 	)
 
 	tests := []struct {
-		name        string
-		drsVersion  uint64
-		expectError bool
+		name       string
+		drsVersion uint64
 	}{
 		{
-			name:        "Success: Update DRS version",
-			drsVersion:  2,
-			expectError: false,
+			name:       "Same DRS version, don't upgrade",
+			drsVersion: 1,
 		},
 		{
-			name:        "Success: Update to higher version",
-			drsVersion:  10,
-			expectError: false,
+			name:       "Different DRS version, upgrade required",
+			drsVersion: 2,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+
 			// Get initial params
 			initialParams := app.RollappParamsKeeper.GetParams(ctx)
 
@@ -215,18 +214,16 @@ func TestUpgradeDRS(t *testing.T) {
 			// Execute message
 			handler := app.MsgServiceRouter().Handler(new(types.MsgUpgradeDRS))
 			_, err = handler(ctx, msg)
+			require.NoError(t, err)
 
-			if tc.expectError {
-				require.Error(t, err)
-				// Verify params haven't changed
-				currentParams := app.RollappParamsKeeper.GetParams(ctx)
-				require.Equal(t, initialParams.DrsVersion, currentParams.DrsVersion)
+			plan, ok := app.UpgradeKeeper.GetUpgradePlan(ctx)
+			if initialParams.DrsVersion == uint32(tc.drsVersion) {
+				// Verify there is no upgrade plan created
+				require.False(t, ok)
 			} else {
-				require.NoError(t, err)
-				// Verify params have been updated
-				currentParams := app.RollappParamsKeeper.GetParams(ctx)
-				require.Equal(t, uint32(tc.drsVersion), currentParams.DrsVersion)
-				require.NotEqual(t, initialParams.DrsVersion, currentParams.DrsVersion)
+				// Verify upgrade drs plan exists
+				require.True(t, ok)
+				require.Equal(t, plan.Name, fmt.Sprint("upgrade-drs-", tc.drsVersion))
 			}
 		})
 	}
@@ -247,9 +244,10 @@ func TestUpgradeDRS(t *testing.T) {
 			_, err = handler(ctx, msg)
 			require.NoError(t, err)
 
-			// Verify version was updated
-			currentParams := app.RollappParamsKeeper.GetParams(ctx)
-			require.Equal(t, uint32(version), currentParams.DrsVersion)
+			plan, ok := app.UpgradeKeeper.GetUpgradePlan(ctx)
+			// Verify upgrade drs plan exists
+			require.True(t, ok)
+			require.Equal(t, plan.Name, fmt.Sprint("upgrade-drs-", version))
 		}
 	})
 }
