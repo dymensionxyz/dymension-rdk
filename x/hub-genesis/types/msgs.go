@@ -12,27 +12,6 @@ var (
 	_ sdk.Msg = (*MsgSendTransfer)(nil)
 )
 
-const (
-	TypeMsgSendTransfer = "send_transfer"
-)
-
-var (
-	_ sdk.Msg = &MsgSendTransfer{}
-	//_ legacytx.LegacyMsg = &MsgSendTransfer{}
-)
-
-//func RegisterCodec(cdc *codec.LegacyAmino) {
-//	cdc.RegisterConcrete(&MsgSetCanonicalClient{}, "lightclient/SetCanonicalClient", nil)
-//}
-
-//func (msg *MsgSetCanonicalClient) Route() string {
-//	return ModuleName
-//}
-//
-//func (msg *MsgSetCanonicalClient) Type() string {
-//	return MsgSendTransfer
-//}
-
 func (m *MsgSendTransfer) GetSigners() []sdk.AccAddress {
 	a, _ := sdk.AccAddressFromBech32(m.Relayer)
 	return []sdk.AccAddress{a}
