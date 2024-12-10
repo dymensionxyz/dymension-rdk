@@ -14,8 +14,8 @@ service Msg {
 // Must be whitelisted relayer, and channel must be open
 // Must have tokens available to send
 message MsgSendTransfer {
-  option (cosmos.msg.v1.signer) = "relayer";
-  string relayer = 1;
+  option (cosmos.msg.v1.signer) = "signer";
+  string signer = 1;
   // ID of the canonical channel, as queried from the hub
   string channel_id = 2;
 }
