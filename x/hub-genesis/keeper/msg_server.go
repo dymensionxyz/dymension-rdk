@@ -48,6 +48,9 @@ func (k Keeper) SendGenesisTransfer(ctx sdk.Context, channelID string) error {
 	if !state.CanonicalHubTransferChannelHasBeenSet() {
 		state.SetCanonicalTransferChannel(port, channelID)
 	}
+	if state.HubPortAndChannel.Channel != channelID {
+		return gerrc.ErrFailedPrecondition.Wrapf("channel id mismatch with existing canonical channel: got: %s, expect: %s", channelID, state.HubPortAndChannel.Channel)
+	}
 	state.InFlight = true
 	k.SetState(ctx, state)
 
