@@ -41,9 +41,9 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 
 	if ibcCount == totalMsgs {
 		// all are IBC messages
-		//if err = n.isIBCWhitelistedRelayer(ctx, msgs); err != nil {
-		//	return ctx, err
-		//}
+		if err = n.isIBCWhitelistedRelayer(ctx, msgs); err != nil {
+			return ctx, err
+		}
 		return next(ctx, tx, simulate)
 	} else if ibcCount > 0 {
 		// mixed: some IBC and some non-IBC
@@ -57,7 +57,7 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 // isIBCWhitelistedRelayer checks if all the messages in the transaction are from whitelisted IBC relayer
 func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []sdk.Msg) error {
 
-	wlRelayersMap, err := whitelistedrelayer.GetList(ctx, n.dk, n.sk)
+	wl, err := whitelistedrelayer.GetList(ctx, n.dk, n.sk)
 	if err != nil {
 		return fmt.Errorf("get whitelisted relayers: %w", err)
 	}
@@ -65,7 +65,7 @@ func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []s
 	for _, msg := range msgs {
 		signers := msg.GetSigners()
 		for _, signer := range signers {
-			if !wlRelayersMap.Has(signer.String()) {
+			if !wl.Has(signer.String()) {
 				// if not a whitelisted relayer, we block them from sending the IBC relayer messages
 				return fmt.Errorf("signer %s is not a whitelisted relayer", signer.String())
 			}
