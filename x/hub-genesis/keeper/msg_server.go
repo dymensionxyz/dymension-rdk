@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
@@ -36,6 +37,13 @@ func (k Keeper) SendGenesisTransfer(ctx sdk.Context, channelID string) error {
 	state := k.GetState(ctx)
 	if state.InFlight {
 		return gerrc.ErrFailedPrecondition.Wrap("sent transfer is already in flight")
+	}
+	c, ok := k.channelKeeper.GetChannel(ctx, port, channelID)
+	if !ok {
+		return gerrc.ErrNotFound.Wrap("channel")
+	}
+	if c.State != channeltypes.OPEN {
+		return gerrc.ErrFailedPrecondition.Wrap("channel not open")
 	}
 	if !state.CanonicalHubTransferChannelHasBeenSet() {
 		state.SetCanonicalTransferChannel(port, channelID)
