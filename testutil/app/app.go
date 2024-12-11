@@ -427,7 +427,7 @@ func NewRollapp(
 		authtypes.NewModuleAddress(seqtypes.ModuleName).String(),
 		app.AccountKeeper,
 		app.RollappParamsKeeper,
-		app.TimeUpgradeKeeper,
+		app.UpgradeKeeper,
 		nil,
 	)
 

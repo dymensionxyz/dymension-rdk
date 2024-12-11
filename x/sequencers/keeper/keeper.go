@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	upgradekeeper "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/keeper"
+	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/codec"

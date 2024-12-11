@@ -39,6 +39,7 @@ func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 			name: "validate basic original upgrade: notvalidated",
 			request: &types.MsgSoftwareUpgrade{
 				Authority: "adkfjlakd",
+				Drs:       1,
 			},
 			expectedErrMsg: "decoding bech32 failed",
 		},
@@ -47,6 +48,7 @@ func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 			request: &types.MsgSoftwareUpgrade{
 				UpgradeTime: oneHourBeforeTimestamp,
 				Authority:   otherAddress,
+				Drs:         1,
 			},
 			expectedErrMsg: "expected gov account as only signer for proposal message",
 		},
@@ -55,8 +57,17 @@ func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 			request: &types.MsgSoftwareUpgrade{
 				UpgradeTime: oneHourBeforeTimestamp,
 				Authority:   govAuthorityAccount,
+				Drs:         1,
 			},
 			expectedErrMsg: "upgrade time must be in the future",
+		},
+		{
+			name: "drs not set",
+			request: &types.MsgSoftwareUpgrade{
+				UpgradeTime: oneHourBeforeTimestamp,
+				Authority:   govAuthorityAccount,
+			},
+			expectedErrMsg: "invalid drs version: invalid version",
 		},
 	}
 
@@ -82,22 +93,17 @@ func TestMsgServer_SoftwareUpgrade(t *testing.T) {
 
 	ctx = ctx.WithBlockTime(timeNow)
 
-	plan := types2.Plan{
-		Name:   "someName",
-		Height: 1,
-		Info:   "",
-	}
-
 	_, err = msgServer.SoftwareUpgrade(ctx, &types.MsgSoftwareUpgrade{
 		UpgradeTime: timeNowTimestamp,
 		Authority:   govAuthorityAccount,
+		Drs:         2,
 	})
 	require.NoError(t, err)
 
 	// Retrieve the saved plan from the keeper
-	savedPlan, err := k.UpgradePlan.Get(ctx)
+	plan, err := k.UpgradePlan.Get(ctx)
 	require.NoError(t, err)
-	require.Equal(t, plan, savedPlan)
+	require.Equal(t, plan.Name, "upgrade-drs-2")
 
 	// Retrieve the saved upgrade time from the keeper
 	savedTime, err := k.UpgradeTime.Get(ctx)

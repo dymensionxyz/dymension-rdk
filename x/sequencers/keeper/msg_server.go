@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
+
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -11,7 +13,6 @@ import (
 	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	"github.com/gogo/protobuf/proto"
-	prototypes "github.com/gogo/protobuf/types"
 
 	"github.com/dymensionxyz/dymension-rdk/utils/uevent"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
@@ -175,10 +176,12 @@ func (m msgServer) UpgradeDRS(goCtx context.Context, drs *types.MsgUpgradeDRS) (
 
 	needUpgrade := m.IsDrsUpgradeRequired(ctx, drs.DrsVersion)
 
-	upgradeTime := prototypes.Timestamp{Nanos: int32(ctx.BlockTime().Nanosecond())}
-
 	if needUpgrade {
-		err := m.upgradeKeeper.ScheduleUpgradePlan(ctx, &upgradeTime, uint32(drs.DrsVersion))
+		err := m.upgradeKeeper.ScheduleUpgrade(ctx, upgradetypes.Plan{
+			Name:   fmt.Sprintf("upgrade-drs-%d", drs.DrsVersion),
+			Height: ctx.BlockHeight(),
+			Info:   fmt.Sprintf("upgrade to DRS version %d", drs.DrsVersion),
+		})
 		if err != nil {
 			return nil, fmt.Errorf("schedule upgrade: %w", err)
 		}
