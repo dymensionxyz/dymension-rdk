@@ -194,9 +194,5 @@ func (m msgServer) UpgradeDRS(goCtx context.Context, drs *types.MsgUpgradeDRS) (
 // The function compares the new version against the existing one and returns true if they differ.
 func (m msgServer) IsDrsUpgradeRequired(ctx sdk.Context, newVersion uint64) bool {
 	currentVersion := m.rollapParamsKeeper.Version(ctx)
-	if currentVersion == uint32(newVersion) {
-		return false
-	}
-
-	return true
+	return currentVersion != uint32(newVersion)
 }
