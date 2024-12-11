@@ -14,22 +14,14 @@ To use the TimeUpgrade module, follow these steps:
 
    ```json
    {
-     "title": "Update Dymension to v0.2.1",
-     "description": "Upgrade Dymension to version 0.2.1 with scheduled upgrade time",
-     "summary": "This proposal aims to upgrade the Dymension network to version 0.2.1, implementing new features and improvements, with a scheduled upgrade time.",
+     "title": "Update Dymension to DRS-2",
+     "description": "Upgrade Dymension to DRS-2 version with scheduled upgrade time",
+     "summary": "This proposal aims to upgrade the Dymension rollapp to DRS 2, implementing new features and improvements, with a scheduled upgrade time.",
      "messages": [
        {
          "@type": "/rollapp.timeupgrade.types.MsgSoftwareUpgrade",
-         "original_upgrade": {
-           "authority": "ethm10d07y265gmmuvt4z0w9aw880jnsr700jpva843",
-           "plan": {
-             "name": "v0.2.1",
-             "time": "0001-01-01T00:00:00Z",
-             "height": "1800",
-             "info": "{}",
-             "upgraded_client_state": null
-           }
-         },
+         "authority": "ethm10d07y265gmmuvt4z0w9aw880jnsr700jpva843",
+         "drs":2,
          "upgrade_time": "2024-09-06T18:10:00Z"
        }
      ],
@@ -37,6 +29,8 @@ To use the TimeUpgrade module, follow these steps:
      "expedited": true
    }
    ```
+
+where `drs` is the version to upgrade to and `upgrade_time` the time used to schedule the upgrade. 
 
 2. Submit the proposal using the following command:
 
