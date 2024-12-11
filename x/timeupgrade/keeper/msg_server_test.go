@@ -38,14 +38,8 @@ func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 		{
 			name: "validate basic original upgrade: notvalidated",
 			request: &types.MsgSoftwareUpgrade{
-				OriginalUpgrade: &types2.MsgSoftwareUpgrade{
-					Authority: "adkfjlakd",
-					Plan: types2.Plan{
-						Name:   "someName",
-						Height: 1,
-						Info:   "",
-					},
-				},
+				Authority: "adkfjlakd",
+				Drs:       1,
 			},
 			expectedErrMsg: "decoding bech32 failed",
 		},
@@ -53,14 +47,8 @@ func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 			name: "only authority account can upgrade",
 			request: &types.MsgSoftwareUpgrade{
 				UpgradeTime: oneHourBeforeTimestamp,
-				OriginalUpgrade: &types2.MsgSoftwareUpgrade{
-					Authority: otherAddress,
-					Plan: types2.Plan{
-						Name:   "someName",
-						Height: 1,
-						Info:   "",
-					},
-				},
+				Authority:   otherAddress,
+				Drs:         1,
 			},
 			expectedErrMsg: "expected gov account as only signer for proposal message",
 		},
@@ -68,16 +56,18 @@ func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 			name: "upgrade time in the past",
 			request: &types.MsgSoftwareUpgrade{
 				UpgradeTime: oneHourBeforeTimestamp,
-				OriginalUpgrade: &types2.MsgSoftwareUpgrade{
-					Authority: govAuthorityAccount,
-					Plan: types2.Plan{
-						Name:   "someName",
-						Height: 1,
-						Info:   "",
-					},
-				},
+				Authority:   govAuthorityAccount,
+				Drs:         1,
 			},
 			expectedErrMsg: "upgrade time must be in the future",
+		},
+		{
+			name: "drs not set",
+			request: &types.MsgSoftwareUpgrade{
+				UpgradeTime: oneHourBeforeTimestamp,
+				Authority:   govAuthorityAccount,
+			},
+			expectedErrMsg: "invalid drs version: invalid version",
 		},
 	}
 
@@ -103,25 +93,17 @@ func TestMsgServer_SoftwareUpgrade(t *testing.T) {
 
 	ctx = ctx.WithBlockTime(timeNow)
 
-	plan := types2.Plan{
-		Name:   "someName",
-		Height: 1,
-		Info:   "",
-	}
-
 	_, err = msgServer.SoftwareUpgrade(ctx, &types.MsgSoftwareUpgrade{
 		UpgradeTime: timeNowTimestamp,
-		OriginalUpgrade: &types2.MsgSoftwareUpgrade{
-			Authority: govAuthorityAccount,
-			Plan:      plan,
-		},
+		Authority:   govAuthorityAccount,
+		Drs:         2,
 	})
 	require.NoError(t, err)
 
 	// Retrieve the saved plan from the keeper
-	savedPlan, err := k.UpgradePlan.Get(ctx)
+	plan, err := k.UpgradePlan.Get(ctx)
 	require.NoError(t, err)
-	require.Equal(t, plan, savedPlan)
+	require.Equal(t, plan.Name, "upgrade-drs-2")
 
 	// Retrieve the saved upgrade time from the keeper
 	savedTime, err := k.UpgradeTime.Get(ctx)
