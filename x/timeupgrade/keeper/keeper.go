@@ -48,6 +48,35 @@ func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
+func (k Keeper) ScheduleUpgradePlan(ctx sdk.Context, upgradeTime *prototypes.Timestamp, drs uint32) error {
+
+	upgradeTimeTimestamp, err := prototypes.TimestampFromProto(upgradeTime)
+	if err != nil {
+		return fmt.Errorf("failed to parse upgrade time: %w", err)
+	}
+
+	if upgradeTimeTimestamp.Before(ctx.BlockTime()) {
+		return fmt.Errorf("upgrade time must be in the future: upgrade time %s, current time %s", upgradeTimeTimestamp, ctx.BlockTime())
+	}
+
+	plan := upgradetypes.Plan{
+		Name:   fmt.Sprintf("upgrade-drs-%d", drs),
+		Height: ctx.BlockHeight(),
+		Info:   fmt.Sprintf("upgrade to DRS version %d", drs),
+	}
+
+	err = k.UpgradePlan.Set(ctx, plan)
+	if err != nil {
+		return err
+	}
+
+	err = k.UpgradeTime.Set(ctx, *upgradeTime)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetUpgradeTime gets the upgrade time from the store
 func (k Keeper) GetUpgradeTime(ctx sdk.Context) (time.Time, error) {
 	upgradeTime, err := k.UpgradeTime.Get(ctx)
