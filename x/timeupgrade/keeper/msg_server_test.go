@@ -103,7 +103,7 @@ func TestMsgServer_SoftwareUpgrade(t *testing.T) {
 	// Retrieve the saved plan from the keeper
 	plan, err := k.UpgradePlan.Get(ctx)
 	require.NoError(t, err)
-	require.Equal(t, plan.Name, "upgrade-drs-2")
+	require.Equal(t, plan.Name, "drs-2")
 
 	// Retrieve the saved upgrade time from the keeper
 	savedTime, err := k.UpgradeTime.Get(ctx)
