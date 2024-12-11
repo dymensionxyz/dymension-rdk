@@ -223,7 +223,7 @@ func TestUpgradeDRS(t *testing.T) {
 			} else {
 				// Verify upgrade drs plan exists
 				require.True(t, ok)
-				require.Equal(t, plan.Name, fmt.Sprint("upgrade-drs-", tc.drsVersion))
+				require.Equal(t, plan.Name, fmt.Sprint("drs-", tc.drsVersion))
 			}
 		})
 	}
@@ -247,7 +247,7 @@ func TestUpgradeDRS(t *testing.T) {
 			plan, ok := app.UpgradeKeeper.GetUpgradePlan(ctx)
 			// Verify upgrade drs plan exists
 			require.True(t, ok)
-			require.Equal(t, plan.Name, fmt.Sprint("upgrade-drs-", version))
+			require.Equal(t, plan.Name, fmt.Sprint("drs-", version))
 		}
 	})
 }
