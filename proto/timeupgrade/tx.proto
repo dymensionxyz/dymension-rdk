@@ -17,9 +17,11 @@ service Msg {
 
 message MsgSoftwareUpgrade {
 // original_upgrade is the original software upgrade message.
-cosmos.upgrade.v1beta1.MsgSoftwareUpgrade original_upgrade = 1;
+string authority = 1;
+
+uint32 drs = 2;
 // upgrade_time is the time at which the upgrade is scheduled.
-google.protobuf.Timestamp upgrade_time = 2;
+google.protobuf.Timestamp upgrade_time = 3;
 }
 
 message MsgSoftwareUpgradeResponse {}

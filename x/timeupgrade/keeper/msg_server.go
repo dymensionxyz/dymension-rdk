@@ -2,11 +2,9 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	prototypes "github.com/gogo/protobuf/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 )
@@ -24,34 +22,19 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 func (m msgServer) SoftwareUpgrade(ctx context.Context, req *types.MsgSoftwareUpgrade) (*types.MsgSoftwareUpgradeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
-	err := req.OriginalUpgrade.ValidateBasic()
+	err := req.ValidateBasic()
 	if err != nil {
 		return nil, err
 	}
 
-	if m.authority != req.OriginalUpgrade.Authority {
+	if m.authority != req.Authority {
 		return nil, govtypes.ErrInvalidSigner
 	}
 
-	upgradeTimeTimestamp, err := prototypes.TimestampFromProto(req.UpgradeTime)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse upgrade time: %w", err)
-	}
-
-	if upgradeTimeTimestamp.Before(sdkCtx.BlockTime()) {
-		return nil, fmt.Errorf("upgrade time must be in the future: upgrade time %s, current time %s", upgradeTimeTimestamp, sdkCtx.BlockTime())
-	}
-
-	err = m.Keeper.UpgradePlan.Set(sdkCtx, req.OriginalUpgrade.Plan)
+	err = m.Keeper.ScheduleUpgradePlan(sdkCtx, req.UpgradeTime, req.Drs)
 	if err != nil {
 		return nil, err
 	}
-
-	err = m.Keeper.UpgradeTime.Set(sdkCtx, *req.UpgradeTime)
-	if err != nil {
-		return nil, err
-	}
-
 	return nil, nil
 }
 

@@ -38,14 +38,7 @@ func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 		{
 			name: "validate basic original upgrade: notvalidated",
 			request: &types.MsgSoftwareUpgrade{
-				OriginalUpgrade: &types2.MsgSoftwareUpgrade{
-					Authority: "adkfjlakd",
-					Plan: types2.Plan{
-						Name:   "someName",
-						Height: 1,
-						Info:   "",
-					},
-				},
+				Authority: "adkfjlakd",
 			},
 			expectedErrMsg: "decoding bech32 failed",
 		},
@@ -53,14 +46,7 @@ func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 			name: "only authority account can upgrade",
 			request: &types.MsgSoftwareUpgrade{
 				UpgradeTime: oneHourBeforeTimestamp,
-				OriginalUpgrade: &types2.MsgSoftwareUpgrade{
-					Authority: otherAddress,
-					Plan: types2.Plan{
-						Name:   "someName",
-						Height: 1,
-						Info:   "",
-					},
-				},
+				Authority:   otherAddress,
 			},
 			expectedErrMsg: "expected gov account as only signer for proposal message",
 		},
@@ -68,14 +54,7 @@ func TestMsgServer_SoftwareUpgrade_Errors(t *testing.T) {
 			name: "upgrade time in the past",
 			request: &types.MsgSoftwareUpgrade{
 				UpgradeTime: oneHourBeforeTimestamp,
-				OriginalUpgrade: &types2.MsgSoftwareUpgrade{
-					Authority: govAuthorityAccount,
-					Plan: types2.Plan{
-						Name:   "someName",
-						Height: 1,
-						Info:   "",
-					},
-				},
+				Authority:   govAuthorityAccount,
 			},
 			expectedErrMsg: "upgrade time must be in the future",
 		},
@@ -111,10 +90,7 @@ func TestMsgServer_SoftwareUpgrade(t *testing.T) {
 
 	_, err = msgServer.SoftwareUpgrade(ctx, &types.MsgSoftwareUpgrade{
 		UpgradeTime: timeNowTimestamp,
-		OriginalUpgrade: &types2.MsgSoftwareUpgrade{
-			Authority: govAuthorityAccount,
-			Plan:      plan,
-		},
+		Authority:   govAuthorityAccount,
 	})
 	require.NoError(t, err)
 

@@ -8,11 +8,14 @@ import (
 var _, _ sdk.Msg = &MsgSoftwareUpgrade{}, &MsgCancelUpgrade{}
 
 func (m *MsgSoftwareUpgrade) ValidateBasic() error {
-	return m.OriginalUpgrade.ValidateBasic()
+	if _, err := sdk.AccAddressFromBech32(m.Authority); err != nil {
+		return sdkerrors.Wrap(err, "authority")
+	}
+	return nil
 }
 
 func (m *MsgSoftwareUpgrade) GetSigners() []sdk.AccAddress {
-	addr, _ := sdk.AccAddressFromBech32(m.GetOriginalUpgrade().Authority)
+	addr, _ := sdk.AccAddressFromBech32(m.Authority)
 	return []sdk.AccAddress{addr}
 }
 
