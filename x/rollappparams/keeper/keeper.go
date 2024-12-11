@@ -32,9 +32,28 @@ func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	return params
 }
 
-// SetParams sets the total set of rollapp parameters.
-func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
-	k.paramSpace.SetParamSet(ctx, &params)
+func (k Keeper) SetVersion(ctx sdk.Context, version uint32) error {
+	if err := types.ValidateVersion(version); err != nil {
+		return err
+	}
+	k.paramSpace.Set(ctx, types.KeyVersion, version)
+	return nil
+}
+
+func (k Keeper) SetDA(ctx sdk.Context, da string) error {
+	if err := types.ValidateDa(da); err != nil {
+		return err
+	}
+	k.paramSpace.Set(ctx, types.KeyDa, da)
+	return nil
+}
+
+func (k Keeper) SetMinGasPrices(ctx sdk.Context, minGasPrices sdk.DecCoins) error {
+	if err := types.ValidateMinGasPrices(minGasPrices); err != nil {
+		return err
+	}
+	k.paramSpace.Set(ctx, types.KeyMinGasPrices, minGasPrices)
+	return nil
 }
 
 func (k Keeper) DA(ctx sdk.Context) (res string) {
@@ -44,5 +63,10 @@ func (k Keeper) DA(ctx sdk.Context) (res string) {
 
 func (k Keeper) Version(ctx sdk.Context) (res uint32) {
 	k.paramSpace.Get(ctx, types.KeyVersion, &res)
+	return
+}
+
+func (k Keeper) MinGasPrices(ctx sdk.Context) (res sdk.DecCoins) {
+	k.paramSpace.Get(ctx, types.KeyMinGasPrices, &res)
 	return
 }
