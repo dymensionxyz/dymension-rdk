@@ -60,7 +60,7 @@ func (k Keeper) ScheduleUpgradePlan(ctx sdk.Context, upgradeTime *prototypes.Tim
 	}
 
 	plan := upgradetypes.Plan{
-		Name:   fmt.Sprintf("upgrade-drs-%d", drs),
+		Name:   fmt.Sprintf("drs-%d", drs),
 		Height: ctx.BlockHeight(),
 		Info:   fmt.Sprintf("upgrade to DRS version %d", drs),
 	}

@@ -178,7 +178,7 @@ func (m msgServer) UpgradeDRS(goCtx context.Context, drs *types.MsgUpgradeDRS) (
 
 	if needUpgrade {
 		err := m.upgradeKeeper.ScheduleUpgrade(ctx, upgradetypes.Plan{
-			Name:   fmt.Sprintf("upgrade-drs-%d", drs.DrsVersion),
+			Name:   fmt.Sprintf("drs-%d", drs.DrsVersion),
 			Height: ctx.BlockHeight(),
 			Info:   fmt.Sprintf("upgrade to DRS version %d", drs.DrsVersion),
 		})
