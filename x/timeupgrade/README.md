@@ -30,7 +30,7 @@ To use the TimeUpgrade module, follow these steps:
    }
    ```
 
-where `drs` is the version to upgrade to and `upgrade_time` the time used to schedule the upgrade. 
+    where `drs` is the version to upgrade to and `upgrade_time` the time used to schedule the upgrade.
 
 2. Submit the proposal using the following command:
 
