@@ -43,7 +43,7 @@ func (k Keeper) CheckTxFeeWithMinGasPrices() ante.TxFeeChecker {
 func (k Keeper) CheckFeeCoinsAgainstMinGasPrices(ctx sdk.Context, feeCoins sdk.Coins, gas uint64) error {
 	var (
 		validatorMinGasPrices = ctx.MinGasPrices()
-		globalMinGasPrices    = k.GetParams(ctx).MinGasPrices
+		globalMinGasPrices    = k.MinGasPrices(ctx)
 		minGasPrices          sdk.DecCoins
 
 		validatorEmpty = validatorMinGasPrices.IsZero()

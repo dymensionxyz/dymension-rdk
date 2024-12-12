@@ -12,8 +12,16 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	if err := types.ValidateGenesis(genState); err != nil {
 		panic(err)
 	}
-	k.SetParams(ctx, genState.Params)
 
+	if err := k.SetDA(ctx, genState.Params.Da); err != nil {
+		panic(err)
+	}
+	if err := k.SetVersion(ctx, genState.Params.DrsVersion); err != nil {
+		panic(err)
+	}
+	if err := k.SetMinGasPrices(ctx, genState.Params.MinGasPrices); err != nil {
+		panic(err)
+	}
 }
 
 // ExportGenesis returns the capability module's exported genesis.

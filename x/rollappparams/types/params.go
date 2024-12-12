@@ -95,11 +95,15 @@ func ValidateMinGasPrices(i any) error {
 	return nil
 }
 
+func blockDRSVersion(any) error {
+	return fmt.Errorf("drs version is not allowed to be set: %w", gerrc.ErrInvalidArgument)
+}
+
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, ValidateDa),
-		paramtypes.NewParamSetPair(KeyVersion, &p.DrsVersion, ValidateVersion),
+		paramtypes.NewParamSetPair(KeyVersion, &p.DrsVersion, blockDRSVersion),
 		paramtypes.NewParamSetPair(KeyMinGasPrices, &p.MinGasPrices, ValidateMinGasPrices),
 	}
 }

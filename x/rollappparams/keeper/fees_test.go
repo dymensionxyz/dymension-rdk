@@ -8,7 +8,6 @@ import (
 
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	"github.com/dymensionxyz/dymension-rdk/x/rollappparams/types"
 )
 
 func TestCheckFeeCoinsAgainstMinGasPrices(t *testing.T) {
@@ -108,11 +107,10 @@ func TestCheckFeeCoinsAgainstMinGasPrices(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx = ctx.WithMinGasPrices(tt.validatorMinGasPrices)
-			params := types.DefaultParams()
-			params.MinGasPrices = tt.globalMinGasPrices
-			k.SetParams(ctx, params)
+			err := k.SetMinGasPrices(ctx, tt.globalMinGasPrices)
+			require.NoError(t, err)
 
-			err := k.CheckFeeCoinsAgainstMinGasPrices(ctx, tt.feeCoins, tt.gas)
+			err = k.CheckFeeCoinsAgainstMinGasPrices(ctx, tt.feeCoins, tt.gas)
 			if tt.expectErr {
 				require.Error(t, err)
 			} else {
