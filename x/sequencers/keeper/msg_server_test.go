@@ -7,8 +7,9 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 	"github.com/stretchr/testify/require"
+
+	"github.com/dymensionxyz/dymension-rdk/x/sequencers/keeper"
 
 	testkeepers "github.com/dymensionxyz/dymension-rdk/testutil/keepers"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
@@ -193,13 +194,17 @@ func TestUpgradeDRS(t *testing.T) {
 			name:       "Different DRS version, upgrade required",
 			drsVersion: 2,
 		},
+		{
+			name:       "Fail: version 0",
+			drsVersion: 0,
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
 			// Get initial params
-			initialParams := app.RollappParamsKeeper.GetParams(ctx)
+			initialVersion := app.RollappParamsKeeper.Version(ctx)
 
 			// Create message
 			msg := &types.MsgUpgradeDRS{
@@ -217,7 +222,7 @@ func TestUpgradeDRS(t *testing.T) {
 			require.NoError(t, err)
 
 			plan, ok := app.UpgradeKeeper.GetUpgradePlan(ctx)
-			if initialParams.DrsVersion == uint32(tc.drsVersion) {
+			if initialVersion == uint32(tc.drsVersion) {
 				// Verify there is no upgrade plan created
 				require.False(t, ok)
 			} else {
