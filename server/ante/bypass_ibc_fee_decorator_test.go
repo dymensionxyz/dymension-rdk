@@ -27,7 +27,7 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 	// IBC relayer msg
 	ibcMsg1 := &clienttypes.MsgCreateClient{}
 	// IBC relayer msg
-	ibcMsg2 := &channeltypes.MsgAcknowledgement{}
+	ibcMsg2 := &channeltypes.MsgChannelOpenInit{}
 	// Non-IBC msg
 	nonIBCMsg := &banktypes.MsgSend{}
 
@@ -249,7 +249,7 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 				switch m := msg.(type) {
 				case *clienttypes.MsgCreateClient:
 					m.Signer = tc.signer.String()
-				case *channeltypes.MsgAcknowledgement:
+				case *channeltypes.MsgChannelOpenInit:
 					m.Signer = tc.signer.String()
 				case *banktypes.MsgSend:
 					m.FromAddress = tc.signer.String()
