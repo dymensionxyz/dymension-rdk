@@ -2,8 +2,10 @@ package ante
 
 import (
 	"fmt"
+	"slices"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -49,47 +51,54 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	}
 
 	totalMsgs := len(msgs)
-	ibcCount := countIBCMsgs(msgs)
-
-	if ibcCount == totalMsgs {
-		// all are IBC messages
-		if err = n.isIBCWhitelistedRelayer(ctx, msgs); err != nil {
-			ctx.Logger().Debug("BypassIBCFeeDecorator: IBC relayer message not from whitelisted relayer", "error", err)
-			return ctx, err
-		}
-		return next(ctx, tx, simulate)
-	} else if ibcCount > 0 {
-		// mixed: some IBC and some non-IBC
-		return ctx, fmt.Errorf("mixed IBC and non-IBC messages in the same transaction not allowed")
+	if totalMsgs == 0 {
+		return n.nextAnte.AnteHandle(ctx, tx, simulate, next)
 	}
 
-	// The tx if not from the whitelisted relayer; proceed with the default fee handling
-	return n.nextAnte.AnteHandle(ctx, tx, simulate, next)
+	ibcCount := countIBCMsgs(msgs)
+
+	switch {
+	case ibcCount == totalMsgs:
+		// all are IBC messages
+		if err = n.isIBCWhitelistedRelayer(ctx, msgs); err == nil {
+			// whitelisted: all IBC allowed without fees
+			return next(ctx, tx, simulate)
+		}
+
+		// not whitelisted:
+		// check if any are whitelist exclusive messages
+		if isAnyWhitelistExclusiveIBCMsg(msgs...) {
+			// non-whitelisted and contains IBC messages other than packet messages
+			return ctx, sdkerrors.ErrUnauthorized.Wrap("non-whitelisted sender can only send packet IBC messages")
+		} else {
+			// fallback to normal fee ante
+			return n.nextAnte.AnteHandle(ctx, tx, simulate, next)
+		}
+	case ibcCount > 0:
+		// mixed: some IBC and some non-IBC
+		return ctx, fmt.Errorf("mixed IBC and non-IBC messages in the same transaction not allowed")
+	default:
+		// no IBC messages
+		return n.nextAnte.AnteHandle(ctx, tx, simulate, next)
+	}
 }
 
-// isIBCWhitelistedRelayer checks if all the messages in the transaction are from whitelisted IBC relayer
+// isIBCWhitelistedRelayer checks if all signers of the IBC messages are whitelisted (unchanged from previous logic)
 func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []sdk.Msg) error {
 	consAddr := n.dk.GetPreviousProposerConsAddr(ctx)
 	seq, ok := n.sk.GetSequencerByConsAddr(ctx, consAddr)
 	if !ok {
 		return fmt.Errorf("get sequencer by consensus addr: %s: %w", consAddr.String(), types.ErrSequencerNotFound)
 	}
-	operatorAddr := seq.GetOperator()
-	wlRelayers, err := n.sk.GetWhitelistedRelayers(ctx, operatorAddr)
+
+	wlRelayers, err := n.sk.GetWhitelistedRelayers(ctx, seq.GetOperator())
 	if err != nil {
 		return fmt.Errorf("get whitelisted relayers: sequencer address %s: %w", consAddr.String(), err)
 	}
 
-	wlRelayersMap := make(map[string]struct{}, len(msgs))
-	for _, relayerAddr := range wlRelayers.Relayers {
-		wlRelayersMap[relayerAddr] = struct{}{}
-	}
-
 	for _, msg := range msgs {
-		signers := msg.GetSigners()
-		for _, signer := range signers {
-			_, ok := wlRelayersMap[signer.String()]
-			if !ok {
+		for _, signer := range msg.GetSigners() {
+			if !slices.Contains(wlRelayers.Relayers, signer.String()) {
 				// if not a whitelisted relayer, we block them from sending the IBC relayer messages
 				return gerrc.ErrPermissionDenied.Wrapf("signer is not a whitelisted relayer: %s", signer.String())
 			}
@@ -118,7 +127,7 @@ const maxDepth = 6
 // If the maximum depth (maxDepth) is exceeded, it returns an error to prevent infinite recursion or overly deep nesting.
 func (n BypassIBCFeeDecorator) getAllFinalMsgs(ctx sdk.Context, msgs []sdk.Msg, depth int) ([]sdk.Msg, error) {
 	if depth >= maxDepth {
-		return nil, fmt.Errorf("found more nested msgs than permitted. Limit is : %d", maxDepth)
+		return nil, fmt.Errorf("found more nested msgs than permitted. Limit is: %d", maxDepth)
 	}
 
 	var final []sdk.Msg

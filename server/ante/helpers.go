@@ -5,6 +5,7 @@ import (
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	conntypes "github.com/cosmos/ibc-go/v6/modules/core/03-connection/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
+
 	hubgenesistypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 )
 
@@ -16,32 +17,53 @@ func IsIBCRelayerMsg(msgs []sdk.Msg) bool {
 func countIBCMsgs(msgs []sdk.Msg) int {
 	count := 0
 	for _, msg := range msgs {
+		// IBC Packet Messages
+		if isPacketMsg(msg) {
+			count++
+			continue
+		}
+
+		if isAnyWhitelistExclusiveIBCMsg(msg) {
+			count++
+			continue
+		}
+	}
+	return count
+}
+
+func isPacketMsg(msg sdk.Msg) bool {
+	switch msg.(type) {
+	case *channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
+		*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose:
+	default:
+		return false
+	}
+	return true
+}
+
+func isAnyWhitelistExclusiveIBCMsg(msgs ...sdk.Msg) bool {
+	for _, msg := range msgs {
 		switch msg.(type) {
 		// IBC Client Messages
 		case *clienttypes.MsgCreateClient, *clienttypes.MsgUpdateClient,
 			*clienttypes.MsgUpgradeClient, *clienttypes.MsgSubmitMisbehaviour:
-			count++
+			return true
 
 		// IBC Connection Messages
 		case *conntypes.MsgConnectionOpenInit, *conntypes.MsgConnectionOpenTry,
 			*conntypes.MsgConnectionOpenAck, *conntypes.MsgConnectionOpenConfirm:
-			count++
+			return true
 
 		// IBC Channel Messages
 		case *channeltypes.MsgChannelOpenInit, *channeltypes.MsgChannelOpenTry,
 			*channeltypes.MsgChannelOpenAck, *channeltypes.MsgChannelOpenConfirm,
 			*channeltypes.MsgChannelCloseInit, *channeltypes.MsgChannelCloseConfirm:
-			count++
-
-		// IBC Packet Messages
-		case *channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
-			*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose:
-			count++
+			return true
 
 		// Not strictly an IBC message, but rather a custom message for dymension
 		case *hubgenesistypes.MsgSendTransfer:
-			count++
+			return true
 		}
 	}
-	return count
+	return false
 }

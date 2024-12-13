@@ -27,7 +27,9 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 	// IBC relayer msg
 	ibcMsg1 := &clienttypes.MsgCreateClient{}
 	// IBC relayer msg
-	ibcMsg2 := &channeltypes.MsgAcknowledgement{}
+	ibcMsg2 := &channeltypes.MsgChannelOpenInit{}
+	// IBC packet msg
+	ibcMsg3 := &channeltypes.MsgRecvPacket{}
 	// Non-IBC msg
 	nonIBCMsg := &banktypes.MsgSend{}
 
@@ -69,6 +71,36 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 			sequencerExists:  false,
 			sequencerOper:    "",
 			wlRelayers:       nil,
+			expectedErr:      true,
+			expectedIBCNoFee: false,
+		},
+		{
+			name:             "Packet IBC message, signer whitelisted",
+			msgs:             []sdk.Msg{ibcMsg1, ibcMsg3},
+			signer:           whitelistedSigner,
+			sequencerExists:  true,
+			sequencerOper:    operatorAddr,
+			wlRelayers:       []string{whitelistedSigner.String()},
+			expectedErr:      false,
+			expectedIBCNoFee: true,
+		},
+		{
+			name:             "Packet IBC message, signer not whitelisted",
+			msgs:             []sdk.Msg{ibcMsg3},
+			signer:           nonWhitelistedSigner,
+			sequencerExists:  true,
+			sequencerOper:    operatorAddr,
+			wlRelayers:       []string{whitelistedSigner.String()},
+			expectedErr:      false,
+			expectedIBCNoFee: false,
+		},
+		{
+			name:             "Whitelisted IBC and Packet IBC message, signer not whitelisted",
+			msgs:             []sdk.Msg{ibcMsg1, ibcMsg3},
+			signer:           nonWhitelistedSigner,
+			sequencerExists:  true,
+			sequencerOper:    operatorAddr,
+			wlRelayers:       []string{whitelistedSigner.String()},
 			expectedErr:      true,
 			expectedIBCNoFee: false,
 		},
@@ -249,7 +281,9 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 				switch m := msg.(type) {
 				case *clienttypes.MsgCreateClient:
 					m.Signer = tc.signer.String()
-				case *channeltypes.MsgAcknowledgement:
+				case *channeltypes.MsgChannelOpenInit:
+					m.Signer = tc.signer.String()
+				case *channeltypes.MsgRecvPacket:
 					m.Signer = tc.signer.String()
 				case *banktypes.MsgSend:
 					m.FromAddress = tc.signer.String()
