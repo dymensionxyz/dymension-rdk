@@ -19,13 +19,16 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	}
 
 	// validate the funds in the module account are equal to the sum of the funds in the genesis accounts
-	expectedTotal := math.ZeroInt()
-	for _, acc := range genState.GenesisAccounts {
-		expectedTotal = expectedTotal.Add(acc.Amount)
-	}
-	balance := k.bk.GetBalance(ctx, k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress(), k.GetBaseDenom(ctx))
-	if !balance.Amount.Equal(expectedTotal) {
-		panic("module account balance does not match the sum of genesis accounts")
+	if k.GetBaseDenom(ctx) != "" {
+		expectedTotal := math.ZeroInt()
+		for _, acc := range genState.GenesisAccounts {
+			expectedTotal = expectedTotal.Add(acc.Amount)
+		}
+
+		balance := k.bk.GetBalance(ctx, k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress(), k.GetBaseDenom(ctx))
+		if !balance.Amount.Equal(expectedTotal) {
+			panic("module account balance does not match the sum of genesis accounts")
+		}
 	}
 }
 
