@@ -28,7 +28,8 @@ func (k Keeper) PopulateGenesisInfo(ctx sdk.Context, gAccounts []types.GenesisAc
 	nativeDenom := k.mk.MintDenom(ctx)
 	if nativeDenom != "" {
 		// Query the denom's metadata
-		metadata, ok := k.bk.GetDenomMetaData(ctx, nativeDenom)
+		var ok bool
+		metadata, ok = k.bk.GetDenomMetaData(ctx, nativeDenom)
 		if !ok {
 			return fmt.Errorf("failed to get denom metadata for %s", nativeDenom)
 		}

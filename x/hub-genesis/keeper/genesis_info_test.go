@@ -13,7 +13,7 @@ import (
 )
 
 func TestInitGenesis_HappyFlow(t *testing.T) {
-	genesisBridgeFunds := sdk.NewCoin("stake", math.NewInt(100_000))
+	genesisBridgeFunds := sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(100_000))
 	genAccounts := []types.GenesisAccount{
 		{
 			Address: utils.AccAddress().String(),
@@ -30,7 +30,7 @@ func TestInitGenesis_HappyFlow(t *testing.T) {
 
 	// change some state values post the genesis, make sure it doesn't affect the genesis info
 	utils.AddTestAddrs(app, ctx, 2, sdk.NewInt(1000))
-	require.NotEqual(t, app.BankKeeper.GetSupply(ctx, "stake"), genesisBridgeFunds)
+	require.NotEqual(t, app.BankKeeper.GetSupply(ctx, sdk.DefaultBondDenom), genesisBridgeFunds)
 
 	gInfo := k.GetGenesisInfo(ctx)
 	assert.Equal(t, genAccounts, gInfo.GenesisAccounts)
@@ -41,7 +41,7 @@ func TestInitGenesis_HappyFlow(t *testing.T) {
 }
 
 func TestInitGenesis_MissingGenesisFundsOnGenesis(t *testing.T) {
-	genesisBridgeFunds := sdk.NewCoin("stake", math.NewInt(100_000))
+	genesisBridgeFunds := sdk.NewCoin(sdk.DefaultBondDenom, math.NewInt(100_000))
 	genAccounts := []types.GenesisAccount{
 		{
 			Address: utils.AccAddress().String(),
