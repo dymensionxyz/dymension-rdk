@@ -25,6 +25,10 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochInfo epochstypes.EpochInfo) 
 	epochNumber := epochInfo.CurrentEpoch
 	params := k.GetParams(ctx)
 
+	if params.MintDenom == "" {
+		return
+	}
+
 	// Update inflation
 	if epochIdentifier == params.InflationChangeEpochIdentifier {
 		newInflation, err := k.HandleInflationChange(ctx)
