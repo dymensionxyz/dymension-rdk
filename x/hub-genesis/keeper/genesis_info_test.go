@@ -53,4 +53,30 @@ func TestInitGenesis_MissingGenesisFundsOnGenesis(t *testing.T) {
 	})
 }
 
-// TODO: test for missing metadata on genesis
+func TestInitGenesis_MissingDenomMetadata(t *testing.T) {
+	genesisBridgeFunds := sdk.NewCoin("newdenom", math.NewInt(100_000))
+	genAccounts := []types.GenesisAccount{
+		{
+			Address: utils.AccAddress().String(),
+			Amount:  genesisBridgeFunds.Amount.QuoRaw(2),
+		},
+		{
+			Address: utils.AccAddress().String(),
+			Amount:  genesisBridgeFunds.Amount.QuoRaw(2),
+		},
+	}
+	assert.Panics(t, func() {
+		utils.SetupWithGenesisBridge(t, genesisBridgeFunds, genAccounts)
+	})
+}
+
+func TestInitGenesis_NoNativeDenom(t *testing.T) {
+	app := utils.SetupWithNoNativeDenom(t)
+	k, ctx := testkeepers.NewTestHubGenesisKeeperFromApp(app)
+
+	gInfo := k.GetGenesisInfo(ctx)
+	// assert native denom
+	assert.Equal(t, "", gInfo.NativeDenom.Base)
+	// assert initial supply
+	assert.Equal(t, math.ZeroInt(), gInfo.InitialSupply)
+}
