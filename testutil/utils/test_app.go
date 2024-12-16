@@ -26,6 +26,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	hubgenesistypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	minttypes "github.com/dymensionxyz/dymension-rdk/x/mint/types"
 )
 
 var DefaultConsensusParams = &abci.ConsensusParams{
@@ -130,6 +131,18 @@ func setGenesisAndInitChain(t *testing.T, app *app.App, genesisState map[string]
 			GenesisChecksum: "notempty",
 		},
 	)
+}
+
+func SetupWithNoNativeDenom(t *testing.T) *app.App {
+	t.Helper()
+	app, genesisState := setup(true, 5)
+
+	mintGenesis := minttypes.DefaultGenesisState()
+	mintGenesis.Params.MintDenom = ""
+	genesisState[minttypes.ModuleName] = app.AppCodec().MustMarshalJSON(mintGenesis)
+
+	setGenesisAndInitChain(t, app, genesisState)
+	return app
 }
 
 func SetupWithGenesisBridge(t *testing.T, gbFunds sdk.Coin, genAcct []hubgenesistypes.GenesisAccount) *app.App {
