@@ -35,6 +35,7 @@ func (m msgServer) SendTransfer(goCtx context.Context, msg *types.MsgSendTransfe
 
 const expectedChan = "channel-0"
 
+// tech debt: remove channel arg https://github.com/dymensionxyz/dymension-rdk/issues/641
 func (k Keeper) SendGenesisTransfer(ctx sdk.Context, channelID string) error {
 	if channelID != expectedChan {
 		return gerrc.ErrInvalidArgument.Wrapf("channel id, expect: %s", expectedChan)
