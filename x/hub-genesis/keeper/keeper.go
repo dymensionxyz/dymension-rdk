@@ -110,3 +110,7 @@ func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 	k.cdc.MustUnmarshal(bz, &gInfo)
 	return gInfo
 }
+
+func (k Keeper) Tokenless(ctx sdk.Context) bool {
+	return k.GetGenesisInfo(ctx).BaseDenom() == ""
+}
