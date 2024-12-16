@@ -33,7 +33,12 @@ func (m msgServer) SendTransfer(goCtx context.Context, msg *types.MsgSendTransfe
 	return &types.MsgSendTransferResponse{}, nil
 }
 
+const expectedChan = "channel-0"
+
 func (k Keeper) SendGenesisTransfer(ctx sdk.Context, channelID string) error {
+	if channelID != expectedChan {
+		return gerrc.ErrInvalidArgument.Wrapf("channel id, expect: %s", expectedChan)
+	}
 	state := k.GetState(ctx)
 	if state.InFlight {
 		return gerrc.ErrFailedPrecondition.Wrap("sent transfer is already in flight")
