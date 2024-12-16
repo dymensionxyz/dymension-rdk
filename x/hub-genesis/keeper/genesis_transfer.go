@@ -2,12 +2,12 @@ package keeper
 
 import (
 	errorsmod "cosmossdk.io/errors"
-	"github.com/dymensionxyz/gerr-cosmos/gerrc"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
+	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 const (
@@ -20,16 +20,24 @@ const (
 // Additionally, the method returns the packet coin (if any) that will be used for the escrow.
 func (k Keeper) PrepareGenesisBridgeData(ctx sdk.Context) (types.GenesisBridgeData, error) {
 	gInfo := k.GetGenesisInfo(ctx)
+	denom := gInfo.BaseDenom()
 
-	denomMeta, ok := k.bk.GetDenomMetaData(ctx, gInfo.BaseDenom())
+	if denom == "" {
+		return types.GenesisBridgeData{
+			GenesisInfo:     gInfo,
+			NativeDenom:     banktypes.Metadata{},
+			GenesisTransfer: nil,
+		}, nil
+	}
+
+	denomMeta, ok := k.bk.GetDenomMetaData(ctx, denom)
 	if !ok {
 		return types.GenesisBridgeData{}, errorsmod.Wrap(gerrc.ErrInternal, "denom metadata not found")
 	}
 
 	amount := gInfo.Amt()
-
 	// no genesis accounts defined => no genesis transfer needed
-	if gInfo.Amt().IsZero() {
+	if amount.IsZero() {
 		return types.GenesisBridgeData{
 			GenesisInfo:     gInfo,
 			NativeDenom:     denomMeta,
@@ -39,7 +47,6 @@ func (k Keeper) PrepareGenesisBridgeData(ctx sdk.Context) (types.GenesisBridgeDa
 
 	var (
 		sender = k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress().String()
-		denom  = gInfo.BaseDenom()
 		packet = transfertypes.NewFungibleTokenPacketData(denom, amount.String(), sender, hubRecipient, "")
 	)
 

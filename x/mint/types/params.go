@@ -1,7 +1,6 @@
 package types
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -100,9 +99,11 @@ func validateMintDenom(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
+	// we allow empty string to disable minting
 	if strings.TrimSpace(v) == "" {
-		return errors.New("mint denom cannot be blank")
+		return nil
 	}
+
 	if err := sdk.ValidateDenom(v); err != nil {
 		return err
 	}
