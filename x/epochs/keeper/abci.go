@@ -27,6 +27,7 @@ func (k Keeper) BeginBlocker(ctx sdk.Context) {
 
 		switch {
 		case shouldInitialEpochStart:
+			epochInfo.StartTime = ctx.BlockTime() // a hack so epochs will start in regard of the first block, instead of the genesis time
 			epochInfo = startInitialEpoch(epochInfo)
 			logger.Info(fmt.Sprintf("initial %s epoch", epochInfo.Identifier))
 		case shouldEpochStart:
