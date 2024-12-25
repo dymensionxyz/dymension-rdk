@@ -4,6 +4,7 @@ import (
 	sdkerrors "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errors "github.com/cosmos/cosmos-sdk/types/errors"
+	prototypes "github.com/gogo/protobuf/types"
 )
 
 var _, _ sdk.Msg = &MsgSoftwareUpgrade{}, &MsgCancelUpgrade{}
@@ -14,6 +15,11 @@ func (m *MsgSoftwareUpgrade) ValidateBasic() error {
 	}
 	if _, err := sdk.AccAddressFromBech32(m.Authority); err != nil {
 		return sdkerrors.Wrap(err, "authority")
+	}
+
+	_, err := prototypes.TimestampFromProto(m.UpgradeTime)
+	if err != nil || m.UpgradeTime == nil || m.UpgradeTime.Seconds == 0 {
+		return sdkerrors.Wrap(err, "upgrade time")
 	}
 	return nil
 }
