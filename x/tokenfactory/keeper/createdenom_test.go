@@ -153,6 +153,10 @@ func (suite *KeeperTestSuite) TestCreateDenom() {
 				suite.Require().NoError(err)
 				suite.Require().Equal(suite.TestAccs[0].String(), queryRes.AuthorityMetadata.Admin)
 
+				md, ok := bankKeeper.GetDenomMetaData(suite.Ctx, res.GetNewTokenDenom())
+				suite.Require().True(ok)
+				suite.Require().NoError(md.Validate())
+
 			} else {
 				suite.Require().Error(err)
 				// Ensure we don't charge if we expect an error
