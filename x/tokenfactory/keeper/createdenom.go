@@ -16,7 +16,7 @@ func (k Keeper) CreateDenom(ctx sdk.Context, creatorAddr string, subdenom string
 		return "", err
 	}
 
-	err = k.chargeForCreateDenom(ctx, creatorAddr, subdenom)
+	err = k.chargeForCreateDenom(ctx, creatorAddr)
 	if err != nil {
 		return "", err
 	}
@@ -28,14 +28,31 @@ func (k Keeper) CreateDenom(ctx sdk.Context, creatorAddr string, subdenom string
 // Runs CreateDenom logic after the charge and all denom validation has been handled.
 // Made into a second function for genesis initialization.
 func (k Keeper) createDenomAfterValidation(ctx sdk.Context, creatorAddr string, denom string) (err error) {
-
+	// create bank denom metadata for this denom. don't overwrite if it already exists
 	if _, hasMeta := k.bankKeeper.GetDenomMetaData(ctx, denom); !hasMeta {
+		// we expect denom to be of the form "factory/{creator}/{subdenom}"
+		// violation possible on InitGenesis only (by design). in this case,
+		// the metadata needs to be set explicitly in the bank module
+		_, subdenom, err := types.DeconstructDenom(denom)
+		if err != nil {
+			return err
+		}
+
 		denomMetaData := banktypes.Metadata{
-			DenomUnits: []*banktypes.DenomUnit{{
-				Denom:    denom,
-				Exponent: 0,
-			}},
 			Base: denom,
+			Name: denom,
+			DenomUnits: []*banktypes.DenomUnit{
+				{
+					Denom:    denom,
+					Exponent: 0,
+				},
+				{
+					Denom:    subdenom,
+					Exponent: 18, // FIXME: allow exponent to be configurable (https://github.com/dymensionxyz/dymension-rdk/issues/649)
+				},
+			},
+			Symbol:  subdenom,
+			Display: subdenom,
 		}
 
 		k.bankKeeper.SetDenomMetaData(ctx, denomMetaData)
@@ -73,7 +90,7 @@ func (k Keeper) validateCreateDenom(ctx sdk.Context, creatorAddr string, subdeno
 	return denom, nil
 }
 
-func (k Keeper) chargeForCreateDenom(ctx sdk.Context, creatorAddr string, subdenom string) (err error) {
+func (k Keeper) chargeForCreateDenom(ctx sdk.Context, creatorAddr string) (err error) {
 	// Send creation fee to community pool
 	creationFee := k.GetParams(ctx).DenomCreationFee
 	accAddr, err := sdk.AccAddressFromBech32(creatorAddr)
