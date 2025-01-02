@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	dymintconf "github.com/dymensionxyz/dymint/config"
+
 	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/node"
 
