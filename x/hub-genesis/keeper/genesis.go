@@ -11,7 +11,7 @@ import (
 // InitGenesis new hub-genesis genesis.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
-	k.SetState(ctx, types.State{})
+	k.SetState(ctx, genState.State)
 
 	err := k.PopulateGenesisInfo(ctx, genState.GenesisAccounts)
 	if err != nil {
@@ -40,5 +40,6 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis := types.DefaultGenesisState()
 	genesis.Params = k.GetParams(ctx)
 	genesis.GenesisAccounts = k.GetGenesisInfo(ctx).GenesisAccounts
+	genesis.State = k.GetState(ctx)
 	return genesis
 }
