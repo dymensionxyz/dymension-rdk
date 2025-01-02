@@ -76,7 +76,7 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 
 			fmt.Printf("RollApp state moved back to height %d successfully.\n", heightInt)
 
-			skipStorePruning := ctx.Viper.Get("only-app").(bool)
+			skipStorePruning := ctx.Viper.GetBool(flags.FlagLogLevel)
 
 			if !skipStorePruning {
 				fmt.Printf("Pruning store from height %d to %d\n", heightInt+1, blockManager.State.Height()+1)
