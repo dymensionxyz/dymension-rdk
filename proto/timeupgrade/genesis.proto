@@ -1,0 +1,17 @@
+syntax = "proto3";
+package rollapp.timeupgrade.types;
+
+import "gogoproto/gogo.proto";
+import "cosmos/upgrade/v1beta1/tx.proto";
+import "cosmos/upgrade/v1beta1/upgrade.proto";
+import "cosmos/msg/v1/msg.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types";
+
+message GenesisState {
+  // timestamp on the plan object is ignored
+  cosmos.upgrade.v1beta1.Plan plan = 1 [(gogoproto.nullable) = false];
+  google.protobuf.Timestamp timestamp = 2;
+}
