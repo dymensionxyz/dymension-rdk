@@ -72,16 +72,16 @@ func (a AppModule) BeginBlock(context sdk.Context, block abci.RequestBeginBlock)
 	BeginBlocker(context, a.keeper, a.upgradeKeeper)
 }
 
-func (a AppModule) InitGenesis(context sdk.Context, jsonCodec codec.JSONCodec, message json.RawMessage) []abci.ValidatorUpdate {
+func (a AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, message json.RawMessage) []abci.ValidatorUpdate {
 	var genesisState types.GenesisState
-	cdc.MustUnmarshalJSON(data, &genesisState)
+	cdc.MustUnmarshalJSON(message, &genesisState)
 
-	am.keeper.InitGenesis(ctx, &genesisState)
+	a.keeper.InitGenesis(ctx, &genesisState)
 	return []abci.ValidatorUpdate{}
 }
 
-func (a AppModule) ExportGenesis(context sdk.Context, jsonCodec codec.JSONCodec) json.RawMessage {
-	gs := am.keeper.ExportGenesis(ctx)
+func (a AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
+	gs := a.keeper.ExportGenesis(ctx)
 	return cdc.MustMarshalJSON(gs)
 }
 
