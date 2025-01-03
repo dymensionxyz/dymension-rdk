@@ -12,6 +12,6 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types";
 
 message GenesisState {
   // timestamp on the plan object is ignored
-  cosmos.upgrade.v1beta1.Plan plan = 1 [(gogoproto.nullable) = false];
+  optional cosmos.upgrade.v1beta1.Plan plan = 1 [(gogoproto.nullable) = false];
   google.protobuf.Timestamp timestamp = 2;
 }

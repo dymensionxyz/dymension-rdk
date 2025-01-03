@@ -40,11 +40,14 @@ func (a AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) 
 }
 
 func (a AppModuleBasic) DefaultGenesis(codec codec.JSONCodec) json.RawMessage {
-	return nil
+	g := types.DefaultGenesis()
+	return codec.MustMarshalJSON(g)
 }
 
-func (a AppModuleBasic) ValidateGenesis(codec codec.JSONCodec, config client.TxEncodingConfig, message json.RawMessage) error {
-	return nil
+func (a AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, message json.RawMessage) error {
+	var genesisState types.GenesisState
+	cdc.MustUnmarshalJSON(message, &genesisState)
+	return genesisState.ValidateGenesis()
 }
 
 func (a AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {}
