@@ -112,6 +112,7 @@ func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 	return gInfo
 }
 
-func (k Keeper) Tokenless(ctx sdk.Context) bool {
+// can be true for tokenless rollapps or rollapps migrated from 2d to 3d
+func (k Keeper) EmptyGenesisBaseDenom(ctx sdk.Context) bool {
 	return k.GetGenesisInfo(ctx).BaseDenom() == ""
 }
