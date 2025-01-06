@@ -16,7 +16,7 @@ func TestValidateGenesis(t *testing.T) {
 	}{
 		{
 			name:    "valid genesis with plan and timestamp",
-			genesis: GenesisState{Plan: upgradetypes.Plan{Name: "test", Height: 1}, Timestamp: &prototypes.Timestamp{Seconds: 1}},
+			genesis: GenesisState{Plan: &upgradetypes.Plan{Name: "test", Height: 1}, Timestamp: &prototypes.Timestamp{Seconds: 1}},
 			wantErr: false,
 		},
 		{
@@ -26,7 +26,7 @@ func TestValidateGenesis(t *testing.T) {
 		},
 		{
 			name:    "invalid genesis with empty timestamp",
-			genesis: GenesisState{Plan: upgradetypes.Plan{Name: "test", Height: 1}},
+			genesis: GenesisState{Plan: &upgradetypes.Plan{Name: "test", Height: 1}},
 			wantErr: true,
 		},
 		{

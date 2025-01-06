@@ -17,7 +17,7 @@ func TestInitAndExportGenesis(t *testing.T) {
 	k, ctx := testkeepers.NewTestTimeupgradeKeeperFromApp(app)
 
 	exp := types.GenesisState{
-		Plan: upgradetypes.Plan{
+		Plan: &upgradetypes.Plan{
 			Name:   "fooname",
 			Height: 7,
 			Info:   "fooinfo",

@@ -2,7 +2,6 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
-	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 	prototypes "github.com/gogo/protobuf/types"
 )
@@ -32,8 +31,7 @@ func (gs GenesisState) ValidateGenesis() error {
 }
 
 func (gs GenesisState) EmptyPlan() bool {
-	zero := upgradetypes.Plan{}
-	return gs.Plan == zero
+	return gs.Plan == nil
 }
 
 func (gs GenesisState) EmptyTimestamp() bool {
