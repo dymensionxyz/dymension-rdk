@@ -100,6 +100,7 @@ func (k Keeper) SetGenesisInfo(ctx sdk.Context, gInfo types.GenesisInfo) {
 }
 
 // GetGenesisInfo returns the genesis info.
+// WARNING: will return empty for 2d chains which were migrated to 3d
 func (k Keeper) GetGenesisInfo(ctx sdk.Context) types.GenesisInfo {
 	store := ctx.KVStore(k.storeKey)
 	bz := store.Get(types.GenesisInfoKey)
