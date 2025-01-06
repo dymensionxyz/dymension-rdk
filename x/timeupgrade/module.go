@@ -40,11 +40,14 @@ func (a AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) 
 }
 
 func (a AppModuleBasic) DefaultGenesis(codec codec.JSONCodec) json.RawMessage {
-	return nil
+	g := types.DefaultGenesis()
+	return codec.MustMarshalJSON(g)
 }
 
-func (a AppModuleBasic) ValidateGenesis(codec codec.JSONCodec, config client.TxEncodingConfig, message json.RawMessage) error {
-	return nil
+func (a AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, message json.RawMessage) error {
+	var genesisState types.GenesisState
+	cdc.MustUnmarshalJSON(message, &genesisState)
+	return genesisState.ValidateGenesis()
 }
 
 func (a AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {}
@@ -72,12 +75,17 @@ func (a AppModule) BeginBlock(context sdk.Context, block abci.RequestBeginBlock)
 	BeginBlocker(context, a.keeper, a.upgradeKeeper)
 }
 
-func (a AppModule) InitGenesis(context sdk.Context, jsonCodec codec.JSONCodec, message json.RawMessage) []abci.ValidatorUpdate {
-	return nil
+func (a AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, message json.RawMessage) []abci.ValidatorUpdate {
+	var genesisState types.GenesisState
+	cdc.MustUnmarshalJSON(message, &genesisState)
+
+	a.keeper.InitGenesis(ctx, &genesisState)
+	return []abci.ValidatorUpdate{}
 }
 
-func (a AppModule) ExportGenesis(context sdk.Context, jsonCodec codec.JSONCodec) json.RawMessage {
-	return nil
+func (a AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
+	gs := a.keeper.ExportGenesis(ctx)
+	return cdc.MustMarshalJSON(gs)
 }
 
 func (a AppModule) RegisterInvariants(registry sdk.InvariantRegistry) {
