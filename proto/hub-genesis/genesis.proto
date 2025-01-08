@@ -4,6 +4,7 @@ package rollapp.hub_genesis;
 import "gogoproto/gogo.proto";
 import "hub-genesis/params.proto";
 import "hub-genesis/genesis_info.proto";
+import "hub-genesis/state.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types";
 
@@ -13,5 +14,9 @@ message GenesisState {
   Params params = 1 [ (gogoproto.nullable) = false ];
 
   // accounts on the Hub to fund with some bootstrapping transfers
+  // NOTE: an older version of this type used field #2 to store something different
+  // It's OK, as long no one tries to import that older version
   repeated GenesisAccount genesis_accounts = 2 [ (gogoproto.nullable) = false ];
+
+  State state = 3 [(gogoproto.nullable) = false];
 }
