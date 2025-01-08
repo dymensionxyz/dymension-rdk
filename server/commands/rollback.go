@@ -99,23 +99,28 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 				return nil
 			}
 
-			fmt.Printf("Pruning store from height %d to %d\n", heightInt+1, blockManager.State.Height()+1)
+			fmt.Printf("Pruning store from height %d to %d\n", heightInt+1, blockManager.State.Height()+2)
 
-			pruned, err := blockManager.Store.PruneHeights(uint64(heightInt+1), blockManager.State.Height()+1, ctx.Logger)
+			// we try to prune height + 2, to prune all blocks in case a block its been already produced but not applied.
+			pruned, err := blockManager.Store.PruneHeights(uint64(heightInt+1), blockManager.State.Height()+2, ctx.Logger)
 			if err != nil {
-				return fmt.Errorf("pruning: %w", err)
-			}
-
-			_, err = blockManager.Store.LoadBlock(blockManager.State.Height() + 2)
-			if err == nil {
-				extraPruned, err := blockManager.Store.PruneHeights(blockManager.State.Height()+1, blockManager.State.Height()+2, ctx.Logger)
-				if err != nil {
-					return fmt.Errorf("pruning: %w", err)
-				}
-				pruned += extraPruned
+				ctx.Logger.Error("Error pruning block store.", "Error", err)
 			}
 
 			fmt.Println("Pruned blocks:", pruned)
+
+			baseHeight, err := blockManager.Store.LoadBaseHeight()
+			if err != nil {
+				return nil
+			}
+			if baseHeight <= uint64(heightInt) {
+				return nil
+			}
+
+			err = blockManager.Store.SaveBaseHeight(uint64(heightInt))
+			if err != nil {
+				ctx.Logger.Error("saving base height", "error", err)
+			}
 
 			return err
 		},
