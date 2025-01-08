@@ -17,7 +17,7 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/utils"
 )
 
-const skipStorePrunningFlag = "only-app"
+const skipStorePruningFlag = "skip-store-pruning"
 
 // RollbackCmd rollbacks the app multistore to specific height and updates dymint state according to it
 func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
@@ -83,6 +83,8 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 				return fmt.Errorf("load block header: %w", err)
 			}
 
+			currentHeight := blockManager.State.Height()
+
 			// rollback dymint state according to the app
 			if err := blockManager.UpdateStateFromApp(block); err != nil {
 				return fmt.Errorf("updating dymint from app state: %w", err)
@@ -93,16 +95,16 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 				return fmt.Errorf("save state: %w", err)
 			}
 
-			skipStorePruning := ctx.Viper.GetBool(flags.FlagLogLevel)
+			skipStorePruning := ctx.Viper.GetBool(skipStorePruningFlag)
 
 			if skipStorePruning {
 				return nil
 			}
 
-			fmt.Printf("Pruning store from height %d to %d\n", heightInt+1, blockManager.State.Height()+2)
+			fmt.Printf("Pruning store from height %d \n", heightInt+1)
 
 			// we try to prune height + 2, to prune all blocks in case a block its been already produced but not applied.
-			pruned, err := blockManager.Store.PruneHeights(uint64(heightInt+1), blockManager.State.Height()+2, ctx.Logger)
+			pruned, err := blockManager.Store.PruneHeights(uint64(heightInt+1), currentHeight+2, ctx.Logger)
 			if err != nil {
 				ctx.Logger.Error("Error pruning block store.", "Error", err)
 			}
@@ -125,7 +127,7 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 			return err
 		},
 	}
-	cmd.Flags().Bool(skipStorePrunningFlag, false, "rollback only app without pruning dymint store blocks")
+	cmd.Flags().Bool(skipStorePruningFlag, false, "rollback only app without pruning dymint store blocks")
 	dymintconf.AddNodeFlags(cmd)
 	return cmd
 }
