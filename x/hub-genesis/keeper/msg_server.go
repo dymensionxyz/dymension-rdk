@@ -36,7 +36,7 @@ func (m msgServer) SendTransfer(goCtx context.Context, msg *types.MsgSendTransfe
 const expectedChan = "channel-0" // tokenless only
 
 func (k Keeper) SendGenesisTransfer(ctx sdk.Context, channelID string) error {
-	if k.Tokenless(ctx) && channelID != expectedChan {
+	if k.EmptyGenesisBaseDenom(ctx) && channelID != expectedChan {
 		return gerrc.ErrInvalidArgument.Wrapf("tokenless chain: wrong channel id, expect: %s", expectedChan)
 	}
 	state := k.GetState(ctx)

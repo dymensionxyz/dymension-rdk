@@ -10,7 +10,8 @@ import (
 )
 
 // GetNativeDenom returns the native denomination.
-func (k Keeper) GetBaseDenom(ctx sdk.Context) string {
+// warning: returns empty from 2d->3d migrated rollapp
+func (k Keeper) GetGenesisInfoBaseDenom(ctx sdk.Context) string {
 	return k.GetGenesisInfo(ctx).BaseDenom()
 }
 
