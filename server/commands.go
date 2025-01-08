@@ -17,6 +17,7 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 
 	"github.com/dymensionxyz/dymension-rdk/server/commands"
+	dymintcmds "github.com/dymensionxyz/dymint/cmd/dymint/commands"
 	"github.com/dymensionxyz/dymint/conv"
 )
 
@@ -32,9 +33,11 @@ func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreat
 		ShowNodeIDCmd(),
 		commands.InspectStateCmd(),
 		commands.ShowP2PInfoCmd(),
+
 		ResetAll(),
 		server.VersionCmd(),
 		ResetState(),
+		dymintcmds.Run3dMigrationCmd(),
 	)
 
 	rootCmd.AddCommand(

@@ -11,7 +11,7 @@ import (
 // InitGenesis new hub-genesis genesis.
 func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	k.SetParams(ctx, genState.Params)
-	k.SetState(ctx, types.State{})
+	k.SetState(ctx, genState.State)
 
 	err := k.PopulateGenesisInfo(ctx, genState.GenesisAccounts)
 	if err != nil {
@@ -19,7 +19,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	}
 
 	// if there is no native denom, we're done
-	if k.GetBaseDenom(ctx) == "" {
+	if k.GetGenesisInfoBaseDenom(ctx) == "" {
 		return
 	}
 
@@ -29,7 +29,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 		expectedTotal = expectedTotal.Add(acc.Amount)
 	}
 
-	balance := k.bk.GetBalance(ctx, k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress(), k.GetBaseDenom(ctx))
+	balance := k.bk.GetBalance(ctx, k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress(), k.GetGenesisInfoBaseDenom(ctx))
 	if !balance.Amount.Equal(expectedTotal) {
 		panic("module account balance does not match the sum of genesis accounts")
 	}
@@ -40,5 +40,6 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	genesis := types.DefaultGenesisState()
 	genesis.Params = k.GetParams(ctx)
 	genesis.GenesisAccounts = k.GetGenesisInfo(ctx).GenesisAccounts
+	genesis.State = k.GetState(ctx)
 	return genesis
 }
