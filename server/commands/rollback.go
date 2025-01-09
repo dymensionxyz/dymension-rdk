@@ -79,7 +79,7 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 				return fmt.Errorf("load block header: %w", err)
 			}
 			// rollback dymint state according to the app
-			if err := blockManager.UpdateStateFromApp(block); err != nil {
+			if err := blockManager.UpdateStateFromApp(block.Header.Hash()); err != nil {
 				return fmt.Errorf("updating dymint from app state: %w", err)
 			}
 			fmt.Printf("RollApp state moved back to height %d successfully.\n", heightInt)
