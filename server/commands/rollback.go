@@ -17,6 +17,8 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/utils"
 )
 
+const skipStorePruningFlag = "skip-store-pruning"
+
 // RollbackCmd rollbacks the app multistore to specific height and updates dymint state according to it
 func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 	cmd := &cobra.Command{
@@ -74,19 +76,58 @@ func RollbackCmd(appCreator types.AppCreator) *cobra.Command {
 				return fmt.Errorf("app rollback to specific height: %w", err)
 			}
 
+			fmt.Printf("RollApp state moved back to height %d successfully.\n", heightInt)
+
 			block, err := blockManager.Store.LoadBlock(uint64(heightInt))
 			if err != nil {
 				return fmt.Errorf("load block header: %w", err)
 			}
+
+			currentHeight := blockManager.State.Height()
+
 			// rollback dymint state according to the app
 			if err := blockManager.UpdateStateFromApp(block); err != nil {
 				return fmt.Errorf("updating dymint from app state: %w", err)
 			}
-			fmt.Printf("RollApp state moved back to height %d successfully.\n", heightInt)
+
+			_, err = blockManager.Store.SaveState(blockManager.State, nil)
+			if err != nil {
+				return fmt.Errorf("save state: %w", err)
+			}
+
+			skipStorePruning := ctx.Viper.GetBool(skipStorePruningFlag)
+
+			if skipStorePruning {
+				return nil
+			}
+
+			fmt.Printf("Pruning store from height %d \n", heightInt+1)
+
+			// we try to prune height + 2, to prune all blocks in case a block its been already produced but not applied.
+			pruned, err := blockManager.Store.PruneHeights(uint64(heightInt+1), currentHeight+2, ctx.Logger)
+			if err != nil {
+				ctx.Logger.Error("Error pruning block store.", "Error", err)
+			}
+
+			fmt.Println("Pruned blocks:", pruned)
+
+			baseHeight, err := blockManager.Store.LoadBaseHeight()
+			if err != nil {
+				return nil
+			}
+			if baseHeight <= uint64(heightInt) {
+				return nil
+			}
+
+			err = blockManager.Store.SaveBaseHeight(uint64(heightInt))
+			if err != nil {
+				ctx.Logger.Error("saving base height", "error", err)
+			}
+
 			return err
 		},
 	}
-
+	cmd.Flags().Bool(skipStorePruningFlag, false, "rollback only app without pruning dymint store blocks")
 	dymintconf.AddNodeFlags(cmd)
 	return cmd
 }
