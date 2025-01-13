@@ -37,7 +37,12 @@ func liteBlockManager(cfg *config.Config, dymintConf *dymintconf.NodeConfig, gen
 		return nil, fmt.Errorf("starting proxy app connections: %w", err)
 	}
 
-	baseKV := store.NewDefaultInMemoryKVStore()
+	var baseKV store.KV
+	if dymintConf.RootDir == "" && dymintConf.DBPath == "" { // this is used for testing
+		baseKV = store.NewDefaultInMemoryKVStore()
+	} else {
+		baseKV = store.NewDefaultKVStore(dymintConf.RootDir, dymintConf.DBPath, "dymint")
+	}
 	mainKV := store.NewPrefixKV(baseKV, []byte{0})
 	s := store.New(mainKV)
 

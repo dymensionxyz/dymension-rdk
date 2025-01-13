@@ -22,7 +22,7 @@ import (
 )
 
 // add Rollapp commands
-func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport types.AppExporter, addStartFlags types.ModuleInitFlags) {
+func AddRollappCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator types.AppCreator, appExport types.AppExporter) {
 	dymintCmd := &cobra.Command{
 		Use:   "dymint",
 		Short: "dymint subcommands",
