@@ -121,7 +121,7 @@ func TestGetTokenDenom(t *testing.T) {
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
-			_, err := types.GetTokenDenom(tc.creator, tc.subdenom)
+			_, err := types.ConstructFactoryDenom(tc.creator, tc.subdenom)
 			if tc.valid {
 				require.NoError(t, err)
 			} else {
