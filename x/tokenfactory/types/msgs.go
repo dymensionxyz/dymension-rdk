@@ -34,7 +34,7 @@ func (m MsgCreateDenom) ValidateBasic() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
 	}
 
-	_, err = GetTokenDenom(m.Sender, m.Subdenom)
+	_, err = ConstructFactoryDenom(m.Sender, m.Subdenom)
 	if err != nil {
 		return sdkerrors.Wrap(ErrInvalidDenom, err.Error())
 	}
@@ -188,9 +188,8 @@ func (m MsgChangeAdmin) ValidateBasic() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid address (%s)", err)
 	}
 
-	_, _, err = DeconstructDenom(m.Denom)
-	if err != nil {
-		return err
+	if m.Denom == "" {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, "Denom cannot be empty")
 	}
 
 	return nil
@@ -224,11 +223,6 @@ func (m MsgSetDenomMetadata) ValidateBasic() error {
 	}
 
 	err = m.Metadata.Validate()
-	if err != nil {
-		return err
-	}
-
-	_, _, err = DeconstructDenom(m.Metadata.Base)
 	if err != nil {
 		return err
 	}

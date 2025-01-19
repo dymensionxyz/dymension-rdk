@@ -259,7 +259,7 @@ func GetFullDenom(contract string, subDenom string) (string, error) {
 	if _, err := parseAddress(contract); err != nil {
 		return "", err
 	}
-	fullDenom, err := tokenfactorytypes.GetTokenDenom(contract, subDenom)
+	fullDenom, err := tokenfactorytypes.ConstructFactoryDenom(contract, subDenom)
 	if err != nil {
 		return "", sdkerrors.Wrap(err, "validate sub-denom")
 	}
