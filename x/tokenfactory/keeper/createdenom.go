@@ -77,7 +77,7 @@ func (k Keeper) validateCreateDenom(ctx sdk.Context, creatorAddr string, subdeno
 			"can't create subdenoms that are the same as a native denom")
 	}
 
-	denom, err := types.GetTokenDenom(creatorAddr, subdenom)
+	denom, err := types.ConstructFactoryDenom(creatorAddr, subdenom)
 	if err != nil {
 		return "", err
 	}

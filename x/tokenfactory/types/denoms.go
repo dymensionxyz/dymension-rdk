@@ -18,10 +18,10 @@ const (
 	MaxCreatorLength = 59 + MaxHrpLength
 )
 
-// GetTokenDenom constructs a denom string for tokens created by tokenfactory
+// ConstructFactoryDenom constructs a denom string for tokens created by tokenfactory
 // based on an input creator address and a subdenom
 // The denom constructed is factory/{creator}/{subdenom}
-func GetTokenDenom(creator, subdenom string) (string, error) {
+func ConstructFactoryDenom(creator, subdenom string) (string, error) {
 	if len(subdenom) > MaxSubdenomLength {
 		return "", ErrSubdenomTooLong
 	}
