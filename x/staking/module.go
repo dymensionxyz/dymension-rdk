@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/staking/keeper"
+	types2 "github.com/dymensionxyz/dymension-rdk/x/staking/types"
 )
 
 var (
@@ -47,4 +48,11 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 	cdc.MustUnmarshalJSON(data, &genesisState)
 	_ = am.keeper.InitGenesis(ctx, &genesisState)
 	return []abci.ValidatorUpdate{}
+}
+
+// RegisterServices registers module services.
+func (am AppModule) RegisterServices(cfg module.Configurator) {
+	am.AppModule.RegisterServices(cfg)
+
+	types2.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 }
