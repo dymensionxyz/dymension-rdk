@@ -11,9 +11,9 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/staking"
-	"github.com/cosmos/cosmos-sdk/x/staking/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/staking/keeper"
-	types2 "github.com/dymensionxyz/dymension-rdk/x/staking/types"
+	"github.com/dymensionxyz/dymension-rdk/x/staking/types"
 )
 
 var (
@@ -27,18 +27,17 @@ type AppModuleBasic struct {
 
 // RegisterLegacyAminoCodec registers the staking module's types on the given LegacyAmino codec.
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
-	types.RegisterLegacyAminoCodec(cdc)
+	stakingtypes.RegisterLegacyAminoCodec(cdc)
 
-	types2.RegisterLegacyAminoCodec(cdc)
+	types.RegisterLegacyAminoCodec(cdc)
 
 }
 
 // RegisterInterfaces registers the module's interface types
 func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	types.RegisterInterfaces(registry)
+	stakingtypes.RegisterInterfaces(registry)
 
-	// custom register
-	types2.RegisterInterfaces(registry)
+	types.RegisterInterfaces(registry)
 }
 
 // AppModule embeds the Cosmos SDK's x/distribution AppModule where we only override specific methods.
@@ -48,7 +47,7 @@ type AppModule struct {
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper, bk types.BankKeeper) AppModule {
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak stakingtypes.AccountKeeper, bk stakingtypes.BankKeeper) AppModule {
 	return AppModule{
 		AppModule: staking.NewAppModule(cdc, keeper.Keeper, ak, bk),
 		keeper:    keeper,
@@ -61,7 +60,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
-	var genesisState types.GenesisState
+	var genesisState stakingtypes.GenesisState
 	cdc.MustUnmarshalJSON(data, &genesisState)
 	_ = am.keeper.InitGenesis(ctx, &genesisState)
 	return []abci.ValidatorUpdate{}
@@ -71,5 +70,5 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	am.AppModule.RegisterServices(cfg)
 
-	types2.RegisterMsgServer(cfg.MsgServer(), am.keeper)
+	types.RegisterMsgServer(cfg.MsgServer(), am.keeper)
 }

@@ -514,7 +514,7 @@ func NewRollapp(
 		app.IBCKeeper.ChannelKeeper,
 	)
 
-	// The IBC tranfer submit is wrapped with:
+	// The IBC transfer submit is wrapped with:
 	var ics4Wrapper ibcporttypes.ICS4Wrapper
 	// - denom metadata middleware
 	ics4Wrapper = denommetadata.NewICS4Wrapper(

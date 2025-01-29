@@ -35,11 +35,11 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	proposerMultiplier := k.GetBaseProposerReward(ctx)
 	proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
 
-	// FIXME: wrap in cache context
 	addr, found := k.seqKeeper.GetRewardAddrByConsAddr(ctx, blockProposer)
 	if !found {
 		logger.Error("Find the validator for this block. Reward not allocated.", "addr", blockProposer)
 	} else {
+		// TODO: wrap in cache context
 		err := k.AllocateTokensToProposer(ctx, addr, proposerReward)
 		if err == nil {
 			remainingFees = feesCollected.Sub(proposerReward)
@@ -63,7 +63,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 		k.AllocateTokensToValidator(ctx, validator, reward)
 		return false
 	})
-	remainingFees = feesCollected.Sub(membersRewards)
+	remainingFees = remainingFees.Sub(membersRewards)
 
 	/* ------------------------- fund the community pool ------------------------ */
 	feePool.CommunityPool = feePool.CommunityPool.Add(remainingFees...)

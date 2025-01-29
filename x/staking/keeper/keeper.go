@@ -52,15 +52,6 @@ func (k *Keeper) SetHooks(sh types.StakingHooks) *Keeper {
 	return k
 }
 
-func MustValAddressFromBech32(addr string) sdk.ValAddress {
-	valAddr, err := sdk.ValAddressFromBech32(addr)
-	if err != nil {
-		panic(err)
-	}
-
-	return valAddr
-}
-
 // BlockValidatorUpdates calculates the ValidatorUpdates for the current block
 // Called in each EndBlock
 // It was copied from the staking module, and modified to add erc20 conversion after unbonding
@@ -77,7 +68,7 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) {
 	// Remove all mature unbonding delegations from the ubd queue.
 	matureUnbonds := k.DequeueAllMatureUBDQueue(ctx, ctx.BlockHeader().Time)
 	for _, dvPair := range matureUnbonds {
-		addr := MustValAddressFromBech32(dvPair.ValidatorAddress)
+		addr := mustValAddressFromBech32(dvPair.ValidatorAddress)
 		delegatorAddress := sdk.MustAccAddressFromBech32(dvPair.DelegatorAddress)
 
 		balances, err := k.CompleteUnbonding(ctx, delegatorAddress, addr)
@@ -111,8 +102,8 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) {
 	// Remove all mature redelegations from the red queue.
 	matureRedelegations := k.DequeueAllMatureRedelegationQueue(ctx, ctx.BlockHeader().Time)
 	for _, dvvTriplet := range matureRedelegations {
-		valSrcAddr := MustValAddressFromBech32(dvvTriplet.ValidatorSrcAddress)
-		valDstAddr := MustValAddressFromBech32(dvvTriplet.ValidatorDstAddress)
+		valSrcAddr := mustValAddressFromBech32(dvvTriplet.ValidatorSrcAddress)
+		valDstAddr := mustValAddressFromBech32(dvvTriplet.ValidatorDstAddress)
 		delegatorAddress := sdk.MustAccAddressFromBech32(dvvTriplet.DelegatorAddress)
 
 		balances, err := k.CompleteRedelegation(
@@ -136,4 +127,13 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) {
 			),
 		)
 	}
+}
+
+func mustValAddressFromBech32(addr string) sdk.ValAddress {
+	valAddr, err := sdk.ValAddressFromBech32(addr)
+	if err != nil {
+		panic(err)
+	}
+
+	return valAddr
 }
