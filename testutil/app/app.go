@@ -227,6 +227,8 @@ var (
 		hubgentypes.ModuleName:         {authtypes.Minter},
 		gaslesstypes.ModuleName:        nil,
 		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
+		erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
+		feemarkettypes.ModuleName:      nil,
 		wasmtypes.ModuleName:           {authtypes.Burner},
 		rollappparamstypes.ModuleName:  nil,
 		tokenfactorytypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
@@ -389,7 +391,7 @@ func NewRollapp(
 		keys[stakingtypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
-		app.Erc20Keeper,
+		&app.Erc20Keeper,
 		app.GetSubspace(stakingtypes.ModuleName),
 	)
 
@@ -416,7 +418,8 @@ func NewRollapp(
 		app.BankKeeper,
 		&stakingKeeper,
 		&app.SequencersKeeper,
-		app.Erc20Keeper,
+		// nil, // erc20Keeper set later
+		&app.Erc20Keeper,
 		authtypes.FeeCollectorName,
 	)
 
@@ -484,6 +487,11 @@ func NewRollapp(
 		govtypes.NewMultiGovHooks(
 		// register the governance hooks
 		),
+	)
+
+	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
+		appCodec, authtypes.NewModuleAddress(govtypes.ModuleName), keys[feemarkettypes.StoreKey], tkeys[feemarkettypes.TransientKey],
+		app.GetSubspace(feemarkettypes.ModuleName),
 	)
 
 	app.EvmKeeper = evmkeeper.NewKeeper(
@@ -1050,6 +1058,10 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
 	paramsKeeper.Subspace(rollappparamstypes.ModuleName)
+
+	paramsKeeper.Subspace(feemarkettypes.ModuleName)
+	paramsKeeper.Subspace(erc20types.ModuleName)
+	paramsKeeper.Subspace(evmtypes.ModuleName)
 
 	return paramsKeeper
 }
