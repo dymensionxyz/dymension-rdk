@@ -11,7 +11,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -22,7 +21,7 @@ import (
 )
 
 var (
-	PKS = simapp.CreateTestPubKeys(5)
+	PKS = utils.CreateTestPubKeys(5)
 
 	valConsPk1 = PKS[0]
 	valConsPk2 = PKS[1]
@@ -64,7 +63,7 @@ func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
 
 func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
 	addrs := utils.AddTestAddrs(app, ctx, 2, sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction))
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
+	valAddrs := utils.ConvertAddrsToValAddrs(addrs)
 	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
 	// create validator with 6 power and 50% commission
@@ -269,7 +268,7 @@ func TestAllocateTokensTruncation(t *testing.T) {
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
+	valAddrs := utils.ConvertAddrsToValAddrs(addrs)
 	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
 	// create validator with 10% commission
@@ -343,7 +342,7 @@ func TestAllocateTokensToValidatorWithCommission(t *testing.T) {
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
+	valAddrs := utils.ConvertAddrsToValAddrs(addrs)
 	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
 	// create validator with 50% commission

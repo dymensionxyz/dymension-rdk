@@ -38,7 +38,7 @@ func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper,
 }
 
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	_ = staking.EndBlocker(ctx, am.keeper.Keeper)
+	am.keeper.BlockValidatorUpdates(ctx)
 	return []abci.ValidatorUpdate{}
 }
 
