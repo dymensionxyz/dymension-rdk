@@ -42,7 +42,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 		// TODO: wrap in cache context
 		err := k.AllocateTokensToProposer(ctx, addr, proposerReward)
 		if err == nil {
-			remainingFees = feesCollected.Sub(proposerReward)
+			remainingFees = remainingFees.Sub(proposerReward)
 		} else {
 			// in case of error, the fees will go to the community pool
 			logger.Error("Failed to allocate proposer reward", "err", err)
@@ -61,9 +61,9 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 
 		reward := membersRewards.MulDecTruncate(powerFraction)
 		k.AllocateTokensToValidator(ctx, validator, reward)
+		remainingFees = remainingFees.Sub(reward)
 		return false
 	})
-	remainingFees = remainingFees.Sub(membersRewards)
 
 	/* ------------------------- fund the community pool ------------------------ */
 	feePool.CommunityPool = feePool.CommunityPool.Add(remainingFees...)
