@@ -105,7 +105,7 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 	fundModules(t, ctx, app)
 
 	// end block to bond validator and start new block
-	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
+	app.StakingKeeper.BlockValidatorUpdates(ctx)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// allocate tokens as if both had voted and second was proposer
@@ -203,7 +203,7 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 	fundModules(t, ctx, app)
 
 	// end block to bond validator and start new block
-	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
+	app.StakingKeeper.BlockValidatorUpdates(ctx)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	proposerReward := 0.4

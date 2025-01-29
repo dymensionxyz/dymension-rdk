@@ -8,6 +8,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/codec"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -22,6 +23,22 @@ var (
 
 type AppModuleBasic struct {
 	staking.AppModuleBasic
+}
+
+// RegisterLegacyAminoCodec registers the staking module's types on the given LegacyAmino codec.
+func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
+	types.RegisterLegacyAminoCodec(cdc)
+
+	types2.RegisterLegacyAminoCodec(cdc)
+
+}
+
+// RegisterInterfaces registers the module's interface types
+func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
+
+	// custom register
+	types2.RegisterInterfaces(registry)
 }
 
 // AppModule embeds the Cosmos SDK's x/distribution AppModule where we only override specific methods.

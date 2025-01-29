@@ -2,6 +2,7 @@ syntax = "proto3";
 package rollapp.staking;
 
 import "cosmos/msg/v1/msg.proto";
+import "gogoproto/gogo.proto";
 import "google/protobuf/any.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/staking/v1beta1/tx.proto";
@@ -10,33 +11,24 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/staking/types";
 
 service Msg {
   // CreateValidator defines a method for creating a new validator.
-  rpc CreateValidatorERC20(MsgCreateValidator) returns (MsgCreateValidatorResponse);
+  rpc CreateValidatorERC20(MsgCreateValidatorERC20) returns (cosmos.staking.v1beta1.MsgCreateValidatorResponse);
 
   // Delegate defines a method for performing a delegation of coins
   // from a delegator to a validator.
-  rpc DelegateERC20(MsgDelegate) returns (MsgDelegateResponse);
+  rpc DelegateERC20(MsgDelegateERC20) returns (cosmos.staking.v1beta1.MsgDelegateResponse);
 
 
 
 }
 
-// MsgCreateValidator defines a SDK message for creating a new validator.
-message MsgCreateValidator {
-  cosmos.staking.v1beta1.MsgCreateValidator value = 1;
+// MsgCreateValidatorERC20 defines a SDK message for creating a new validator.
+message MsgCreateValidatorERC20 {
+  cosmos.staking.v1beta1.MsgCreateValidator value = 1 [(gogoproto.nullable) = false];
 }
 
-// MsgCreateValidatorResponse defines the Msg/CreateValidator response type.
-message MsgCreateValidatorResponse {
-  cosmos.staking.v1beta1.MsgCreateValidatorResponse value = 1;
-}
 
-// MsgDelegate defines a SDK message for performing a delegation of coins
+// MsgDelegateERC20 defines a SDK message for performing a delegation of coins
 // from a delegator to a validator.
-message MsgDelegate {
-  cosmos.staking.v1beta1.MsgDelegate value = 1;
-}
-
-// MsgDelegateResponse defines the Msg/Delegate response type.
-message MsgDelegateResponse {
-  cosmos.staking.v1beta1.MsgDelegateResponse value = 1;
+message MsgDelegateERC20 {
+  cosmos.staking.v1beta1.MsgDelegate value = 1 [(gogoproto.nullable) = false];
 }
