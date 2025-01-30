@@ -418,7 +418,6 @@ func NewRollapp(
 		app.BankKeeper,
 		&stakingKeeper,
 		&app.SequencersKeeper,
-		// nil, // erc20Keeper set later
 		&app.Erc20Keeper,
 		authtypes.FeeCollectorName,
 	)
