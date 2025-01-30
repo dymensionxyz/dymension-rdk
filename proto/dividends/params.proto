@@ -1,0 +1,16 @@
+syntax = "proto3";
+package rollapp.dividends;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/dividends/types";
+
+// Params holds parameters for the incentives module
+message Params {
+  // distr_epoch_identifier is what epoch type distribution will be triggered by
+  // (day, week, etc.)
+  string distr_epoch_identifier = 1;
+  // approved_denoms is a list of allowed tokens: only gov can approve tokens
+  // that can be used for dividends
+  repeated string approved_denoms = 2;
+}

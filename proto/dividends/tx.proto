@@ -1,0 +1,27 @@
+syntax = "proto3";
+package rollapp.dividends;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/timestamp.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "dividends/gauge.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/dividends/types";
+
+service Msg {
+  rpc CreateGauge(MsgCreateGauge) returns (MsgCreateGaugeResponse);
+}
+
+// MsgCreateGauge creates a gague to distribute rewards to users
+message MsgCreateGauge {
+  // id is the unique ID of a gauge
+  uint64 id = 1;
+  // address is a bech32-formatted address that holds the tokens to allocate
+  string address = 2;
+  // query_condition is *where* the gauge rewards are distributed to
+  QueryCondition query_condition = 3;
+  // vesting_condition is *when* the gauge rewards are distributed to
+  VestingCondition vesting_condition = 4;
+}
+
+message MsgCreateGaugeResponse {}

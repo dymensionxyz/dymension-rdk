@@ -1,0 +1,66 @@
+syntax = "proto3";
+package rollapp.dividends;
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/dymensionxyz/dymension-rdk/x/dividends/types";
+
+// Gauge is an object that stores and distributes yields to recipients who
+// satisfy certain conditions.
+message Gauge {
+  // id is the unique ID of a gauge
+  uint64 id = 1;
+  // address is a bech32-formatted address that holds the tokens to allocate
+  string address = 2;
+  // query_condition is *where* the gauge rewards are distributed to
+  QueryCondition query_condition = 3;
+  // vesting_condition is *when* the gauge rewards are distributed to
+  VestingCondition vesting_condition = 4;
+}
+
+message QueryCondition {
+  oneof condition {
+    QueryConditionStakers stakers = 1;
+    QueryConditionFunds funds = 2;
+  }
+}
+
+message VestingCondition {
+  oneof condition {
+    VestingConditionImmediate immediate = 1;
+    VestingConditionEpoch epoch = 2;
+  }
+}
+
+// QueryConditionStakers queries the stakers
+message QueryConditionStakers {}
+
+// QueryConditionFunds queries the users with funds above a certain threshold
+message QueryConditionFunds {
+  repeated cosmos.base.v1beta1.Coin threshold = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+// VestingConditionImmediate is a vesting condition that distributes rewards
+// immediately. This gauge is perpetual by default.
+// Non-perpetual gauges distribute their tokens equally per epoch while the
+// gauge is in the active period. Perpetual gauges distribute all their tokens
+// at a single time and only distribute their tokens again once the gauge is
+// refilled, Intended for use with incentives that get refilled daily.
+message VestingConditionImmediate {}
+
+// VestingConditionEpoch is a vesting condition that distributes rewards over
+// epochs
+message VestingConditionEpoch {
+  // num_epochs_paid_over is the number of total epochs distribution will be
+  // completed over
+  uint64 num_epochs_paid_over = 1;
+  // filled_epochs is the number of epochs distribution has been completed on
+  // already
+  uint64 filled_epochs = 2;
+}
