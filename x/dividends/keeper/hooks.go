@@ -1,37 +1,18 @@
 package keeper
 
 import (
-	epochstypes "github.com/osmosis-labs/osmosis/v15/x/epochs/types"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	epochstypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 )
 
-// BeforeEpochStart is the epoch start hook.
-func (k Keeper) BeforeEpochStart(ctx sdk.Context, epochIdentifier string, epochNumber int64) error {
+func (k Keeper) BeforeEpochStart(sdk.Context, epochstypes.EpochInfo) error {
 	return nil
 }
 
-// AfterEpochEnd is the epoch end hook.
-func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, epochNumber int64) error {
-	params := k.GetParams(ctx)
-	if epochIdentifier == params.DistrEpochIdentifier {
-		// begin distribution if it's start time
-		gauges := k.GetUpcomingGauges(ctx)
-		for _, gauge := range gauges {
-			if !ctx.BlockTime().Before(gauge.StartTime) {
-				if err := k.moveUpcomingGaugeToActiveGauge(ctx, gauge); err != nil {
-					return err
-				}
-			}
-		}
-
-		// if len(gauges) > 10 {
-		// 	ctx.EventManager().IncreaseCapacity(2e6)
-		// }
-
-		// distribute due to epoch event
-		gauges = k.GetActiveGauges(ctx)
-		_, err := k.DistributeOnEpochEnd(ctx, gauges)
+func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochId epochstypes.EpochInfo) error {
+	params := k.MustGetParams(ctx)
+	if epochId.Identifier == params.DistrEpochIdentifier {
+		err := k.Allocate(ctx)
 		if err != nil {
 			return err
 		}
@@ -39,11 +20,8 @@ func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, epochNumb
 	return nil
 }
 
-// ___________________________________________________________________________________________________
-
-// Hooks is the wrapper struct for the incentives keeper.
 type Hooks struct {
-	k Keeper
+	keeper Keeper
 }
 
 var _ epochstypes.EpochHooks = Hooks{}
@@ -53,12 +31,16 @@ func (k Keeper) Hooks() Hooks {
 	return Hooks{k}
 }
 
-// BeforeEpochStart is the epoch start hook.
-func (h Hooks) BeforeEpochStart(ctx sdk.Context, epochIdentifier string, epochNumber int64) error {
-	return h.k.BeforeEpochStart(ctx, epochIdentifier, epochNumber)
+func (h Hooks) BeforeEpochStart(ctx sdk.Context, epochId epochstypes.EpochInfo) {
+	err := h.keeper.BeforeEpochStart(ctx, epochId)
+	if err != nil {
+		h.keeper.Logger(ctx).Error("Error in BeforeEpochStart", "error", err)
+	}
 }
 
-// AfterEpochEnd is the epoch end hook.
-func (h Hooks) AfterEpochEnd(ctx sdk.Context, epochIdentifier string, epochNumber int64) error {
-	return h.k.AfterEpochEnd(ctx, epochIdentifier, epochNumber)
+func (h Hooks) AfterEpochEnd(ctx sdk.Context, epochId epochstypes.EpochInfo) {
+	err := h.keeper.AfterEpochEnd(ctx, epochId)
+	if err != nil {
+		h.keeper.Logger(ctx).Error("Error in AfterEpochEnd", "error", err)
+	}
 }

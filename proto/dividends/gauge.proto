@@ -17,50 +17,52 @@ message Gauge {
   string address = 2;
   // query_condition is *where* the gauge rewards are distributed to
   QueryCondition query_condition = 3;
-  // vesting_condition is *when* the gauge rewards are distributed to
+  // vesting_condition is *how long* the gauge rewards are distributed to
   VestingCondition vesting_condition = 4;
+  // vesting_condition is *how frequent* the gauge rewards are distributed to
+  VestingFrequency vesting_frequency = 5;
 }
 
 message QueryCondition {
   oneof condition {
     QueryConditionStakers stakers = 1;
-    QueryConditionFunds funds = 2;
   }
 }
 
 message VestingCondition {
   oneof condition {
-    VestingConditionImmediate immediate = 1;
-    VestingConditionEpoch epoch = 2;
+    VestingConditionPerpetual perpetual = 1;
+    VestingConditionLimited epoch = 2;
   }
+}
+
+enum VestingFrequency {
+  VESTING_FREQUENCY_UNSPECIFIED = 0;
+  VESTING_FREQUENCY_BLOCK = 1;
+  VESTING_FREQUENCY_EPOCH = 2;
 }
 
 // QueryConditionStakers queries the stakers
 message QueryConditionStakers {}
 
-// QueryConditionFunds queries the users with funds above a certain threshold
-message QueryConditionFunds {
-  repeated cosmos.base.v1beta1.Coin threshold = 8 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-}
-
-// VestingConditionImmediate is a vesting condition that distributes rewards
-// immediately. This gauge is perpetual by default.
-// Non-perpetual gauges distribute their tokens equally per epoch while the
+// VestingConditionPerpetual is a vesting condition that distributes rewards
+// infinitely. Perpetual gauges distribute all their tokens at a single time
+// and only distribute their tokens again once the gauge is refilled.
+//
+// Non-perpetual gauges distribute their tokens equally per period while the
 // gauge is in the active period. Perpetual gauges distribute all their tokens
 // at a single time and only distribute their tokens again once the gauge is
-// refilled, Intended for use with incentives that get refilled daily.
-message VestingConditionImmediate {}
+// refilled.
+message VestingConditionPerpetual {}
 
-// VestingConditionEpoch is a vesting condition that distributes rewards over
-// epochs
-message VestingConditionEpoch {
-  // num_epochs_paid_over is the number of total epochs distribution will be
+// VestingConditionLimited is a vesting condition that distributes rewards over
+// the specified time. Non-perpetual gauges distribute their tokens equally per
+// period while the gauge is in the active period.
+message VestingConditionLimited {
+  // num_units is the number of total epochs/blocks distribution will be
   // completed over
-  uint64 num_epochs_paid_over = 1;
-  // filled_epochs is the number of epochs distribution has been completed on
-  // already
-  uint64 filled_epochs = 2;
+  uint64 num_units = 1;
+  // filled_epochs is the number of epochs/blocks distribution has been
+  // completed on already
+  uint64 filled_units = 2;
 }

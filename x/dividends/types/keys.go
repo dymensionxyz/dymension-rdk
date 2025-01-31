@@ -1,6 +1,8 @@
 package types
 
-var (
+import "cosmossdk.io/collections"
+
+const (
 	// ModuleName defines the module name.
 	ModuleName = "dividends"
 
@@ -9,13 +11,16 @@ var (
 
 	// RouterKey is the message route for slashing.
 	RouterKey = ModuleName
+)
 
-	// QuerierRoute defines the module's query routing key.
-	QuerierRoute = ModuleName
+const (
+	ParamsByte    = iota // Module params: Params
+	LastGaugeByte        // GaugeID sequence
+	GaugesByte           // Gauges: GaugeID -> Gauge
+)
 
-	// KeyLastGaugeID defines key for setting last gauge ID.
-	KeyLastGaugeID = []byte{0x01}
-
-	// KeyPrefixGauges defines prefix key for storing reference key for all gauges.
-	KeyPrefixGauges = []byte{0x02}
+var (
+	ParamsKey    = collections.NewPrefix(ParamsByte)
+	LastGaugeKey = collections.NewPrefix(LastGaugeByte)
+	GaugesKey    = collections.NewPrefix(GaugesByte)
 )

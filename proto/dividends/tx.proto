@@ -20,8 +20,10 @@ message MsgCreateGauge {
   string address = 2;
   // query_condition is *where* the gauge rewards are distributed to
   QueryCondition query_condition = 3;
-  // vesting_condition is *when* the gauge rewards are distributed to
+  // vesting_condition is *how long* the gauge rewards are distributed to
   VestingCondition vesting_condition = 4;
+  // vesting_condition is *how frequent* the gauge rewards are distributed to
+  VestingFrequency vesting_frequency = 5;
 }
 
 message MsgCreateGaugeResponse {}
