@@ -99,10 +99,14 @@ func blockDRSVersion(any) error {
 	return fmt.Errorf("drs version is not allowed to be set: %w", gerrc.ErrInvalidArgument)
 }
 
+func blockDa(any) error {
+	return fmt.Errorf("da type is not allowed to be modified: %w", gerrc.ErrInvalidArgument)
+}
+
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
-		paramtypes.NewParamSetPair(KeyDa, &p.Da, ValidateDa),
+		paramtypes.NewParamSetPair(KeyDa, &p.Da, blockDa),
 		paramtypes.NewParamSetPair(KeyVersion, &p.DrsVersion, blockDRSVersion),
 		paramtypes.NewParamSetPair(KeyMinGasPrices, &p.MinGasPrices, ValidateMinGasPrices),
 	}
