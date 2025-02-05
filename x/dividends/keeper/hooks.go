@@ -2,6 +2,7 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/dymensionxyz/dymension-rdk/x/dividends/types"
 	epochstypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 )
 
@@ -12,7 +13,7 @@ func (k Keeper) BeforeEpochStart(sdk.Context, epochstypes.EpochInfo) error {
 func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochId epochstypes.EpochInfo) error {
 	params := k.MustGetParams(ctx)
 	if epochId.Identifier == params.DistrEpochIdentifier {
-		err := k.Allocate(ctx)
+		err := k.Allocate(ctx, types.VestingFrequency_VESTING_FREQUENCY_EPOCH)
 		if err != nil {
 			return err
 		}

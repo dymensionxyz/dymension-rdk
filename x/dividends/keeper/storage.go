@@ -9,6 +9,10 @@ func (k Keeper) NextGaugeId(ctx sdk.Context) (uint64, error) {
 	return k.lastGaugeID.Next(ctx)
 }
 
+func (k Keeper) SetLastGaugeId(ctx sdk.Context, id uint64) error {
+	return k.lastGaugeID.Set(ctx, id)
+}
+
 func (k Keeper) GetAllGauges(ctx sdk.Context) ([]types.Gauge, error) {
 	i, err := k.gauges.Iterate(ctx, nil)
 	if err != nil {

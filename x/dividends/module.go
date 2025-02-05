@@ -161,11 +161,20 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.Ra
 
 // ExportGenesis returns the module's exported genesis state as raw JSON bytes.
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(am.keeper.ExportGenesis(ctx))
+	genState, err := am.keeper.ExportGenesis(ctx)
+	if err != nil {
+		panic(fmt.Errorf("x/dividends: export genesis: %w", err))
+	}
+	return cdc.MustMarshalJSON(genState)
 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the module.
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+	err := am.keeper.BeginBlock(ctx)
+	if err != nil {
+		panic(fmt.Errorf("x/dividends: begin block: %w", err))
+	}
+}
 
 // EndBlock executes all ABCI EndBlock logic respective to the module.
 // Returns a nil validatorUpdate struct array.
