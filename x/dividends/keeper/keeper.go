@@ -21,6 +21,7 @@ type Keeper struct {
 	gauges      collections.Map[uint64, types.Gauge] // GaugeID -> Gauge
 
 	stakingKeeper types.StakingKeeper
+	accountKeeper types.AccountKeeper
 	distrKeeper   types.DistributionKeeper
 	bankKeeper    types.BankKeeper
 }
@@ -29,13 +30,14 @@ func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
 	stakingKeeper types.StakingKeeper,
+	accountKeeper types.AccountKeeper,
 	distrKeeper types.DistributionKeeper,
 	bankKeeper types.BankKeeper,
 	authority string,
-) *Keeper {
+) Keeper {
 	sb := collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey))
 
-	k := &Keeper{
+	k := Keeper{
 		authority: authority,
 		schema:    collections.Schema{}, // set later
 		params: collections.NewItem(
@@ -57,6 +59,7 @@ func NewKeeper(
 			collcompat.ProtoValue[types.Gauge](cdc),
 		),
 		stakingKeeper: stakingKeeper,
+		accountKeeper: accountKeeper,
 		distrKeeper:   distrKeeper,
 		bankKeeper:    bankKeeper,
 	}

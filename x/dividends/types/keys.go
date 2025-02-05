@@ -3,14 +3,17 @@ package types
 import "cosmossdk.io/collections"
 
 const (
-	// ModuleName defines the module name.
+	// ModuleName defines the module name
 	ModuleName = "dividends"
 
-	// StoreKey defines the primary module store key.
+	// StoreKey defines the primary module store key
 	StoreKey = ModuleName
 
-	// RouterKey is the message route for slashing.
+	// RouterKey is the message route for slashing
 	RouterKey = ModuleName
+
+	// QuerierRoute defines the module's query routing key
+	QuerierRoute = ModuleName
 )
 
 const (

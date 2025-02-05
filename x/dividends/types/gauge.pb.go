@@ -5,10 +5,8 @@ package types
 
 import (
 	fmt "fmt"
-	_ "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
-	_ "github.com/gogo/protobuf/types"
 	io "io"
 	math "math"
 	math_bits "math/bits"
@@ -53,6 +51,63 @@ func (VestingFrequency) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_904d8195b7413b1f, []int{0}
 }
 
+// Params holds parameters for the incentives module
+type Params struct {
+	// distr_epoch_identifier is what epoch type distribution will be triggered by
+	// (day, week, etc.)
+	DistrEpochIdentifier string `protobuf:"bytes,1,opt,name=distr_epoch_identifier,json=distrEpochIdentifier,proto3" json:"distr_epoch_identifier,omitempty"`
+	// approved_denoms is a list of allowed tokens: only gov can approve tokens
+	// that can be used for dividends
+	ApprovedDenoms []string `protobuf:"bytes,2,rep,name=approved_denoms,json=approvedDenoms,proto3" json:"approved_denoms,omitempty"`
+}
+
+func (m *Params) Reset()         { *m = Params{} }
+func (m *Params) String() string { return proto.CompactTextString(m) }
+func (*Params) ProtoMessage()    {}
+func (*Params) Descriptor() ([]byte, []int) {
+	return fileDescriptor_904d8195b7413b1f, []int{0}
+}
+func (m *Params) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *Params) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_Params.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *Params) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Params.Merge(m, src)
+}
+func (m *Params) XXX_Size() int {
+	return m.Size()
+}
+func (m *Params) XXX_DiscardUnknown() {
+	xxx_messageInfo_Params.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Params proto.InternalMessageInfo
+
+func (m *Params) GetDistrEpochIdentifier() string {
+	if m != nil {
+		return m.DistrEpochIdentifier
+	}
+	return ""
+}
+
+func (m *Params) GetApprovedDenoms() []string {
+	if m != nil {
+		return m.ApprovedDenoms
+	}
+	return nil
+}
+
 // Gauge is an object that stores and distributes yields to recipients who
 // satisfy certain conditions.
 type Gauge struct {
@@ -61,9 +116,9 @@ type Gauge struct {
 	// address is a bech32-formatted address that holds the tokens to allocate
 	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
 	// query_condition is *where* the gauge rewards are distributed to
-	QueryCondition *QueryCondition `protobuf:"bytes,3,opt,name=query_condition,json=queryCondition,proto3" json:"query_condition,omitempty"`
+	QueryCondition QueryCondition `protobuf:"bytes,3,opt,name=query_condition,json=queryCondition,proto3" json:"query_condition"`
 	// vesting_condition is *how long* the gauge rewards are distributed to
-	VestingCondition *VestingCondition `protobuf:"bytes,4,opt,name=vesting_condition,json=vestingCondition,proto3" json:"vesting_condition,omitempty"`
+	VestingCondition VestingCondition `protobuf:"bytes,4,opt,name=vesting_condition,json=vestingCondition,proto3" json:"vesting_condition"`
 	// vesting_condition is *how frequent* the gauge rewards are distributed to
 	VestingFrequency VestingFrequency `protobuf:"varint,5,opt,name=vesting_frequency,json=vestingFrequency,proto3,enum=rollapp.dividends.VestingFrequency" json:"vesting_frequency,omitempty"`
 }
@@ -72,7 +127,7 @@ func (m *Gauge) Reset()         { *m = Gauge{} }
 func (m *Gauge) String() string { return proto.CompactTextString(m) }
 func (*Gauge) ProtoMessage()    {}
 func (*Gauge) Descriptor() ([]byte, []int) {
-	return fileDescriptor_904d8195b7413b1f, []int{0}
+	return fileDescriptor_904d8195b7413b1f, []int{1}
 }
 func (m *Gauge) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -115,18 +170,18 @@ func (m *Gauge) GetAddress() string {
 	return ""
 }
 
-func (m *Gauge) GetQueryCondition() *QueryCondition {
+func (m *Gauge) GetQueryCondition() QueryCondition {
 	if m != nil {
 		return m.QueryCondition
 	}
-	return nil
+	return QueryCondition{}
 }
 
-func (m *Gauge) GetVestingCondition() *VestingCondition {
+func (m *Gauge) GetVestingCondition() VestingCondition {
 	if m != nil {
 		return m.VestingCondition
 	}
-	return nil
+	return VestingCondition{}
 }
 
 func (m *Gauge) GetVestingFrequency() VestingFrequency {
@@ -146,7 +201,7 @@ func (m *QueryCondition) Reset()         { *m = QueryCondition{} }
 func (m *QueryCondition) String() string { return proto.CompactTextString(m) }
 func (*QueryCondition) ProtoMessage()    {}
 func (*QueryCondition) Descriptor() ([]byte, []int) {
-	return fileDescriptor_904d8195b7413b1f, []int{1}
+	return fileDescriptor_904d8195b7413b1f, []int{2}
 }
 func (m *QueryCondition) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -211,7 +266,7 @@ func (*QueryCondition) XXX_OneofWrappers() []interface{} {
 type VestingCondition struct {
 	// Types that are valid to be assigned to Condition:
 	//	*VestingCondition_Perpetual
-	//	*VestingCondition_Epoch
+	//	*VestingCondition_Limited
 	Condition isVestingCondition_Condition `protobuf_oneof:"condition"`
 }
 
@@ -219,7 +274,7 @@ func (m *VestingCondition) Reset()         { *m = VestingCondition{} }
 func (m *VestingCondition) String() string { return proto.CompactTextString(m) }
 func (*VestingCondition) ProtoMessage()    {}
 func (*VestingCondition) Descriptor() ([]byte, []int) {
-	return fileDescriptor_904d8195b7413b1f, []int{2}
+	return fileDescriptor_904d8195b7413b1f, []int{3}
 }
 func (m *VestingCondition) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -257,12 +312,12 @@ type isVestingCondition_Condition interface {
 type VestingCondition_Perpetual struct {
 	Perpetual *VestingConditionPerpetual `protobuf:"bytes,1,opt,name=perpetual,proto3,oneof" json:"perpetual,omitempty"`
 }
-type VestingCondition_Epoch struct {
-	Epoch *VestingConditionLimited `protobuf:"bytes,2,opt,name=epoch,proto3,oneof" json:"epoch,omitempty"`
+type VestingCondition_Limited struct {
+	Limited *VestingConditionLimited `protobuf:"bytes,2,opt,name=limited,proto3,oneof" json:"limited,omitempty"`
 }
 
 func (*VestingCondition_Perpetual) isVestingCondition_Condition() {}
-func (*VestingCondition_Epoch) isVestingCondition_Condition()     {}
+func (*VestingCondition_Limited) isVestingCondition_Condition()   {}
 
 func (m *VestingCondition) GetCondition() isVestingCondition_Condition {
 	if m != nil {
@@ -278,9 +333,9 @@ func (m *VestingCondition) GetPerpetual() *VestingConditionPerpetual {
 	return nil
 }
 
-func (m *VestingCondition) GetEpoch() *VestingConditionLimited {
-	if x, ok := m.GetCondition().(*VestingCondition_Epoch); ok {
-		return x.Epoch
+func (m *VestingCondition) GetLimited() *VestingConditionLimited {
+	if x, ok := m.GetCondition().(*VestingCondition_Limited); ok {
+		return x.Limited
 	}
 	return nil
 }
@@ -289,7 +344,7 @@ func (m *VestingCondition) GetEpoch() *VestingConditionLimited {
 func (*VestingCondition) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
 		(*VestingCondition_Perpetual)(nil),
-		(*VestingCondition_Epoch)(nil),
+		(*VestingCondition_Limited)(nil),
 	}
 }
 
@@ -301,7 +356,7 @@ func (m *QueryConditionStakers) Reset()         { *m = QueryConditionStakers{} }
 func (m *QueryConditionStakers) String() string { return proto.CompactTextString(m) }
 func (*QueryConditionStakers) ProtoMessage()    {}
 func (*QueryConditionStakers) Descriptor() ([]byte, []int) {
-	return fileDescriptor_904d8195b7413b1f, []int{3}
+	return fileDescriptor_904d8195b7413b1f, []int{4}
 }
 func (m *QueryConditionStakers) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -345,7 +400,7 @@ func (m *VestingConditionPerpetual) Reset()         { *m = VestingConditionPerpe
 func (m *VestingConditionPerpetual) String() string { return proto.CompactTextString(m) }
 func (*VestingConditionPerpetual) ProtoMessage()    {}
 func (*VestingConditionPerpetual) Descriptor() ([]byte, []int) {
-	return fileDescriptor_904d8195b7413b1f, []int{4}
+	return fileDescriptor_904d8195b7413b1f, []int{5}
 }
 func (m *VestingConditionPerpetual) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -380,17 +435,17 @@ var xxx_messageInfo_VestingConditionPerpetual proto.InternalMessageInfo
 type VestingConditionLimited struct {
 	// num_units is the number of total epochs/blocks distribution will be
 	// completed over
-	NumUnits uint64 `protobuf:"varint,1,opt,name=num_units,json=numUnits,proto3" json:"num_units,omitempty"`
+	NumUnits int64 `protobuf:"varint,1,opt,name=num_units,json=numUnits,proto3" json:"num_units,omitempty"`
 	// filled_epochs is the number of epochs/blocks distribution has been
 	// completed on already
-	FilledUnits uint64 `protobuf:"varint,2,opt,name=filled_units,json=filledUnits,proto3" json:"filled_units,omitempty"`
+	FilledUnits int64 `protobuf:"varint,2,opt,name=filled_units,json=filledUnits,proto3" json:"filled_units,omitempty"`
 }
 
 func (m *VestingConditionLimited) Reset()         { *m = VestingConditionLimited{} }
 func (m *VestingConditionLimited) String() string { return proto.CompactTextString(m) }
 func (*VestingConditionLimited) ProtoMessage()    {}
 func (*VestingConditionLimited) Descriptor() ([]byte, []int) {
-	return fileDescriptor_904d8195b7413b1f, []int{5}
+	return fileDescriptor_904d8195b7413b1f, []int{6}
 }
 func (m *VestingConditionLimited) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -419,14 +474,14 @@ func (m *VestingConditionLimited) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VestingConditionLimited proto.InternalMessageInfo
 
-func (m *VestingConditionLimited) GetNumUnits() uint64 {
+func (m *VestingConditionLimited) GetNumUnits() int64 {
 	if m != nil {
 		return m.NumUnits
 	}
 	return 0
 }
 
-func (m *VestingConditionLimited) GetFilledUnits() uint64 {
+func (m *VestingConditionLimited) GetFilledUnits() int64 {
 	if m != nil {
 		return m.FilledUnits
 	}
@@ -435,6 +490,7 @@ func (m *VestingConditionLimited) GetFilledUnits() uint64 {
 
 func init() {
 	proto.RegisterEnum("rollapp.dividends.VestingFrequency", VestingFrequency_name, VestingFrequency_value)
+	proto.RegisterType((*Params)(nil), "rollapp.dividends.Params")
 	proto.RegisterType((*Gauge)(nil), "rollapp.dividends.Gauge")
 	proto.RegisterType((*QueryCondition)(nil), "rollapp.dividends.QueryCondition")
 	proto.RegisterType((*VestingCondition)(nil), "rollapp.dividends.VestingCondition")
@@ -446,42 +502,82 @@ func init() {
 func init() { proto.RegisterFile("dividends/gauge.proto", fileDescriptor_904d8195b7413b1f) }
 
 var fileDescriptor_904d8195b7413b1f = []byte{
-	// 552 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x94, 0xc1, 0x72, 0xd2, 0x40,
-	0x18, 0xc7, 0x93, 0x58, 0xac, 0x2c, 0x0e, 0xd2, 0x1d, 0x3b, 0x60, 0x19, 0x23, 0xe0, 0x85, 0xe9,
-	0x28, 0x99, 0xe2, 0xc1, 0x3b, 0x34, 0x14, 0x94, 0xa1, 0x10, 0xa4, 0x33, 0xf5, 0xc2, 0x84, 0xec,
-	0x92, 0xee, 0x34, 0xc9, 0x86, 0xec, 0x86, 0x29, 0x3e, 0x85, 0xaf, 0xe0, 0x23, 0xf8, 0x16, 0x1e,
-	0x7b, 0xf4, 0xe8, 0xc0, 0x8b, 0x38, 0x84, 0x24, 0x14, 0x4a, 0xb5, 0xb7, 0x7c, 0xfb, 0xff, 0xef,
-	0x6f, 0xbf, 0xff, 0xb7, 0x49, 0xc0, 0x21, 0x22, 0x53, 0x82, 0xb0, 0x83, 0x98, 0x62, 0xea, 0xbe,
-	0x89, 0x2b, 0xae, 0x47, 0x39, 0x85, 0x07, 0x1e, 0xb5, 0x2c, 0xdd, 0x75, 0x2b, 0xb1, 0x7c, 0xf4,
-	0xd2, 0xa4, 0x26, 0x0d, 0x54, 0x65, 0xf9, 0xb4, 0x32, 0x1e, 0xc9, 0x26, 0xa5, 0xa6, 0x85, 0x95,
-	0xa0, 0x1a, 0xf9, 0x63, 0x05, 0xf9, 0x9e, 0xce, 0x09, 0x75, 0x42, 0xfd, 0xcd, 0xb6, 0xce, 0x89,
-	0x8d, 0x19, 0xd7, 0x6d, 0x37, 0x02, 0x18, 0x94, 0xd9, 0x94, 0x29, 0x23, 0x9d, 0x61, 0x65, 0x7a,
-	0x32, 0xc2, 0x5c, 0x3f, 0x51, 0x0c, 0x4a, 0x42, 0x40, 0xe9, 0x87, 0x04, 0x12, 0x67, 0xcb, 0xce,
-	0x60, 0x1a, 0x48, 0x04, 0xe5, 0xc4, 0x82, 0x58, 0xde, 0xd3, 0x24, 0x82, 0x60, 0x0e, 0xec, 0xeb,
-	0x08, 0x79, 0x98, 0xb1, 0x9c, 0x54, 0x10, 0xcb, 0x49, 0x2d, 0x2a, 0xe1, 0x27, 0xf0, 0x62, 0xe2,
-	0x63, 0x6f, 0x36, 0x34, 0xa8, 0x83, 0xc8, 0xb2, 0x9b, 0xdc, 0x93, 0x82, 0x58, 0x4e, 0x55, 0x8b,
-	0x95, 0x7b, 0xb9, 0x2a, 0xbd, 0xa5, 0xb3, 0x1e, 0x19, 0xb5, 0xf4, 0x64, 0xa3, 0x86, 0x5d, 0x70,
-	0x30, 0xc5, 0x8c, 0x13, 0xc7, 0xbc, 0x43, 0xdb, 0x0b, 0x68, 0x6f, 0x77, 0xd0, 0x2e, 0x56, 0xde,
-	0x35, 0x2f, 0x33, 0xdd, 0x5a, 0xb9, 0x4b, 0x1c, 0x7b, 0x78, 0xe2, 0x63, 0xc7, 0x98, 0xe5, 0x12,
-	0x05, 0xb1, 0x9c, 0xfe, 0x17, 0xb1, 0x11, 0x59, 0x63, 0x62, 0xbc, 0x52, 0x32, 0x40, 0x7a, 0x33,
-	0x05, 0x3c, 0x05, 0xfb, 0x8c, 0xeb, 0xd7, 0xd8, 0x63, 0xc1, 0xc0, 0x52, 0xd5, 0xf2, 0x7f, 0x93,
-	0xf7, 0x57, 0xfe, 0xa6, 0xa0, 0x45, 0x5b, 0x6b, 0x29, 0x90, 0x8c, 0x33, 0x97, 0x7e, 0x8a, 0x20,
-	0xb3, 0x9d, 0x0e, 0xb6, 0x41, 0xd2, 0xc5, 0x9e, 0x8b, 0xb9, 0xaf, 0x5b, 0xe1, 0x49, 0xef, 0x1e,
-	0x31, 0x95, 0x6e, 0xb4, 0xa7, 0x29, 0x68, 0x6b, 0x00, 0xac, 0x81, 0x04, 0x76, 0xa9, 0x71, 0x15,
-	0xdc, 0x67, 0xaa, 0x7a, 0xfc, 0x08, 0x52, 0x9b, 0xd8, 0x84, 0x63, 0xd4, 0x14, 0xb4, 0xd5, 0xd6,
-	0xcd, 0x9e, 0xb3, 0xe0, 0x70, 0x67, 0xc8, 0x52, 0x1e, 0xbc, 0x7a, 0xb0, 0xa7, 0xd2, 0x25, 0xc8,
-	0x3e, 0x70, 0x0c, 0xcc, 0x83, 0xa4, 0xe3, 0xdb, 0x43, 0xdf, 0x21, 0x9c, 0x85, 0xaf, 0xe2, 0x33,
-	0xc7, 0xb7, 0x07, 0xcb, 0x1a, 0x16, 0xc1, 0xf3, 0x31, 0xb1, 0x2c, 0x8c, 0x42, 0x5d, 0x0a, 0xf4,
-	0xd4, 0x6a, 0x2d, 0xb0, 0x1c, 0xd3, 0x78, 0x86, 0xf1, 0xed, 0xc1, 0x22, 0x78, 0x7d, 0xa1, 0xf6,
-	0xbf, 0xb4, 0x3a, 0x67, 0xc3, 0x86, 0xa6, 0xf6, 0x06, 0x6a, 0xa7, 0x7e, 0x39, 0x1c, 0x74, 0xfa,
-	0x5d, 0xb5, 0xde, 0x6a, 0xb4, 0xd4, 0xd3, 0x8c, 0x00, 0xf3, 0x20, 0x7b, 0xdf, 0x52, 0x6b, 0x9f,
-	0xd7, 0x3f, 0x67, 0xc4, 0xdd, 0xa2, 0xda, 0x3d, 0xaf, 0x37, 0x33, 0x52, 0xad, 0xf7, 0x6b, 0x2e,
-	0x8b, 0xb7, 0x73, 0x59, 0xfc, 0x33, 0x97, 0xc5, 0xef, 0x0b, 0x59, 0xb8, 0x5d, 0xc8, 0xc2, 0xef,
-	0x85, 0x2c, 0x7c, 0xfd, 0x68, 0x12, 0x7e, 0xe5, 0x8f, 0x2a, 0x06, 0xb5, 0x15, 0x34, 0xb3, 0xb1,
-	0xc3, 0x08, 0x75, 0x6e, 0x66, 0xdf, 0xd6, 0xc5, 0x7b, 0x0f, 0x5d, 0x2b, 0x37, 0xca, 0xfa, 0x0f,
-	0xc1, 0x67, 0x2e, 0x66, 0xa3, 0xa7, 0xc1, 0x87, 0xf9, 0xe1, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0x0d, 0x79, 0x88, 0x25, 0x3b, 0x04, 0x00, 0x00,
+	// 566 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x54, 0xdd, 0x6e, 0xd2, 0x50,
+	0x1c, 0x6f, 0xbb, 0x2f, 0x39, 0x18, 0xc6, 0x4e, 0x36, 0x87, 0x2e, 0x56, 0xa8, 0x17, 0x92, 0x45,
+	0x21, 0x41, 0x13, 0xef, 0x81, 0x32, 0x88, 0x84, 0x95, 0x22, 0x24, 0xf3, 0xa6, 0xe9, 0x38, 0x87,
+	0xee, 0x64, 0x6d, 0x4f, 0x39, 0x6d, 0xc9, 0xf0, 0x29, 0x7c, 0x11, 0x2f, 0x7d, 0x87, 0x5d, 0xee,
+	0xd2, 0x2b, 0x63, 0xe0, 0x45, 0x4c, 0x5b, 0x5a, 0x84, 0x31, 0xdd, 0x5d, 0xff, 0xbf, 0xaf, 0xff,
+	0x47, 0x93, 0x03, 0x8e, 0x10, 0x99, 0x10, 0x84, 0x6d, 0xe4, 0x96, 0x0d, 0xdd, 0x37, 0x70, 0xc9,
+	0x61, 0xd4, 0xa3, 0xf0, 0x80, 0x51, 0xd3, 0xd4, 0x1d, 0xa7, 0x94, 0xd0, 0x2f, 0x0e, 0x0d, 0x6a,
+	0xd0, 0x90, 0x2d, 0x07, 0x5f, 0x91, 0x50, 0x32, 0xc0, 0xae, 0xa2, 0x33, 0xdd, 0x72, 0xe1, 0x07,
+	0xf0, 0x0c, 0x11, 0xd7, 0x63, 0x1a, 0x76, 0xe8, 0xf0, 0x4a, 0x0b, 0x5c, 0x1e, 0x19, 0x11, 0xcc,
+	0x72, 0x7c, 0x9e, 0x2f, 0xa6, 0xd4, 0xc3, 0x90, 0x95, 0x03, 0xb2, 0x95, 0x70, 0xf0, 0x0d, 0xd8,
+	0xd7, 0x1d, 0x87, 0xd1, 0x09, 0x46, 0x1a, 0xc2, 0x36, 0xb5, 0xdc, 0x9c, 0x90, 0xdf, 0x2a, 0xa6,
+	0xd4, 0x4c, 0x0c, 0xd7, 0x43, 0x54, 0xfa, 0x2e, 0x80, 0x9d, 0xb3, 0x60, 0x42, 0x98, 0x01, 0x02,
+	0x41, 0x61, 0xe8, 0xb6, 0x2a, 0x10, 0x04, 0x73, 0x60, 0x4f, 0x47, 0x88, 0x61, 0x37, 0xb0, 0x06,
+	0x9d, 0xe2, 0x12, 0x2a, 0x60, 0x7f, 0xec, 0x63, 0x36, 0xd5, 0x86, 0xd4, 0x46, 0xc4, 0x23, 0xd4,
+	0xce, 0x6d, 0xe5, 0xf9, 0x62, 0xba, 0x52, 0x28, 0xdd, 0xdb, 0xaf, 0xd4, 0x0d, 0x94, 0xb5, 0x58,
+	0x58, 0xdd, 0xbe, 0xfd, 0xf5, 0x8a, 0x53, 0x33, 0xe3, 0x15, 0x14, 0x0e, 0xc0, 0xc1, 0x04, 0xbb,
+	0x1e, 0xb1, 0x8d, 0xbf, 0x32, 0xb7, 0xc3, 0xcc, 0xd7, 0x1b, 0x32, 0x07, 0x91, 0x76, 0x3d, 0x35,
+	0x3b, 0x59, 0xc3, 0xa1, 0xb2, 0xcc, 0x1d, 0x31, 0x3c, 0xf6, 0xb1, 0x3d, 0x9c, 0xe6, 0x76, 0xf2,
+	0x7c, 0x31, 0xf3, 0xaf, 0xdc, 0x46, 0x2c, 0x4d, 0x12, 0x13, 0x44, 0x1a, 0x82, 0xcc, 0xea, 0x46,
+	0xb0, 0x0e, 0xf6, 0x5c, 0x4f, 0xbf, 0xc6, 0xcc, 0x0d, 0x8f, 0x97, 0xae, 0x14, 0xff, 0x7b, 0x85,
+	0x5e, 0xa4, 0x6f, 0x72, 0x6a, 0x6c, 0xad, 0xa6, 0x41, 0x2a, 0xd9, 0x5c, 0xfa, 0xc1, 0x83, 0xec,
+	0xfa, 0x8e, 0xb0, 0x0d, 0x52, 0x0e, 0x66, 0x0e, 0xf6, 0x7c, 0xdd, 0x5c, 0x74, 0x7a, 0xfb, 0x88,
+	0xdb, 0x28, 0xb1, 0xa7, 0xc9, 0xa9, 0xcb, 0x00, 0xd8, 0x00, 0x7b, 0x26, 0xb1, 0x88, 0x87, 0x51,
+	0xf8, 0x77, 0xd3, 0x95, 0xd3, 0x47, 0x64, 0xb5, 0x23, 0x47, 0x30, 0xf7, 0xc2, 0xbc, 0x3a, 0xf7,
+	0x31, 0x38, 0xda, 0xb8, 0xa8, 0x74, 0x02, 0x9e, 0x3f, 0x38, 0x97, 0x74, 0x01, 0x8e, 0x1f, 0x68,
+	0x04, 0x4f, 0x40, 0xca, 0xf6, 0x2d, 0xcd, 0xb7, 0x89, 0x17, 0x5d, 0x77, 0x4b, 0x7d, 0x62, 0xfb,
+	0x56, 0x3f, 0xa8, 0x61, 0x01, 0x3c, 0x1d, 0x11, 0xd3, 0xc4, 0x68, 0xc1, 0x0b, 0x21, 0x9f, 0x8e,
+	0xb0, 0x50, 0x72, 0x4a, 0x93, 0x3b, 0x26, 0x7f, 0x10, 0x16, 0xc0, 0xcb, 0x81, 0xdc, 0xfb, 0xdc,
+	0xea, 0x9c, 0x69, 0x0d, 0x55, 0xee, 0xf6, 0xe5, 0x4e, 0xed, 0x42, 0xeb, 0x77, 0x7a, 0x8a, 0x5c,
+	0x6b, 0x35, 0x5a, 0x72, 0x3d, 0xcb, 0xc1, 0x13, 0x70, 0x7c, 0x5f, 0x52, 0x6d, 0x9f, 0xd7, 0x3e,
+	0x65, 0xf9, 0xcd, 0xa4, 0xac, 0x9c, 0xd7, 0x9a, 0x59, 0xa1, 0xda, 0xbd, 0x9d, 0x89, 0xfc, 0xdd,
+	0x4c, 0xe4, 0x7f, 0xcf, 0x44, 0xfe, 0xdb, 0x5c, 0xe4, 0xee, 0xe6, 0x22, 0xf7, 0x73, 0x2e, 0x72,
+	0x5f, 0x3e, 0x1a, 0xc4, 0xbb, 0xf2, 0x2f, 0x4b, 0x43, 0x6a, 0x95, 0xd1, 0xd4, 0xc2, 0xb6, 0x4b,
+	0xa8, 0x7d, 0x33, 0xfd, 0xba, 0x2c, 0xde, 0x31, 0x74, 0x5d, 0xbe, 0x29, 0x2f, 0x5f, 0x0e, 0x6f,
+	0xea, 0x60, 0xf7, 0x72, 0x37, 0x7c, 0x11, 0xde, 0xff, 0x09, 0x00, 0x00, 0xff, 0xff, 0x73, 0x69,
+	0xdc, 0xd9, 0x53, 0x04, 0x00, 0x00,
+}
+
+func (m *Params) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Params) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ApprovedDenoms) > 0 {
+		for iNdEx := len(m.ApprovedDenoms) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ApprovedDenoms[iNdEx])
+			copy(dAtA[i:], m.ApprovedDenoms[iNdEx])
+			i = encodeVarintGauge(dAtA, i, uint64(len(m.ApprovedDenoms[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.DistrEpochIdentifier) > 0 {
+		i -= len(m.DistrEpochIdentifier)
+		copy(dAtA[i:], m.DistrEpochIdentifier)
+		i = encodeVarintGauge(dAtA, i, uint64(len(m.DistrEpochIdentifier)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *Gauge) Marshal() (dAtA []byte, err error) {
@@ -509,30 +605,26 @@ func (m *Gauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x28
 	}
-	if m.VestingCondition != nil {
-		{
-			size, err := m.VestingCondition.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintGauge(dAtA, i, uint64(size))
+	{
+		size, err := m.VestingCondition.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
-		i--
-		dAtA[i] = 0x22
+		i -= size
+		i = encodeVarintGauge(dAtA, i, uint64(size))
 	}
-	if m.QueryCondition != nil {
-		{
-			size, err := m.QueryCondition.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintGauge(dAtA, i, uint64(size))
+	i--
+	dAtA[i] = 0x22
+	{
+		size, err := m.QueryCondition.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
 		}
-		i--
-		dAtA[i] = 0x1a
+		i -= size
+		i = encodeVarintGauge(dAtA, i, uint64(size))
 	}
+	i--
+	dAtA[i] = 0x1a
 	if len(m.Address) > 0 {
 		i -= len(m.Address)
 		copy(dAtA[i:], m.Address)
@@ -654,16 +746,16 @@ func (m *VestingCondition_Perpetual) MarshalToSizedBuffer(dAtA []byte) (int, err
 	}
 	return len(dAtA) - i, nil
 }
-func (m *VestingCondition_Epoch) MarshalTo(dAtA []byte) (int, error) {
+func (m *VestingCondition_Limited) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *VestingCondition_Epoch) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *VestingCondition_Limited) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if m.Epoch != nil {
+	if m.Limited != nil {
 		{
-			size, err := m.Epoch.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.Limited.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -765,6 +857,25 @@ func encodeVarintGauge(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+func (m *Params) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.DistrEpochIdentifier)
+	if l > 0 {
+		n += 1 + l + sovGauge(uint64(l))
+	}
+	if len(m.ApprovedDenoms) > 0 {
+		for _, s := range m.ApprovedDenoms {
+			l = len(s)
+			n += 1 + l + sovGauge(uint64(l))
+		}
+	}
+	return n
+}
+
 func (m *Gauge) Size() (n int) {
 	if m == nil {
 		return 0
@@ -778,14 +889,10 @@ func (m *Gauge) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovGauge(uint64(l))
 	}
-	if m.QueryCondition != nil {
-		l = m.QueryCondition.Size()
-		n += 1 + l + sovGauge(uint64(l))
-	}
-	if m.VestingCondition != nil {
-		l = m.VestingCondition.Size()
-		n += 1 + l + sovGauge(uint64(l))
-	}
+	l = m.QueryCondition.Size()
+	n += 1 + l + sovGauge(uint64(l))
+	l = m.VestingCondition.Size()
+	n += 1 + l + sovGauge(uint64(l))
 	if m.VestingFrequency != 0 {
 		n += 1 + sovGauge(uint64(m.VestingFrequency))
 	}
@@ -840,14 +947,14 @@ func (m *VestingCondition_Perpetual) Size() (n int) {
 	}
 	return n
 }
-func (m *VestingCondition_Epoch) Size() (n int) {
+func (m *VestingCondition_Limited) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.Epoch != nil {
-		l = m.Epoch.Size()
+	if m.Limited != nil {
+		l = m.Limited.Size()
 		n += 1 + l + sovGauge(uint64(l))
 	}
 	return n
@@ -890,6 +997,120 @@ func sovGauge(x uint64) (n int) {
 }
 func sozGauge(x uint64) (n int) {
 	return sovGauge(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *Params) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGauge
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: Params: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: Params: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DistrEpochIdentifier", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGauge
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGauge
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGauge
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.DistrEpochIdentifier = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ApprovedDenoms", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGauge
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGauge
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthGauge
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ApprovedDenoms = append(m.ApprovedDenoms, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGauge(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthGauge
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *Gauge) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -1000,9 +1221,6 @@ func (m *Gauge) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.QueryCondition == nil {
-				m.QueryCondition = &QueryCondition{}
-			}
 			if err := m.QueryCondition.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
@@ -1035,9 +1253,6 @@ func (m *Gauge) Unmarshal(dAtA []byte) error {
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
-			}
-			if m.VestingCondition == nil {
-				m.VestingCondition = &VestingCondition{}
 			}
 			if err := m.VestingCondition.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
@@ -1234,7 +1449,7 @@ func (m *VestingCondition) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Epoch", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Limited", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1265,7 +1480,7 @@ func (m *VestingCondition) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Condition = &VestingCondition_Epoch{v}
+			m.Condition = &VestingCondition_Limited{v}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1431,7 +1646,7 @@ func (m *VestingConditionLimited) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NumUnits |= uint64(b&0x7F) << shift
+				m.NumUnits |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
@@ -1450,7 +1665,7 @@ func (m *VestingConditionLimited) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.FilledUnits |= uint64(b&0x7F) << shift
+				m.FilledUnits |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

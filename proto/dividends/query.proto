@@ -3,11 +3,8 @@ package rollapp.dividends;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "google/protobuf/duration.proto";
-import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "dividends/gauge.proto";
-import "dividends/params.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/dividends/types";
 
@@ -31,7 +28,7 @@ message GaugeByIDRequest {
 }
 
 message GaugeByIDResponse {
-  Gauge gauge = 1;
+  Gauge gauge = 1 [ (gogoproto.nullable) = false ];
 }
 
 message GaugesRequest {
@@ -39,12 +36,12 @@ message GaugesRequest {
 }
 
 message GaugesResponse {
-  repeated Gauge data = 1 [(gogoproto.nullable) = false];
+  repeated Gauge data = 1 [ (gogoproto.nullable) = false ];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 message ParamsRequest {}
 
 message ParamsResponse {
-  Params params = 1;
+  Params params = 1 [ (gogoproto.nullable) = false ];
 }

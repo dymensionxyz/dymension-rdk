@@ -2,8 +2,6 @@ syntax = "proto3";
 package rollapp.dividends;
 
 import "gogoproto/gogo.proto";
-import "google/protobuf/duration.proto";
-import "dividends/params.proto";
 import "dividends/gauge.proto";
 
 option go_package = "github.com/dymensionxyz/dymension-rdk/x/dividends/types";

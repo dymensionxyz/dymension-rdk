@@ -26,7 +26,7 @@ func (q Querier) GaugeByID(goCtx context.Context, req *types.GaugeByIDRequest) (
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	gauge, err := q.keeper.GetGaugeByID(ctx, req.Id)
+	gauge, err := q.keeper.GetGauge(ctx, req.Id)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
