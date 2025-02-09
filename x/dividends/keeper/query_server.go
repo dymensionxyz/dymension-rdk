@@ -9,24 +9,24 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var _ types.QueryServer = Querier{}
+var _ types.QueryServer = QueryServer{}
 
-type Querier struct {
-	keeper Keeper
+type QueryServer struct {
+	k Keeper
 }
 
-func NewQuerier(k Keeper) Querier {
-	return Querier{keeper: k}
+func NewQueryServer(k Keeper) QueryServer {
+	return QueryServer{k: k}
 }
 
-func (q Querier) GaugeByID(goCtx context.Context, req *types.GaugeByIDRequest) (*types.GaugeByIDResponse, error) {
+func (q QueryServer) GaugeByID(goCtx context.Context, req *types.GaugeByIDRequest) (*types.GaugeByIDResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	gauge, err := q.keeper.GetGauge(ctx, req.Id)
+	gauge, err := q.k.GetGauge(ctx, req.Id)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -34,14 +34,14 @@ func (q Querier) GaugeByID(goCtx context.Context, req *types.GaugeByIDRequest) (
 	return &types.GaugeByIDResponse{Gauge: gauge}, nil
 }
 
-func (q Querier) Gauges(goCtx context.Context, req *types.GaugesRequest) (*types.GaugesResponse, error) {
+func (q QueryServer) Gauges(goCtx context.Context, req *types.GaugesRequest) (*types.GaugesResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	gauges, err := q.keeper.GetAllGauges(ctx)
+	gauges, err := q.k.GetAllGauges(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -49,13 +49,13 @@ func (q Querier) Gauges(goCtx context.Context, req *types.GaugesRequest) (*types
 	return &types.GaugesResponse{Data: gauges, Pagination: nil}, nil
 }
 
-func (q Querier) Params(goCtx context.Context, req *types.ParamsRequest) (*types.ParamsResponse, error) {
+func (q QueryServer) Params(goCtx context.Context, req *types.ParamsRequest) (*types.ParamsResponse, error) {
 	if req == nil {
 		return nil, status.Error(codes.InvalidArgument, "empty request")
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	params := q.keeper.MustGetParams(ctx)
+	params := q.k.MustGetParams(ctx)
 
-	return &types.ParamsResponse{Params: &params}, nil
+	return &types.ParamsResponse{Params: params}, nil
 }

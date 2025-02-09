@@ -390,7 +390,7 @@ func NewRollapp(
 	)
 	app.MintKeeper.SetHooks(
 		minttypes.NewMultiMintHooks(
-		// insert mint hooks receivers here
+			// insert mint hooks receivers here
 		),
 	)
 
@@ -424,7 +424,7 @@ func NewRollapp(
 		app.AccountKeeper,
 		app.DistrKeeper,
 		app.BankKeeper,
-		authtypes.NewModuleAddress(timeupgradetypes.ModuleName).String(),
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
 	// register the staking hooks
@@ -477,7 +477,7 @@ func NewRollapp(
 
 	app.GovKeeper = *govKeeper.SetHooks(
 		govtypes.NewMultiGovHooks(
-		// register the governance hooks
+			// register the governance hooks
 		),
 	)
 
