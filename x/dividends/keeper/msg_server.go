@@ -41,6 +41,7 @@ func (m MsgServer) CreateGauge(goCtx context.Context, msg *types.MsgCreateGauge)
 	gauge := types.NewGauge(
 		gaugeId,
 		account.GetAddress().String(),
+		true,
 		msg.QueryCondition,
 		msg.VestingCondition,
 		msg.VestingFrequency,
@@ -65,7 +66,7 @@ func (m MsgServer) CreateGauge(goCtx context.Context, msg *types.MsgCreateGauge)
 }
 
 func (k Keeper) CreateModuleAccountForGauge(ctx sdk.Context, gaugeId uint64) authtypes.ModuleAccountI {
-	moduleAccountName := fmt.Sprintf("%s-%d", types.ModuleName, gaugeId)
+	moduleAccountName := types.GaugeAccountName(gaugeId)
 	moduleAccount := authtypes.NewEmptyModuleAccount(moduleAccountName)
 	moduleAccountI := k.accountKeeper.NewAccount(ctx, moduleAccount).(authtypes.ModuleAccountI)
 	k.accountKeeper.SetModuleAccount(ctx, moduleAccountI)

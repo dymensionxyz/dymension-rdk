@@ -390,7 +390,7 @@ func NewRollapp(
 	)
 	app.MintKeeper.SetHooks(
 		minttypes.NewMultiMintHooks(
-			// insert mint hooks receivers here
+		// insert mint hooks receivers here
 		),
 	)
 
@@ -420,7 +420,7 @@ func NewRollapp(
 	app.DividendsKeeper = dividendskeeper.NewKeeper(
 		appCodec,
 		keys[dividendstypes.StoreKey],
-		app.StakingKeeper,
+		&stakingKeeper,
 		app.AccountKeeper,
 		app.DistrKeeper,
 		app.BankKeeper,
@@ -477,7 +477,7 @@ func NewRollapp(
 
 	app.GovKeeper = *govKeeper.SetHooks(
 		govtypes.NewMultiGovHooks(
-			// register the governance hooks
+		// register the governance hooks
 		),
 	)
 

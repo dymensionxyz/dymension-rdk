@@ -9,6 +9,7 @@ import (
 func NewGauge(
 	id uint64,
 	address string,
+	active bool,
 	queryCondition QueryCondition,
 	vestingCondition VestingCondition,
 	vestingFrequency VestingFrequency,
@@ -16,10 +17,15 @@ func NewGauge(
 	return Gauge{
 		Id:               id,
 		Address:          address,
+		Active:           active,
 		QueryCondition:   queryCondition,
 		VestingCondition: vestingCondition,
 		VestingFrequency: vestingFrequency,
 	}
+}
+
+func GaugeAccountName(id uint64) string {
+	return fmt.Sprintf("%s-gauge-%d", ModuleName, id)
 }
 
 // ValidateBasic performs basic validation of the Gauge fields.

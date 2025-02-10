@@ -22,12 +22,14 @@ message Gauge {
   uint64 id = 1;
   // address is a bech32-formatted address that holds the tokens to allocate
   string address = 2;
+  // active is a flag to show if the gauge is active
+  bool active = 3;
   // query_condition is *where* the gauge rewards are distributed to
-  QueryCondition query_condition = 3 [ (gogoproto.nullable) = false ];
+  QueryCondition query_condition = 4 [ (gogoproto.nullable) = false ];
   // vesting_condition is *how long* the gauge rewards are distributed to
-  VestingCondition vesting_condition = 4 [ (gogoproto.nullable) = false ];
+  VestingCondition vesting_condition = 5 [ (gogoproto.nullable) = false ];
   // vesting_condition is *how frequent* the gauge rewards are distributed to
-  VestingFrequency vesting_frequency = 5;
+  VestingFrequency vesting_frequency = 6;
 }
 
 message QueryCondition {

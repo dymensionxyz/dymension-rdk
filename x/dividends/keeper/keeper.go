@@ -17,8 +17,9 @@ type Keeper struct {
 
 	schema      collections.Schema
 	params      collections.Item[types.Params]
-	lastGaugeID collections.Sequence                 // GaugeID
-	gauges      collections.Map[uint64, types.Gauge] // GaugeID -> Gauge
+	lastGaugeID collections.Sequence
+	// [status, GaugeID] -> Gauge; status is true for active, false for inactive
+	gauges collections.Map[collections.Pair[bool, uint64], types.Gauge]
 
 	stakingKeeper types.StakingKeeper
 	accountKeeper types.AccountKeeper
@@ -55,7 +56,7 @@ func NewKeeper(
 			sb,
 			types.GaugesKey,
 			"gauges",
-			collections.Uint64Key,
+			collections.PairKeyCodec(collections.BoolKey, collections.Uint64Key),
 			collcompat.ProtoValue[types.Gauge](cdc),
 		),
 		stakingKeeper: stakingKeeper,

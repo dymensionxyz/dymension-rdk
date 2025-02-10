@@ -4,27 +4,26 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dymensionxyz/dymension-rdk/testutil/app"
-	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	"github.com/cosmos/cosmos-sdk/x/bank/testutil"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
+	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/dymensionxyz/dymension-rdk/testutil/app"
+	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/stretchr/testify/suite"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/crypto/ed25519"
 	"github.com/tendermint/tendermint/libs/log"
 	tmtypes "github.com/tendermint/tendermint/proto/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-
-	sdkmath "cosmossdk.io/math"
-	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 )
 
 type KeeperTestHelper struct {
@@ -127,20 +126,47 @@ func (s *KeeperTestHelper) SetupValidator(bondStatus stakingtypes.BondStatus) sd
 	return sdk.ValAddress("cookies")
 }
 
+func (s *KeeperTestHelper) CreateValidator() stakingtypes.ValidatorI {
+	s.T().Helper()
+
+	valAddrs := utils.AddTestAddrs(s.App, s.Ctx, 1, utils.DYM.MulRaw(1_000))
+
+	// Build MsgCreateValidator
+	valAddr := sdk.ValAddress(valAddrs[0].Bytes())
+	privEd := ed25519.GenPrivKey()
+	msgCreate, err := stakingtypes.NewMsgCreateValidator(
+		valAddr,
+		privEd.PubKey(),
+		sdk.NewCoin(sdk.DefaultBondDenom, sdk.NewInt(1_000_000_000)),
+		stakingtypes.NewDescription("moniker", "indentity", "website", "security_contract", "details"),
+		stakingtypes.NewCommissionRates(sdk.ZeroDec(), sdk.ZeroDec(), sdk.ZeroDec()),
+		sdk.OneInt(),
+	)
+	s.Require().NoError(err)
+
+	// Create a validator
+	stakingMsgSrv := stakingkeeper.NewMsgServerImpl(s.App.StakingKeeper.Keeper)
+	resp, err := stakingMsgSrv.CreateValidator(s.Ctx, msgCreate)
+	s.Require().NoError(err)
+	s.Require().NotNil(resp)
+
+	val, found := s.App.StakingKeeper.GetValidator(s.Ctx, valAddr)
+	s.Require().True(found)
+
+	return val
+}
+
 // BeginNewBlock starts a new block.
 func (s *KeeperTestHelper) BeginNewBlock() {
 	var valAddr []byte
 
 	validators := s.App.StakingKeeper.GetAllValidators(s.Ctx)
 	if len(validators) >= 1 {
-		valAddrFancy, err := validators[0].GetConsAddr()
-		s.Require().NoError(err)
-		valAddr = valAddrFancy.Bytes()
+		valAddr = validators[0].GetOperator()
 	} else {
 		valAddrFancy := s.SetupValidator(stakingtypes.Bonded)
 		validator, _ := s.App.StakingKeeper.GetValidator(s.Ctx, valAddrFancy)
-		valAddr2, _ := validator.GetConsAddr()
-		valAddr = valAddr2.Bytes()
+		valAddr = validator.GetOperator()
 	}
 
 	s.BeginNewBlockWithProposer(valAddr)
@@ -149,7 +175,7 @@ func (s *KeeperTestHelper) BeginNewBlock() {
 // BeginNewBlockWithProposer begins a new block with a proposer.
 func (s *KeeperTestHelper) BeginNewBlockWithProposer(proposer sdk.ValAddress) {
 	validator, found := s.App.StakingKeeper.GetValidator(s.Ctx, proposer)
-	s.Assert().True(found)
+	s.Require().True(found)
 
 	valConsAddr, err := validator.GetConsAddr()
 	s.Require().NoError(err)
@@ -231,7 +257,7 @@ func CreateRandomAccounts(numAccts int) []sdk.AccAddress {
 // of the given type.
 func (s *KeeperTestHelper) AssertEventEmitted(ctx sdk.Context, eventTypeExpected string, numEventsExpected int) {
 	s.T().Helper()
-	
+
 	allEvents := ctx.EventManager().Events()
 	// filter out other events
 	actualEvents := make([]sdk.Event, 0)
