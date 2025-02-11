@@ -68,7 +68,7 @@ func (m MsgServer) CreateGauge(goCtx context.Context, msg *types.MsgCreateGauge)
 func (k Keeper) CreateModuleAccountForGauge(ctx sdk.Context, gaugeId uint64) authtypes.ModuleAccountI {
 	moduleAccountName := types.GaugeAccountName(gaugeId)
 	moduleAccount := authtypes.NewEmptyModuleAccount(moduleAccountName)
-	moduleAccountI := k.accountKeeper.NewAccount(ctx, moduleAccount).(authtypes.ModuleAccountI)
+	moduleAccountI := k.accountKeeper.NewAccount(ctx, moduleAccount).(authtypes.ModuleAccountI) //nolint:errcheck // do not need to check error here
 	k.accountKeeper.SetModuleAccount(ctx, moduleAccountI)
 	return moduleAccountI
 }

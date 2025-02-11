@@ -21,7 +21,7 @@ func (k Keeper) GetAllGauges(ctx sdk.Context) ([]types.Gauge, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer i.Close()
+	defer i.Close() //nolint:errcheck // do not need to check error here
 	return i.Values()
 }
 

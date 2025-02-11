@@ -154,7 +154,10 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, gs json.Ra
 	// initialize global index to index in genesis state.
 	cdc.MustUnmarshalJSON(gs, &genState)
 
-	am.keeper.InitGenesis(ctx, genState)
+	err := am.keeper.InitGenesis(ctx, genState)
+	if err != nil {
+		panic(fmt.Errorf("x/dividends: init genesis: %w", err))
+	}
 
 	return []abci.ValidatorUpdate{}
 }

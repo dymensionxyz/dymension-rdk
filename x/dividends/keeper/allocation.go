@@ -66,7 +66,7 @@ func (k Keeper) Allocate(ctx sdk.Context, t types.VestingFrequency) error {
 		// Save the updated gauge back
 		err = k.SetGauge(ctx, gauge)
 		if err != nil {
-			err = fmt.Errorf("set gauge: %w", err)
+			return true, fmt.Errorf("set gauge: %w", err)
 		}
 
 		// Fund the community pool with unapproved coins
