@@ -10,6 +10,7 @@ func NewGauge(
 	id uint64,
 	address string,
 	active bool,
+	approvedDenoms []string,
 	queryCondition QueryCondition,
 	vestingCondition VestingCondition,
 	vestingFrequency VestingFrequency,
@@ -18,6 +19,7 @@ func NewGauge(
 		Id:               id,
 		Address:          address,
 		Active:           active,
+		ApprovedDenoms:   approvedDenoms,
 		QueryCondition:   queryCondition,
 		VestingCondition: vestingCondition,
 		VestingFrequency: vestingFrequency,
@@ -32,6 +34,11 @@ func GaugeAccountName(id uint64) string {
 func (g Gauge) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(g.Address); err != nil {
 		return fmt.Errorf("invalid address: %w", err)
+	}
+	for _, denom := range g.ApprovedDenoms {
+		if err := sdk.ValidateDenom(denom); err != nil {
+			return fmt.Errorf("validate approved denom: %w", err)
+		}
 	}
 	if err := g.QueryCondition.ValidateBasic(); err != nil {
 		return fmt.Errorf("invalid query condition: %w", err)

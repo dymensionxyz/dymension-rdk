@@ -23,7 +23,6 @@ func NewMsgServer(keeper Keeper) MsgServer {
 
 var _ types.MsgServer = MsgServer{}
 
-// CreateGauge creates a gauge.
 func (m MsgServer) CreateGauge(goCtx context.Context, msg *types.MsgCreateGauge) (*types.MsgCreateGaugeResponse, error) {
 	if msg.Authority != m.k.authority {
 		return nil, sdkerrors.ErrorInvalidSigner.Wrapf("Only the gov module can update params")
@@ -42,6 +41,7 @@ func (m MsgServer) CreateGauge(goCtx context.Context, msg *types.MsgCreateGauge)
 		gaugeId,
 		account.GetAddress().String(),
 		true,
+		msg.ApprovedDenoms,
 		msg.QueryCondition,
 		msg.VestingCondition,
 		msg.VestingFrequency,
@@ -53,7 +53,8 @@ func (m MsgServer) CreateGauge(goCtx context.Context, msg *types.MsgCreateGauge)
 	}
 
 	err = uevent.EmitTypedEvent(ctx, &types.EventCreateGauge{
-		Authority:        msg.Authority,
+		GaugeId:          gaugeId,
+		ApprovedDenoms:   msg.ApprovedDenoms,
 		QueryCondition:   msg.QueryCondition,
 		VestingCondition: msg.VestingCondition,
 		VestingFrequency: msg.VestingFrequency,
@@ -65,12 +66,59 @@ func (m MsgServer) CreateGauge(goCtx context.Context, msg *types.MsgCreateGauge)
 	return &types.MsgCreateGaugeResponse{}, nil
 }
 
-func (k Keeper) CreateModuleAccountForGauge(ctx sdk.Context, gaugeId uint64) authtypes.ModuleAccountI {
-	moduleAccountName := types.GaugeAccountName(gaugeId)
-	moduleAccount := authtypes.NewEmptyModuleAccount(moduleAccountName)
-	moduleAccountI := k.accountKeeper.NewAccount(ctx, moduleAccount).(authtypes.ModuleAccountI) //nolint:errcheck // do not need to check error here
-	k.accountKeeper.SetModuleAccount(ctx, moduleAccountI)
-	return moduleAccountI
+func (m MsgServer) UpdateGauge(goCtx context.Context, msg *types.MsgUpdateGauge) (*types.MsgUpdateGaugeResponse, error) {
+	if msg.Authority != m.k.authority {
+		return nil, sdkerrors.ErrorInvalidSigner.Wrapf("Only the gov module can update params")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	gauge, err := m.k.GetGauge(ctx, msg.GaugeId)
+	if err != nil {
+		return nil, fmt.Errorf("get gauge: %w", err)
+	}
+
+	gauge.ApprovedDenoms = msg.ApprovedDenoms
+
+	err = m.k.SetGauge(ctx, gauge)
+	if err != nil {
+		return nil, fmt.Errorf("set gauge: %w", err)
+	}
+
+	err = uevent.EmitTypedEvent(ctx, &types.EventUpdateGauge{
+		GaugeId:          msg.GaugeId,
+		ApprovedDenoms:   msg.ApprovedDenoms,
+		QueryCondition:   gauge.QueryCondition,
+		VestingCondition: gauge.VestingCondition,
+		VestingFrequency: gauge.VestingFrequency,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("emit event: %w", err)
+	}
+
+	return &types.MsgUpdateGaugeResponse{}, nil
+}
+
+func (m MsgServer) DeactivateGauge(goCtx context.Context, msg *types.MsgDeactivateGauge) (*types.MsgDeactivateGaugeResponse, error) {
+	if msg.Authority != m.k.authority {
+		return nil, sdkerrors.ErrorInvalidSigner.Wrapf("Only the gov module can update params")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	err := m.k.DeactivateGauge(ctx, msg.GaugeId)
+	if err != nil {
+		return nil, fmt.Errorf("deactivate gauge: %w", err)
+	}
+
+	err = uevent.EmitTypedEvent(ctx, &types.EventDeactivateGauge{
+		GaugeId: msg.GaugeId,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("emit event: %w", err)
+	}
+
+	return &types.MsgDeactivateGaugeResponse{}, nil
 }
 
 func (m MsgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParams) (*types.MsgUpdateParamsResponse, error) {
@@ -97,4 +145,12 @@ func (m MsgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdateParam
 	}
 
 	return &types.MsgUpdateParamsResponse{}, nil
+}
+
+func (k Keeper) CreateModuleAccountForGauge(ctx sdk.Context, gaugeId uint64) authtypes.ModuleAccountI {
+	moduleAccountName := types.GaugeAccountName(gaugeId)
+	moduleAccount := authtypes.NewEmptyModuleAccount(moduleAccountName)
+	moduleAccountI := k.accountKeeper.NewAccount(ctx, moduleAccount).(authtypes.ModuleAccountI) //nolint:errcheck // do not need to check error here
+	k.accountKeeper.SetModuleAccount(ctx, moduleAccountI)
+	return moduleAccountI
 }

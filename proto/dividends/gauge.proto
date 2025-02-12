@@ -10,9 +10,6 @@ message Params {
   // distr_epoch_identifier is what epoch type distribution will be triggered by
   // (day, week, etc.)
   string distr_epoch_identifier = 1;
-  // approved_denoms is a list of allowed tokens: only gov can approve tokens
-  // that can be used for dividends
-  repeated string approved_denoms = 2;
 }
 
 // Gauge is an object that stores and distributes yields to recipients who
@@ -24,12 +21,15 @@ message Gauge {
   string address = 2;
   // active is a flag to show if the gauge is active
   bool active = 3;
+  // approved_denoms is a list of allowed tokens: only gov can approve tokens
+  // that can be used for dividends
+  repeated string approved_denoms = 4;
   // query_condition is *where* the gauge rewards are distributed to
-  QueryCondition query_condition = 4 [ (gogoproto.nullable) = false ];
+  QueryCondition query_condition = 5 [ (gogoproto.nullable) = false ];
   // vesting_condition is *how long* the gauge rewards are distributed to
-  VestingCondition vesting_condition = 5 [ (gogoproto.nullable) = false ];
+  VestingCondition vesting_condition = 6 [ (gogoproto.nullable) = false ];
   // vesting_condition is *how frequent* the gauge rewards are distributed to
-  VestingFrequency vesting_frequency = 6;
+  VestingFrequency vesting_frequency = 7;
 }
 
 message QueryCondition {

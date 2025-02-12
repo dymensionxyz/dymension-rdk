@@ -206,13 +206,9 @@ func (s *KeeperTestSuite) TestBeginBlock() {
 		s.Run(tc.name, func() {
 			s.SetupTest()
 
-			params := types.DefaultParams()
-			params.ApprovedDenoms = tc.acceptableDenoms
-			err := s.App.DividendsKeeper.SetParams(s.Ctx, params)
-			s.Require().NoError(err)
-
 			s.CreateGauge(types.MsgCreateGauge{
 				Authority:        authority,
+				ApprovedDenoms:   tc.acceptableDenoms,
 				QueryCondition:   tc.qc,
 				VestingCondition: tc.vc,
 				VestingFrequency: tc.vf,

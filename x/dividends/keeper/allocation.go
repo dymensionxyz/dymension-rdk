@@ -13,8 +13,6 @@ import (
 // Allocate rewards from active gauges. This function is called every block and
 // every epoch. `t` indicates whether the allocation called for blocks or epochs.
 func (k Keeper) Allocate(ctx sdk.Context, t types.VestingFrequency) error {
-	params := k.MustGetParams(ctx)
-
 	var (
 		totalStakingPower    = k.stakingKeeper.GetLastTotalPower(ctx)
 		totalStakingPowerDec = sdk.NewDecFromInt(totalStakingPower)
@@ -28,11 +26,15 @@ func (k Keeper) Allocate(ctx sdk.Context, t types.VestingFrequency) error {
 		}
 
 		var (
-			gaugeAddress           = sdk.MustAccAddressFromBech32(gauge.Address)
-			gaugeUnfilteredBalance = k.bankKeeper.GetAllBalances(ctx, gaugeAddress)
-			gaugeBalance           = types.FilterDenoms(gaugeUnfilteredBalance, params.ApprovedDenoms)
-			gaugeRewards           sdk.Coins
+			gaugeAddress = sdk.MustAccAddressFromBech32(gauge.Address)
+			gaugeBalance = k.GetBalance(ctx, gaugeAddress, gauge.ApprovedDenoms)
 		)
+
+		if gaugeBalance.IsZero() {
+			return false, nil
+		}
+
+		var gaugeRewards sdk.Coins
 
 		switch c := gauge.VestingCondition.Condition.(type) {
 		case *types.VestingCondition_Limited:
@@ -69,15 +71,6 @@ func (k Keeper) Allocate(ctx sdk.Context, t types.VestingFrequency) error {
 			return true, fmt.Errorf("set gauge: %w", err)
 		}
 
-		// Fund the community pool with unapproved coins
-		unapprovedFunds := gaugeUnfilteredBalance.Sub(gaugeBalance...)
-		if !unapprovedFunds.IsZero() {
-			err = k.distrKeeper.FundCommunityPool(ctx, unapprovedFunds, gaugeAddress)
-			if err != nil {
-				return true, fmt.Errorf("fund community pool: %w", err)
-			}
-		}
-
 		return false, nil
 	})
 	if err != nil {
@@ -107,4 +100,15 @@ func (k Keeper) AllocateStakers(ctx sdk.Context, gaugeRewards sdk.DecCoins, tota
 		k.distrKeeper.AllocateTokensToValidator(ctx, validator, reward)
 		return false
 	})
+}
+
+func (k Keeper) GetBalance(ctx sdk.Context, address sdk.AccAddress, denoms []string) sdk.Coins {
+	var coins []sdk.Coin
+	for _, denom := range denoms {
+		balance := k.bankKeeper.GetBalance(ctx, address, denom)
+		if !balance.IsZero() {
+			coins = append(coins, balance)
+		}
+	}
+	return sdk.NewCoins(coins...)
 }

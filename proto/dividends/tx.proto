@@ -12,23 +12,55 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/dividends/types";
 service Msg {
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
   rpc CreateGauge(MsgCreateGauge) returns (MsgCreateGaugeResponse);
+  rpc UpdateGauge(MsgUpdateGauge) returns (MsgUpdateGaugeResponse);
+  rpc DeactivateGauge(MsgDeactivateGauge) returns (MsgDeactivateGaugeResponse);
 }
 
-// MsgCreateGauge creates a gague to distribute rewards to users
+// MsgCreateGauge creates a gauge to distribute rewards to users
 message MsgCreateGauge {
   option (cosmos.msg.v1.signer) = "authority";
 
   // Authority is the address that controls the module.
   string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // approved_denoms is a list of allowed tokens: only gov can approve tokens
+  // that can be used for dividends
+  repeated string approved_denoms = 2;
   // query_condition is *where* the gauge rewards are distributed to
-  QueryCondition query_condition = 2 [ (gogoproto.nullable) = false ];
+  QueryCondition query_condition = 3 [ (gogoproto.nullable) = false ];
   // vesting_condition is *how long* the gauge rewards are distributed to
-  VestingCondition vesting_condition = 3 [ (gogoproto.nullable) = false ];
+  VestingCondition vesting_condition = 4 [ (gogoproto.nullable) = false ];
   // vesting_condition is *how frequent* the gauge rewards are distributed to
-  VestingFrequency vesting_frequency = 4;
+  VestingFrequency vesting_frequency = 5;
 }
 
 message MsgCreateGaugeResponse {}
+
+// MsgUpdateGauge updates a gauge
+message MsgUpdateGauge {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // Authority is the address that controls the module.
+  string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // gauge_id is the ID of the gauge to update
+  uint64 gauge_id = 2;
+  // approved_denoms is a list of allowed tokens: only gov can approve tokens
+  // that can be used for dividends
+  repeated string approved_denoms = 3;
+}
+
+message MsgUpdateGaugeResponse {}
+
+// MsgDeactivateGauge deactivates a gauge
+message MsgDeactivateGauge {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  // Authority is the address that controls the module.
+  string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  // gauge_id is the ID of the gauge to deactivate
+  uint64 gauge_id = 2;
+}
+
+message MsgDeactivateGaugeResponse {}
 
 // MsgUpdateParams allows to update module params.
 message MsgUpdateParams {

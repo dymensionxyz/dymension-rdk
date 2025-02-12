@@ -31,16 +31,19 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// MsgCreateGauge creates a gague to distribute rewards to users
+// MsgCreateGauge creates a gauge to distribute rewards to users
 type MsgCreateGauge struct {
 	// Authority is the address that controls the module.
 	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	// approved_denoms is a list of allowed tokens: only gov can approve tokens
+	// that can be used for dividends
+	ApprovedDenoms []string `protobuf:"bytes,2,rep,name=approved_denoms,json=approvedDenoms,proto3" json:"approved_denoms,omitempty"`
 	// query_condition is *where* the gauge rewards are distributed to
-	QueryCondition QueryCondition `protobuf:"bytes,2,opt,name=query_condition,json=queryCondition,proto3" json:"query_condition"`
+	QueryCondition QueryCondition `protobuf:"bytes,3,opt,name=query_condition,json=queryCondition,proto3" json:"query_condition"`
 	// vesting_condition is *how long* the gauge rewards are distributed to
-	VestingCondition VestingCondition `protobuf:"bytes,3,opt,name=vesting_condition,json=vestingCondition,proto3" json:"vesting_condition"`
+	VestingCondition VestingCondition `protobuf:"bytes,4,opt,name=vesting_condition,json=vestingCondition,proto3" json:"vesting_condition"`
 	// vesting_condition is *how frequent* the gauge rewards are distributed to
-	VestingFrequency VestingFrequency `protobuf:"varint,4,opt,name=vesting_frequency,json=vestingFrequency,proto3,enum=rollapp.dividends.VestingFrequency" json:"vesting_frequency,omitempty"`
+	VestingFrequency VestingFrequency `protobuf:"varint,5,opt,name=vesting_frequency,json=vestingFrequency,proto3,enum=rollapp.dividends.VestingFrequency" json:"vesting_frequency,omitempty"`
 }
 
 func (m *MsgCreateGauge) Reset()         { *m = MsgCreateGauge{} }
@@ -81,6 +84,13 @@ func (m *MsgCreateGauge) GetAuthority() string {
 		return m.Authority
 	}
 	return ""
+}
+
+func (m *MsgCreateGauge) GetApprovedDenoms() []string {
+	if m != nil {
+		return m.ApprovedDenoms
+	}
+	return nil
 }
 
 func (m *MsgCreateGauge) GetQueryCondition() QueryCondition {
@@ -140,6 +150,198 @@ func (m *MsgCreateGaugeResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCreateGaugeResponse proto.InternalMessageInfo
 
+// MsgUpdateGauge updates a gauge
+type MsgUpdateGauge struct {
+	// Authority is the address that controls the module.
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	// gauge_id is the ID of the gauge to update
+	GaugeId uint64 `protobuf:"varint,2,opt,name=gauge_id,json=gaugeId,proto3" json:"gauge_id,omitempty"`
+	// approved_denoms is a list of allowed tokens: only gov can approve tokens
+	// that can be used for dividends
+	ApprovedDenoms []string `protobuf:"bytes,3,rep,name=approved_denoms,json=approvedDenoms,proto3" json:"approved_denoms,omitempty"`
+}
+
+func (m *MsgUpdateGauge) Reset()         { *m = MsgUpdateGauge{} }
+func (m *MsgUpdateGauge) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateGauge) ProtoMessage()    {}
+func (*MsgUpdateGauge) Descriptor() ([]byte, []int) {
+	return fileDescriptor_957086822ec1c0b6, []int{2}
+}
+func (m *MsgUpdateGauge) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUpdateGauge) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpdateGauge.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUpdateGauge) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateGauge.Merge(m, src)
+}
+func (m *MsgUpdateGauge) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUpdateGauge) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateGauge.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpdateGauge proto.InternalMessageInfo
+
+func (m *MsgUpdateGauge) GetAuthority() string {
+	if m != nil {
+		return m.Authority
+	}
+	return ""
+}
+
+func (m *MsgUpdateGauge) GetGaugeId() uint64 {
+	if m != nil {
+		return m.GaugeId
+	}
+	return 0
+}
+
+func (m *MsgUpdateGauge) GetApprovedDenoms() []string {
+	if m != nil {
+		return m.ApprovedDenoms
+	}
+	return nil
+}
+
+type MsgUpdateGaugeResponse struct {
+}
+
+func (m *MsgUpdateGaugeResponse) Reset()         { *m = MsgUpdateGaugeResponse{} }
+func (m *MsgUpdateGaugeResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgUpdateGaugeResponse) ProtoMessage()    {}
+func (*MsgUpdateGaugeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_957086822ec1c0b6, []int{3}
+}
+func (m *MsgUpdateGaugeResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgUpdateGaugeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgUpdateGaugeResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgUpdateGaugeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgUpdateGaugeResponse.Merge(m, src)
+}
+func (m *MsgUpdateGaugeResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgUpdateGaugeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgUpdateGaugeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgUpdateGaugeResponse proto.InternalMessageInfo
+
+// MsgDeactivateGauge deactivates a gauge
+type MsgDeactivateGauge struct {
+	// Authority is the address that controls the module.
+	Authority string `protobuf:"bytes,1,opt,name=authority,proto3" json:"authority,omitempty"`
+	// gauge_id is the ID of the gauge to deactivate
+	GaugeId uint64 `protobuf:"varint,2,opt,name=gauge_id,json=gaugeId,proto3" json:"gauge_id,omitempty"`
+}
+
+func (m *MsgDeactivateGauge) Reset()         { *m = MsgDeactivateGauge{} }
+func (m *MsgDeactivateGauge) String() string { return proto.CompactTextString(m) }
+func (*MsgDeactivateGauge) ProtoMessage()    {}
+func (*MsgDeactivateGauge) Descriptor() ([]byte, []int) {
+	return fileDescriptor_957086822ec1c0b6, []int{4}
+}
+func (m *MsgDeactivateGauge) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgDeactivateGauge) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgDeactivateGauge.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgDeactivateGauge) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDeactivateGauge.Merge(m, src)
+}
+func (m *MsgDeactivateGauge) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgDeactivateGauge) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDeactivateGauge.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgDeactivateGauge proto.InternalMessageInfo
+
+func (m *MsgDeactivateGauge) GetAuthority() string {
+	if m != nil {
+		return m.Authority
+	}
+	return ""
+}
+
+func (m *MsgDeactivateGauge) GetGaugeId() uint64 {
+	if m != nil {
+		return m.GaugeId
+	}
+	return 0
+}
+
+type MsgDeactivateGaugeResponse struct {
+}
+
+func (m *MsgDeactivateGaugeResponse) Reset()         { *m = MsgDeactivateGaugeResponse{} }
+func (m *MsgDeactivateGaugeResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgDeactivateGaugeResponse) ProtoMessage()    {}
+func (*MsgDeactivateGaugeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_957086822ec1c0b6, []int{5}
+}
+func (m *MsgDeactivateGaugeResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgDeactivateGaugeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgDeactivateGaugeResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgDeactivateGaugeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgDeactivateGaugeResponse.Merge(m, src)
+}
+func (m *MsgDeactivateGaugeResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgDeactivateGaugeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgDeactivateGaugeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgDeactivateGaugeResponse proto.InternalMessageInfo
+
 // MsgUpdateParams allows to update module params.
 type MsgUpdateParams struct {
 	// Authority is the address that controls the module.
@@ -152,7 +354,7 @@ func (m *MsgUpdateParams) Reset()         { *m = MsgUpdateParams{} }
 func (m *MsgUpdateParams) String() string { return proto.CompactTextString(m) }
 func (*MsgUpdateParams) ProtoMessage()    {}
 func (*MsgUpdateParams) Descriptor() ([]byte, []int) {
-	return fileDescriptor_957086822ec1c0b6, []int{2}
+	return fileDescriptor_957086822ec1c0b6, []int{6}
 }
 func (m *MsgUpdateParams) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -202,7 +404,7 @@ func (m *MsgUpdateParamsResponse) Reset()         { *m = MsgUpdateParamsResponse
 func (m *MsgUpdateParamsResponse) String() string { return proto.CompactTextString(m) }
 func (*MsgUpdateParamsResponse) ProtoMessage()    {}
 func (*MsgUpdateParamsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_957086822ec1c0b6, []int{3}
+	return fileDescriptor_957086822ec1c0b6, []int{7}
 }
 func (m *MsgUpdateParamsResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -234,6 +436,10 @@ var xxx_messageInfo_MsgUpdateParamsResponse proto.InternalMessageInfo
 func init() {
 	proto.RegisterType((*MsgCreateGauge)(nil), "rollapp.dividends.MsgCreateGauge")
 	proto.RegisterType((*MsgCreateGaugeResponse)(nil), "rollapp.dividends.MsgCreateGaugeResponse")
+	proto.RegisterType((*MsgUpdateGauge)(nil), "rollapp.dividends.MsgUpdateGauge")
+	proto.RegisterType((*MsgUpdateGaugeResponse)(nil), "rollapp.dividends.MsgUpdateGaugeResponse")
+	proto.RegisterType((*MsgDeactivateGauge)(nil), "rollapp.dividends.MsgDeactivateGauge")
+	proto.RegisterType((*MsgDeactivateGaugeResponse)(nil), "rollapp.dividends.MsgDeactivateGaugeResponse")
 	proto.RegisterType((*MsgUpdateParams)(nil), "rollapp.dividends.MsgUpdateParams")
 	proto.RegisterType((*MsgUpdateParamsResponse)(nil), "rollapp.dividends.MsgUpdateParamsResponse")
 }
@@ -241,38 +447,45 @@ func init() {
 func init() { proto.RegisterFile("dividends/tx.proto", fileDescriptor_957086822ec1c0b6) }
 
 var fileDescriptor_957086822ec1c0b6 = []byte{
-	// 490 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x93, 0x41, 0x6b, 0x13, 0x41,
-	0x14, 0xc7, 0xb3, 0x6d, 0x11, 0x32, 0x95, 0xd4, 0x2e, 0xd5, 0x26, 0x39, 0xac, 0x69, 0xbc, 0xc4,
-	0x42, 0x77, 0x48, 0x05, 0x05, 0x0f, 0x82, 0x29, 0xe8, 0x29, 0x90, 0x46, 0xec, 0x41, 0xc1, 0x30,
-	0xd9, 0x79, 0x4e, 0x07, 0xbb, 0x33, 0x9b, 0x99, 0xd9, 0x6d, 0xd6, 0xa3, 0x9f, 0xc0, 0xab, 0xdf,
-	0xc2, 0x83, 0x9f, 0xc0, 0x53, 0x8f, 0x45, 0x3c, 0x78, 0x12, 0x49, 0x0e, 0x7e, 0x0d, 0x49, 0x76,
-	0x37, 0x9b, 0xa4, 0xc1, 0x42, 0x4f, 0xbb, 0xef, 0xfd, 0xff, 0xfb, 0x7b, 0xff, 0x79, 0xec, 0x20,
-	0x9b, 0xf2, 0x88, 0x53, 0x10, 0x54, 0x63, 0x33, 0x74, 0x03, 0x25, 0x8d, 0xb4, 0xb7, 0x95, 0x3c,
-	0x3b, 0x23, 0x41, 0xe0, 0xce, 0xb4, 0xea, 0x0e, 0x93, 0x4c, 0x4e, 0x55, 0x3c, 0x79, 0x4b, 0x8c,
-	0xd5, 0x8a, 0x27, 0xb5, 0x2f, 0x75, 0x2f, 0x11, 0x92, 0x22, 0x95, 0x76, 0x93, 0x0a, 0xfb, 0x9a,
-	0xe1, 0xa8, 0x39, 0x79, 0xa4, 0x82, 0x93, 0x0a, 0x7d, 0xa2, 0x01, 0x47, 0xcd, 0x3e, 0x18, 0xd2,
-	0xc4, 0x9e, 0xe4, 0x22, 0xd5, 0xef, 0xe6, 0x81, 0x18, 0x09, 0x19, 0x24, 0xed, 0xfa, 0xcf, 0x35,
-	0x54, 0x6a, 0x6b, 0x76, 0xa4, 0x80, 0x18, 0x78, 0x39, 0x11, 0xec, 0xc7, 0xa8, 0x48, 0x42, 0x73,
-	0x2a, 0x15, 0x37, 0x71, 0xd9, 0xaa, 0x59, 0x8d, 0x62, 0xab, 0xfc, 0xe3, 0xdb, 0xc1, 0x4e, 0x9a,
-	0xe3, 0x39, 0xa5, 0x0a, 0xb4, 0x7e, 0x65, 0x14, 0x17, 0xac, 0x9b, 0x5b, 0xed, 0x0e, 0xda, 0x1a,
-	0x84, 0xa0, 0xe2, 0x9e, 0x27, 0x05, 0xe5, 0x86, 0x4b, 0x51, 0x5e, 0xab, 0x59, 0x8d, 0xcd, 0xc3,
-	0x3d, 0xf7, 0xca, 0xc1, 0xdd, 0xe3, 0x89, 0xf3, 0x28, 0x33, 0xb6, 0x36, 0x2e, 0x7e, 0xdf, 0x2f,
-	0x74, 0x4b, 0x83, 0x85, 0xae, 0x7d, 0x82, 0xb6, 0x23, 0xd0, 0x86, 0x0b, 0x36, 0xc7, 0x5c, 0x9f,
-	0x32, 0x1f, 0xac, 0x60, 0x9e, 0x24, 0xde, 0x65, 0xea, 0x9d, 0x68, 0xa9, 0x6f, 0x77, 0x72, 0xee,
-	0x7b, 0x05, 0x83, 0x10, 0x84, 0x17, 0x97, 0x37, 0x6a, 0x56, 0xa3, 0xf4, 0x3f, 0xee, 0x8b, 0xcc,
-	0x3a, 0x23, 0xce, 0x3a, 0x4f, 0x4b, 0x9f, 0xfe, 0x7e, 0xdd, 0xcf, 0x77, 0x51, 0x2f, 0xa3, 0x7b,
-	0x8b, 0x5b, 0xed, 0x82, 0x0e, 0xa4, 0xd0, 0x50, 0xff, 0x62, 0xa1, 0xad, 0xb6, 0x66, 0xaf, 0x03,
-	0x4a, 0x0c, 0x74, 0x88, 0x22, 0xbe, 0xbe, 0xf1, 0xc6, 0x9f, 0x21, 0x24, 0xe0, 0xbc, 0x17, 0x4c,
-	0x29, 0xe9, 0xb2, 0x2b, 0x2b, 0x0e, 0x90, 0x8c, 0x49, 0xd7, 0x51, 0x14, 0x70, 0x9e, 0x34, 0xae,
-	0xa4, 0xae, 0xa0, 0xdd, 0xa5, 0x68, 0x59, 0xec, 0xc3, 0xef, 0x16, 0x5a, 0x6f, 0x6b, 0x66, 0xbf,
-	0x43, 0xb7, 0x17, 0xa2, 0xd7, 0x57, 0x8c, 0x5b, 0x62, 0x54, 0xf7, 0xaf, 0xf7, 0x64, 0x73, 0xec,
-	0xb7, 0x68, 0x73, 0xfe, 0x5f, 0xdc, 0x5b, 0xfd, 0xe9, 0x9c, 0xa5, 0xfa, 0xf0, 0x5a, 0x4b, 0x06,
-	0x6f, 0x1d, 0x5f, 0x8c, 0x1c, 0xeb, 0x72, 0xe4, 0x58, 0x7f, 0x46, 0x8e, 0xf5, 0x79, 0xec, 0x14,
-	0x2e, 0xc7, 0x4e, 0xe1, 0xd7, 0xd8, 0x29, 0xbc, 0x79, 0xc2, 0xb8, 0x39, 0x0d, 0xfb, 0xae, 0x27,
-	0x7d, 0x4c, 0x63, 0x1f, 0x84, 0xe6, 0x52, 0x0c, 0xe3, 0x8f, 0x79, 0x71, 0xa0, 0xe8, 0x07, 0x3c,
-	0xc4, 0x73, 0xd7, 0x3a, 0x0e, 0x40, 0xf7, 0x6f, 0x4d, 0xaf, 0xd1, 0xa3, 0x7f, 0x01, 0x00, 0x00,
-	0xff, 0xff, 0xd0, 0x3c, 0x35, 0xc2, 0xf0, 0x03, 0x00, 0x00,
+	// 604 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x95, 0x4f, 0x8b, 0xd3, 0x40,
+	0x18, 0xc6, 0x9b, 0xed, 0xfa, 0xa7, 0x53, 0x69, 0xdd, 0xb0, 0xba, 0x69, 0x90, 0xd8, 0x56, 0xc4,
+	0xba, 0xd0, 0x86, 0x56, 0x50, 0xf0, 0x20, 0xd8, 0x5d, 0x14, 0x0f, 0x85, 0x6e, 0xc5, 0x3d, 0x28,
+	0x58, 0xd2, 0xcc, 0x38, 0x3b, 0xb8, 0x99, 0x49, 0x33, 0x69, 0xda, 0x78, 0xf4, 0xe4, 0xd1, 0xab,
+	0xe0, 0x87, 0xf0, 0xe0, 0x87, 0xd8, 0xe3, 0xe2, 0xc9, 0x93, 0x48, 0x7b, 0xf0, 0x53, 0x08, 0xd2,
+	0xfc, 0x6b, 0x9a, 0xc6, 0xae, 0x28, 0x9e, 0xda, 0x79, 0x9f, 0x27, 0xcf, 0xfb, 0x63, 0xde, 0x97,
+	0x04, 0x88, 0x90, 0x38, 0x04, 0x22, 0x0a, 0xb9, 0x6a, 0x4f, 0x1a, 0xa6, 0xc5, 0x6c, 0x26, 0x6e,
+	0x59, 0xec, 0xf8, 0x58, 0x33, 0xcd, 0x46, 0xa4, 0xc9, 0xdb, 0x98, 0x61, 0xe6, 0xa9, 0xea, 0xfc,
+	0x9f, 0x6f, 0x94, 0x4b, 0x3a, 0xe3, 0x06, 0xe3, 0x7d, 0x5f, 0xf0, 0x0f, 0x81, 0xb4, 0xe3, 0x9f,
+	0x54, 0x83, 0x63, 0xd5, 0x69, 0xce, 0x7f, 0x02, 0x41, 0x09, 0x84, 0x81, 0xc6, 0x91, 0xea, 0x34,
+	0x07, 0xc8, 0xd6, 0x9a, 0xaa, 0xce, 0x08, 0x0d, 0xf4, 0x2b, 0x0b, 0x20, 0xac, 0x8d, 0x30, 0xf2,
+	0xcb, 0xd5, 0x9f, 0x1b, 0xa0, 0xd0, 0xe1, 0x78, 0xcf, 0x42, 0x9a, 0x8d, 0x1e, 0xcf, 0x05, 0xf1,
+	0x2e, 0xc8, 0x69, 0x23, 0xfb, 0x88, 0x59, 0xc4, 0x76, 0x25, 0xa1, 0x2c, 0xd4, 0x72, 0x6d, 0xe9,
+	0xcb, 0xe7, 0xfa, 0x76, 0xc0, 0xf1, 0x10, 0x42, 0x0b, 0x71, 0xfe, 0xd4, 0xb6, 0x08, 0xc5, 0xbd,
+	0x85, 0x55, 0xbc, 0x05, 0x8a, 0x9a, 0x69, 0x5a, 0xcc, 0x41, 0xb0, 0x0f, 0x11, 0x65, 0x06, 0x97,
+	0x36, 0xca, 0xd9, 0x5a, 0xae, 0x57, 0x08, 0xcb, 0xfb, 0x5e, 0x55, 0xec, 0x82, 0xe2, 0x70, 0x84,
+	0x2c, 0xb7, 0xaf, 0x33, 0x0a, 0x89, 0x4d, 0x18, 0x95, 0xb2, 0x65, 0xa1, 0x96, 0x6f, 0x55, 0x1a,
+	0x2b, 0x37, 0xd4, 0x38, 0x98, 0x3b, 0xf7, 0x42, 0x63, 0x7b, 0xf3, 0xe4, 0xdb, 0xf5, 0x4c, 0xaf,
+	0x30, 0x5c, 0xaa, 0x8a, 0x87, 0x60, 0xcb, 0x41, 0xdc, 0x26, 0x14, 0xc7, 0x32, 0x37, 0xbd, 0xcc,
+	0x1b, 0x29, 0x99, 0x87, 0xbe, 0x37, 0x99, 0x7a, 0xd9, 0x49, 0xd4, 0xc5, 0xee, 0x22, 0xf7, 0x95,
+	0x85, 0x86, 0x23, 0x44, 0x75, 0x57, 0x3a, 0x57, 0x16, 0x6a, 0x85, 0x75, 0xb9, 0x8f, 0x42, 0x6b,
+	0x94, 0x18, 0x55, 0xee, 0x17, 0xde, 0xfe, 0xf8, 0xb4, 0xbb, 0xb8, 0xb4, 0xaa, 0x04, 0xae, 0x2e,
+	0x5f, 0x7f, 0x0f, 0x71, 0x93, 0x51, 0x8e, 0xaa, 0x1f, 0x05, 0x6f, 0x32, 0xcf, 0x4c, 0xf8, 0xcf,
+	0x93, 0x29, 0x81, 0x8b, 0xde, 0xcc, 0xfb, 0x04, 0x4a, 0x1b, 0x65, 0xa1, 0xb6, 0xd9, 0xbb, 0xe0,
+	0x9d, 0x9f, 0xc0, 0xb4, 0xa1, 0x65, 0xd3, 0x86, 0xf6, 0x1b, 0xf0, 0x18, 0x5d, 0x04, 0x3e, 0x06,
+	0x62, 0x87, 0xe3, 0x7d, 0xa4, 0xe9, 0x36, 0x71, 0xfe, 0x23, 0xfb, 0x0a, 0xd2, 0x35, 0x20, 0xaf,
+	0x36, 0x8e, 0xb0, 0x3e, 0x08, 0xa0, 0x18, 0x11, 0x77, 0x35, 0x4b, 0x33, 0xf8, 0x5f, 0x43, 0x3d,
+	0x00, 0x80, 0xa2, 0x71, 0xdf, 0xf4, 0x52, 0x3c, 0xac, 0x7c, 0xab, 0x94, 0xb2, 0x10, 0x7e, 0x9b,
+	0x60, 0xbd, 0x72, 0x14, 0x8d, 0xfd, 0xc2, 0x0a, 0x79, 0x09, 0xec, 0x24, 0xd0, 0x42, 0xec, 0xd6,
+	0xbb, 0x2c, 0xc8, 0x76, 0x38, 0x16, 0x5f, 0x82, 0x4b, 0x4b, 0xe8, 0xd5, 0x94, 0x76, 0x89, 0x0c,
+	0x79, 0xf7, 0x6c, 0x4f, 0xd8, 0x47, 0x7c, 0x01, 0xf2, 0xf1, 0x97, 0x40, 0x25, 0xfd, 0xd1, 0x98,
+	0x45, 0xbe, 0x7d, 0xa6, 0x25, 0x1e, 0x1e, 0xdf, 0xe3, 0xca, 0x3a, 0xae, 0xb5, 0xe1, 0x29, 0xfb,
+	0x26, 0x62, 0x50, 0x4c, 0x2e, 0xdb, 0xcd, 0xf4, 0xa7, 0x13, 0x36, 0xb9, 0xfe, 0x47, 0xb6, 0xb0,
+	0x51, 0xfb, 0xe0, 0x64, 0xaa, 0x08, 0xa7, 0x53, 0x45, 0xf8, 0x3e, 0x55, 0x84, 0xf7, 0x33, 0x25,
+	0x73, 0x3a, 0x53, 0x32, 0x5f, 0x67, 0x4a, 0xe6, 0xf9, 0x3d, 0x4c, 0xec, 0xa3, 0xd1, 0xa0, 0xa1,
+	0x33, 0x43, 0x85, 0xae, 0x81, 0x28, 0x27, 0x8c, 0x4e, 0xdc, 0x37, 0x8b, 0x43, 0xdd, 0x82, 0xaf,
+	0xd5, 0x89, 0x1a, 0xfb, 0x2a, 0xb8, 0x26, 0xe2, 0x83, 0xf3, 0xde, 0x5b, 0xf8, 0xce, 0xaf, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0xea, 0xae, 0x0c, 0xbf, 0x2f, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -289,6 +502,8 @@ const _ = grpc.SupportPackageIsVersion4
 type MsgClient interface {
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 	CreateGauge(ctx context.Context, in *MsgCreateGauge, opts ...grpc.CallOption) (*MsgCreateGaugeResponse, error)
+	UpdateGauge(ctx context.Context, in *MsgUpdateGauge, opts ...grpc.CallOption) (*MsgUpdateGaugeResponse, error)
+	DeactivateGauge(ctx context.Context, in *MsgDeactivateGauge, opts ...grpc.CallOption) (*MsgDeactivateGaugeResponse, error)
 }
 
 type msgClient struct {
@@ -317,10 +532,30 @@ func (c *msgClient) CreateGauge(ctx context.Context, in *MsgCreateGauge, opts ..
 	return out, nil
 }
 
+func (c *msgClient) UpdateGauge(ctx context.Context, in *MsgUpdateGauge, opts ...grpc.CallOption) (*MsgUpdateGaugeResponse, error) {
+	out := new(MsgUpdateGaugeResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.dividends.Msg/UpdateGauge", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) DeactivateGauge(ctx context.Context, in *MsgDeactivateGauge, opts ...grpc.CallOption) (*MsgDeactivateGaugeResponse, error) {
+	out := new(MsgDeactivateGaugeResponse)
+	err := c.cc.Invoke(ctx, "/rollapp.dividends.Msg/DeactivateGauge", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	CreateGauge(context.Context, *MsgCreateGauge) (*MsgCreateGaugeResponse, error)
+	UpdateGauge(context.Context, *MsgUpdateGauge) (*MsgUpdateGaugeResponse, error)
+	DeactivateGauge(context.Context, *MsgDeactivateGauge) (*MsgDeactivateGaugeResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -332,6 +567,12 @@ func (*UnimplementedMsgServer) UpdateParams(ctx context.Context, req *MsgUpdateP
 }
 func (*UnimplementedMsgServer) CreateGauge(ctx context.Context, req *MsgCreateGauge) (*MsgCreateGaugeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGauge not implemented")
+}
+func (*UnimplementedMsgServer) UpdateGauge(ctx context.Context, req *MsgUpdateGauge) (*MsgUpdateGaugeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateGauge not implemented")
+}
+func (*UnimplementedMsgServer) DeactivateGauge(ctx context.Context, req *MsgDeactivateGauge) (*MsgDeactivateGaugeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeactivateGauge not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -374,6 +615,42 @@ func _Msg_CreateGauge_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_UpdateGauge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgUpdateGauge)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).UpdateGauge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rollapp.dividends.Msg/UpdateGauge",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).UpdateGauge(ctx, req.(*MsgUpdateGauge))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_DeactivateGauge_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgDeactivateGauge)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).DeactivateGauge(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rollapp.dividends.Msg/DeactivateGauge",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).DeactivateGauge(ctx, req.(*MsgDeactivateGauge))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "rollapp.dividends.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -385,6 +662,14 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateGauge",
 			Handler:    _Msg_CreateGauge_Handler,
+		},
+		{
+			MethodName: "UpdateGauge",
+			Handler:    _Msg_UpdateGauge_Handler,
+		},
+		{
+			MethodName: "DeactivateGauge",
+			Handler:    _Msg_DeactivateGauge_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -414,7 +699,7 @@ func (m *MsgCreateGauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	if m.VestingFrequency != 0 {
 		i = encodeVarintTx(dAtA, i, uint64(m.VestingFrequency))
 		i--
-		dAtA[i] = 0x20
+		dAtA[i] = 0x28
 	}
 	{
 		size, err := m.VestingCondition.MarshalToSizedBuffer(dAtA[:i])
@@ -425,7 +710,7 @@ func (m *MsgCreateGauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x1a
+	dAtA[i] = 0x22
 	{
 		size, err := m.QueryCondition.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
@@ -435,7 +720,16 @@ func (m *MsgCreateGauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i = encodeVarintTx(dAtA, i, uint64(size))
 	}
 	i--
-	dAtA[i] = 0x12
+	dAtA[i] = 0x1a
+	if len(m.ApprovedDenoms) > 0 {
+		for iNdEx := len(m.ApprovedDenoms) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ApprovedDenoms[iNdEx])
+			copy(dAtA[i:], m.ApprovedDenoms[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.ApprovedDenoms[iNdEx])))
+			i--
+			dAtA[i] = 0x12
+		}
+	}
 	if len(m.Authority) > 0 {
 		i -= len(m.Authority)
 		copy(dAtA[i:], m.Authority)
@@ -462,6 +756,131 @@ func (m *MsgCreateGaugeResponse) MarshalTo(dAtA []byte) (int, error) {
 }
 
 func (m *MsgCreateGaugeResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUpdateGauge) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpdateGauge) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpdateGauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ApprovedDenoms) > 0 {
+		for iNdEx := len(m.ApprovedDenoms) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.ApprovedDenoms[iNdEx])
+			copy(dAtA[i:], m.ApprovedDenoms[iNdEx])
+			i = encodeVarintTx(dAtA, i, uint64(len(m.ApprovedDenoms[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if m.GaugeId != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.GaugeId))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgUpdateGaugeResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgUpdateGaugeResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgUpdateGaugeResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgDeactivateGauge) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgDeactivateGauge) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgDeactivateGauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.GaugeId != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.GaugeId))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Authority) > 0 {
+		i -= len(m.Authority)
+		copy(dAtA[i:], m.Authority)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Authority)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgDeactivateGaugeResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgDeactivateGaugeResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgDeactivateGaugeResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -553,6 +972,12 @@ func (m *MsgCreateGauge) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
+	if len(m.ApprovedDenoms) > 0 {
+		for _, s := range m.ApprovedDenoms {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
 	l = m.QueryCondition.Size()
 	n += 1 + l + sovTx(uint64(l))
 	l = m.VestingCondition.Size()
@@ -564,6 +989,62 @@ func (m *MsgCreateGauge) Size() (n int) {
 }
 
 func (m *MsgCreateGaugeResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgUpdateGauge) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.GaugeId != 0 {
+		n += 1 + sovTx(uint64(m.GaugeId))
+	}
+	if len(m.ApprovedDenoms) > 0 {
+		for _, s := range m.ApprovedDenoms {
+			l = len(s)
+			n += 1 + l + sovTx(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *MsgUpdateGaugeResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgDeactivateGauge) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Authority)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.GaugeId != 0 {
+		n += 1 + sovTx(uint64(m.GaugeId))
+	}
+	return n
+}
+
+func (m *MsgDeactivateGaugeResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -665,6 +1146,38 @@ func (m *MsgCreateGauge) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ApprovedDenoms", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ApprovedDenoms = append(m.ApprovedDenoms, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field QueryCondition", wireType)
 			}
 			var msglen int
@@ -696,7 +1209,7 @@ func (m *MsgCreateGauge) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 3:
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field VestingCondition", wireType)
 			}
@@ -729,7 +1242,7 @@ func (m *MsgCreateGauge) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 4:
+		case 5:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field VestingFrequency", wireType)
 			}
@@ -796,6 +1309,340 @@ func (m *MsgCreateGaugeResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgCreateGaugeResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUpdateGauge) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpdateGauge: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpdateGauge: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GaugeId", wireType)
+			}
+			m.GaugeId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.GaugeId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ApprovedDenoms", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ApprovedDenoms = append(m.ApprovedDenoms, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgUpdateGaugeResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgUpdateGaugeResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgUpdateGaugeResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgDeactivateGauge) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgDeactivateGauge: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgDeactivateGauge: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Authority", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Authority = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GaugeId", wireType)
+			}
+			m.GaugeId = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.GaugeId |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgDeactivateGaugeResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgDeactivateGaugeResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgDeactivateGaugeResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
