@@ -15,6 +15,8 @@ import (
 type Keeper struct {
 	authority string // authority is the x/gov module account
 
+	getBalanceFn GetGaugeBalanceFunc
+
 	schema      collections.Schema
 	params      collections.Item[types.Params]
 	lastGaugeID collections.Sequence
@@ -39,8 +41,9 @@ func NewKeeper(
 	sb := collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey))
 
 	k := Keeper{
-		authority: authority,
-		schema:    collections.Schema{}, // set later
+		authority:    authority,
+		getBalanceFn: nil,                  // set in SetGetBalanceFunc
+		schema:       collections.Schema{}, // set later
 		params: collections.NewItem(
 			sb,
 			types.ParamsKey,
@@ -76,7 +79,10 @@ func NewKeeper(
 	return k
 }
 
-// Logger returns a logger instance for the incentives module.
+func (k Keeper) SetGetBalanceFunc(fn GetGaugeBalanceFunc) {
+	k.getBalanceFn = fn
+}
+
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }

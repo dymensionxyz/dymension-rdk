@@ -10,6 +10,8 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/dividends/types"
 )
 
+type GetGaugeBalanceFunc func(ctx sdk.Context, address sdk.AccAddress, denoms []string) sdk.Coins
+
 // Allocate rewards from active gauges. This function is called every block and
 // every epoch. `t` indicates whether the allocation called for blocks or epochs.
 func (k Keeper) Allocate(ctx sdk.Context, t types.VestingFrequency) error {
@@ -27,7 +29,7 @@ func (k Keeper) Allocate(ctx sdk.Context, t types.VestingFrequency) error {
 
 		var (
 			gaugeAddress = sdk.MustAccAddressFromBech32(gauge.Address)
-			gaugeBalance = k.GetBalance(ctx, gaugeAddress, gauge.ApprovedDenoms)
+			gaugeBalance = k.getBalanceFn(ctx, gaugeAddress, gauge.ApprovedDenoms)
 		)
 
 		if gaugeBalance.IsZero() {
@@ -96,19 +98,20 @@ func (k Keeper) AllocateStakers(ctx sdk.Context, gaugeRewards sdk.DecCoins, tota
 			reward        = gaugeRewards.MulDecTruncate(powerFraction)
 		)
 
-		// TODO: send rewards to x/distribution
 		k.distrKeeper.AllocateTokensToValidator(ctx, validator, reward)
 		return false
 	})
 }
 
-func (k Keeper) GetBalance(ctx sdk.Context, address sdk.AccAddress, denoms []string) sdk.Coins {
-	var coins []sdk.Coin
-	for _, denom := range denoms {
-		balance := k.bankKeeper.GetBalance(ctx, address, denom)
-		if !balance.IsZero() {
-			coins = append(coins, balance)
+func (k Keeper) GetBalanceFunc() GetGaugeBalanceFunc {
+	return func(ctx sdk.Context, address sdk.AccAddress, denoms []string) sdk.Coins {
+		var coins []sdk.Coin
+		for _, denom := range denoms {
+			balance := k.bankKeeper.GetBalance(ctx, address, denom)
+			if !balance.IsZero() {
+				coins = append(coins, balance)
+			}
 		}
+		return sdk.NewCoins(coins...)
 	}
-	return sdk.NewCoins(coins...)
 }
