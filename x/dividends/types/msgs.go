@@ -46,7 +46,7 @@ func (m MsgUpdateGauge) ValidateBasic() error {
 	}
 	for _, denom := range m.ApprovedDenoms {
 		if err := sdk.ValidateDenom(denom); err != nil {
-			return fmt.Errorf("validate approved denom: %w", err)
+			return sdkerrors.ErrInvalidRequest.Wrapf("validate approved denom: %s", err)
 		}
 	}
 	return nil
