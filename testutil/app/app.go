@@ -389,9 +389,7 @@ func NewRollapp(
 		authtypes.FeeCollectorName,
 	)
 	app.MintKeeper.SetHooks(
-		minttypes.NewMultiMintHooks(
-			// insert mint hooks receivers here
-		),
+		minttypes.NewMultiMintHooks(),
 	)
 
 	app.DistrKeeper = distrkeeper.NewKeeper(
