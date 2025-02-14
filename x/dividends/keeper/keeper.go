@@ -79,7 +79,7 @@ func NewKeeper(
 	return k
 }
 
-func (k Keeper) SetGetBalanceFunc(fn GetGaugeBalanceFunc) {
+func (k *Keeper) SetGetBalanceFunc(fn GetGaugeBalanceFunc) {
 	k.getBalanceFn = fn
 }
 
