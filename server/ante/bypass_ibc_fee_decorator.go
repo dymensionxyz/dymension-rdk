@@ -144,8 +144,8 @@ func (d BypassIBCFeeDecorator) whitelistedRelayer(ctx sdk.Context, msgs []sdk.Ms
 func isIBCNormalMsg(m sdk.Msg) bool {
 	switch m.(type) {
 	case
-			*channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
-			*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose, *clienttypes.MsgUpdateClient:
+		*channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
+		*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose, *clienttypes.MsgUpdateClient:
 		return true
 	}
 	return false
@@ -155,17 +155,17 @@ func isIBCLifecycleMsg(m sdk.Msg) bool {
 	switch m.(type) {
 	case
 		// Client Messages
-			*clienttypes.MsgCreateClient, *clienttypes.MsgUpdateClient,
-			*clienttypes.MsgUpgradeClient, *clienttypes.MsgSubmitMisbehaviour,
+		*clienttypes.MsgCreateClient, *clienttypes.MsgUpdateClient,
+		*clienttypes.MsgUpgradeClient, *clienttypes.MsgSubmitMisbehaviour,
 
 		// Connection Messages
-			*conntypes.MsgConnectionOpenInit, *conntypes.MsgConnectionOpenTry,
-			*conntypes.MsgConnectionOpenAck, *conntypes.MsgConnectionOpenConfirm,
+		*conntypes.MsgConnectionOpenInit, *conntypes.MsgConnectionOpenTry,
+		*conntypes.MsgConnectionOpenAck, *conntypes.MsgConnectionOpenConfirm,
 
 		// Channel Messages
-			*channeltypes.MsgChannelOpenInit, *channeltypes.MsgChannelOpenTry,
-			*channeltypes.MsgChannelOpenAck, *channeltypes.MsgChannelOpenConfirm,
-			*channeltypes.MsgChannelCloseInit, *channeltypes.MsgChannelCloseConfirm:
+		*channeltypes.MsgChannelOpenInit, *channeltypes.MsgChannelOpenTry,
+		*channeltypes.MsgChannelOpenAck, *channeltypes.MsgChannelOpenConfirm,
+		*channeltypes.MsgChannelCloseInit, *channeltypes.MsgChannelCloseConfirm:
 
 		return true
 	}
