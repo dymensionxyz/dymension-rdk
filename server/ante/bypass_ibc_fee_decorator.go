@@ -22,6 +22,7 @@ type BypassIBCFeeDecorator struct {
 	nextAnte anteHandler
 	dk       distrKeeper
 	sk       sequencerKeeper
+	pk       rollappParamsKeeper
 }
 
 type distrKeeper interface {
@@ -33,11 +34,16 @@ type sequencerKeeper interface {
 	GetWhitelistedRelayers(ctx sdk.Context, operatorAddr sdk.ValAddress) (types.WhitelistedRelayers, error)
 }
 
-func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencerKeeper) BypassIBCFeeDecorator {
+type rollappParamsKeeper interface {
+	FreeIBC(ctx sdk.Context) bool
+}
+
+func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencerKeeper, pk rollappParamsKeeper) BypassIBCFeeDecorator {
 	return BypassIBCFeeDecorator{
 		nextAnte: nextAnte,
 		dk:       dk,
 		sk:       sk,
+		pk:       pk,
 	}
 }
 
@@ -45,7 +51,7 @@ func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencer
 func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	msgs := tx.GetMsgs()
 	var err error
-	msgs, err = n.getAllFinalMsgs(ctx, msgs, 0)
+	msgs, err = n.getLeafMessages(ctx, msgs, 0)
 	if err != nil {
 		return ctx, err
 	}
@@ -110,7 +116,7 @@ func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []s
 
 const maxDepth = 6
 
-// getAllFinalMsgs recursively unpacks container messages (like MsgExec or MsgSubmitProposal) to extract all "final" (non-container) messages.
+// getLeafMessages recursively unpacks container messages (like MsgExec or MsgSubmitProposal) to extract all "final" (non-container) messages.
 //
 // Container messages may nest other container messages, potentially multiple levels deep.
 // This function traverses these nested structures until it reaches only final messages that cannot be further expanded.
@@ -125,14 +131,14 @@ const maxDepth = 6
 //   - An error if the nesting exceeds maxDepth or if an error occurs while retrieving inner messages.
 //
 // If the maximum depth (maxDepth) is exceeded, it returns an error to prevent infinite recursion or overly deep nesting.
-func (n BypassIBCFeeDecorator) getAllFinalMsgs(ctx sdk.Context, msgs []sdk.Msg, depth int) ([]sdk.Msg, error) {
+func (n BypassIBCFeeDecorator) getLeafMessages(ctx sdk.Context, msgs []sdk.Msg, depth int) ([]sdk.Msg, error) {
 	if depth >= maxDepth {
 		return nil, fmt.Errorf("found more nested msgs than permitted. Limit is: %d", maxDepth)
 	}
 
 	var final []sdk.Msg
 	for _, msg := range msgs {
-		inner, err := n.getInnerMsgs(ctx, msg, depth)
+		inner, err := n.getNestedMessages(ctx, msg, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -141,8 +147,8 @@ func (n BypassIBCFeeDecorator) getAllFinalMsgs(ctx sdk.Context, msgs []sdk.Msg, 
 	return final, nil
 }
 
-// getInnerMsgs handles nested messages and returns the final messages contained inside them.
-func (n BypassIBCFeeDecorator) getInnerMsgs(ctx sdk.Context, msg sdk.Msg, depth int) ([]sdk.Msg, error) {
+// getNestedMessages handles nested messages and returns the final messages contained inside them.
+func (n BypassIBCFeeDecorator) getNestedMessages(ctx sdk.Context, msg sdk.Msg, depth int) ([]sdk.Msg, error) {
 	var f func() ([]sdk.Msg, error)
 	switch m := msg.(type) {
 	case *authz.MsgExec:
@@ -155,7 +161,7 @@ func (n BypassIBCFeeDecorator) getInnerMsgs(ctx sdk.Context, msg sdk.Msg, depth 
 		if err != nil {
 			return nil, err
 		}
-		return n.getAllFinalMsgs(ctx, messages, depth+1)
+		return n.getLeafMessages(ctx, messages, depth+1)
 	}
 	// it's a final message
 	return []sdk.Msg{msg}, nil

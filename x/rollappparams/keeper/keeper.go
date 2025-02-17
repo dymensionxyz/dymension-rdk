@@ -70,3 +70,9 @@ func (k Keeper) MinGasPrices(ctx sdk.Context) (res sdk.DecCoins) {
 	k.paramSpace.Get(ctx, types.KeyMinGasPrices, &res)
 	return
 }
+
+func (k Keeper) FreeIBC(ctx sdk.Context) bool {
+	var res bool
+	k.paramSpace.Get(ctx, types.KeyFreeIBC, &res)
+	return res
+}

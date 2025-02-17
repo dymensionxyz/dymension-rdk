@@ -20,6 +20,7 @@ var (
 	KeyDa           = []byte("da")
 	KeyVersion      = []byte("version")
 	KeyMinGasPrices = []byte("minGasPrices")
+	KeyFreeIBC      = []byte("freeIBC")
 
 	// Default version set
 	DrsVersion = uint32(1)
@@ -47,6 +48,7 @@ func DefaultParams() Params {
 		Da:           DefaultDA,
 		DrsVersion:   DrsVersion,
 		MinGasPrices: nil,
+		FreeIbc:      true,
 	}
 }
 
