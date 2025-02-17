@@ -87,11 +87,11 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 }
 
 func (d BypassIBCFeeDecorator) getLeaves(ctx sdk.Context, depth int, msgs ...sdk.Msg) ([]sdk.Msg, error) {
-	if len(msgs) == 0 {
-		return nil, nil
-	}
 	if depth >= maxDepth {
 		return nil, fmt.Errorf("found more nested msgs than permitted, limit is: %d", maxDepth)
+	}
+	if len(msgs) == 0 {
+		return nil, nil
 	}
 	if 1 < len(msgs) {
 		var ret []sdk.Msg
@@ -108,12 +108,12 @@ func (d BypassIBCFeeDecorator) getLeaves(ctx sdk.Context, depth int, msgs ...sdk
 	var temp []sdk.Msg
 	var err error
 	switch m := m.(type) {
+	default:
+		return msgs, nil
 	case *authz.MsgExec:
 		temp, err = m.GetMessages()
 	case *group.MsgSubmitProposal:
 		temp, err = m.GetMsgs()
-	default:
-		return msgs, nil
 	}
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "unpack nested")
