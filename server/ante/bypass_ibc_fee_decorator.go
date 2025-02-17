@@ -7,24 +7,21 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
+	conntypes "github.com/cosmos/ibc-go/v6/modules/core/03-connection/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
+const maxDepth = 6
+
 type anteHandler interface {
 	AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error)
-}
-
-type BypassIBCFeeDecorator struct {
-	nextAnte anteHandler
-	dk       distrKeeper
-	sk       sequencerKeeper
-	pk       rollappParamsKeeper
 }
 
 type distrKeeper interface {
@@ -40,6 +37,13 @@ type rollappParamsKeeper interface {
 	FreeIBC(ctx sdk.Context) bool
 }
 
+type BypassIBCFeeDecorator struct {
+	nextAnte anteHandler
+	dk       distrKeeper
+	sk       sequencerKeeper
+	pk       rollappParamsKeeper
+}
+
 func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencerKeeper, pk rollappParamsKeeper) BypassIBCFeeDecorator {
 	return BypassIBCFeeDecorator{
 		nextAnte: nextAnte,
@@ -51,7 +55,67 @@ func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencer
 
 func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	leaves, err := d.getLeaves(ctx, 0, tx.GetMsgs()...)
+	if err != nil {
+		return ctx, errorsmod.Wrap(err, "get leaves")
+	}
+	normalCnt := 0
+	lifecycleCnt := 0
+	for _, m := range leaves {
+		if isIBCNormalMsg(m) {
+			normalCnt++
+		}
+		if isIBCLifecycleMsg(m) {
+			lifecycleCnt++
+		}
+	}
+	cnt := normalCnt + lifecycleCnt
+	if cnt == 0 {
+		return d.nextAnte.AnteHandle(ctx, tx, simulate, next)
+	}
+	if 0 < cnt && cnt < len(leaves) {
+		return ctx, gerrc.ErrInvalidArgument.Wrap("combined ibc and non ibc messages")
+	}
+	whitelisted := d.isIBCWhitelistedRelayer(ctx, leaves)
+	if 0 < lifecycleCnt && whitelisted != nil {
+		return ctx, errorsmod.Wrap(err, "whitelisted relayer")
+	}
+	if whitelisted == nil || d.pk.FreeIBC(ctx) {
+		// bypass fee
+		return next(ctx, tx, simulate)
+	}
+	// normal fee paying logic
+	return d.nextAnte.AnteHandle(ctx, tx, simulate, next)
+}
 
+func isIBCNormalMsg(m sdk.Msg) bool {
+	switch m.(type) {
+	case
+		*channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
+		*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose, *clienttypes.MsgUpdateClient:
+		return true
+	}
+	return false
+}
+
+func isIBCLifecycleMsg(m sdk.Msg) bool {
+	switch m.(type) {
+	case
+		// Client Messages
+		*clienttypes.MsgCreateClient, *clienttypes.MsgUpdateClient,
+		*clienttypes.MsgUpgradeClient, *clienttypes.MsgSubmitMisbehaviour,
+
+		// Connection Messages
+		*conntypes.MsgConnectionOpenInit, *conntypes.MsgConnectionOpenTry,
+		*conntypes.MsgConnectionOpenAck, *conntypes.MsgConnectionOpenConfirm,
+
+		// Channel Messages
+		*channeltypes.MsgChannelOpenInit, *channeltypes.MsgChannelOpenTry,
+		*channeltypes.MsgChannelOpenAck, *channeltypes.MsgChannelOpenConfirm,
+		*channeltypes.MsgChannelCloseInit, *channeltypes.MsgChannelCloseConfirm:
+
+		return true
+	}
+	return false
 }
 
 func (d BypassIBCFeeDecorator) getLeaves(ctx sdk.Context, depth int, msgs ...sdk.Msg) ([]sdk.Msg, error) {
@@ -151,8 +215,6 @@ func (d BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []s
 
 	return nil
 }
-
-const maxDepth = 6
 
 // getLeafMessages recursively unpacks container messages (like MsgExec or MsgSubmitProposal) to extract all "final" (non-container) messages.
 //

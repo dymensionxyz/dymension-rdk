@@ -34,7 +34,7 @@ func countIBCMsgs(msgs []sdk.Msg) int {
 func isPacketMsg(msg sdk.Msg) bool {
 	switch msg.(type) {
 	case *channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
-		*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose:
+		*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose, *clienttypes.MsgUpdateClient:
 	default:
 		return false
 	}
