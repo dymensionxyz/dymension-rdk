@@ -255,6 +255,28 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 			expectErr:       true, // exceeds maxDepth
 			expectNoFee:     false,
 		},
+		{
+			name:            "Free does not allow lifecycle",
+			msgs:            []sdk.Msg{lifecycle0},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{},
+			expectErr:       true, // whitelist still checked
+			expectNoFee:     false,
+			freeIBC:         true,
+		},
+		{
+			name:            "No charge if not lifecycle msg and free",
+			msgs:            []sdk.Msg{normal0},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{},
+			expectErr:       false,
+			expectNoFee:     true,
+			freeIBC:         true,
+		},
 	}
 
 	for _, tc := range testCases {
