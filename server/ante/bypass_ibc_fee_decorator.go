@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"slices"
 
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/types/tx"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -47,18 +49,54 @@ func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencer
 	}
 }
 
+func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
+	leaves, err := d.getLeaves(ctx, 0, tx.GetMsgs()...)
+
+}
+
+func (d BypassIBCFeeDecorator) getLeaves(ctx sdk.Context, depth int, msgs ...sdk.Msg) ([]sdk.Msg, error) {
+	if depth >= maxDepth {
+		return nil, fmt.Errorf("found more nested msgs than permitted, limit is: %d", maxDepth)
+	}
+	if len(msgs) < 2 {
+		return msgs, nil
+	}
+	var ret []sdk.Msg
+	for _, msg := range msgs {
+		var temp []sdk.Msg
+		var err error
+		switch m := msg.(type) {
+		case *authz.MsgExec:
+			temp, err = m.GetMessages()
+		case *group.MsgSubmitProposal:
+			temp, err = m.GetMsgs()
+		default:
+			temp = append(temp, msg)
+		}
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "unpack nested")
+		}
+		leaves, err := d.getLeaves(ctx, depth+1, temp...)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "get leaves")
+		}
+		ret = append(ret, leaves...)
+	}
+	return ret, nil
+}
+
 // AnteHandle allows IBC relayer messages and skips fee deduct and min gas price ante handlers for whitelisted relayer messages
-func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
+func (d BypassIBCFeeDecorator) AnteHandleOld(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	msgs := tx.GetMsgs()
 	var err error
-	msgs, err = n.getLeafMessages(ctx, msgs, 0)
+	msgs, err = d.getLeafMessages(ctx, msgs, 0)
 	if err != nil {
 		return ctx, err
 	}
 
 	totalMsgs := len(msgs)
 	if totalMsgs == 0 {
-		return n.nextAnte.AnteHandle(ctx, tx, simulate, next)
+		return d.nextAnte.AnteHandle(ctx, tx, simulate, next)
 	}
 
 	ibcCount := countIBCMsgs(msgs)
@@ -66,7 +104,7 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	switch {
 	case ibcCount == totalMsgs:
 		// all are IBC messages
-		if err = n.isIBCWhitelistedRelayer(ctx, msgs); err == nil {
+		if err = d.isIBCWhitelistedRelayer(ctx, msgs); err == nil {
 			// whitelisted: all IBC allowed without fees
 			return next(ctx, tx, simulate)
 		}
@@ -78,26 +116,26 @@ func (n BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 			return ctx, sdkerrors.ErrUnauthorized.Wrap("non-whitelisted sender can only send packet IBC messages")
 		} else {
 			// fallback to normal fee ante
-			return n.nextAnte.AnteHandle(ctx, tx, simulate, next)
+			return d.nextAnte.AnteHandle(ctx, tx, simulate, next)
 		}
 	case ibcCount > 0:
 		// mixed: some IBC and some non-IBC
 		return ctx, fmt.Errorf("mixed IBC and non-IBC messages in the same transaction not allowed")
 	default:
 		// no IBC messages
-		return n.nextAnte.AnteHandle(ctx, tx, simulate, next)
+		return d.nextAnte.AnteHandle(ctx, tx, simulate, next)
 	}
 }
 
 // isIBCWhitelistedRelayer checks if all signers of the IBC messages are whitelisted (unchanged from previous logic)
-func (n BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []sdk.Msg) error {
-	consAddr := n.dk.GetPreviousProposerConsAddr(ctx)
-	seq, ok := n.sk.GetSequencerByConsAddr(ctx, consAddr)
+func (d BypassIBCFeeDecorator) isIBCWhitelistedRelayer(ctx sdk.Context, msgs []sdk.Msg) error {
+	consAddr := d.dk.GetPreviousProposerConsAddr(ctx)
+	seq, ok := d.sk.GetSequencerByConsAddr(ctx, consAddr)
 	if !ok {
 		return fmt.Errorf("get sequencer by consensus addr: %s: %w", consAddr.String(), types.ErrSequencerNotFound)
 	}
 
-	wlRelayers, err := n.sk.GetWhitelistedRelayers(ctx, seq.GetOperator())
+	wlRelayers, err := d.sk.GetWhitelistedRelayers(ctx, seq.GetOperator())
 	if err != nil {
 		return fmt.Errorf("get whitelisted relayers: sequencer address %s: %w", consAddr.String(), err)
 	}
@@ -131,14 +169,14 @@ const maxDepth = 6
 //   - An error if the nesting exceeds maxDepth or if an error occurs while retrieving inner messages.
 //
 // If the maximum depth (maxDepth) is exceeded, it returns an error to prevent infinite recursion or overly deep nesting.
-func (n BypassIBCFeeDecorator) getLeafMessages(ctx sdk.Context, msgs []sdk.Msg, depth int) ([]sdk.Msg, error) {
+func (d BypassIBCFeeDecorator) getLeafMessages(ctx sdk.Context, msgs []sdk.Msg, depth int) ([]sdk.Msg, error) {
 	if depth >= maxDepth {
 		return nil, fmt.Errorf("found more nested msgs than permitted. Limit is: %d", maxDepth)
 	}
 
 	var final []sdk.Msg
 	for _, msg := range msgs {
-		inner, err := n.getNestedMessages(ctx, msg, depth)
+		inner, err := d.getNestedMessages(ctx, msg, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -148,7 +186,7 @@ func (n BypassIBCFeeDecorator) getLeafMessages(ctx sdk.Context, msgs []sdk.Msg, 
 }
 
 // getNestedMessages handles nested messages and returns the final messages contained inside them.
-func (n BypassIBCFeeDecorator) getNestedMessages(ctx sdk.Context, msg sdk.Msg, depth int) ([]sdk.Msg, error) {
+func (d BypassIBCFeeDecorator) getNestedMessages(ctx sdk.Context, msg sdk.Msg, depth int) ([]sdk.Msg, error) {
 	var f func() ([]sdk.Msg, error)
 	switch m := msg.(type) {
 	case *authz.MsgExec:
@@ -161,7 +199,7 @@ func (n BypassIBCFeeDecorator) getNestedMessages(ctx sdk.Context, msg sdk.Msg, d
 		if err != nil {
 			return nil, err
 		}
-		return n.getLeafMessages(ctx, messages, depth+1)
+		return d.getLeafMessages(ctx, messages, depth+1)
 	}
 	// it's a final message
 	return []sdk.Msg{msg}, nil
