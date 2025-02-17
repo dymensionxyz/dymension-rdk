@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/dymensionxyz/dymint/da/registry"
@@ -105,11 +106,19 @@ func blockDa(any) error {
 	return fmt.Errorf("da type is not allowed to be modified: %w", gerrc.ErrInvalidArgument)
 }
 
+func validateBool(i any) error {
+	if _, ok := i.(bool); !ok {
+		return errorsmod.WithType(gerrc.ErrInvalidArgument, i)
+	}
+	return nil
+}
+
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, blockDa),
 		paramtypes.NewParamSetPair(KeyVersion, &p.DrsVersion, blockDRSVersion),
 		paramtypes.NewParamSetPair(KeyMinGasPrices, &p.MinGasPrices, ValidateMinGasPrices),
+		paramtypes.NewParamSetPair(KeyFreeIBC, &p.FreeIbc, validateBool),
 	}
 }

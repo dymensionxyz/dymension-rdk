@@ -71,6 +71,10 @@ func (k Keeper) MinGasPrices(ctx sdk.Context) (res sdk.DecCoins) {
 	return
 }
 
+func (k Keeper) SetFreeIBC(ctx sdk.Context, b bool) {
+	k.paramSpace.Set(ctx, types.KeyFreeIBC, b)
+}
+
 func (k Keeper) FreeIBC(ctx sdk.Context) bool {
 	var res bool
 	k.paramSpace.Get(ctx, types.KeyFreeIBC, &res)
