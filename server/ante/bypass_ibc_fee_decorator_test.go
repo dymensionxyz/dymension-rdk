@@ -30,6 +30,8 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 	ibcMsg2 := &channeltypes.MsgChannelOpenInit{}
 	// IBC packet msg
 	ibcMsg3 := &channeltypes.MsgRecvPacket{}
+	// IBC packet msg
+	ibcMsg4 := &clienttypes.MsgUpdateClient{}
 	// Non-IBC msg
 	nonIBCMsg := &banktypes.MsgSend{}
 
@@ -86,7 +88,7 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 		},
 		{
 			name:             "Packet IBC message, signer not whitelisted",
-			msgs:             []sdk.Msg{ibcMsg3},
+			msgs:             []sdk.Msg{ibcMsg3, ibcMsg4},
 			signer:           nonWhitelistedSigner,
 			sequencerExists:  true,
 			sequencerOper:    operatorAddr,
