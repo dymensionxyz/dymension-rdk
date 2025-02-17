@@ -74,11 +74,11 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	if 0 < cnt && cnt < len(leaves) {
 		return ctx, gerrc.ErrInvalidArgument.Wrap("combined ibc and non ibc messages")
 	}
-	whitelisted := d.whitelistedRelayer(ctx, leaves)
-	if 0 < lifecycleCnt && whitelisted != nil {
-		return ctx, errorsmod.Wrap(err, "whitelisted relayer")
+	wlErr := d.whitelistedRelayer(ctx, leaves)
+	if 0 < lifecycleCnt && wlErr != nil {
+		return ctx, errorsmod.Wrap(wlErr, "wlErr relayer")
 	}
-	if whitelisted == nil || d.pk.FreeIBC(ctx) {
+	if wlErr == nil || d.pk.FreeIBC(ctx) {
 		// bypass fee
 		return next(ctx, tx, simulate)
 	}
@@ -87,34 +87,38 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 }
 
 func (d BypassIBCFeeDecorator) getLeaves(ctx sdk.Context, depth int, msgs ...sdk.Msg) ([]sdk.Msg, error) {
+	if len(msgs) == 0 {
+		return nil, nil
+	}
 	if depth >= maxDepth {
 		return nil, fmt.Errorf("found more nested msgs than permitted, limit is: %d", maxDepth)
 	}
-	if len(msgs) < 2 {
+	if 1 < len(msgs) {
+		var ret []sdk.Msg
+		for _, m := range msgs {
+			l, err := d.getLeaves(ctx, depth+1, m)
+			if err != nil {
+				return nil, err
+			}
+			ret = append(ret, l...)
+		}
+		return ret, nil
+	}
+	m := msgs[0]
+	var temp []sdk.Msg
+	var err error
+	switch m := m.(type) {
+	case *authz.MsgExec:
+		temp, err = m.GetMessages()
+	case *group.MsgSubmitProposal:
+		temp, err = m.GetMsgs()
+	default:
 		return msgs, nil
 	}
-	var ret []sdk.Msg
-	for _, msg := range msgs {
-		var temp []sdk.Msg
-		var err error
-		switch m := msg.(type) {
-		case *authz.MsgExec:
-			temp, err = m.GetMessages()
-		case *group.MsgSubmitProposal:
-			temp, err = m.GetMsgs()
-		default:
-			temp = append(temp, msg)
-		}
-		if err != nil {
-			return nil, errorsmod.Wrap(err, "unpack nested")
-		}
-		leaves, err := d.getLeaves(ctx, depth+1, temp...)
-		if err != nil {
-			return nil, errorsmod.Wrap(err, "get leaves")
-		}
-		ret = append(ret, leaves...)
+	if err != nil {
+		return nil, errorsmod.Wrap(err, "unpack nested")
 	}
-	return ret, nil
+	return d.getLeaves(ctx, depth+1, temp...)
 }
 
 // whitelistedRelayer checks if all signers of the IBC messages are whitelisted
@@ -155,7 +159,7 @@ func isIBCLifecycleMsg(m sdk.Msg) bool {
 	switch m.(type) {
 	case
 		// Client Messages
-		*clienttypes.MsgCreateClient, *clienttypes.MsgUpdateClient,
+		*clienttypes.MsgCreateClient,
 		*clienttypes.MsgUpgradeClient, *clienttypes.MsgSubmitMisbehaviour,
 
 		// Connection Messages
