@@ -38,4 +38,8 @@ message Params {
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins",
     (gogoproto.nullable) = false
   ];
+
+  // If true then typical relayer messages (updateClient, recvPacket, ack, timeout) are free for all.
+  // If false, then go to whitelist.
+  bool free_ibc = 4;
 }
