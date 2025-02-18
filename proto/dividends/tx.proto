@@ -25,11 +25,8 @@ message MsgCreateGauge {
   // approved_denoms is a list of allowed tokens: only gov can approve tokens
   // that can be used for dividends
   repeated string approved_denoms = 2;
-  // query_condition is *where* the gauge rewards are distributed to
   QueryCondition query_condition = 3 [ (gogoproto.nullable) = false ];
-  // vesting_condition is *how long* the gauge rewards are distributed to
-  VestingCondition vesting_condition = 4 [ (gogoproto.nullable) = false ];
-  // vesting_condition is *how frequent* the gauge rewards are distributed to
+  VestingDuration vesting_duration = 4 [ (gogoproto.nullable) = false ];
   VestingFrequency vesting_frequency = 5;
 }
 

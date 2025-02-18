@@ -15,7 +15,6 @@ message Params {
 // Gauge is an object that stores and distributes yields to recipients who
 // satisfy certain conditions.
 message Gauge {
-  // id is the unique ID of a gauge
   uint64 id = 1;
   // address is a bech32-formatted address that holds the tokens to allocate
   string address = 2;
@@ -24,30 +23,36 @@ message Gauge {
   // approved_denoms is a list of allowed tokens: only gov can approve tokens
   // that can be used for dividends
   repeated string approved_denoms = 4;
-  // query_condition is *where* the gauge rewards are distributed to
   QueryCondition query_condition = 5 [ (gogoproto.nullable) = false ];
-  // vesting_condition is *how long* the gauge rewards are distributed to
-  VestingCondition vesting_condition = 6 [ (gogoproto.nullable) = false ];
-  // vesting_condition is *how frequent* the gauge rewards are distributed to
+  VestingDuration vesting_duration = 6 [ (gogoproto.nullable) = false ];
   VestingFrequency vesting_frequency = 7;
 }
 
+// QueryCondition is *where* the gauge rewards are distributed. This holds an object that helps
+// query all the users that satisfy the specified condition.
 message QueryCondition {
   oneof condition {
+    // stakers is a condition that queries all the stakers
     QueryConditionStakers stakers = 1;
   }
 }
 
-message VestingCondition {
-  oneof condition {
+// VestingDuration is *how long* the gauge rewards are distributed
+message VestingDuration {
+  oneof duration {
+    // perpetual is a vesting condition that distributes rewards infinitely
     VestingConditionPerpetual perpetual = 1;
-    VestingConditionLimited limited = 2;
+    // fixed_term is a vesting condition that distributes rewards over the specified time
+    VestingConditionFixedTerm fixed_term = 2;
   }
 }
 
+// VestingFrequency is *how frequent* the gauge rewards are distributed
 enum VestingFrequency {
   VESTING_FREQUENCY_UNSPECIFIED = 0;
+  // VESTING_FREQUENCY_BLOCK distributes rewards every block
   VESTING_FREQUENCY_BLOCK = 1;
+  // VESTING_FREQUENCY_EPOCH distributes rewards every epoch
   VESTING_FREQUENCY_EPOCH = 2;
 }
 
@@ -64,14 +69,14 @@ message QueryConditionStakers {}
 // refilled.
 message VestingConditionPerpetual {}
 
-// VestingConditionLimited is a vesting condition that distributes rewards over
+// VestingConditionFixedTerm is a vesting condition that distributes rewards over
 // the specified time. Non-perpetual gauges distribute their tokens equally per
 // period while the gauge is in the active period.
-message VestingConditionLimited {
-  // num_units is the number of total epochs/blocks distribution will be
+message VestingConditionFixedTerm {
+  // num_total is the number of total epochs/blocks distribution will be
   // completed over
-  int64 num_units = 1;
-  // filled_epochs is the number of epochs/blocks distribution has been
+  int64 num_total = 1;
+  // num_done is the number of epochs/blocks distribution has been
   // completed on already
-  int64 filled_units = 2;
+  int64 num_done = 2;
 }

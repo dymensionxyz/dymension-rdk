@@ -14,32 +14,21 @@ message EventUpdateParams {
 }
 
 message EventCreateGauge {
-  // gauge_id is the ID of the gauge to update
   uint64 gauge_id = 1;
-  // approved_denoms is a list of allowed tokens
   repeated string approved_denoms = 2;
-  // query_condition is *where* the gauge rewards are distributed to
   QueryCondition query_condition = 3 [ (gogoproto.nullable) = false ];
-  // vesting_condition is *how long* the gauge rewards are distributed to
-  VestingCondition vesting_condition = 4 [ (gogoproto.nullable) = false ];
-  // vesting_condition is *how frequent* the gauge rewards are distributed to
+  VestingDuration vesting_duration = 4 [ (gogoproto.nullable) = false ];
   VestingFrequency vesting_frequency = 5;
 }
 
 message EventUpdateGauge {
-  // gauge_id is the ID of the gauge to update
   uint64 gauge_id = 1;
-  // approved_denoms is a list of allowed tokens
   repeated string approved_denoms = 2;
-  // query_condition is *where* the gauge rewards are distributed to
   QueryCondition query_condition = 3 [ (gogoproto.nullable) = false ];
-  // vesting_condition is *how long* the gauge rewards are distributed to
-  VestingCondition vesting_condition = 4 [ (gogoproto.nullable) = false ];
-  // vesting_condition is *how frequent* the gauge rewards are distributed to
+  VestingDuration vesting_duration = 4 [ (gogoproto.nullable) = false ];
   VestingFrequency vesting_frequency = 5;
 }
 
 message EventDeactivateGauge {
-  // gauge_id is the ID of the gauge to update
   uint64 gauge_id = 1;
 }

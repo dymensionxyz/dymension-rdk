@@ -26,8 +26,8 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 						Stakers: &types.QueryConditionStakers{},
 					},
 				},
-				VestingCondition: types.VestingCondition{
-					Condition: &types.VestingCondition_Perpetual{
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_Perpetual{
 						Perpetual: &types.VestingConditionPerpetual{},
 					},
 				},
@@ -47,11 +47,11 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 						Stakers: &types.QueryConditionStakers{},
 					},
 				},
-				VestingCondition: types.VestingCondition{
-					Condition: &types.VestingCondition_Limited{
-						Limited: &types.VestingConditionLimited{
-							NumUnits:    10,
-							FilledUnits: 0,
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_FixedTerm{
+						FixedTerm: &types.VestingConditionFixedTerm{
+							NumTotal: 10,
+							NumDone:  0,
 						},
 					},
 				},
@@ -71,17 +71,59 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 						Stakers: &types.QueryConditionStakers{},
 					},
 				},
-				VestingCondition: types.VestingCondition{
-					Condition: &types.VestingCondition_Limited{
-						Limited: &types.VestingConditionLimited{
-							NumUnits:    10,
-							FilledUnits: 0,
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_FixedTerm{
+						FixedTerm: &types.VestingConditionFixedTerm{
+							NumTotal: 10,
+							NumDone:  0,
 						},
 					},
 				},
 				VestingFrequency: types.VestingFrequency_VESTING_FREQUENCY_EPOCH,
 			},
 			error: nil,
+		},
+		{
+			name: "invalid vesting duration: zero total",
+			msg: types.MsgCreateGauge{
+				Authority: authority,
+				QueryCondition: types.QueryCondition{
+					Condition: &types.QueryCondition_Stakers{
+						Stakers: &types.QueryConditionStakers{},
+					},
+				},
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_FixedTerm{
+						FixedTerm: &types.VestingConditionFixedTerm{
+							NumTotal: 0,
+							NumDone:  0,
+						},
+					},
+				},
+				VestingFrequency: types.VestingFrequency_VESTING_FREQUENCY_EPOCH,
+			},
+			error: sdkerrors.ErrInvalidRequest,
+		},
+		{
+			name: "invalid vesting duration: total equals to done",
+			msg: types.MsgCreateGauge{
+				Authority: authority,
+				QueryCondition: types.QueryCondition{
+					Condition: &types.QueryCondition_Stakers{
+						Stakers: &types.QueryConditionStakers{},
+					},
+				},
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_FixedTerm{
+						FixedTerm: &types.VestingConditionFixedTerm{
+							NumTotal: 10,
+							NumDone:  10,
+						},
+					},
+				},
+				VestingFrequency: types.VestingFrequency_VESTING_FREQUENCY_EPOCH,
+			},
+			error: sdkerrors.ErrInvalidRequest,
 		},
 		{
 			name: "invalid signer",
@@ -92,8 +134,8 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 						Stakers: &types.QueryConditionStakers{},
 					},
 				},
-				VestingCondition: types.VestingCondition{
-					Condition: &types.VestingCondition_Perpetual{
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_Perpetual{
 						Perpetual: &types.VestingConditionPerpetual{},
 					},
 				},
@@ -110,8 +152,8 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 						Stakers: &types.QueryConditionStakers{},
 					},
 				},
-				VestingCondition: types.VestingCondition{
-					Condition: &types.VestingCondition_Perpetual{
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_Perpetual{
 						Perpetual: &types.VestingConditionPerpetual{},
 					},
 				},
@@ -128,8 +170,8 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 						Stakers: nil, // nil stakers cause errors
 					},
 				},
-				VestingCondition: types.VestingCondition{
-					Condition: &types.VestingCondition_Perpetual{
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_Perpetual{
 						Perpetual: &types.VestingConditionPerpetual{},
 					},
 				},
@@ -138,7 +180,7 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 			error: sdkerrors.ErrInvalidRequest,
 		},
 		{
-			name: "invalid vesting condition",
+			name: "invalid vesting duration",
 			msg: types.MsgCreateGauge{
 				Authority: authority,
 				QueryCondition: types.QueryCondition{
@@ -146,8 +188,8 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 						Stakers: &types.QueryConditionStakers{},
 					},
 				},
-				VestingCondition: types.VestingCondition{
-					Condition: &types.VestingCondition_Perpetual{
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_Perpetual{
 						Perpetual: nil, // nil perpetual cause errors
 					},
 				},
@@ -164,9 +206,9 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 						Stakers: &types.QueryConditionStakers{},
 					},
 				},
-				VestingCondition: types.VestingCondition{
-					Condition: &types.VestingCondition_Perpetual{
-						Perpetual: nil, // nil perpetual cause errors
+				VestingDuration: types.VestingDuration{
+					Duration: &types.VestingDuration_Perpetual{
+						Perpetual: &types.VestingConditionPerpetual{},
 					},
 				},
 				VestingFrequency: types.VestingFrequency_VESTING_FREQUENCY_UNSPECIFIED,
@@ -200,7 +242,7 @@ func (s *KeeperTestSuite) TestCreateGauge() {
 				s.Require().NoError(gauge.ValidateBasic())
 				s.Require().Equal(uint64(0x0), gauge.Id)
 				s.Require().Equal(tc.msg.QueryCondition, gauge.QueryCondition)
-				s.Require().Equal(tc.msg.VestingCondition, gauge.VestingCondition)
+				s.Require().Equal(tc.msg.VestingDuration, gauge.VestingDuration)
 				s.Require().Equal(tc.msg.VestingFrequency, gauge.VestingFrequency)
 
 				// Verify the gauge is accessible by the ID

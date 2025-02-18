@@ -31,7 +31,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) (*types.GenesisState, error) {
 	if err != nil {
 		return nil, fmt.Errorf("get all gauges: %w", err)
 	}
-	lastGaugeId, err := k.NextGaugeId(ctx)
+	lastGaugeId, err := k.GetGaugeId(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("next gauge id: %w", err)
 	}

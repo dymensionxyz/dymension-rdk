@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -22,8 +23,8 @@ func GetQueryCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		CmdQueryParams(),
-		CmdQueryDistribution(),
-		CmdQueryVote(),
+		CmdQueryGaugeById(),
+		CmdQueryGauges(),
 	)
 
 	flags.AddQueryFlagsToCmd(cmd)
@@ -57,9 +58,9 @@ func CmdQueryParams() *cobra.Command {
 	return cmd
 }
 
-func CmdQueryDistribution() *cobra.Command {
+func CmdQueryGaugeById() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "gauge-by-id [id]",
+		Use:   "gauge [id]",
 		Short: "Get gauge by ID",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientQueryContext(cmd)
@@ -68,7 +69,12 @@ func CmdQueryDistribution() *cobra.Command {
 			}
 			queryClient := types.NewQueryClient(clientCtx)
 
-			res, err := queryClient.GaugeByID(cmd.Context(), &types.GaugeByIDRequest{})
+			id, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return fmt.Errorf("cannot parse gauge id: %w", err)
+			}
+
+			res, err := queryClient.GaugeByID(cmd.Context(), &types.GaugeByIDRequest{Id: id})
 			if err != nil {
 				return err
 			}
@@ -82,7 +88,7 @@ func CmdQueryDistribution() *cobra.Command {
 	return cmd
 }
 
-func CmdQueryVote() *cobra.Command {
+func CmdQueryGauges() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "gauges",
 		Short: "Get all gauges",

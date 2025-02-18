@@ -12,6 +12,10 @@ func (k Keeper) NextGaugeId(ctx sdk.Context) (uint64, error) {
 	return k.lastGaugeID.Next(ctx)
 }
 
+func (k Keeper) GetGaugeId(ctx sdk.Context) (uint64, error) {
+	return k.lastGaugeID.Peek(ctx)
+}
+
 func (k Keeper) SetLastGaugeId(ctx sdk.Context, id uint64) error {
 	return k.lastGaugeID.Set(ctx, id)
 }
@@ -39,8 +43,8 @@ func (k Keeper) SetGauge(ctx sdk.Context, gauge types.Gauge) error {
 }
 
 func (k Keeper) GetGauge(ctx sdk.Context, gaugeId uint64) (types.Gauge, error) {
-	activeGaugeKey := collections.Join(true, gaugeId)
-	gauge, err := k.gauges.Get(ctx, activeGaugeKey)
+	inactiveGaugeKey := collections.Join(false, gaugeId)
+	gauge, err := k.gauges.Get(ctx, inactiveGaugeKey)
 	if err == nil {
 		return gauge, nil
 	}
@@ -48,8 +52,7 @@ func (k Keeper) GetGauge(ctx sdk.Context, gaugeId uint64) (types.Gauge, error) {
 		return types.Gauge{}, err
 	}
 
-	inactiveGaugeKey := collections.Join(false, gaugeId)
-	return k.gauges.Get(ctx, inactiveGaugeKey)
+	return k.GetActiveGauge(ctx, gaugeId)
 }
 
 func (k Keeper) GetActiveGauge(ctx sdk.Context, gaugeId uint64) (types.Gauge, error) {

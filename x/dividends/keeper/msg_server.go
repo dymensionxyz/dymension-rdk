@@ -43,7 +43,7 @@ func (m MsgServer) CreateGauge(goCtx context.Context, msg *types.MsgCreateGauge)
 		true,
 		msg.ApprovedDenoms,
 		msg.QueryCondition,
-		msg.VestingCondition,
+		msg.VestingDuration,
 		msg.VestingFrequency,
 	)
 
@@ -56,7 +56,7 @@ func (m MsgServer) CreateGauge(goCtx context.Context, msg *types.MsgCreateGauge)
 		GaugeId:          gaugeId,
 		ApprovedDenoms:   msg.ApprovedDenoms,
 		QueryCondition:   msg.QueryCondition,
-		VestingCondition: msg.VestingCondition,
+		VestingDuration:  msg.VestingDuration,
 		VestingFrequency: msg.VestingFrequency,
 	})
 	if err != nil {
@@ -89,7 +89,7 @@ func (m MsgServer) UpdateGauge(goCtx context.Context, msg *types.MsgUpdateGauge)
 		GaugeId:          msg.GaugeId,
 		ApprovedDenoms:   msg.ApprovedDenoms,
 		QueryCondition:   gauge.QueryCondition,
-		VestingCondition: gauge.VestingCondition,
+		VestingDuration:  gauge.VestingDuration,
 		VestingFrequency: gauge.VestingFrequency,
 	})
 	if err != nil {

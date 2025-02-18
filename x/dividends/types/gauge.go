@@ -12,7 +12,7 @@ func NewGauge(
 	active bool,
 	approvedDenoms []string,
 	queryCondition QueryCondition,
-	vestingCondition VestingCondition,
+	vestingDuration VestingDuration,
 	vestingFrequency VestingFrequency,
 ) Gauge {
 	return Gauge{
@@ -21,9 +21,13 @@ func NewGauge(
 		Active:           active,
 		ApprovedDenoms:   approvedDenoms,
 		QueryCondition:   queryCondition,
-		VestingCondition: vestingCondition,
+		VestingDuration:  vestingDuration,
 		VestingFrequency: vestingFrequency,
 	}
+}
+
+func (g Gauge) GetAccAddress() sdk.AccAddress {
+	return sdk.MustAccAddressFromBech32(g.Address)
 }
 
 func GaugeAccountName(id uint64) string {
@@ -43,7 +47,7 @@ func (g Gauge) ValidateBasic() error {
 	if err := g.QueryCondition.ValidateBasic(); err != nil {
 		return fmt.Errorf("invalid query condition: %w", err)
 	}
-	if err := g.VestingCondition.ValidateBasic(); err != nil {
+	if err := g.VestingDuration.ValidateBasic(); err != nil {
 		return fmt.Errorf("invalid vesting condition: %w", err)
 	}
 	if g.VestingFrequency == VestingFrequency_VESTING_FREQUENCY_UNSPECIFIED {
@@ -66,19 +70,22 @@ func (qc QueryCondition) ValidateBasic() error {
 }
 
 // ValidateBasic performs basic validation of the VestingCondition fields.
-func (vc VestingCondition) ValidateBasic() error {
-	switch c := vc.Condition.(type) {
-	case *VestingCondition_Perpetual:
+func (vc VestingDuration) ValidateBasic() error {
+	switch c := vc.Duration.(type) {
+	case *VestingDuration_Perpetual:
 		if c.Perpetual == nil {
 			return fmt.Errorf("perpetual field should be non-nil (it may be empty)")
 		}
 		return nil
-	case *VestingCondition_Limited:
-		if c.Limited.NumUnits < 0 {
-			return fmt.Errorf("num_units cannot be negative")
+	case *VestingDuration_FixedTerm:
+		if c.FixedTerm.NumTotal <= 0 {
+			return fmt.Errorf("num_total must be positive")
 		}
-		if c.Limited.FilledUnits < 0 {
-			return fmt.Errorf("filled_units must be greater than zero")
+		if c.FixedTerm.NumDone < 0 {
+			return fmt.Errorf("num_done cannot be negative")
+		}
+		if c.FixedTerm.NumTotal <= c.FixedTerm.NumDone {
+			return fmt.Errorf("num_done must be less than num_total")
 		}
 		return nil
 	default:

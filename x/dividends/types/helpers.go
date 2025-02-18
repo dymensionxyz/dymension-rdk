@@ -8,7 +8,7 @@ func FilterDenoms(coins sdk.Coins, denoms []string) sdk.Coins {
 	for _, denom := range denoms {
 		d[denom] = struct{}{}
 	}
-	filtered := sdk.NewCoins()
+	filtered := make(sdk.Coins, 0, len(denoms))
 	for _, coin := range coins {
 		if _, ok := d[coin.Denom]; ok {
 			filtered = filtered.Add(coin)

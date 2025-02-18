@@ -172,16 +172,15 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the module.
-func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
-	err := am.keeper.BeginBlock(ctx)
-	if err != nil {
-		panic(fmt.Errorf("x/dividends: begin block: %w", err))
-	}
-}
+func (am AppModule) BeginBlock(sdk.Context, abci.RequestBeginBlock) {}
 
 // EndBlock executes all ABCI EndBlock logic respective to the module.
 // Returns a nil validatorUpdate struct array.
-func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	err := am.keeper.EndBlock(ctx)
+	if err != nil {
+		panic(fmt.Errorf("x/dividends: begin block: %w", err))
+	}
 	return []abci.ValidatorUpdate{}
 }
 

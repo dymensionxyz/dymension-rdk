@@ -27,7 +27,7 @@ func (m MsgCreateGauge) ValidateBasic() error {
 	if err := m.QueryCondition.ValidateBasic(); err != nil {
 		return errors.Join(sdkerrors.ErrInvalidRequest, err)
 	}
-	if err := m.VestingCondition.ValidateBasic(); err != nil {
+	if err := m.VestingDuration.ValidateBasic(); err != nil {
 		return errors.Join(sdkerrors.ErrInvalidRequest, err)
 	}
 	if m.VestingFrequency == VestingFrequency_VESTING_FREQUENCY_UNSPECIFIED {

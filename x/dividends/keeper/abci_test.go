@@ -19,7 +19,7 @@ func (s *KeeperTestSuite) TestBeginBlock() {
 	testCases := []struct {
 		name             string
 		qc               types.QueryCondition
-		vc               types.VestingCondition
+		vd               types.VestingDuration
 		vf               types.VestingFrequency
 		gaugeBalance     sdk.Coins
 		acceptableDenoms []string
@@ -33,8 +33,8 @@ func (s *KeeperTestSuite) TestBeginBlock() {
 					Stakers: &types.QueryConditionStakers{},
 				},
 			},
-			vc: types.VestingCondition{
-				Condition: &types.VestingCondition_Perpetual{
+			vd: types.VestingDuration{
+				Duration: &types.VestingDuration_Perpetual{
 					Perpetual: &types.VestingConditionPerpetual{},
 				},
 			},
@@ -57,14 +57,35 @@ func (s *KeeperTestSuite) TestBeginBlock() {
 			},
 		},
 		{
+			name: "stakers, perpetual, block, empty gauge balance",
+			qc: types.QueryCondition{
+				Condition: &types.QueryCondition_Stakers{
+					Stakers: &types.QueryConditionStakers{},
+				},
+			},
+			vd: types.VestingDuration{
+				Duration: &types.VestingDuration_Perpetual{
+					Perpetual: &types.VestingConditionPerpetual{},
+				},
+			},
+			vf:               types.VestingFrequency_VESTING_FREQUENCY_BLOCK,
+			gaugeBalance:     sdk.NewCoins(),
+			acceptableDenoms: []string{"hui", "zalupa"},
+			numBlocks:        2,
+			valRewards: []sdk.DecCoins{
+				nil,
+				nil,
+			},
+		},
+		{
 			name: "stakers, perpetual, block, extra denoms",
 			qc: types.QueryCondition{
 				Condition: &types.QueryCondition_Stakers{
 					Stakers: &types.QueryConditionStakers{},
 				},
 			},
-			vc: types.VestingCondition{
-				Condition: &types.VestingCondition_Perpetual{
+			vd: types.VestingDuration{
+				Duration: &types.VestingDuration_Perpetual{
 					Perpetual: &types.VestingConditionPerpetual{},
 				},
 			},
@@ -95,11 +116,11 @@ func (s *KeeperTestSuite) TestBeginBlock() {
 					Stakers: &types.QueryConditionStakers{},
 				},
 			},
-			vc: types.VestingCondition{
-				Condition: &types.VestingCondition_Limited{
-					Limited: &types.VestingConditionLimited{
-						NumUnits:    10,
-						FilledUnits: 0, // 0 of 10 are filled,
+			vd: types.VestingDuration{
+				Duration: &types.VestingDuration_FixedTerm{
+					FixedTerm: &types.VestingConditionFixedTerm{
+						NumTotal: 10,
+						NumDone:  0, // 0 of 10 are filled
 					},
 				},
 			},
@@ -132,11 +153,11 @@ func (s *KeeperTestSuite) TestBeginBlock() {
 					Stakers: &types.QueryConditionStakers{},
 				},
 			},
-			vc: types.VestingCondition{
-				Condition: &types.VestingCondition_Limited{
-					Limited: &types.VestingConditionLimited{
-						NumUnits:    3,
-						FilledUnits: 0, // 0 of 10 are filled,
+			vd: types.VestingDuration{
+				Duration: &types.VestingDuration_FixedTerm{
+					FixedTerm: &types.VestingConditionFixedTerm{
+						NumTotal: 3,
+						NumDone:  0, // 0 of 3 are filled
 					},
 				},
 			},
@@ -179,11 +200,11 @@ func (s *KeeperTestSuite) TestBeginBlock() {
 					Stakers: &types.QueryConditionStakers{},
 				},
 			},
-			vc: types.VestingCondition{
-				Condition: &types.VestingCondition_Limited{
-					Limited: &types.VestingConditionLimited{
-						NumUnits:    10,
-						FilledUnits: 0, // 0 of 10 are filled,
+			vd: types.VestingDuration{
+				Duration: &types.VestingDuration_FixedTerm{
+					FixedTerm: &types.VestingConditionFixedTerm{
+						NumTotal: 10,
+						NumDone:  0, // 0 of 10 are filled
 					},
 				},
 			},
@@ -210,7 +231,7 @@ func (s *KeeperTestSuite) TestBeginBlock() {
 				Authority:        authority,
 				ApprovedDenoms:   tc.acceptableDenoms,
 				QueryCondition:   tc.qc,
-				VestingCondition: tc.vc,
+				VestingDuration:  tc.vd,
 				VestingFrequency: tc.vf,
 			})
 
@@ -222,19 +243,10 @@ func (s *KeeperTestSuite) TestBeginBlock() {
 			// Val has 1000 coins
 			val := s.CreateValidator()
 
-			// End a current block to apply valset updates and bond a validator.
-			// No dividends are distributed on this step.
-			s.EndBlock()
-
-			// Assert initial state: zero outstanding rewards, zero commission, zero current rewards
-			s.Require().True(s.App.DistrKeeper.GetValidatorOutstandingRewards(s.Ctx, val.GetOperator()).Rewards.IsZero())
-			s.Require().True(s.App.DistrKeeper.GetValidatorCurrentRewards(s.Ctx, val.GetOperator()).Rewards.IsZero())
-			s.Require().True(s.App.DistrKeeper.GetValidatorAccumulatedCommission(s.Ctx, val.GetOperator()).Commission.IsZero())
-
 			for i := range tc.numBlocks {
-				// Begin a new block to distribute dividends.
+				// End a block to distribute dividends.
 				// In this block, the val must receive the rewards.
-				s.BeginNewBlock()
+				s.EndBlock()
 
 				// Assert final state
 				s.Require().Equal(tc.valRewards[i], s.App.DistrKeeper.GetValidatorOutstandingRewards(s.Ctx, val.GetOperator()).Rewards)

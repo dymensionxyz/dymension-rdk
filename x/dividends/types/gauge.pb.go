@@ -23,12 +23,15 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// VestingFrequency is *how frequent* the gauge rewards are distributed
 type VestingFrequency int32
 
 const (
 	VestingFrequency_VESTING_FREQUENCY_UNSPECIFIED VestingFrequency = 0
-	VestingFrequency_VESTING_FREQUENCY_BLOCK       VestingFrequency = 1
-	VestingFrequency_VESTING_FREQUENCY_EPOCH       VestingFrequency = 2
+	// VESTING_FREQUENCY_BLOCK distributes rewards every block
+	VestingFrequency_VESTING_FREQUENCY_BLOCK VestingFrequency = 1
+	// VESTING_FREQUENCY_EPOCH distributes rewards every epoch
+	VestingFrequency_VESTING_FREQUENCY_EPOCH VestingFrequency = 2
 )
 
 var VestingFrequency_name = map[int32]string{
@@ -101,7 +104,6 @@ func (m *Params) GetDistrEpochIdentifier() string {
 // Gauge is an object that stores and distributes yields to recipients who
 // satisfy certain conditions.
 type Gauge struct {
-	// id is the unique ID of a gauge
 	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	// address is a bech32-formatted address that holds the tokens to allocate
 	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
@@ -109,12 +111,9 @@ type Gauge struct {
 	Active bool `protobuf:"varint,3,opt,name=active,proto3" json:"active,omitempty"`
 	// approved_denoms is a list of allowed tokens: only gov can approve tokens
 	// that can be used for dividends
-	ApprovedDenoms []string `protobuf:"bytes,4,rep,name=approved_denoms,json=approvedDenoms,proto3" json:"approved_denoms,omitempty"`
-	// query_condition is *where* the gauge rewards are distributed to
-	QueryCondition QueryCondition `protobuf:"bytes,5,opt,name=query_condition,json=queryCondition,proto3" json:"query_condition"`
-	// vesting_condition is *how long* the gauge rewards are distributed to
-	VestingCondition VestingCondition `protobuf:"bytes,6,opt,name=vesting_condition,json=vestingCondition,proto3" json:"vesting_condition"`
-	// vesting_condition is *how frequent* the gauge rewards are distributed to
+	ApprovedDenoms   []string         `protobuf:"bytes,4,rep,name=approved_denoms,json=approvedDenoms,proto3" json:"approved_denoms,omitempty"`
+	QueryCondition   QueryCondition   `protobuf:"bytes,5,opt,name=query_condition,json=queryCondition,proto3" json:"query_condition"`
+	VestingDuration  VestingDuration  `protobuf:"bytes,6,opt,name=vesting_duration,json=vestingDuration,proto3" json:"vesting_duration"`
 	VestingFrequency VestingFrequency `protobuf:"varint,7,opt,name=vesting_frequency,json=vestingFrequency,proto3,enum=rollapp.dividends.VestingFrequency" json:"vesting_frequency,omitempty"`
 }
 
@@ -186,11 +185,11 @@ func (m *Gauge) GetQueryCondition() QueryCondition {
 	return QueryCondition{}
 }
 
-func (m *Gauge) GetVestingCondition() VestingCondition {
+func (m *Gauge) GetVestingDuration() VestingDuration {
 	if m != nil {
-		return m.VestingCondition
+		return m.VestingDuration
 	}
-	return VestingCondition{}
+	return VestingDuration{}
 }
 
 func (m *Gauge) GetVestingFrequency() VestingFrequency {
@@ -200,6 +199,8 @@ func (m *Gauge) GetVestingFrequency() VestingFrequency {
 	return VestingFrequency_VESTING_FREQUENCY_UNSPECIFIED
 }
 
+// QueryCondition is *where* the gauge rewards are distributed. This holds an object that helps
+// query all the users that satisfy the specified condition.
 type QueryCondition struct {
 	// Types that are valid to be assigned to Condition:
 	//	*QueryCondition_Stakers
@@ -272,25 +273,26 @@ func (*QueryCondition) XXX_OneofWrappers() []interface{} {
 	}
 }
 
-type VestingCondition struct {
-	// Types that are valid to be assigned to Condition:
-	//	*VestingCondition_Perpetual
-	//	*VestingCondition_Limited
-	Condition isVestingCondition_Condition `protobuf_oneof:"condition"`
+// VestingDuration is *how long* the gauge rewards are distributed
+type VestingDuration struct {
+	// Types that are valid to be assigned to Duration:
+	//	*VestingDuration_Perpetual
+	//	*VestingDuration_FixedTerm
+	Duration isVestingDuration_Duration `protobuf_oneof:"duration"`
 }
 
-func (m *VestingCondition) Reset()         { *m = VestingCondition{} }
-func (m *VestingCondition) String() string { return proto.CompactTextString(m) }
-func (*VestingCondition) ProtoMessage()    {}
-func (*VestingCondition) Descriptor() ([]byte, []int) {
+func (m *VestingDuration) Reset()         { *m = VestingDuration{} }
+func (m *VestingDuration) String() string { return proto.CompactTextString(m) }
+func (*VestingDuration) ProtoMessage()    {}
+func (*VestingDuration) Descriptor() ([]byte, []int) {
 	return fileDescriptor_904d8195b7413b1f, []int{3}
 }
-func (m *VestingCondition) XXX_Unmarshal(b []byte) error {
+func (m *VestingDuration) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *VestingCondition) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *VestingDuration) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_VestingCondition.Marshal(b, m, deterministic)
+		return xxx_messageInfo_VestingDuration.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -300,60 +302,60 @@ func (m *VestingCondition) XXX_Marshal(b []byte, deterministic bool) ([]byte, er
 		return b[:n], nil
 	}
 }
-func (m *VestingCondition) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_VestingCondition.Merge(m, src)
+func (m *VestingDuration) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VestingDuration.Merge(m, src)
 }
-func (m *VestingCondition) XXX_Size() int {
+func (m *VestingDuration) XXX_Size() int {
 	return m.Size()
 }
-func (m *VestingCondition) XXX_DiscardUnknown() {
-	xxx_messageInfo_VestingCondition.DiscardUnknown(m)
+func (m *VestingDuration) XXX_DiscardUnknown() {
+	xxx_messageInfo_VestingDuration.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_VestingCondition proto.InternalMessageInfo
+var xxx_messageInfo_VestingDuration proto.InternalMessageInfo
 
-type isVestingCondition_Condition interface {
-	isVestingCondition_Condition()
+type isVestingDuration_Duration interface {
+	isVestingDuration_Duration()
 	MarshalTo([]byte) (int, error)
 	Size() int
 }
 
-type VestingCondition_Perpetual struct {
+type VestingDuration_Perpetual struct {
 	Perpetual *VestingConditionPerpetual `protobuf:"bytes,1,opt,name=perpetual,proto3,oneof" json:"perpetual,omitempty"`
 }
-type VestingCondition_Limited struct {
-	Limited *VestingConditionLimited `protobuf:"bytes,2,opt,name=limited,proto3,oneof" json:"limited,omitempty"`
+type VestingDuration_FixedTerm struct {
+	FixedTerm *VestingConditionFixedTerm `protobuf:"bytes,2,opt,name=fixed_term,json=fixedTerm,proto3,oneof" json:"fixed_term,omitempty"`
 }
 
-func (*VestingCondition_Perpetual) isVestingCondition_Condition() {}
-func (*VestingCondition_Limited) isVestingCondition_Condition()   {}
+func (*VestingDuration_Perpetual) isVestingDuration_Duration() {}
+func (*VestingDuration_FixedTerm) isVestingDuration_Duration() {}
 
-func (m *VestingCondition) GetCondition() isVestingCondition_Condition {
+func (m *VestingDuration) GetDuration() isVestingDuration_Duration {
 	if m != nil {
-		return m.Condition
+		return m.Duration
 	}
 	return nil
 }
 
-func (m *VestingCondition) GetPerpetual() *VestingConditionPerpetual {
-	if x, ok := m.GetCondition().(*VestingCondition_Perpetual); ok {
+func (m *VestingDuration) GetPerpetual() *VestingConditionPerpetual {
+	if x, ok := m.GetDuration().(*VestingDuration_Perpetual); ok {
 		return x.Perpetual
 	}
 	return nil
 }
 
-func (m *VestingCondition) GetLimited() *VestingConditionLimited {
-	if x, ok := m.GetCondition().(*VestingCondition_Limited); ok {
-		return x.Limited
+func (m *VestingDuration) GetFixedTerm() *VestingConditionFixedTerm {
+	if x, ok := m.GetDuration().(*VestingDuration_FixedTerm); ok {
+		return x.FixedTerm
 	}
 	return nil
 }
 
 // XXX_OneofWrappers is for the internal use of the proto package.
-func (*VestingCondition) XXX_OneofWrappers() []interface{} {
+func (*VestingDuration) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
-		(*VestingCondition_Perpetual)(nil),
-		(*VestingCondition_Limited)(nil),
+		(*VestingDuration_Perpetual)(nil),
+		(*VestingDuration_FixedTerm)(nil),
 	}
 }
 
@@ -438,30 +440,30 @@ func (m *VestingConditionPerpetual) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_VestingConditionPerpetual proto.InternalMessageInfo
 
-// VestingConditionLimited is a vesting condition that distributes rewards over
+// VestingConditionFixedTerm is a vesting condition that distributes rewards over
 // the specified time. Non-perpetual gauges distribute their tokens equally per
 // period while the gauge is in the active period.
-type VestingConditionLimited struct {
-	// num_units is the number of total epochs/blocks distribution will be
+type VestingConditionFixedTerm struct {
+	// num_total is the number of total epochs/blocks distribution will be
 	// completed over
-	NumUnits int64 `protobuf:"varint,1,opt,name=num_units,json=numUnits,proto3" json:"num_units,omitempty"`
-	// filled_epochs is the number of epochs/blocks distribution has been
+	NumTotal int64 `protobuf:"varint,1,opt,name=num_total,json=numTotal,proto3" json:"num_total,omitempty"`
+	// num_done is the number of epochs/blocks distribution has been
 	// completed on already
-	FilledUnits int64 `protobuf:"varint,2,opt,name=filled_units,json=filledUnits,proto3" json:"filled_units,omitempty"`
+	NumDone int64 `protobuf:"varint,2,opt,name=num_done,json=numDone,proto3" json:"num_done,omitempty"`
 }
 
-func (m *VestingConditionLimited) Reset()         { *m = VestingConditionLimited{} }
-func (m *VestingConditionLimited) String() string { return proto.CompactTextString(m) }
-func (*VestingConditionLimited) ProtoMessage()    {}
-func (*VestingConditionLimited) Descriptor() ([]byte, []int) {
+func (m *VestingConditionFixedTerm) Reset()         { *m = VestingConditionFixedTerm{} }
+func (m *VestingConditionFixedTerm) String() string { return proto.CompactTextString(m) }
+func (*VestingConditionFixedTerm) ProtoMessage()    {}
+func (*VestingConditionFixedTerm) Descriptor() ([]byte, []int) {
 	return fileDescriptor_904d8195b7413b1f, []int{6}
 }
-func (m *VestingConditionLimited) XXX_Unmarshal(b []byte) error {
+func (m *VestingConditionFixedTerm) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *VestingConditionLimited) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *VestingConditionFixedTerm) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_VestingConditionLimited.Marshal(b, m, deterministic)
+		return xxx_messageInfo_VestingConditionFixedTerm.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -471,28 +473,28 @@ func (m *VestingConditionLimited) XXX_Marshal(b []byte, deterministic bool) ([]b
 		return b[:n], nil
 	}
 }
-func (m *VestingConditionLimited) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_VestingConditionLimited.Merge(m, src)
+func (m *VestingConditionFixedTerm) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VestingConditionFixedTerm.Merge(m, src)
 }
-func (m *VestingConditionLimited) XXX_Size() int {
+func (m *VestingConditionFixedTerm) XXX_Size() int {
 	return m.Size()
 }
-func (m *VestingConditionLimited) XXX_DiscardUnknown() {
-	xxx_messageInfo_VestingConditionLimited.DiscardUnknown(m)
+func (m *VestingConditionFixedTerm) XXX_DiscardUnknown() {
+	xxx_messageInfo_VestingConditionFixedTerm.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_VestingConditionLimited proto.InternalMessageInfo
+var xxx_messageInfo_VestingConditionFixedTerm proto.InternalMessageInfo
 
-func (m *VestingConditionLimited) GetNumUnits() int64 {
+func (m *VestingConditionFixedTerm) GetNumTotal() int64 {
 	if m != nil {
-		return m.NumUnits
+		return m.NumTotal
 	}
 	return 0
 }
 
-func (m *VestingConditionLimited) GetFilledUnits() int64 {
+func (m *VestingConditionFixedTerm) GetNumDone() int64 {
 	if m != nil {
-		return m.FilledUnits
+		return m.NumDone
 	}
 	return 0
 }
@@ -502,53 +504,54 @@ func init() {
 	proto.RegisterType((*Params)(nil), "rollapp.dividends.Params")
 	proto.RegisterType((*Gauge)(nil), "rollapp.dividends.Gauge")
 	proto.RegisterType((*QueryCondition)(nil), "rollapp.dividends.QueryCondition")
-	proto.RegisterType((*VestingCondition)(nil), "rollapp.dividends.VestingCondition")
+	proto.RegisterType((*VestingDuration)(nil), "rollapp.dividends.VestingDuration")
 	proto.RegisterType((*QueryConditionStakers)(nil), "rollapp.dividends.QueryConditionStakers")
 	proto.RegisterType((*VestingConditionPerpetual)(nil), "rollapp.dividends.VestingConditionPerpetual")
-	proto.RegisterType((*VestingConditionLimited)(nil), "rollapp.dividends.VestingConditionLimited")
+	proto.RegisterType((*VestingConditionFixedTerm)(nil), "rollapp.dividends.VestingConditionFixedTerm")
 }
 
 func init() { proto.RegisterFile("dividends/gauge.proto", fileDescriptor_904d8195b7413b1f) }
 
 var fileDescriptor_904d8195b7413b1f = []byte{
-	// 589 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x54, 0xcd, 0x4e, 0xdb, 0x4c,
-	0x14, 0xb5, 0x0d, 0x24, 0x64, 0xf2, 0x29, 0x84, 0x11, 0x3f, 0xfe, 0x8a, 0xea, 0x06, 0x77, 0x51,
-	0x0b, 0xb5, 0x89, 0x44, 0x2b, 0x75, 0xd7, 0x45, 0x82, 0x03, 0x51, 0x11, 0x18, 0x53, 0x90, 0xe8,
-	0xc6, 0x32, 0x9e, 0xc1, 0x8c, 0xb0, 0x3d, 0x66, 0x3c, 0x8e, 0x48, 0x9f, 0xa2, 0x2f, 0xd3, 0x77,
-	0x60, 0xc9, 0xb2, 0xab, 0xaa, 0x22, 0xfb, 0x3e, 0x43, 0x65, 0x3b, 0x76, 0x9a, 0x10, 0x5a, 0x76,
-	0xb9, 0xe7, 0x9c, 0x7b, 0xee, 0xbd, 0x27, 0xd6, 0x80, 0x55, 0x44, 0xfa, 0x04, 0xe1, 0x00, 0x45,
-	0x2d, 0xd7, 0x8e, 0x5d, 0xdc, 0x0c, 0x19, 0xe5, 0x14, 0x2e, 0x33, 0xea, 0x79, 0x76, 0x18, 0x36,
-	0x0b, 0xfa, 0xd9, 0x8a, 0x4b, 0x5d, 0x9a, 0xb2, 0xad, 0xe4, 0x57, 0x26, 0x54, 0x3f, 0x80, 0x92,
-	0x61, 0x33, 0xdb, 0x8f, 0xe0, 0x3b, 0xb0, 0x86, 0x48, 0xc4, 0x99, 0x85, 0x43, 0xea, 0x5c, 0x5a,
-	0x49, 0x17, 0x27, 0x17, 0x04, 0x33, 0x59, 0x6c, 0x88, 0x5a, 0xc5, 0x5c, 0x49, 0x59, 0x3d, 0x21,
-	0x7b, 0x05, 0xa7, 0xfe, 0x92, 0xc0, 0xc2, 0x6e, 0x32, 0x18, 0xd6, 0x80, 0x44, 0x50, 0xaa, 0x9d,
-	0x37, 0x25, 0x82, 0xa0, 0x0c, 0xca, 0x36, 0x42, 0x0c, 0x47, 0x91, 0x2c, 0xa5, 0x06, 0x79, 0x09,
-	0xd7, 0x40, 0xc9, 0x76, 0x38, 0xe9, 0x63, 0x79, 0xae, 0x21, 0x6a, 0x8b, 0xe6, 0xa8, 0x82, 0xaf,
-	0xc0, 0x92, 0x1d, 0x86, 0x8c, 0xf6, 0x31, 0xb2, 0x10, 0x0e, 0xa8, 0x1f, 0xc9, 0xf3, 0x8d, 0x39,
-	0xad, 0x62, 0xd6, 0x72, 0x78, 0x27, 0x45, 0xa1, 0x01, 0x96, 0xae, 0x63, 0xcc, 0x06, 0x96, 0x43,
-	0x03, 0x44, 0x38, 0xa1, 0x81, 0xbc, 0xd0, 0x10, 0xb5, 0xea, 0xf6, 0x66, 0xf3, 0xc1, 0xdd, 0xcd,
-	0xa3, 0x44, 0xd9, 0xc9, 0x85, 0xed, 0xf9, 0xdb, 0x1f, 0x2f, 0x04, 0xb3, 0x76, 0x3d, 0x81, 0xc2,
-	0x53, 0xb0, 0xdc, 0xc7, 0x11, 0x27, 0x81, 0xfb, 0x87, 0x67, 0x29, 0xf5, 0x7c, 0x39, 0xc3, 0xf3,
-	0x34, 0xd3, 0x4e, 0xbb, 0xd6, 0xfb, 0x53, 0x38, 0x34, 0xc6, 0xbe, 0x17, 0x0c, 0x5f, 0xc7, 0x38,
-	0x70, 0x06, 0x72, 0xb9, 0x21, 0x6a, 0xb5, 0xbf, 0xf9, 0x76, 0x73, 0x69, 0xe1, 0x58, 0x20, 0xaa,
-	0x03, 0x6a, 0x93, 0x17, 0xc1, 0x1d, 0x50, 0x8e, 0xb8, 0x7d, 0x85, 0x59, 0x94, 0xa6, 0x5f, 0xdd,
-	0xd6, 0xfe, 0x99, 0xc2, 0x71, 0xa6, 0xdf, 0x13, 0xcc, 0xbc, 0xb5, 0x5d, 0x05, 0x95, 0xe2, 0x72,
-	0xf5, 0x9b, 0x08, 0xea, 0xd3, 0x37, 0xc2, 0x7d, 0x50, 0x09, 0x31, 0x0b, 0x31, 0x8f, 0x6d, 0x6f,
-	0x34, 0xe9, 0xf5, 0x13, 0xb2, 0x31, 0xf2, 0x9e, 0x3d, 0xc1, 0x1c, 0x1b, 0xc0, 0x2e, 0x28, 0x7b,
-	0xc4, 0x27, 0x1c, 0xa3, 0xf4, 0xf3, 0xa8, 0x6e, 0x6f, 0x3d, 0xc1, 0x6b, 0x3f, 0xeb, 0x48, 0xf6,
-	0x1e, 0x35, 0x4f, 0xee, 0xbd, 0x0e, 0x56, 0x67, 0x1e, 0xaa, 0x6e, 0x80, 0xff, 0x1f, 0xdd, 0x4b,
-	0x3d, 0x03, 0xeb, 0x8f, 0x0c, 0x82, 0x1b, 0xa0, 0x12, 0xc4, 0xbe, 0x15, 0x07, 0x84, 0x67, 0xe9,
-	0xce, 0x99, 0x8b, 0x41, 0xec, 0x9f, 0x24, 0x35, 0xdc, 0x04, 0xff, 0x5d, 0x10, 0xcf, 0xc3, 0x68,
-	0xc4, 0x4b, 0x29, 0x5f, 0xcd, 0xb0, 0x54, 0xb2, 0x45, 0x8b, 0x1c, 0x8b, 0x7f, 0x10, 0x6e, 0x82,
-	0xe7, 0xa7, 0xfa, 0xf1, 0xa7, 0xde, 0xc1, 0xae, 0xd5, 0x35, 0xf5, 0xa3, 0x13, 0xfd, 0xa0, 0x73,
-	0x66, 0x9d, 0x1c, 0x1c, 0x1b, 0x7a, 0xa7, 0xd7, 0xed, 0xe9, 0x3b, 0x75, 0x01, 0x6e, 0x80, 0xf5,
-	0x87, 0x92, 0xf6, 0xfe, 0x61, 0xe7, 0x63, 0x5d, 0x9c, 0x4d, 0xea, 0xc6, 0x61, 0x67, 0xaf, 0x2e,
-	0xb5, 0x8f, 0x6e, 0xef, 0x15, 0xf1, 0xee, 0x5e, 0x11, 0x7f, 0xde, 0x2b, 0xe2, 0xd7, 0xa1, 0x22,
-	0xdc, 0x0d, 0x15, 0xe1, 0xfb, 0x50, 0x11, 0x3e, 0xbf, 0x77, 0x09, 0xbf, 0x8c, 0xcf, 0x9b, 0x0e,
-	0xf5, 0x5b, 0x68, 0xe0, 0xe3, 0x20, 0x22, 0x34, 0xb8, 0x19, 0x7c, 0x19, 0x17, 0x6f, 0x18, 0xba,
-	0x6a, 0xdd, 0xb4, 0xc6, 0x2f, 0x0a, 0x1f, 0x84, 0x38, 0x3a, 0x2f, 0xa5, 0x2f, 0xc5, 0xdb, 0xdf,
-	0x01, 0x00, 0x00, 0xff, 0xff, 0x48, 0x52, 0x51, 0x56, 0x6b, 0x04, 0x00, 0x00,
+	// 603 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x54, 0xcb, 0x4e, 0xdb, 0x40,
+	0x14, 0xb5, 0x13, 0x48, 0xc8, 0x45, 0x4a, 0xc2, 0x88, 0x87, 0x29, 0x6a, 0x1a, 0xdc, 0x45, 0xad,
+	0xaa, 0x4d, 0x24, 0x5a, 0xa9, 0xbb, 0x2e, 0x92, 0x38, 0x10, 0x95, 0x82, 0x71, 0x00, 0xa9, 0xdd,
+	0x58, 0xc6, 0x33, 0x31, 0x23, 0xf0, 0x8c, 0x19, 0x8f, 0x23, 0xd2, 0xaf, 0xe8, 0xf7, 0xf4, 0x0b,
+	0x58, 0xb2, 0xec, 0xaa, 0xaa, 0x60, 0xd9, 0x9f, 0xa8, 0x6c, 0x62, 0x23, 0x5e, 0x6a, 0x77, 0xbe,
+	0xe7, 0x9c, 0x7b, 0xee, 0x9c, 0x3b, 0xd6, 0xc0, 0x12, 0xa6, 0x63, 0x8a, 0x09, 0xc3, 0x51, 0xdb,
+	0x77, 0x63, 0x9f, 0xb4, 0x42, 0xc1, 0x25, 0x47, 0x0b, 0x82, 0x9f, 0x9e, 0xba, 0x61, 0xd8, 0xca,
+	0xe9, 0x67, 0x8b, 0x3e, 0xf7, 0x79, 0xca, 0xb6, 0x93, 0xaf, 0x1b, 0xa1, 0xfe, 0x11, 0x4a, 0x96,
+	0x2b, 0xdc, 0x20, 0x42, 0xef, 0x61, 0x19, 0xd3, 0x48, 0x0a, 0x87, 0x84, 0xdc, 0x3b, 0x76, 0x92,
+	0x2e, 0x49, 0x47, 0x94, 0x08, 0x4d, 0x6d, 0xaa, 0x46, 0xc5, 0x5e, 0x4c, 0x59, 0x33, 0x21, 0x07,
+	0x39, 0xa7, 0xff, 0x29, 0xc0, 0xec, 0x66, 0x32, 0x18, 0x55, 0xa1, 0x40, 0x71, 0xaa, 0x9d, 0xb1,
+	0x0b, 0x14, 0x23, 0x0d, 0xca, 0x2e, 0xc6, 0x82, 0x44, 0x91, 0x56, 0x48, 0x0d, 0xb2, 0x12, 0x2d,
+	0x43, 0xc9, 0xf5, 0x24, 0x1d, 0x13, 0xad, 0xd8, 0x54, 0x8d, 0x39, 0x7b, 0x5a, 0xa1, 0x57, 0x50,
+	0x73, 0xc3, 0x50, 0xf0, 0x31, 0xc1, 0x0e, 0x26, 0x8c, 0x07, 0x91, 0x36, 0xd3, 0x2c, 0x1a, 0x15,
+	0xbb, 0x9a, 0xc1, 0xbd, 0x14, 0x45, 0x16, 0xd4, 0xce, 0x62, 0x22, 0x26, 0x8e, 0xc7, 0x19, 0xa6,
+	0x92, 0x72, 0xa6, 0xcd, 0x36, 0x55, 0x63, 0x7e, 0x63, 0xbd, 0xf5, 0x20, 0x77, 0x6b, 0x2f, 0x51,
+	0x76, 0x33, 0x61, 0x67, 0xe6, 0xe2, 0xd7, 0x0b, 0xc5, 0xae, 0x9e, 0xdd, 0x41, 0xd1, 0x10, 0xea,
+	0x63, 0x12, 0x49, 0xca, 0x7c, 0x07, 0xc7, 0xc2, 0x4d, 0x2d, 0x4b, 0xa9, 0xa5, 0xfe, 0x88, 0xe5,
+	0xe1, 0x8d, 0xb4, 0x37, 0x55, 0x4e, 0x3d, 0x6b, 0xe3, 0xbb, 0x30, 0xb2, 0x60, 0x21, 0x33, 0x1d,
+	0x09, 0x72, 0x16, 0x13, 0xe6, 0x4d, 0xb4, 0x72, 0x53, 0x35, 0xaa, 0x1b, 0x2f, 0x9f, 0x76, 0xed,
+	0x67, 0x52, 0x3b, 0x3b, 0x52, 0x8e, 0xe8, 0x1e, 0x54, 0xef, 0xc6, 0x41, 0x3d, 0x28, 0x47, 0xd2,
+	0x3d, 0x21, 0x22, 0x4a, 0x57, 0x3f, 0xbf, 0x61, 0xfc, 0x73, 0x05, 0xc3, 0x1b, 0xfd, 0x96, 0x62,
+	0x67, 0xad, 0x9d, 0x79, 0xa8, 0xe4, 0xab, 0xd4, 0x7f, 0xa8, 0x50, 0xbb, 0x97, 0x10, 0x6d, 0x43,
+	0x25, 0x24, 0x22, 0x24, 0x32, 0x76, 0x4f, 0xa7, 0x83, 0xde, 0x3c, 0x1d, 0x21, 0x1f, 0x65, 0x65,
+	0x3d, 0x5b, 0x8a, 0x7d, 0x6b, 0x80, 0x3e, 0x03, 0x8c, 0xe8, 0x39, 0xc1, 0x8e, 0x24, 0x22, 0x48,
+	0xff, 0x8e, 0xff, 0xb3, 0xeb, 0x27, 0x4d, 0xfb, 0x44, 0x04, 0x89, 0xdd, 0x28, 0x2b, 0x3a, 0x00,
+	0x73, 0xd9, 0xa5, 0xe9, 0x2b, 0xb0, 0xf4, 0x68, 0x5a, 0x7d, 0x0d, 0x56, 0x9f, 0x3c, 0x9d, 0x3e,
+	0x7c, 0x48, 0xe6, 0xb3, 0xd0, 0x1a, 0x54, 0x58, 0x1c, 0x38, 0x92, 0xcb, 0x69, 0xf6, 0xa2, 0x3d,
+	0xc7, 0xe2, 0x60, 0x3f, 0xa9, 0xd1, 0x2a, 0x24, 0xdf, 0x0e, 0xe6, 0x8c, 0xa4, 0x41, 0x8a, 0x76,
+	0x99, 0xc5, 0x41, 0x8f, 0x33, 0xf2, 0x9a, 0x43, 0xfd, 0xfe, 0x95, 0xa2, 0x75, 0x78, 0x7e, 0x68,
+	0x0e, 0xf7, 0x07, 0x3b, 0x9b, 0x4e, 0xdf, 0x36, 0xf7, 0x0e, 0xcc, 0x9d, 0xee, 0x17, 0xe7, 0x60,
+	0x67, 0x68, 0x99, 0xdd, 0x41, 0x7f, 0x60, 0xf6, 0xea, 0x0a, 0x5a, 0x83, 0x95, 0x87, 0x92, 0xce,
+	0xf6, 0x6e, 0xf7, 0x53, 0x5d, 0x7d, 0x9c, 0x34, 0xad, 0xdd, 0xee, 0x56, 0xbd, 0xd0, 0xd9, 0xbb,
+	0xb8, 0x6a, 0xa8, 0x97, 0x57, 0x0d, 0xf5, 0xf7, 0x55, 0x43, 0xfd, 0x7e, 0xdd, 0x50, 0x2e, 0xaf,
+	0x1b, 0xca, 0xcf, 0xeb, 0x86, 0xf2, 0xf5, 0x83, 0x4f, 0xe5, 0x71, 0x7c, 0xd4, 0xf2, 0x78, 0xd0,
+	0xc6, 0x93, 0x80, 0xb0, 0x88, 0x72, 0x76, 0x3e, 0xf9, 0x76, 0x5b, 0xbc, 0x15, 0xf8, 0xa4, 0x7d,
+	0xde, 0xbe, 0x7d, 0x4d, 0xe4, 0x24, 0x24, 0xd1, 0x51, 0x29, 0x7d, 0x25, 0xde, 0xfd, 0x0d, 0x00,
+	0x00, 0xff, 0xff, 0x9e, 0x5a, 0x28, 0xaf, 0x67, 0x04, 0x00, 0x00,
 }
 
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -607,7 +610,7 @@ func (m *Gauge) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		dAtA[i] = 0x38
 	}
 	{
-		size, err := m.VestingCondition.MarshalToSizedBuffer(dAtA[:i])
+		size, err := m.VestingDuration.MarshalToSizedBuffer(dAtA[:i])
 		if err != nil {
 			return 0, err
 		}
@@ -713,7 +716,7 @@ func (m *QueryCondition_Stakers) MarshalToSizedBuffer(dAtA []byte) (int, error) 
 	}
 	return len(dAtA) - i, nil
 }
-func (m *VestingCondition) Marshal() (dAtA []byte, err error) {
+func (m *VestingDuration) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -723,21 +726,21 @@ func (m *VestingCondition) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *VestingCondition) MarshalTo(dAtA []byte) (int, error) {
+func (m *VestingDuration) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *VestingCondition) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *VestingDuration) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.Condition != nil {
+	if m.Duration != nil {
 		{
-			size := m.Condition.Size()
+			size := m.Duration.Size()
 			i -= size
-			if _, err := m.Condition.MarshalTo(dAtA[i:]); err != nil {
+			if _, err := m.Duration.MarshalTo(dAtA[i:]); err != nil {
 				return 0, err
 			}
 		}
@@ -745,12 +748,12 @@ func (m *VestingCondition) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *VestingCondition_Perpetual) MarshalTo(dAtA []byte) (int, error) {
+func (m *VestingDuration_Perpetual) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *VestingCondition_Perpetual) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *VestingDuration_Perpetual) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	if m.Perpetual != nil {
 		{
@@ -766,16 +769,16 @@ func (m *VestingCondition_Perpetual) MarshalToSizedBuffer(dAtA []byte) (int, err
 	}
 	return len(dAtA) - i, nil
 }
-func (m *VestingCondition_Limited) MarshalTo(dAtA []byte) (int, error) {
+func (m *VestingDuration_FixedTerm) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *VestingCondition_Limited) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *VestingDuration_FixedTerm) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
-	if m.Limited != nil {
+	if m.FixedTerm != nil {
 		{
-			size, err := m.Limited.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.FixedTerm.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -833,7 +836,7 @@ func (m *VestingConditionPerpetual) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
-func (m *VestingConditionLimited) Marshal() (dAtA []byte, err error) {
+func (m *VestingConditionFixedTerm) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -843,23 +846,23 @@ func (m *VestingConditionLimited) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *VestingConditionLimited) MarshalTo(dAtA []byte) (int, error) {
+func (m *VestingConditionFixedTerm) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *VestingConditionLimited) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *VestingConditionFixedTerm) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.FilledUnits != 0 {
-		i = encodeVarintGauge(dAtA, i, uint64(m.FilledUnits))
+	if m.NumDone != 0 {
+		i = encodeVarintGauge(dAtA, i, uint64(m.NumDone))
 		i--
 		dAtA[i] = 0x10
 	}
-	if m.NumUnits != 0 {
-		i = encodeVarintGauge(dAtA, i, uint64(m.NumUnits))
+	if m.NumTotal != 0 {
+		i = encodeVarintGauge(dAtA, i, uint64(m.NumTotal))
 		i--
 		dAtA[i] = 0x8
 	}
@@ -914,7 +917,7 @@ func (m *Gauge) Size() (n int) {
 	}
 	l = m.QueryCondition.Size()
 	n += 1 + l + sovGauge(uint64(l))
-	l = m.VestingCondition.Size()
+	l = m.VestingDuration.Size()
 	n += 1 + l + sovGauge(uint64(l))
 	if m.VestingFrequency != 0 {
 		n += 1 + sovGauge(uint64(m.VestingFrequency))
@@ -946,19 +949,19 @@ func (m *QueryCondition_Stakers) Size() (n int) {
 	}
 	return n
 }
-func (m *VestingCondition) Size() (n int) {
+func (m *VestingDuration) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.Condition != nil {
-		n += m.Condition.Size()
+	if m.Duration != nil {
+		n += m.Duration.Size()
 	}
 	return n
 }
 
-func (m *VestingCondition_Perpetual) Size() (n int) {
+func (m *VestingDuration_Perpetual) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -970,14 +973,14 @@ func (m *VestingCondition_Perpetual) Size() (n int) {
 	}
 	return n
 }
-func (m *VestingCondition_Limited) Size() (n int) {
+func (m *VestingDuration_FixedTerm) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.Limited != nil {
-		l = m.Limited.Size()
+	if m.FixedTerm != nil {
+		l = m.FixedTerm.Size()
 		n += 1 + l + sovGauge(uint64(l))
 	}
 	return n
@@ -1000,17 +1003,17 @@ func (m *VestingConditionPerpetual) Size() (n int) {
 	return n
 }
 
-func (m *VestingConditionLimited) Size() (n int) {
+func (m *VestingConditionFixedTerm) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.NumUnits != 0 {
-		n += 1 + sovGauge(uint64(m.NumUnits))
+	if m.NumTotal != 0 {
+		n += 1 + sovGauge(uint64(m.NumTotal))
 	}
-	if m.FilledUnits != 0 {
-		n += 1 + sovGauge(uint64(m.FilledUnits))
+	if m.NumDone != 0 {
+		n += 1 + sovGauge(uint64(m.NumDone))
 	}
 	return n
 }
@@ -1270,7 +1273,7 @@ func (m *Gauge) Unmarshal(dAtA []byte) error {
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field VestingCondition", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field VestingDuration", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1297,7 +1300,7 @@ func (m *Gauge) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.VestingCondition.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			if err := m.VestingDuration.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1426,7 +1429,7 @@ func (m *QueryCondition) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *VestingCondition) Unmarshal(dAtA []byte) error {
+func (m *VestingDuration) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1449,10 +1452,10 @@ func (m *VestingCondition) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: VestingCondition: wiretype end group for non-group")
+			return fmt.Errorf("proto: VestingDuration: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: VestingCondition: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: VestingDuration: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1488,11 +1491,11 @@ func (m *VestingCondition) Unmarshal(dAtA []byte) error {
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Condition = &VestingCondition_Perpetual{v}
+			m.Duration = &VestingDuration_Perpetual{v}
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Limited", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field FixedTerm", wireType)
 			}
 			var msglen int
 			for shift := uint(0); ; shift += 7 {
@@ -1519,11 +1522,11 @@ func (m *VestingCondition) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			v := &VestingConditionLimited{}
+			v := &VestingConditionFixedTerm{}
 			if err := v.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			m.Condition = &VestingCondition_Limited{v}
+			m.Duration = &VestingDuration_FixedTerm{v}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1646,7 +1649,7 @@ func (m *VestingConditionPerpetual) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *VestingConditionLimited) Unmarshal(dAtA []byte) error {
+func (m *VestingConditionFixedTerm) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1669,17 +1672,17 @@ func (m *VestingConditionLimited) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: VestingConditionLimited: wiretype end group for non-group")
+			return fmt.Errorf("proto: VestingConditionFixedTerm: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: VestingConditionLimited: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: VestingConditionFixedTerm: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field NumUnits", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NumTotal", wireType)
 			}
-			m.NumUnits = 0
+			m.NumTotal = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGauge
@@ -1689,16 +1692,16 @@ func (m *VestingConditionLimited) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.NumUnits |= int64(b&0x7F) << shift
+				m.NumTotal |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 2:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field FilledUnits", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field NumDone", wireType)
 			}
-			m.FilledUnits = 0
+			m.NumDone = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowGauge
@@ -1708,7 +1711,7 @@ func (m *VestingConditionLimited) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.FilledUnits |= int64(b&0x7F) << shift
+				m.NumDone |= int64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
