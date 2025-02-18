@@ -37,18 +37,18 @@ type rollappParamsKeeper interface {
 }
 
 type BypassIBCFeeDecorator struct {
-	nextAnte anteHandler
-	dk       distrKeeper
-	sk       sequencerKeeper
-	pk       rollappParamsKeeper
+	bypassedAnte anteHandler
+	dk           distrKeeper
+	sk           sequencerKeeper
+	pk           rollappParamsKeeper
 }
 
-func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencerKeeper, pk rollappParamsKeeper) BypassIBCFeeDecorator {
+func NewBypassIBCFeeDecorator(bypass anteHandler, dk distrKeeper, sk sequencerKeeper, pk rollappParamsKeeper) BypassIBCFeeDecorator {
 	return BypassIBCFeeDecorator{
-		nextAnte: nextAnte,
-		dk:       dk,
-		sk:       sk,
-		pk:       pk,
+		bypassedAnte: bypass,
+		dk:           dk,
+		sk:           sk,
+		pk:           pk,
 	}
 }
 
@@ -69,7 +69,8 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	}
 	cnt := normalCnt + lifecycleCnt
 	if cnt == 0 {
-		return d.nextAnte.AnteHandle(ctx, tx, simulate, next)
+		// no bypass
+		return d.bypassedAnte.AnteHandle(ctx, tx, simulate, next)
 	}
 	if 0 < cnt && cnt < len(leaves) {
 		return ctx, gerrc.ErrInvalidArgument.Wrap("combined ibc and non ibc messages in tx not allowed")
@@ -79,11 +80,11 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 		return ctx, errorsmod.Wrap(wlErr, "wlErr relayer")
 	}
 	if wlErr == nil || d.pk.FreeIBC(ctx) {
-		// bypass fee
+		// bypass!
 		return next(ctx, tx, simulate)
 	}
-	// normal fee paying logic
-	return d.nextAnte.AnteHandle(ctx, tx, simulate, next)
+	// no bypass
+	return d.bypassedAnte.AnteHandle(ctx, tx, simulate, next)
 }
 
 // returns the leaf msgs (those without nested msgs) recursively from tree of msgs
@@ -149,8 +150,8 @@ func (d BypassIBCFeeDecorator) whitelistedRelayer(ctx sdk.Context, msgs []sdk.Ms
 func isIBCNormalMsg(m sdk.Msg) bool {
 	switch m.(type) {
 	case
-		*channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
-		*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose, *clienttypes.MsgUpdateClient:
+			*channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
+			*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose, *clienttypes.MsgUpdateClient:
 		return true
 	}
 	return false
@@ -160,17 +161,17 @@ func isIBCLifecycleMsg(m sdk.Msg) bool {
 	switch m.(type) {
 	case
 		// Client Messages
-		*clienttypes.MsgCreateClient,
-		*clienttypes.MsgUpgradeClient, *clienttypes.MsgSubmitMisbehaviour,
+			*clienttypes.MsgCreateClient,
+			*clienttypes.MsgUpgradeClient, *clienttypes.MsgSubmitMisbehaviour,
 
 		// Connection Messages
-		*conntypes.MsgConnectionOpenInit, *conntypes.MsgConnectionOpenTry,
-		*conntypes.MsgConnectionOpenAck, *conntypes.MsgConnectionOpenConfirm,
+			*conntypes.MsgConnectionOpenInit, *conntypes.MsgConnectionOpenTry,
+			*conntypes.MsgConnectionOpenAck, *conntypes.MsgConnectionOpenConfirm,
 
 		// Channel Messages
-		*channeltypes.MsgChannelOpenInit, *channeltypes.MsgChannelOpenTry,
-		*channeltypes.MsgChannelOpenAck, *channeltypes.MsgChannelOpenConfirm,
-		*channeltypes.MsgChannelCloseInit, *channeltypes.MsgChannelCloseConfirm:
+			*channeltypes.MsgChannelOpenInit, *channeltypes.MsgChannelOpenTry,
+			*channeltypes.MsgChannelOpenAck, *channeltypes.MsgChannelOpenConfirm,
+			*channeltypes.MsgChannelCloseInit, *channeltypes.MsgChannelCloseConfirm:
 
 		return true
 	}

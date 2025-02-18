@@ -315,10 +315,10 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 			}
 
 			decor := BypassIBCFeeDecorator{
-				dk:       dk,
-				sk:       sk,
-				pk:       pk,
-				nextAnte: nextAnte,
+				dk:           dk,
+				sk:           sk,
+				pk:           pk,
+				bypassedAnte: nextAnte,
 			}
 
 			_, err := decor.AnteHandle(ctx, tx, false, next)
@@ -337,7 +337,7 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 						}
 					} else {
 						// if no ibc no fee scenario, we fall back to normal fee ante
-						// means we call n.nextAnte.AnteHandle
+						// means we call n.bypassedAnte.AnteHandle
 						if !nextAnte.called {
 							t.Errorf("expected fallback to normal fee ante")
 						}
