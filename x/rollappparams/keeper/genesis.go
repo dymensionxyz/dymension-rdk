@@ -22,6 +22,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 	if err := k.SetMinGasPrices(ctx, genState.Params.MinGasPrices); err != nil {
 		panic(err)
 	}
+	k.SetFreeIBC(ctx, genState.Params.FreeIbc)
 }
 
 // ExportGenesis returns the capability module's exported genesis.
