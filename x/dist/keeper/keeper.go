@@ -18,6 +18,7 @@ type Keeper struct {
 	bankKeeper    disttypes.BankKeeper
 	stakingKeeper types.StakingKeeper
 	seqKeeper     types.SequencerKeeper
+	erc20k        types.ERC20Keeper
 
 	feeCollectorName string
 }
@@ -31,6 +32,7 @@ func NewKeeper(
 	bk disttypes.BankKeeper,
 	sk types.StakingKeeper,
 	seqk types.SequencerKeeper,
+	erc20k types.ERC20Keeper,
 	feeCollectorName string,
 ) Keeper {
 	k := distkeeper.NewKeeper(cdc, key, paramSpace, ak, bk, sk, feeCollectorName)
@@ -40,6 +42,7 @@ func NewKeeper(
 		bankKeeper:       bk,
 		stakingKeeper:    sk,
 		seqKeeper:        seqk,
+		erc20k:           erc20k,
 		feeCollectorName: feeCollectorName,
 	}
 }

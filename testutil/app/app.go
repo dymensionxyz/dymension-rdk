@@ -135,6 +135,16 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/rollappparams"
 	rollappparamskeeper "github.com/dymensionxyz/dymension-rdk/x/rollappparams/keeper"
 	rollappparamstypes "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types"
+
+	erc20 "github.com/evmos/evmos/v12/x/erc20"
+	erc20keeper "github.com/evmos/evmos/v12/x/erc20/keeper"
+	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
+	evm "github.com/evmos/evmos/v12/x/evm"
+	evmkeeper "github.com/evmos/evmos/v12/x/evm/keeper"
+	evmtypes "github.com/evmos/evmos/v12/x/evm/types"
+	feemarket "github.com/evmos/evmos/v12/x/feemarket"
+	feemarketkeeper "github.com/evmos/evmos/v12/x/feemarket/keeper"
+	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
 )
 
 const (
@@ -148,6 +158,7 @@ var kvstorekeys = []string{
 	minttypes.StoreKey, distrtypes.StoreKey,
 	govtypes.StoreKey, paramstypes.StoreKey,
 	ibchost.StoreKey, upgradetypes.StoreKey,
+	evmtypes.StoreKey, erc20types.StoreKey, feemarkettypes.StoreKey,
 	epochstypes.StoreKey, hubgentypes.StoreKey, hubtypes.StoreKey,
 	ibctransfertypes.StoreKey, capabilitytypes.StoreKey, gaslesstypes.StoreKey, wasmtypes.StoreKey,
 	tokenfactorytypes.StoreKey, rollappparamstypes.StoreKey, timeupgradetypes.StoreKey,
@@ -198,6 +209,10 @@ var (
 		wasm.AppModuleBasic{},
 		tokenfactory.NewAppModuleBasic(),
 		rollappparams.AppModuleBasic{},
+
+		feemarket.AppModuleBasic{},
+		evm.AppModuleBasic{},
+		erc20.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -211,6 +226,9 @@ var (
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
 		hubgentypes.ModuleName:         {authtypes.Minter},
 		gaslesstypes.ModuleName:        nil,
+		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
+		erc20types.ModuleName:          {authtypes.Minter, authtypes.Burner},
+		feemarkettypes.ModuleName:      nil,
 		wasmtypes.ModuleName:           {authtypes.Burner},
 		rollappparamstypes.ModuleName:  nil,
 		tokenfactorytypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
@@ -255,6 +273,11 @@ type App struct {
 	TransferKeeper      ibctransferkeeper.Keeper
 	WasmKeeper          wasmkeeper.Keeper
 	TokenFactoryKeeper  tokenfactorykeeper.Keeper
+
+	// Evmos keepers
+	EvmKeeper       *evmkeeper.Keeper
+	FeeMarketKeeper feemarketkeeper.Keeper
+	Erc20Keeper     erc20keeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -368,6 +391,7 @@ func NewRollapp(
 		keys[stakingtypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
+		&app.Erc20Keeper,
 		app.GetSubspace(stakingtypes.ModuleName),
 	)
 
@@ -394,6 +418,7 @@ func NewRollapp(
 		app.BankKeeper,
 		&stakingKeeper,
 		&app.SequencersKeeper,
+		&app.Erc20Keeper,
 		authtypes.FeeCollectorName,
 	)
 
@@ -461,6 +486,24 @@ func NewRollapp(
 		govtypes.NewMultiGovHooks(
 		// register the governance hooks
 		),
+	)
+
+	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
+		appCodec, authtypes.NewModuleAddress(govtypes.ModuleName), keys[feemarkettypes.StoreKey], tkeys[feemarkettypes.TransientKey],
+		app.GetSubspace(feemarkettypes.ModuleName),
+	)
+
+	app.EvmKeeper = evmkeeper.NewKeeper(
+		appCodec, keys[evmtypes.StoreKey], tkeys[evmtypes.TransientKey], authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper,
+		app.SequencersKeeper,
+		app.FeeMarketKeeper,
+		"", app.GetSubspace(evmtypes.ModuleName),
+	)
+
+	app.Erc20Keeper = erc20keeper.NewKeeper(
+		keys[erc20types.StoreKey], appCodec, authtypes.NewModuleAddress(govtypes.ModuleName),
+		app.AccountKeeper, app.BankKeeper, app.EvmKeeper,
 	)
 
 	app.HubKeeper = hubkeeper.NewKeeper(
@@ -609,6 +652,10 @@ func NewRollapp(
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper),
 		gasless.NewAppModule(appCodec, app.GaslessKeeper),
 		rollappparams.NewAppModule(appCodec, app.RollappParamsKeeper),
+		// Ethermint app modules
+		evm.NewAppModule(app.EvmKeeper, app.AccountKeeper, app.GetSubspace(evmtypes.ModuleName)),
+		feemarket.NewAppModule(app.FeeMarketKeeper, app.GetSubspace(feemarkettypes.ModuleName)),
+		erc20.NewAppModule(app.Erc20Keeper, app.AccountKeeper, app.GetSubspace(erc20types.ModuleName)),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -639,6 +686,10 @@ func NewRollapp(
 		tokenfactorytypes.ModuleName,
 		gaslesstypes.ModuleName,
 		rollappparamstypes.ModuleName,
+
+		evmtypes.ModuleName,
+		erc20types.ModuleName,
+		feemarkettypes.ModuleName,
 	}
 	app.mm.SetOrderBeginBlockers(beginBlockersList...)
 
@@ -663,6 +714,10 @@ func NewRollapp(
 		tokenfactorytypes.ModuleName,
 		gaslesstypes.ModuleName,
 		rollappparamstypes.ModuleName,
+
+		evmtypes.ModuleName,
+		erc20types.ModuleName,
+		feemarkettypes.ModuleName,
 	}
 	app.mm.SetOrderEndBlockers(endBlockersList...)
 
@@ -693,6 +748,10 @@ func NewRollapp(
 		tokenfactorytypes.ModuleName,
 		gaslesstypes.ModuleName,
 		rollappparamstypes.ModuleName,
+
+		evmtypes.ModuleName,
+		erc20types.ModuleName,
+		feemarkettypes.ModuleName,
 	}
 	app.mm.SetOrderInitGenesis(initGenesisList...)
 
@@ -998,6 +1057,10 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(wasmtypes.ModuleName)
 	paramsKeeper.Subspace(tokenfactorytypes.ModuleName)
 	paramsKeeper.Subspace(rollappparamstypes.ModuleName)
+
+	paramsKeeper.Subspace(feemarkettypes.ModuleName)
+	paramsKeeper.Subspace(erc20types.ModuleName)
+	paramsKeeper.Subspace(evmtypes.ModuleName)
 
 	return paramsKeeper
 }

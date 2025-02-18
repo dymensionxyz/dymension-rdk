@@ -1,10 +1,13 @@
 package types
 
 import (
+	"context"
+
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
 )
 
 // SequencerKeeper expected sequencer keeper (noalias)
@@ -34,4 +37,10 @@ type StakingKeeper interface {
 		fn func(index int64, delegation stakingtypes.DelegationI) (stop bool))
 
 	GetAllSDKDelegations(ctx sdk.Context) []stakingtypes.Delegation
+}
+
+// ERC20Keeper expected ERC20 keeper (noalias)
+type ERC20Keeper interface {
+	IsDenomRegistered(ctx sdk.Context, denom string) bool
+	ConvertCoin(ctx context.Context, msg *erc20types.MsgConvertCoin) (*erc20types.MsgConvertCoinResponse, error)
 }
