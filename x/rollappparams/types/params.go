@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/dymensionxyz/dymint/da/registry"
@@ -20,6 +21,7 @@ var (
 	KeyDa           = []byte("da")
 	KeyVersion      = []byte("version")
 	KeyMinGasPrices = []byte("minGasPrices")
+	KeyFreeIBC      = []byte("freeIBC")
 
 	// Default version set
 	DrsVersion = uint32(1)
@@ -47,6 +49,7 @@ func DefaultParams() Params {
 		Da:           DefaultDA,
 		DrsVersion:   DrsVersion,
 		MinGasPrices: nil,
+		FreeIbc:      true,
 	}
 }
 
@@ -99,11 +102,19 @@ func blockDRSVersion(any) error {
 	return fmt.Errorf("drs version is not allowed to be set: %w", gerrc.ErrInvalidArgument)
 }
 
+func validateBool(i any) error {
+	if _, ok := i.(bool); !ok {
+		return errorsmod.WithType(gerrc.ErrInvalidArgument, i)
+	}
+	return nil
+}
+
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(KeyDa, &p.Da, ValidateDa),
 		paramtypes.NewParamSetPair(KeyVersion, &p.DrsVersion, blockDRSVersion),
 		paramtypes.NewParamSetPair(KeyMinGasPrices, &p.MinGasPrices, ValidateMinGasPrices),
+		paramtypes.NewParamSetPair(KeyFreeIBC, &p.FreeIbc, validateBool),
 	}
 }

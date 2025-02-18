@@ -19,9 +19,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	_ module.AppModuleBasic = AppModuleBasic{}
-)
+var _ module.AppModuleBasic = AppModuleBasic{}
 
 // AppModuleBasic implements the AppModuleBasic interface for the module.
 type AppModuleBasic struct {

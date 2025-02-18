@@ -24,126 +24,124 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 	operatorAddr := "cosmosvaloper1tnh2q55v8wyygtt9srz5safamzdengsn9dsd7z"
 	consAddr := sdk.ConsAddress("consAddr")
 
-	// IBC relayer msg
-	ibcMsg1 := &clienttypes.MsgCreateClient{}
-	// IBC relayer msg
-	ibcMsg2 := &channeltypes.MsgChannelOpenInit{}
-	// IBC packet msg
-	ibcMsg3 := &channeltypes.MsgRecvPacket{}
-	// Non-IBC msg
+	lifecycle0 := &clienttypes.MsgCreateClient{}
+	lifecycle1 := &channeltypes.MsgChannelOpenInit{}
+	normal0 := &channeltypes.MsgRecvPacket{}
+	normal1 := &clienttypes.MsgUpdateClient{}
 	nonIBCMsg := &banktypes.MsgSend{}
 
 	testCases := []struct {
-		name             string
-		msgs             []sdk.Msg
-		signer           sdk.AccAddress
-		sequencerExists  bool
-		sequencerOper    string
-		wlRelayers       []string
-		wlError          error
-		expectedErr      bool
-		expectedIBCNoFee bool
+		name            string
+		msgs            []sdk.Msg
+		signer          sdk.AccAddress
+		sequencerExists bool
+		sequencerOper   string
+		wl              []string
+		wlError         error
+		expectErr       bool
+		expectNoFee     bool
+		freeIBC         bool
 	}{
 		{
-			name:             "Non-IBC message, no error",
-			msgs:             []sdk.Msg{nonIBCMsg},
-			signer:           nonWhitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      false,
-			expectedIBCNoFee: false,
+			name:            "Non-IBC message, no error",
+			msgs:            []sdk.Msg{nonIBCMsg},
+			signer:          nonWhitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     false,
 		},
 		{
-			name:             "All IBC messages, signer whitelisted",
-			msgs:             []sdk.Msg{ibcMsg1, ibcMsg2},
-			signer:           whitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      false,
-			expectedIBCNoFee: true,
+			name:            "All IBC messages, signer whitelisted",
+			msgs:            []sdk.Msg{lifecycle0, lifecycle1},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
 		},
 		{
-			name:             "All IBC messages, sequencer not found",
-			msgs:             []sdk.Msg{ibcMsg1},
-			signer:           whitelistedSigner,
-			sequencerExists:  false,
-			sequencerOper:    "",
-			wlRelayers:       nil,
-			expectedErr:      true,
-			expectedIBCNoFee: false,
+			name:            "All IBC messages, sequencer not found",
+			msgs:            []sdk.Msg{lifecycle0},
+			signer:          whitelistedSigner,
+			sequencerExists: false,
+			sequencerOper:   "",
+			wl:              nil,
+			expectErr:       true,
+			expectNoFee:     false,
 		},
 		{
-			name:             "Packet IBC message, signer whitelisted",
-			msgs:             []sdk.Msg{ibcMsg1, ibcMsg3},
-			signer:           whitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      false,
-			expectedIBCNoFee: true,
+			name:            "Packet IBC message, signer whitelisted",
+			msgs:            []sdk.Msg{lifecycle0, normal0},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
 		},
 		{
-			name:             "Packet IBC message, signer not whitelisted",
-			msgs:             []sdk.Msg{ibcMsg3},
-			signer:           nonWhitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      false,
-			expectedIBCNoFee: false,
+			name:            "Packet IBC message, signer not whitelisted",
+			msgs:            []sdk.Msg{normal0, normal1},
+			signer:          nonWhitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     false,
 		},
 		{
-			name:             "Whitelisted IBC and Packet IBC message, signer not whitelisted",
-			msgs:             []sdk.Msg{ibcMsg1, ibcMsg3},
-			signer:           nonWhitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      true,
-			expectedIBCNoFee: false,
+			name:            "Whitelisted IBC and Packet IBC message, signer not whitelisted",
+			msgs:            []sdk.Msg{lifecycle0, normal0},
+			signer:          nonWhitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true,
+			expectNoFee:     false,
 		},
 		{
-			name:             "All IBC messages, GetWhitelistedRelayers returns error",
-			msgs:             []sdk.Msg{ibcMsg1},
-			signer:           whitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       nil,
-			wlError:          fmt.Errorf("some error"),
-			expectedErr:      true,
-			expectedIBCNoFee: false,
+			name:            "All IBC messages, GetWhitelistedRelayers returns error",
+			msgs:            []sdk.Msg{lifecycle0},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              nil,
+			wlError:         fmt.Errorf("some error"),
+			expectErr:       true,
+			expectNoFee:     false,
 		},
 		{
-			name:             "All IBC messages, signer not in whitelist",
-			msgs:             []sdk.Msg{ibcMsg1},
-			signer:           nonWhitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      true,
-			expectedIBCNoFee: false,
+			name:            "All IBC messages, signer not in whitelist",
+			msgs:            []sdk.Msg{lifecycle0},
+			signer:          nonWhitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true,
+			expectNoFee:     false,
 		},
 		{
-			name:             "Mixed messages (IBC and non-IBC), not allowed",
-			msgs:             []sdk.Msg{ibcMsg1, nonIBCMsg},
-			signer:           whitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      true,
-			expectedIBCNoFee: false,
+			name:            "Mixed messages (IBC and non-IBC), not allowed",
+			msgs:            []sdk.Msg{lifecycle0, nonIBCMsg},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true,
+			expectNoFee:     false,
 		},
 		{
-			name:             "Mixed messages (IBC and non-IBC), signer not in whitelist",
-			msgs:             []sdk.Msg{ibcMsg1, nonIBCMsg},
-			signer:           nonWhitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      true,
-			expectedIBCNoFee: false,
+			name:            "Mixed messages (IBC and non-IBC), signer not in whitelist",
+			msgs:            []sdk.Msg{lifecycle0, nonIBCMsg},
+			signer:          nonWhitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true,
+			expectNoFee:     false,
 		},
 		{
 			name: "Nested scenario: multi-level. MsgExec containing a MsgSubmitProposal(group) that returns [ibcMsg2]",
@@ -157,7 +155,7 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 								Metadata:  "==",
 								Messages: []*cdctypes.Any{
 									func() *cdctypes.Any {
-										ibcMsg2V := *ibcMsg2
+										ibcMsg2V := *lifecycle1
 										ibcMsg2V.Signer = whitelistedSigner.String()
 										msg, _ := cdctypes.NewAnyWithValue(&ibcMsg2V)
 										return msg
@@ -170,12 +168,12 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 					},
 				},
 			},
-			signer:           whitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      false,
-			expectedIBCNoFee: true, // all final msgs are IBC and whitelisted
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true, // all final msgs are IBC and whitelisted
 		},
 		{
 			name: "Nested scenario: not checked. MsgExec containing MsgSubmitProposal(gov) with ibcMsg2 but signer not whitelisted",
@@ -187,7 +185,7 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 							msg, _ := cdctypes.NewAnyWithValue(&govtypesv1.MsgSubmitProposal{
 								Messages: []*cdctypes.Any{
 									func() *cdctypes.Any {
-										ibcMsg2V := *ibcMsg2
+										ibcMsg2V := *lifecycle1
 										ibcMsg2V.Signer = nonWhitelistedSigner.String()
 										msg, _ := cdctypes.NewAnyWithValue(&ibcMsg2V)
 										return msg
@@ -202,12 +200,12 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 					},
 				},
 			},
-			signer:           whitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      false,
-			expectedIBCNoFee: false, // signer not whitelisted
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     false, // signer not whitelisted
 		},
 		{
 			name: "Nested scenario: multi-level. MsgExec containing MsgSubmitProposal(group) with ibcMsg2 but signer not whitelisted",
@@ -220,7 +218,7 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 								Proposers: []string{whitelistedSigner.String()},
 								Messages: []*cdctypes.Any{
 									func() *cdctypes.Any {
-										ibcMsg2V := *ibcMsg2
+										ibcMsg2V := *lifecycle1
 										ibcMsg2V.Signer = nonWhitelistedSigner.String()
 										msg, _ := cdctypes.NewAnyWithValue(&ibcMsg2V)
 										return msg
@@ -233,12 +231,12 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 					},
 				},
 			},
-			signer:           whitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      true,
-			expectedIBCNoFee: false, // signer not whitelisted
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true,
+			expectNoFee:     false, // signer not whitelisted
 		},
 		{
 			name: "Nested scenario: exceed maxDepth",
@@ -248,14 +246,36 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 						wrapMsgInSubmitProposal(
 							wrapMsgInSubmitProposal(
 								wrapMsgInSubmitProposal(
-									wrapMsgInSubmitProposal(ibcMsg1)))))),
+									wrapMsgInSubmitProposal(lifecycle0)))))),
 			},
-			signer:           whitelistedSigner,
-			sequencerExists:  true,
-			sequencerOper:    operatorAddr,
-			wlRelayers:       []string{whitelistedSigner.String()},
-			expectedErr:      true, // exceeds maxDepth
-			expectedIBCNoFee: false,
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true, // exceeds maxDepth
+			expectNoFee:     false,
+		},
+		{
+			name:            "Free does not allow lifecycle",
+			msgs:            []sdk.Msg{lifecycle0},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{},
+			expectErr:       true, // whitelist still checked
+			expectNoFee:     false,
+			freeIBC:         true,
+		},
+		{
+			name:            "No charge if not lifecycle msg and free",
+			msgs:            []sdk.Msg{normal0},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{},
+			expectErr:       false,
+			expectNoFee:     true,
+			freeIBC:         true,
 		},
 	}
 
@@ -267,8 +287,9 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 				sequencerFound:      tc.sequencerExists,
 				operatorAddr:        tc.sequencerOper,
 				getWhitelistedError: tc.wlError,
-				whitelistedRelayers: tc.wlRelayers,
+				whitelistedRelayers: tc.wl,
 			}
+			pk := &mockParamsK{tc.freeIBC}
 			nextAnte := &mockNextAnte{}
 
 			nextCalled := false
@@ -296,11 +317,12 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 			decor := BypassIBCFeeDecorator{
 				dk:       dk,
 				sk:       sk,
+				pk:       pk,
 				nextAnte: nextAnte,
 			}
 
 			_, err := decor.AnteHandle(ctx, tx, false, next)
-			if tc.expectedErr {
+			if tc.expectErr {
 				if err == nil {
 					t.Errorf("expected error but got none")
 				}
@@ -308,7 +330,7 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 				if err != nil {
 					t.Errorf("unexpected error: %v", err)
 				} else {
-					if tc.expectedIBCNoFee {
+					if tc.expectNoFee {
 						// we expect next to be called directly (no fee)
 						if !nextCalled {
 							t.Errorf("expected next handler to be called, but it wasn't")
@@ -355,6 +377,14 @@ type mockDistrKeeper struct {
 
 func (m mockDistrKeeper) GetPreviousProposerConsAddr(sdk.Context) sdk.ConsAddress {
 	return m.consAddr
+}
+
+type mockParamsK struct {
+	ret bool
+}
+
+func (m mockParamsK) FreeIBC(ctx sdk.Context) bool {
+	return m.ret
 }
 
 type mockNextAnte struct {

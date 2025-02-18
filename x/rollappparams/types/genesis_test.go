@@ -9,7 +9,6 @@ import (
 )
 
 func TestGenesisState(t *testing.T) {
-
 	testParams := types.NewParams("mock", 1)
 	testCases := []struct {
 		name        string
