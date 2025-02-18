@@ -53,7 +53,7 @@ func NewBypassIBCFeeDecorator(nextAnte anteHandler, dk distrKeeper, sk sequencer
 }
 
 func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
-	leaves, err := d.getLeaves(ctx, 0, tx.GetMsgs()...)
+	leaves, err := d.getLeafMsgs(ctx, 0, tx.GetMsgs()...)
 	if err != nil {
 		return ctx, errorsmod.Wrap(err, "get leaves")
 	}
@@ -72,7 +72,7 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 		return d.nextAnte.AnteHandle(ctx, tx, simulate, next)
 	}
 	if 0 < cnt && cnt < len(leaves) {
-		return ctx, gerrc.ErrInvalidArgument.Wrap("combined ibc and non ibc messages")
+		return ctx, gerrc.ErrInvalidArgument.Wrap("combined ibc and non ibc messages in tx not allowed")
 	}
 	wlErr := d.whitelistedRelayer(ctx, leaves)
 	if 0 < lifecycleCnt && wlErr != nil {
@@ -86,7 +86,8 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	return d.nextAnte.AnteHandle(ctx, tx, simulate, next)
 }
 
-func (d BypassIBCFeeDecorator) getLeaves(ctx sdk.Context, depth int, msgs ...sdk.Msg) ([]sdk.Msg, error) {
+// returns the leaf msgs (those without nested msgs) recursively from tree of msgs
+func (d BypassIBCFeeDecorator) getLeafMsgs(ctx sdk.Context, depth int, msgs ...sdk.Msg) ([]sdk.Msg, error) {
 	if depth >= maxDepth {
 		return nil, fmt.Errorf("found more nested msgs than permitted, limit is: %d", maxDepth)
 	}
@@ -96,7 +97,7 @@ func (d BypassIBCFeeDecorator) getLeaves(ctx sdk.Context, depth int, msgs ...sdk
 	if 1 < len(msgs) {
 		var ret []sdk.Msg
 		for _, m := range msgs {
-			l, err := d.getLeaves(ctx, depth+1, m)
+			l, err := d.getLeafMsgs(ctx, depth+1, m)
 			if err != nil {
 				return nil, err
 			}
@@ -118,7 +119,7 @@ func (d BypassIBCFeeDecorator) getLeaves(ctx sdk.Context, depth int, msgs ...sdk
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "unpack nested")
 	}
-	return d.getLeaves(ctx, depth+1, temp...)
+	return d.getLeafMsgs(ctx, depth+1, temp...)
 }
 
 // whitelistedRelayer checks if all signers of the IBC messages are whitelisted
@@ -148,8 +149,8 @@ func (d BypassIBCFeeDecorator) whitelistedRelayer(ctx sdk.Context, msgs []sdk.Ms
 func isIBCNormalMsg(m sdk.Msg) bool {
 	switch m.(type) {
 	case
-		*channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
-		*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose, *clienttypes.MsgUpdateClient:
+			*channeltypes.MsgRecvPacket, *channeltypes.MsgAcknowledgement,
+			*channeltypes.MsgTimeout, *channeltypes.MsgTimeoutOnClose, *clienttypes.MsgUpdateClient:
 		return true
 	}
 	return false
@@ -159,17 +160,17 @@ func isIBCLifecycleMsg(m sdk.Msg) bool {
 	switch m.(type) {
 	case
 		// Client Messages
-		*clienttypes.MsgCreateClient,
-		*clienttypes.MsgUpgradeClient, *clienttypes.MsgSubmitMisbehaviour,
+			*clienttypes.MsgCreateClient,
+			*clienttypes.MsgUpgradeClient, *clienttypes.MsgSubmitMisbehaviour,
 
 		// Connection Messages
-		*conntypes.MsgConnectionOpenInit, *conntypes.MsgConnectionOpenTry,
-		*conntypes.MsgConnectionOpenAck, *conntypes.MsgConnectionOpenConfirm,
+			*conntypes.MsgConnectionOpenInit, *conntypes.MsgConnectionOpenTry,
+			*conntypes.MsgConnectionOpenAck, *conntypes.MsgConnectionOpenConfirm,
 
 		// Channel Messages
-		*channeltypes.MsgChannelOpenInit, *channeltypes.MsgChannelOpenTry,
-		*channeltypes.MsgChannelOpenAck, *channeltypes.MsgChannelOpenConfirm,
-		*channeltypes.MsgChannelCloseInit, *channeltypes.MsgChannelCloseConfirm:
+			*channeltypes.MsgChannelOpenInit, *channeltypes.MsgChannelOpenTry,
+			*channeltypes.MsgChannelOpenAck, *channeltypes.MsgChannelOpenConfirm,
+			*channeltypes.MsgChannelCloseInit, *channeltypes.MsgChannelCloseConfirm:
 
 		return true
 	}
