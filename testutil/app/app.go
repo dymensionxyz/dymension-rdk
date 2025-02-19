@@ -94,6 +94,10 @@ import (
 	epochskeeper "github.com/dymensionxyz/dymension-rdk/x/epochs/keeper"
 	epochstypes "github.com/dymensionxyz/dymension-rdk/x/epochs/types"
 
+	"github.com/dymensionxyz/dymension-rdk/x/dividends"
+	dividendskeeper "github.com/dymensionxyz/dymension-rdk/x/dividends/keeper"
+	dividendstypes "github.com/dymensionxyz/dymension-rdk/x/dividends/types"
+
 	"github.com/dymensionxyz/dymension-rdk/x/gasless"
 	gaslessclient "github.com/dymensionxyz/dymension-rdk/x/gasless/client"
 	gaslesskeeper "github.com/dymensionxyz/dymension-rdk/x/gasless/keeper"
@@ -151,6 +155,7 @@ var kvstorekeys = []string{
 	epochstypes.StoreKey, hubgentypes.StoreKey, hubtypes.StoreKey,
 	ibctransfertypes.StoreKey, capabilitytypes.StoreKey, gaslesstypes.StoreKey, wasmtypes.StoreKey,
 	tokenfactorytypes.StoreKey, rollappparamstypes.StoreKey, timeupgradetypes.StoreKey,
+	dividendstypes.StoreKey,
 }
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
@@ -198,6 +203,7 @@ var (
 		wasm.AppModuleBasic{},
 		tokenfactory.NewAppModuleBasic(),
 		rollappparams.AppModuleBasic{},
+		dividends.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -214,6 +220,7 @@ var (
 		wasmtypes.ModuleName:           {authtypes.Burner},
 		rollappparamstypes.ModuleName:  nil,
 		tokenfactorytypes.ModuleName:   {authtypes.Minter, authtypes.Burner},
+		dividendstypes.ModuleName:      nil,
 	}
 )
 
@@ -249,6 +256,7 @@ type App struct {
 	HubKeeper           hubkeeper.Keeper
 	HubGenesisKeeper    hubgenkeeper.Keeper
 	RollappParamsKeeper rollappparamskeeper.Keeper
+	DividendsKeeper     dividendskeeper.Keeper
 	UpgradeKeeper       upgradekeeper.Keeper
 	ParamsKeeper        paramskeeper.Keeper
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
@@ -381,9 +389,7 @@ func NewRollapp(
 		authtypes.FeeCollectorName,
 	)
 	app.MintKeeper.SetHooks(
-		minttypes.NewMultiMintHooks(
-		// insert mint hooks receivers here
-		),
+		minttypes.NewMultiMintHooks(),
 	)
 
 	app.DistrKeeper = distrkeeper.NewKeeper(
@@ -408,6 +414,18 @@ func NewRollapp(
 		keys[timeupgradetypes.StoreKey],
 		authtypes.NewModuleAddress(timeupgradetypes.ModuleName).String(),
 	)
+
+	app.DividendsKeeper = dividendskeeper.NewKeeper(
+		appCodec,
+		keys[dividendstypes.StoreKey],
+		&stakingKeeper,
+		app.AccountKeeper,
+		app.DistrKeeper,
+		app.BankKeeper,
+		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
+	)
+
+	app.DividendsKeeper.SetGetBalanceFunc(app.DividendsKeeper.GetBalanceFunc())
 
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
@@ -609,6 +627,7 @@ func NewRollapp(
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper),
 		gasless.NewAppModule(appCodec, app.GaslessKeeper),
 		rollappparams.NewAppModule(appCodec, app.RollappParamsKeeper),
+		dividends.NewAppModule(app.DividendsKeeper),
 	}
 
 	app.mm = module.NewManager(modules...)
@@ -639,6 +658,7 @@ func NewRollapp(
 		tokenfactorytypes.ModuleName,
 		gaslesstypes.ModuleName,
 		rollappparamstypes.ModuleName,
+		dividendstypes.ModuleName,
 	}
 	app.mm.SetOrderBeginBlockers(beginBlockersList...)
 
@@ -663,6 +683,7 @@ func NewRollapp(
 		tokenfactorytypes.ModuleName,
 		gaslesstypes.ModuleName,
 		rollappparamstypes.ModuleName,
+		dividendstypes.ModuleName,
 	}
 	app.mm.SetOrderEndBlockers(endBlockersList...)
 
@@ -693,6 +714,7 @@ func NewRollapp(
 		tokenfactorytypes.ModuleName,
 		gaslesstypes.ModuleName,
 		rollappparamstypes.ModuleName,
+		dividendstypes.ModuleName,
 	}
 	app.mm.SetOrderInitGenesis(initGenesisList...)
 
