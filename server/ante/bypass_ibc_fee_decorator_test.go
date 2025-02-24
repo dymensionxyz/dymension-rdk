@@ -315,10 +315,10 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 			}
 
 			decor := BypassIBCFeeDecorator{
-				dk:       dk,
-				sk:       sk,
-				pk:       pk,
-				nextAnte: nextAnte,
+				dk:           dk,
+				sk:           sk,
+				pk:           pk,
+				bypassedAnte: nextAnte,
 			}
 
 			_, err := decor.AnteHandle(ctx, tx, false, next)
