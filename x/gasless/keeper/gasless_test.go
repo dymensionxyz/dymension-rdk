@@ -1,11 +1,12 @@
 package keeper_test
 
 import (
+	"slices"
+
 	sdkerrors "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/errors"
-	"golang.org/x/exp/slices"
 
 	"github.com/dymensionxyz/dymension-rdk/x/gasless/types"
 )
