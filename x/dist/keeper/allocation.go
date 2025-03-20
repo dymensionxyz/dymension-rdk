@@ -22,6 +22,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	feesCollectedInt := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
 	feesCollected := sdk.NewDecCoinsFromCoins(feesCollectedInt...)
 	feePool := k.GetFeePool(ctx)
+	remainingFees := feesCollected
 
 	// transfer collected fees to the distribution module account
 	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, k.feeCollectorName, types.ModuleName, feesCollectedInt)
@@ -30,7 +31,6 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 		return
 	}
 
-	remainingFees := feesCollected
 	/* ---------------------------- Pay the proposer ---------------------------- */
 	proposerMultiplier := k.GetBaseProposerReward(ctx)
 	proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
@@ -50,10 +50,10 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	}
 
 	/* ---------------------- reward the members/validators ---------------------- */
+	totalPreviousPower := k.stakingKeeper.GetLastTotalPower(ctx)
 	membersMultiplier := sdk.OneDec().Sub(proposerMultiplier).Sub(k.GetCommunityTax(ctx))
 	membersRewards := feesCollected.MulDecTruncate(membersMultiplier)
 
-	totalPreviousPower := k.stakingKeeper.GetLastTotalPower(ctx)
 	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingtypes.ValidatorI) (stop bool) {
 		// Staking module calculates power factored by sdk.DefaultPowerReduction. hardcoded.
 		valPower := validator.GetConsensusPower(sdk.DefaultPowerReduction)
@@ -83,23 +83,22 @@ func (k Keeper) AllocateTokensToProposer(ctx sdk.Context, proposer sdk.AccAddres
 				k.Logger(ctx).Error("failed to convert coin", "err", err, "proposer", proposer)
 				return fmt.Errorf("failed to convert proposer reward: %w", err)
 			}
-			// event emitted in convert coin handler
 		} else {
-			err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposer, proposerReward)
+			err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposer, sdk.NewCoins(coin))
 			if err != nil {
 				k.Logger(ctx).Error("Send rewards to proposer.", "err", err, "proposer reward addr", proposer)
 				return fmt.Errorf("failed to send proposer reward: %w", err)
 			}
-
-			ctx.EventManager().EmitEvent(
-				sdk.NewEvent(
-					disttypes.EventTypeDistSequencerRewards,
-					sdk.NewAttribute(sdk.AttributeKeyAmount, proposerReward.String()),
-					sdk.NewAttribute(disttypes.AttributeKeyRewardee, proposer.String()),
-				),
-			)
 		}
 	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			disttypes.EventTypeDistSequencerRewards,
+			sdk.NewAttribute(sdk.AttributeKeyAmount, proposerReward.String()),
+			sdk.NewAttribute(disttypes.AttributeKeyRewardee, proposer.String()),
+		),
+	)
 
 	return nil
 }
