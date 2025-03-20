@@ -15,7 +15,7 @@ type Keeper struct {
 	distkeeper.Keeper
 
 	authKeeper    disttypes.AccountKeeper
-	bankKeeper    disttypes.BankKeeper
+	bankKeeper    types.BankKeeper
 	stakingKeeper types.StakingKeeper
 	seqKeeper     types.SequencerKeeper
 	erc20k        types.ERC20Keeper
@@ -29,7 +29,7 @@ func NewKeeper(
 	key storetypes.StoreKey,
 	paramSpace paramtypes.Subspace,
 	ak disttypes.AccountKeeper,
-	bk disttypes.BankKeeper,
+	bk types.BankKeeper,
 	sk types.StakingKeeper,
 	seqk types.SequencerKeeper,
 	erc20k types.ERC20Keeper,
