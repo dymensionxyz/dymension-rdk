@@ -87,7 +87,7 @@ message GasConsumer {
     // bech32 encoded address of the consumer
     string consumer = 1;
 
-    // consumtion statistics of the consumer
+    // consumption statistics of the consumer
     repeated ConsumptionDetail consumptions = 2;
 }
 ```

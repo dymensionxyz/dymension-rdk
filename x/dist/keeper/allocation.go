@@ -16,7 +16,7 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	logger := k.Logger(ctx)
 
 	// fetch and clear the collected fees for distribution, since this is
-	// called in BeginBlock, collected fees will be from the previous block
+	// called in EndBlock, collected fees will be from the previous block
 	// (and distributed to the previous proposer)
 	feeCollector := k.authKeeper.GetModuleAccount(ctx, k.feeCollectorName)
 	feesCollectedInt := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
