@@ -16,6 +16,7 @@ import (
 // (CreateValidator or Delegate) and if so, performs ERC20 conversion before processing.
 type ERC20ConversionDecorator struct {
 	erc20Keeper ERC20Keeper
+	bankKeeper  BankKeeper
 }
 
 type ERC20ConversionPostHandlerDecorator struct {
@@ -25,9 +26,10 @@ type ERC20ConversionPostHandlerDecorator struct {
 }
 
 // NewERC20ConversionDecorator creates a new ERC20ConversionDecorator
-func NewERC20ConversionDecorator(k ERC20Keeper) ERC20ConversionDecorator {
+func NewERC20ConversionDecorator(k ERC20Keeper, bk BankKeeper) ERC20ConversionDecorator {
 	return ERC20ConversionDecorator{
 		erc20Keeper: k,
+		bankKeeper:  bk,
 	}
 }
 
@@ -39,61 +41,63 @@ func NewERC20ConversionPostHandlerDecorator(erc20k ERC20Keeper, bankk BankKeeper
 	}
 }
 
+// handleERC20Conversion checks if a denom is registered as an ERC20 token,
+// verifies the account has sufficient balance, and performs the conversion if needed.
+func (d ERC20ConversionDecorator) handleERC20Conversion(ctx sdk.Context, denom string, amount sdk.Coin, address string) error {
+	if !d.erc20Keeper.IsDenomRegistered(ctx, denom) {
+		// Not registered, no conversion needed
+		return nil
+	}
+
+	convAcc, err := sdk.AccAddressFromBech32(address)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to convert address")
+	}
+
+	// Check if the account already has sufficient balance of this denom
+	balance := d.bankKeeper.GetBalance(ctx, convAcc, denom)
+	if balance.IsGTE(amount) {
+		// Account already has sufficient balance, no conversion needed
+		return nil
+	}
+
+	// Convert the coin to ERC20 token
+	if err := convertCoin(ctx, d.erc20Keeper, amount, convAcc); err != nil {
+		return errorsmod.Wrap(err, "failed to convert coin")
+	}
+
+	return nil
+}
+
 // AnteHandle performs ERC20 conversion for staking messages if needed
 func (d ERC20ConversionDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	// Process each message
-	// FIXME: need to check if enough balance already in place?
+	// TODO: support authz wrapped msgs as well
 	for _, msg := range tx.GetMsgs() {
 		switch m := msg.(type) {
 		case *stakingtypes.MsgCreateValidator:
-			// Check if the amount's denom is registered as an ERC20 token
-			if d.erc20Keeper.IsDenomRegistered(ctx, m.Value.Denom) {
-				convAcc, err := sdk.AccAddressFromBech32(m.DelegatorAddress)
-				if err != nil {
-					return ctx, errorsmod.Wrap(err, "failed to convert addr")
-				}
-
-				// Convert the coin to ERC20 token
-				if err := convertCoin(ctx, d.erc20Keeper, m.Value, convAcc); err != nil {
-					return ctx, errorsmod.Wrap(err, "failed to convert coin for MsgCreateValidator")
-				}
+			err := d.handleERC20Conversion(ctx, m.Value.Denom, m.Value, m.DelegatorAddress)
+			if err != nil {
+				return ctx, err
 			}
 		case *stakingtypes.MsgDelegate:
-			// Check if the amount's denom is registered as an ERC20 token
-			if d.erc20Keeper.IsDenomRegistered(ctx, m.Amount.Denom) {
-				convAcc, err := sdk.AccAddressFromBech32(m.DelegatorAddress)
-				if err != nil {
-					return ctx, errorsmod.Wrap(err, "failed to convert addr")
-				}
-				// Convert the coin to ERC20 token
-				if err := convertCoin(ctx, d.erc20Keeper, m.Amount, convAcc); err != nil {
-					return ctx, errorsmod.Wrap(err, "failed to convert coin for MsgDelegate")
-				}
+			err := d.handleERC20Conversion(ctx, m.Amount.Denom, m.Amount, m.DelegatorAddress)
+			if err != nil {
+				return ctx, err
 			}
 		// Governance messages
 		case *govv1types.MsgSubmitProposal:
 			for _, coin := range m.InitialDeposit {
-				if d.erc20Keeper.IsDenomRegistered(ctx, coin.Denom) {
-					convAcc, err := sdk.AccAddressFromBech32(m.Proposer)
-					if err != nil {
-						return ctx, errorsmod.Wrap(err, "failed to convert addr")
-					}
-
-					if err := convertCoin(ctx, d.erc20Keeper, coin, convAcc); err != nil {
-						return ctx, errorsmod.Wrap(err, "failed to convert coin for MsgSubmitProposal v1")
-					}
+				err := d.handleERC20Conversion(ctx, coin.Denom, coin, m.Proposer)
+				if err != nil {
+					return ctx, err
 				}
 			}
 		case *govv1types.MsgDeposit:
 			for _, coin := range m.Amount {
-				if d.erc20Keeper.IsDenomRegistered(ctx, coin.Denom) {
-					convAcc, err := sdk.AccAddressFromBech32(m.Depositor)
-					if err != nil {
-						return ctx, errorsmod.Wrap(err, "failed to convert addr")
-					}
-					if err := convertCoin(ctx, d.erc20Keeper, coin, convAcc); err != nil {
-						return ctx, errorsmod.Wrap(err, "failed to convert coin for MsgDeposit v1")
-					}
+				err := d.handleERC20Conversion(ctx, coin.Denom, coin, m.Depositor)
+				if err != nil {
+					return ctx, err
 				}
 			}
 			// Distribution messages are handled by the post ante handler

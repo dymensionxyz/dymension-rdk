@@ -34,6 +34,21 @@ func (m *mockERC20Keeper) ConvertCoin(ctx context.Context, msg *erc20types.MsgCo
 	return args.Get(0).(*erc20types.MsgConvertCoinResponse), args.Error(1)
 }
 
+// Mock BankKeeper for testing
+type mockBankKeeper struct {
+	mock.Mock
+}
+
+func (m *mockBankKeeper) GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins {
+	args := m.Called(ctx, addr)
+	return args.Get(0).(sdk.Coins)
+}
+
+func (m *mockBankKeeper) GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin {
+	args := m.Called(ctx, addr, denom)
+	return args.Get(0).(sdk.Coin)
+}
+
 // Mock AnteHandler for testing
 type mockAnteHandler struct {
 	mock.Mock
@@ -47,9 +62,10 @@ func (m *mockAnteHandler) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool) 
 func TestERC20ConversionDecorator(t *testing.T) {
 	// Setup
 	mockERC20 := new(mockERC20Keeper)
+	mockBank := new(mockBankKeeper)
 	mockNext := new(mockAnteHandler)
 
-	decorator := ante.NewERC20ConversionDecorator(mockERC20)
+	decorator := ante.NewERC20ConversionDecorator(mockERC20, mockBank)
 
 	// Create a context
 	ctx := sdk.Context{}.WithLogger(log.NewNopLogger())
@@ -75,6 +91,8 @@ func TestERC20ConversionDecorator(t *testing.T) {
 			setupMocks: func() {
 				// Setup expectations
 				mockERC20.On("IsDenomRegistered", mock.Anything, "registered").Return(true)
+				// Mock that the balance is not sufficient, so conversion is needed
+				mockBank.On("GetBalance", mock.Anything, mock.Anything, "registered").Return(sdk.NewCoin("registered", sdk.NewInt(0)))
 				mockERC20.On("ConvertCoin", mock.Anything, mock.Anything).Return(&erc20types.MsgConvertCoinResponse{}, nil)
 				mockNext.On("AnteHandle", mock.Anything, mock.Anything, mock.Anything).Return(ctx, nil)
 			},
@@ -108,6 +126,8 @@ func TestERC20ConversionDecorator(t *testing.T) {
 			setupMocks: func() {
 				// Setup expectations
 				mockERC20.On("IsDenomRegistered", mock.Anything, "registered").Return(true)
+				// Mock that the balance is not sufficient, so conversion is needed
+				mockBank.On("GetBalance", mock.Anything, mock.Anything, "registered").Return(sdk.NewCoin("registered", sdk.NewInt(0)))
 				mockERC20.On("ConvertCoin", mock.Anything, mock.Anything).Return(&erc20types.MsgConvertCoinResponse{}, nil)
 				mockNext.On("AnteHandle", mock.Anything, mock.Anything, mock.Anything).Return(ctx, nil)
 			},
@@ -141,6 +161,8 @@ func TestERC20ConversionDecorator(t *testing.T) {
 			setupMocks: func() {
 				// Setup expectations
 				mockERC20.On("IsDenomRegistered", mock.Anything, "error").Return(true)
+				// Mock that the balance is not sufficient, so conversion is needed
+				mockBank.On("GetBalance", mock.Anything, mock.Anything, "error").Return(sdk.NewCoin("error", sdk.NewInt(0)))
 				mockERC20.On("ConvertCoin", mock.Anything, mock.Anything).Return(&erc20types.MsgConvertCoinResponse{}, errors.New("error"))
 			},
 			expectedErr: true,
@@ -166,6 +188,7 @@ func TestERC20ConversionDecorator(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Reset mocks
 			mockERC20.ExpectedCalls = nil
+			mockBank.ExpectedCalls = nil
 			mockNext.ExpectedCalls = nil
 
 			// Setup mocks
@@ -185,6 +208,7 @@ func TestERC20ConversionDecorator(t *testing.T) {
 
 			// Verify mock expectations
 			mockERC20.AssertExpectations(t)
+			mockBank.AssertExpectations(t)
 			mockNext.AssertExpectations(t)
 		})
 	}

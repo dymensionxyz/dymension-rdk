@@ -13,6 +13,7 @@ type ERC20Keeper interface {
 }
 type BankKeeper interface {
 	GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
+	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 }
 
 type DistributionKeeper interface {
