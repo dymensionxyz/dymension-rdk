@@ -11,6 +11,7 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	types2 "github.com/dymensionxyz/dymension-rdk/x/staking/types"
 	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
 )
@@ -77,16 +78,24 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) {
 			continue
 		}
 
-		// if coin has been registered to ERC20, convert it
-		// we continue on error, as no harm done if conversion fails
-		for _, coin := range balances {
-			if k.erc20k.IsDenomRegistered(ctx, coin.Denom) {
-				msg := erc20types.NewMsgConvertCoin(coin, common.BytesToAddress(delegatorAddress), delegatorAddress)
-				if _, err = k.erc20k.ConvertCoin(sdk.WrapSDKContext(ctx), msg); err != nil {
-					k.Logger(ctx).Error("Failed to convert coin", "err", err, "delegator", delegatorAddress, "validator", addr)
-					continue
+		/* -------------------------------------------------------------------------- */
+		/*                                MODIFIED PART                               */
+		/* -------------------------------------------------------------------------- */
+		err = utils.ApplyFuncIfNoError(ctx, func(ctx sdk.Context) error {
+			// if coin has been registered to ERC20, convert it
+			// we continue on error, as no harm done if conversion fails
+			for _, coin := range balances {
+				if k.erc20k.IsDenomRegistered(ctx, coin.Denom) {
+					msg := erc20types.NewMsgConvertCoin(coin, common.BytesToAddress(delegatorAddress), delegatorAddress)
+					if _, err = k.erc20k.ConvertCoin(sdk.WrapSDKContext(ctx), msg); err != nil {
+						return err
+					}
 				}
 			}
+			return nil
+		})
+		if err != nil {
+			k.Logger(ctx).Error("Failed to convert coin", "err", err, "delegator", delegatorAddress, "validator", addr, "balances", balances)
 		}
 
 		ctx.EventManager().EmitEvent(

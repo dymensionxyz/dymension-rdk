@@ -6,6 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/dymensionxyz/dymension-rdk/utils"
 	disttypes "github.com/dymensionxyz/dymension-rdk/x/dist/types"
 	"github.com/ethereum/go-ethereum/common"
 	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
@@ -39,8 +40,10 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	if !found {
 		logger.Error("Find the validator for this block. Reward not allocated.", "addr", blockProposer)
 	} else {
-		// TODO: wrap in cache context
-		err := k.AllocateTokensToProposer(ctx, addr, proposerReward)
+		// try to allocate to propser in cache ctx
+		err := utils.ApplyFuncIfNoError(ctx, func(ctx sdk.Context) error {
+			return k.AllocateTokensToProposer(ctx, addr, proposerReward)
+		})
 		if err == nil {
 			remainingFees = remainingFees.Sub(proposerReward)
 		} else {
