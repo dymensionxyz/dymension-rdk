@@ -50,8 +50,7 @@ func assertInitial(t *testing.T, ctx sdk.Context, app *app.App, valAddrs []sdk.V
 	require.True(t, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards.IsZero())
 }
 
-func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
-	fees := sdk.NewCoins(totalFeesCoin)
+func fundModules(t *testing.T, ctx sdk.Context, app *app.App, fees sdk.Coins) {
 	feeCollector := app.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
 	require.NotNil(t, feeCollector)
 
@@ -102,7 +101,7 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 
 	valAddrs := createValidators(t, ctx, app)
 	assertInitial(t, ctx, app, valAddrs)
-	fundModules(t, ctx, app)
+	fundModules(t, ctx, app, sdk.NewCoins(totalFeesCoin))
 
 	// end block to bond validator and start new block
 	app.StakingKeeper.BlockValidatorUpdates(ctx)
@@ -154,7 +153,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	fundModules(t, ctx, app)
+	fundModules(t, ctx, app, sdk.NewCoins(totalFeesCoin))
 
 	proposerReward := 0.4
 	communityTax := 0.02
@@ -200,7 +199,7 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 
 	valAddrs := createValidators(t, ctx, app)
 	assertInitial(t, ctx, app, valAddrs)
-	fundModules(t, ctx, app)
+	fundModules(t, ctx, app, sdk.NewCoins(totalFeesCoin))
 
 	// end block to bond validator and start new block
 	app.StakingKeeper.BlockValidatorUpdates(ctx)

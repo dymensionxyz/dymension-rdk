@@ -13,7 +13,7 @@ import (
 // It holds the vanilla implementation of the hooks and our overrides
 type Hooks struct {
 	distkeeper.Hooks
-	k Keeper
+	DistKeeper Keeper
 }
 
 var _ stakingtypes.StakingHooks = Hooks{}
@@ -21,8 +21,8 @@ var _ stakingtypes.StakingHooks = Hooks{}
 // Create new distribution hooks
 func (k Keeper) Hooks() Hooks {
 	return Hooks{
-		Hooks: k.Keeper.Hooks(),
-		k:     k,
+		Hooks:      k.Keeper.Hooks(),
+		DistKeeper: k,
 	}
 }
 
@@ -31,7 +31,7 @@ func (k Keeper) Hooks() Hooks {
 // registered as an ERC20 token, and if so, converts the balance of the
 // delegator's withdraw address from the coin to the ERC20 token.
 func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
-	withdrawAddr := h.k.GetDelegatorWithdrawAddr(ctx, sdk.AccAddress(valAddr))
+	withdrawAddr := h.DistKeeper.GetDelegatorWithdrawAddr(ctx, sdk.AccAddress(valAddr))
 
 	err := h.Hooks.AfterValidatorRemoved(ctx, consAddr, valAddr)
 	if err != nil {
@@ -51,7 +51,7 @@ func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, 
 // registered as an ERC20 token, and if so, converts the balance of the
 // delegator's withdraw address from the coin to the ERC20 token.
 func (h Hooks) BeforeDelegationSharesModified(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
-	withdrawAddr := h.k.GetDelegatorWithdrawAddr(ctx, delAddr)
+	withdrawAddr := h.DistKeeper.GetDelegatorWithdrawAddr(ctx, delAddr)
 
 	err := h.Hooks.BeforeDelegationSharesModified(ctx, delAddr, valAddr)
 	if err != nil {
@@ -70,13 +70,13 @@ func (h Hooks) BeforeDelegationSharesModified(ctx sdk.Context, delAddr sdk.AccAd
 // If the bond denom is not registered as an ERC20 token, or if the balance is zero, it returns nil.
 func (h Hooks) convertBalanceIfNeeded(ctx sdk.Context, addr sdk.AccAddress) error {
 	// Check if the bond denom is registered as an ERC20 token
-	bondDenom := h.k.stakingKeeper.GetParams(ctx).BondDenom
-	if !h.k.erc20k.IsDenomRegistered(ctx, bondDenom) {
+	bondDenom := h.DistKeeper.stakingKeeper.GetParams(ctx).BondDenom
+	if !h.DistKeeper.erc20k.IsDenomRegistered(ctx, bondDenom) {
 		return nil
 	}
 
 	// get the balance, and convert
-	balance := h.k.bankKeeper.GetBalance(ctx, addr, bondDenom)
+	balance := h.DistKeeper.bankKeeper.GetBalance(ctx, addr, bondDenom)
 	if balance.IsZero() {
 		return nil
 	}
@@ -85,7 +85,7 @@ func (h Hooks) convertBalanceIfNeeded(ctx sdk.Context, addr sdk.AccAddress) erro
 	msg := erc20types.NewMsgConvertCoin(balance, common.BytesToAddress(addr), addr)
 
 	// Call the ERC20 keeper to convert the coin
-	_, err := h.k.erc20k.ConvertCoin(sdk.WrapSDKContext(ctx), msg)
+	_, err := h.DistKeeper.erc20k.ConvertCoin(sdk.WrapSDKContext(ctx), msg)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to convert coin")
 	}
