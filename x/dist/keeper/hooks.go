@@ -1,12 +1,10 @@
 package keeper
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/ethereum/go-ethereum/common"
-	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
+	"github.com/dymensionxyz/dymension-rdk/utils/erc20"
 )
 
 // Wrapper struct
@@ -38,7 +36,7 @@ func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, 
 		return err
 	}
 
-	err = h.convertBalanceIfNeeded(ctx, withdrawAddr)
+	err = erc20.ConvertAllBalances(ctx, h.DistKeeper.erc20k, h.DistKeeper.bankKeeper, withdrawAddr)
 	if err != nil {
 		return err
 	}
@@ -58,36 +56,9 @@ func (h Hooks) BeforeDelegationSharesModified(ctx sdk.Context, delAddr sdk.AccAd
 		return err
 	}
 
-	err = h.convertBalanceIfNeeded(ctx, withdrawAddr)
+	err = erc20.ConvertAllBalances(ctx, h.DistKeeper.erc20k, h.DistKeeper.bankKeeper, withdrawAddr)
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-// convertBalanceIfNeeded converts the bond denom balance of a given address from the coin to the ERC20 token.
-// If the bond denom is not registered as an ERC20 token, or if the balance is zero, it returns nil.
-func (h Hooks) convertBalanceIfNeeded(ctx sdk.Context, addr sdk.AccAddress) error {
-	// Check if the bond denom is registered as an ERC20 token
-	bondDenom := h.DistKeeper.stakingKeeper.GetParams(ctx).BondDenom
-	if !h.DistKeeper.erc20k.IsDenomRegistered(ctx, bondDenom) {
-		return nil
-	}
-
-	// get the balance, and convert
-	balance := h.DistKeeper.bankKeeper.GetBalance(ctx, addr, bondDenom)
-	if balance.IsZero() {
-		return nil
-	}
-
-	// Create a MsgConvertCoin message
-	msg := erc20types.NewMsgConvertCoin(balance, common.BytesToAddress(addr), addr)
-
-	// Call the ERC20 keeper to convert the coin
-	_, err := h.DistKeeper.erc20k.ConvertCoin(sdk.WrapSDKContext(ctx), msg)
-	if err != nil {
-		return errorsmod.Wrap(err, "failed to convert coin")
 	}
 
 	return nil

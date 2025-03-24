@@ -1,16 +1,12 @@
 package ante
 
 import (
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
-	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	"github.com/ethereum/go-ethereum/common"
-	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
+	"github.com/dymensionxyz/dymension-rdk/utils/erc20"
 )
 
 // ERC20ConversionDecorator is an ante handler decorator that performs ERC20 token
@@ -106,7 +102,7 @@ func (d ERC20ConversionDecorator) convertFromERC20IfNeeded(ctx sdk.Context, amou
 	}
 
 	// Convert the ERC20 token to the native token
-	if err := ConvertERC20(ctx, d.erc20Keeper, amount.Amount, pair.GetERC20Contract(), convAcc); err != nil {
+	if err := erc20.ConvertERC20(ctx, d.erc20Keeper, amount.Amount, pair.GetERC20Contract(), convAcc); err != nil {
 		return errorsmod.Wrap(err, "failed to convert coin")
 	}
 
@@ -149,7 +145,7 @@ func (d ERC20ConversionPostHandlerDecorator) PostHandle(ctx sdk.Context, tx sdk.
 			withdrawAddr := d.distrKeeper.GetDelegatorWithdrawAddr(ctx, delAddr)
 
 			// Convert any newly received rewards
-			if err := ConvertAllBalances(ctx, d.erc20Keeper, d.bankKeeper, withdrawAddr); err != nil {
+			if err := erc20.ConvertAllBalances(ctx, d.erc20Keeper, d.bankKeeper, withdrawAddr); err != nil {
 				return ctx, errorsmod.Wrap(err, "failed to convert rewards for MsgWithdrawDelegatorReward")
 			}
 
@@ -163,59 +159,11 @@ func (d ERC20ConversionPostHandlerDecorator) PostHandle(ctx sdk.Context, tx sdk.
 			withdrawAddr := d.distrKeeper.GetDelegatorWithdrawAddr(ctx, sdk.AccAddress(valAddr))
 
 			// Convert any newly received commission
-			if err := ConvertAllBalances(ctx, d.erc20Keeper, d.bankKeeper, withdrawAddr); err != nil {
+			if err := erc20.ConvertAllBalances(ctx, d.erc20Keeper, d.bankKeeper, withdrawAddr); err != nil {
 				return ctx, errorsmod.Wrap(err, "failed to convert commission for MsgWithdrawValidatorCommission")
 			}
 		}
 	}
 
 	return ctx, nil
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                    utils                                   */
-/* -------------------------------------------------------------------------- */
-// ConvertAllBalances converts all coins of a given address to ERC20 tokens if their
-// denom is registered as an ERC20 token.
-func ConvertAllBalances(ctx sdk.Context, erck ERC20Keeper, bk BankKeeper, addr sdk.AccAddress) error {
-	balances := bk.GetAllBalances(ctx, addr)
-	for _, balance := range balances {
-		// Check if the denom is registered as an ERC20 token
-		if erck.IsDenomRegistered(ctx, balance.Denom) {
-			// Convert the coin
-			if err := ConvertCoin(ctx, erck, balance, addr); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-// ConvertCoin converts a coin to an ERC20 token
-func ConvertCoin(ctx sdk.Context, erc20keeper ERC20Keeper, coin sdk.Coin, user sdk.AccAddress) error {
-	// Create a MsgConvertCoin message
-	msg := erc20types.NewMsgConvertCoin(coin, common.BytesToAddress(user), user)
-
-	// Call the ERC20 keeper to convert the coin
-	_, err := erc20keeper.ConvertCoin(sdk.WrapSDKContext(ctx), msg)
-	if err != nil {
-		return fmt.Errorf("failed to convert coin: %w", err)
-	}
-
-	return nil
-}
-
-// ConvertERC20 converts an ERC20 token to a coin
-func ConvertERC20(ctx sdk.Context, erc20keeper ERC20Keeper, amt math.Int, contract common.Address, user sdk.AccAddress) error {
-	// Create a MsgConvertERC20 message
-	msg := erc20types.NewMsgConvertERC20(amt, user, contract, common.BytesToAddress(user))
-
-	// Call the ERC20 keeper to convert the ERC20 token
-	_, err := erc20keeper.ConvertERC20(sdk.WrapSDKContext(ctx), msg)
-	if err != nil {
-		return fmt.Errorf("failed to convert ERC20 token: %w", err)
-	}
-
-	return nil
 }
