@@ -16,7 +16,7 @@ type ERC20ConvertCoin interface {
 }
 
 type ERC20ConvertERC20 interface {
-	ConvertERC20(ctx context.Context, msg *erc20types.MsgConvertERC20) (*erc20types.MsgConvertERC20Response, error)
+	TryConvertErc20Sdk(ctx sdk.Context, sender, receiver sdk.AccAddress, denom string, amount math.Int) error
 }
 
 type BankKeeper interface {
@@ -53,20 +53,6 @@ func ConvertCoin(ctx sdk.Context, erc20keeper ERC20ConvertCoin, coin sdk.Coin, u
 	_, err := erc20keeper.ConvertCoin(sdk.WrapSDKContext(ctx), msg)
 	if err != nil {
 		return fmt.Errorf("failed to convert coin: %w", err)
-	}
-
-	return nil
-}
-
-// ConvertERC20 converts an ERC20 token to a coin
-func ConvertERC20(ctx sdk.Context, erc20keeper ERC20ConvertERC20, amt math.Int, contract common.Address, user sdk.AccAddress) error {
-	// Create a MsgConvertERC20 message
-	msg := erc20types.NewMsgConvertERC20(amt, user, contract, common.BytesToAddress(user))
-
-	// Call the ERC20 keeper to convert the ERC20 token
-	_, err := erc20keeper.ConvertERC20(sdk.WrapSDKContext(ctx), msg)
-	if err != nil {
-		return fmt.Errorf("failed to convert ERC20 token: %w", err)
 	}
 
 	return nil

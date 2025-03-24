@@ -1,6 +1,8 @@
 package ante
 
 import (
+	"fmt"
+
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
@@ -76,16 +78,9 @@ func (d ERC20ConversionDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 // the given address already has sufficient balance of the native token.
 // If it does, it returns without performing any conversion.
 // If not, it converts the ERC20 token to the native token by calling the ConvertERC20 function.
-func (d ERC20ConversionDecorator) convertFromERC20IfNeeded(ctx sdk.Context, amount sdk.Coin, address string) error {
-	pairID := d.erc20Keeper.GetTokenPairID(ctx, amount.Denom)
-	if len(pairID) == 0 {
+func (d ERC20ConversionDecorator) convertFromERC20IfNeeded(ctx sdk.Context, coin sdk.Coin, address string) error {
+	if !d.erc20Keeper.IsDenomRegistered(ctx, coin.Denom) {
 		// Not registered, no conversion needed
-		return nil
-	}
-
-	pair, _ := d.erc20Keeper.GetTokenPair(ctx, pairID)
-	if !pair.Enabled {
-		// no-op: continue with the rest of the stack without conversion
 		return nil
 	}
 
@@ -95,15 +90,15 @@ func (d ERC20ConversionDecorator) convertFromERC20IfNeeded(ctx sdk.Context, amou
 	}
 
 	// Check if the account already has sufficient balance of this denom
-	balance := d.bankKeeper.GetBalance(ctx, convAcc, amount.Denom)
-	if balance.IsGTE(amount) {
+	balance := d.bankKeeper.GetBalance(ctx, convAcc, coin.Denom)
+	if balance.IsGTE(coin) {
 		// Account already has sufficient balance, no conversion needed
 		return nil
 	}
 
-	// Convert the ERC20 token to the native token
-	if err := erc20.ConvertERC20(ctx, d.erc20Keeper, amount.Amount, pair.GetERC20Contract(), convAcc); err != nil {
-		return errorsmod.Wrap(err, "failed to convert coin")
+	err = d.erc20Keeper.TryConvertErc20Sdk(ctx, convAcc, convAcc, coin.Denom, coin.Amount)
+	if err != nil {
+		return fmt.Errorf("failed to convert ERC20 token: %w", err)
 	}
 
 	return nil

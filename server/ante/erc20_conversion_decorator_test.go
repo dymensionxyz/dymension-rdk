@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"cosmossdk.io/math"
 	"github.com/tendermint/tendermint/libs/log"
 
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
@@ -22,6 +23,12 @@ import (
 // Mock ERC20Keeper for testing
 type mockERC20Keeper struct {
 	mock.Mock
+}
+
+// TryConvertErc20Sdk implements ante.ERC20Keeper.
+func (m *mockERC20Keeper) TryConvertErc20Sdk(ctx sdk.Context, sender sdk.AccAddress, receiver sdk.AccAddress, denom string, amount math.Int) error {
+	args := m.Called(ctx, sender, receiver, denom, amount)
+	return args.Error(0)
 }
 
 func (m *mockERC20Keeper) IsDenomRegistered(ctx sdk.Context, denom string) bool {
