@@ -31,7 +31,7 @@ type BankKeeper interface {
 // ConvertAllBalances converts all coins of a given address to ERC20 tokens if their
 // denom is registered as an ERC20 token.
 func ConvertAllBalances(ctx sdk.Context, erck ERC20ConvertCoin, bk BankKeeper, addr sdk.AccAddress) error {
-	balances := bk.GetAllBalances(ctx, addr)
+	balances := bk.SpendableCoins(ctx, addr)
 	for _, balance := range balances {
 		// Check if the denom is registered as an ERC20 token
 		if erck.IsDenomRegistered(ctx, balance.Denom) {
