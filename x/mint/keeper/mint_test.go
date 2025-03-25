@@ -23,6 +23,7 @@ func TestMinting(t *testing.T) {
 	k, ctx := testkeepers.NewTestMintKeeperFromApp(app)
 
 	minter := types.Minter{
+		MintDenom:            sdk.DefaultBondDenom,
 		CurrentInflationRate: sdk.NewDecWithPrec(15, 2), // 15%
 	}
 	k.SetMinter(ctx, minter)

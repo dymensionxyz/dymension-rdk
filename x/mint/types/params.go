@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 
@@ -27,12 +26,11 @@ func ParamKeyTable() paramtypes.KeyTable {
 }
 
 func NewParams(
-	mintDenom string, mintEpochIdentifier string,
+	mintEpochIdentifier string,
 	mintStartEpoch int64, inflationEpochIdentifier string,
 	inflationRateChange sdk.Dec, targetInflationRate sdk.Dec,
 ) Params {
 	return Params{
-		MintDenom:                      mintDenom,
 		MintEpochIdentifier:            mintEpochIdentifier,
 		MintStartEpoch:                 mintStartEpoch,
 		InflationChangeEpochIdentifier: inflationEpochIdentifier,
@@ -44,7 +42,6 @@ func NewParams(
 // minting params
 func DefaultParams() Params {
 	return Params{
-		MintDenom:                      sdk.DefaultBondDenom,
 		MintEpochIdentifier:            "hour",
 		MintStartEpoch:                 1,
 		InflationChangeEpochIdentifier: "year",
@@ -55,9 +52,6 @@ func DefaultParams() Params {
 
 // validate params.
 func (p Params) Validate() error {
-	if err := validateMintDenom(p.MintDenom); err != nil {
-		return err
-	}
 	if err := epochtypes.ValidateEpochIdentifierInterface(p.MintEpochIdentifier); err != nil {
 		return err
 	}
@@ -89,24 +83,6 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyInflationRateChange, &p.InflationRateChange, validateInflationRate),
 		paramtypes.NewParamSetPair(KeyTargetInflationRate, &p.TargetInflationRate, validateInflationRate),
 	}
-}
-
-func validateMintDenom(i interface{}) error {
-	v, ok := i.(string)
-	if !ok {
-		return fmt.Errorf("invalid parameter type: %T", i)
-	}
-
-	// we allow empty string to disable minting
-	if strings.TrimSpace(v) == "" {
-		return nil
-	}
-
-	if err := sdk.ValidateDenom(v); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func validateInt(i interface{}) error {
