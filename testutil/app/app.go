@@ -140,6 +140,9 @@ import (
 	rollappparamskeeper "github.com/dymensionxyz/dymension-rdk/x/rollappparams/keeper"
 	rollappparamstypes "github.com/dymensionxyz/dymension-rdk/x/rollappparams/types"
 
+	cryptocodec "github.com/evmos/evmos/v12/crypto/codec"
+	ethermint "github.com/evmos/evmos/v12/types"
+
 	erc20 "github.com/evmos/evmos/v12/x/erc20"
 	erc20keeper "github.com/evmos/evmos/v12/x/erc20/keeper"
 	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
@@ -381,7 +384,7 @@ func NewRollapp(
 		appCodec,
 		keys[authtypes.StoreKey],
 		app.GetSubspace(authtypes.ModuleName),
-		authtypes.ProtoBaseAccount,
+		ethermint.ProtoAccount,
 		maccPerms,
 		sdk.Bech32PrefixAccAddr, // Bech32MainPrefix
 	)
@@ -1110,6 +1113,9 @@ func MakeEncodingConfig() EncodingConfig {
 
 	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	ethermint.RegisterInterfaces(interfaceRegistry)
+	cryptocodec.RegisterInterfaces(interfaceRegistry)
+
 	ModuleBasics.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	ModuleBasics.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
