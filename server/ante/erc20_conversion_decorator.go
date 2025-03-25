@@ -37,26 +37,26 @@ func (d ERC20ConversionDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 	for _, msg := range tx.GetMsgs() {
 		switch m := msg.(type) {
 		case *stakingtypes.MsgCreateValidator:
-			err := d.convertFromERC20IfNeeded(ctx, m.Value, m.DelegatorAddress)
+			err := d.convertFromERC20IfNeeded(ctx, m.Value, m.DelegatorAddress, false)
 			if err != nil {
 				return ctx, err
 			}
 		case *stakingtypes.MsgDelegate:
-			err := d.convertFromERC20IfNeeded(ctx, m.Amount, m.DelegatorAddress)
+			err := d.convertFromERC20IfNeeded(ctx, m.Amount, m.DelegatorAddress, false)
 			if err != nil {
 				return ctx, err
 			}
 		// Governance messages
 		case *govv1types.MsgSubmitProposal:
 			for _, coin := range m.InitialDeposit {
-				err := d.convertFromERC20IfNeeded(ctx, coin, m.Proposer)
+				err := d.convertFromERC20IfNeeded(ctx, coin, m.Proposer, true)
 				if err != nil {
 					return ctx, err
 				}
 			}
 		case *govv1types.MsgDeposit:
 			for _, coin := range m.Amount {
-				err := d.convertFromERC20IfNeeded(ctx, coin, m.Depositor)
+				err := d.convertFromERC20IfNeeded(ctx, coin, m.Depositor, true)
 				if err != nil {
 					return ctx, err
 				}
@@ -78,7 +78,7 @@ func (d ERC20ConversionDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulat
 // the given address already has sufficient balance of the native token.
 // If it does, it returns without performing any conversion.
 // If not, it converts the ERC20 token to the native token by calling the ConvertERC20 function.
-func (d ERC20ConversionDecorator) convertFromERC20IfNeeded(ctx sdk.Context, coin sdk.Coin, address string) error {
+func (d ERC20ConversionDecorator) convertFromERC20IfNeeded(ctx sdk.Context, coin sdk.Coin, address string, spendableOnly bool) error {
 	if !d.erc20Keeper.IsDenomRegistered(ctx, coin.Denom) {
 		// Not registered, no conversion needed
 		return nil
@@ -91,6 +91,9 @@ func (d ERC20ConversionDecorator) convertFromERC20IfNeeded(ctx sdk.Context, coin
 
 	// Check if the account already has sufficient balance of this denom
 	balance := d.bankKeeper.GetBalance(ctx, convAcc, coin.Denom)
+	if spendableOnly {
+		_, balance = d.bankKeeper.SpendableCoins(ctx, convAcc).Find(coin.Denom)
+	}
 	if balance.IsGTE(coin) {
 		// Account already has sufficient balance, no conversion needed
 		return nil
