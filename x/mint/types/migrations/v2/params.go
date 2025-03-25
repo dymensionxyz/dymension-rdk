@@ -1,3 +1,4 @@
+// v1 version of the params
 package types
 
 import (
@@ -14,6 +15,7 @@ import (
 
 // Parameter store keys.
 var (
+	KeyMintDenom                      = []byte("MintDenom")
 	KeyMintEpochIdentifier            = []byte("MintEpochIdentifier")
 	KeyMintStartEpoch                 = []byte("MintStartEpoch")
 	KeyInflationChangeEpochIdentifier = []byte("InflationChangeEpochIdentifier")
@@ -83,6 +85,7 @@ func (p Params) String() string {
 // Implements params.ParamSet.
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
+		paramtypes.NewParamSetPair(KeyMintDenom, &p.MintDenom, validateMintDenom),
 		paramtypes.NewParamSetPair(KeyMintEpochIdentifier, &p.MintEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
 		paramtypes.NewParamSetPair(KeyInflationChangeEpochIdentifier, &p.InflationChangeEpochIdentifier, epochtypes.ValidateEpochIdentifierInterface),
 		paramtypes.NewParamSetPair(KeyMintStartEpoch, &p.MintStartEpoch, validateInt),
