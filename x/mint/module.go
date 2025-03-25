@@ -15,6 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/mint/client/cli"
 	"github.com/dymensionxyz/dymension-rdk/x/mint/keeper"
@@ -87,15 +88,19 @@ type AppModule struct {
 	keeper     keeper.Keeper
 	authKeeper types.AccountKeeper
 	bankKeeper types.BankKeeper
+
+	// this is a workaround used for migration v1 to v2 params
+	emptySubspace paramstypes.Subspace
 }
 
 // NewAppModule creates a new AppModule object.
-func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper, bk types.BankKeeper) AppModule {
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper, bk types.BankKeeper, emptySubspace paramstypes.Subspace) AppModule {
 	return AppModule{
 		AppModuleBasic: AppModuleBasic{cdc: cdc},
 		keeper:         keeper,
 		authKeeper:     ak,
 		bankKeeper:     bk,
+		emptySubspace:  emptySubspace,
 	}
 }
 
@@ -126,6 +131,14 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 // module-specific gRPC queries.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQuerier(am.keeper))
+
+	migrator := keeper.NewMigrator(am.keeper, am.emptySubspace)
+
+	// register v1 -> v2 migration
+	if err := cfg.RegisterMigration(types.ModuleName, 1, migrator.Migrate1to2); err != nil {
+		panic(fmt.Errorf("failed to migrate %s to v2: %w", types.ModuleName, err))
+	}
+
 }
 
 // InitGenesis performs genesis initialization for the mint module. It returns
@@ -156,7 +169,8 @@ func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Validato
 }
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
-func (AppModule) ConsensusVersion() uint64 { return 1 }
+// 2 - moved mint denom from params to minter
+func (AppModule) ConsensusVersion() uint64 { return 2 }
 
 // ___________________________________________________________________________
 

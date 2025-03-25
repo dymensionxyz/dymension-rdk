@@ -8,17 +8,17 @@ import (
 
 func (k Keeper) HandleMintingEpoch(ctx sdk.Context) (sdk.Coins, error) {
 	var mintedCoins sdk.Coins
-	params := k.GetParams(ctx)
+	denom := k.GetMinter(ctx).MintDenom
 
 	// calculate coins
-	total := k.bankKeeper.GetSupply(ctx, params.MintDenom)
+	total := k.bankKeeper.GetSupply(ctx, denom)
 	mintAmount := k.CalcMintedCoins(ctx, total.Amount)
 	if mintAmount.IsZero() {
 		return mintedCoins, nil
 	}
 
 	// mint coins, update supply
-	mintedCoins = sdk.NewCoins(sdk.NewCoin(params.MintDenom, mintAmount.TruncateInt()))
+	mintedCoins = sdk.NewCoins(sdk.NewCoin(denom, mintAmount.TruncateInt()))
 	err := k.bankKeeper.MintCoins(ctx, types.ModuleName, mintedCoins)
 	if err != nil {
 		return mintedCoins, err

@@ -21,22 +21,22 @@ func TestMinting(t *testing.T) {
 	/* ---------------------------------- setup --------------------------------- */
 	app := utils.Setup(t, false)
 	k, ctx := testkeepers.NewTestMintKeeperFromApp(app)
-	params := k.GetParams(ctx)
 
 	minter := types.Minter{
+		MintDenom:            sdk.DefaultBondDenom,
 		CurrentInflationRate: sdk.NewDecWithPrec(15, 2), // 15%
 	}
 	k.SetMinter(ctx, minter)
 
 	// set expectations
 	totalSupplyAmt := sdk.NewInt(100000000) // 100M
-	totalSupplyCoin := sdk.NewCoin(params.MintDenom, totalSupplyAmt)
+	totalSupplyCoin := sdk.NewCoin(k.GetMinter(ctx).MintDenom, totalSupplyAmt)
 	expectedMintedAmt := sdk.NewInt(1712) // 1712 (15% of 100M / (365*24))
 
 	/* ---------------------------------- test ---------------------------------- */
 	//assert initial state
 	recipientAcc := app.AccountKeeper.GetModuleAddress(authtypes.FeeCollectorName)
-	initialBalance := app.BankKeeper.GetBalance(ctx, recipientAcc, params.MintDenom)
+	initialBalance := app.BankKeeper.GetBalance(ctx, recipientAcc, k.GetMinter(ctx).MintDenom)
 	require.True(t, initialBalance.IsZero())
 
 	// mint supply
@@ -54,10 +54,10 @@ func TestMinting(t *testing.T) {
 	require.Equal(t, expectedMintedAmt, mintedCoin.Amount)
 
 	// assert new supply
-	distrBalance := app.BankKeeper.GetBalance(ctx, recipientAcc, params.MintDenom)
+	distrBalance := app.BankKeeper.GetBalance(ctx, recipientAcc, k.GetMinter(ctx).MintDenom)
 	require.True(t, mintedCoins.IsEqual(sdk.NewCoins(distrBalance)))
 
-	newSupply := app.BankKeeper.GetSupply(ctx, params.MintDenom)
+	newSupply := app.BankKeeper.GetSupply(ctx, k.GetMinter(ctx).MintDenom)
 	assert.True(t, newSupply.IsEqual(totalSupplyCoin.Add(mintedCoin)))
 }
 

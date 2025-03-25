@@ -21,13 +21,13 @@ func (k Keeper) BeforeEpochStart(ctx sdk.Context, epochInfo epochstypes.EpochInf
 // - given epochIdentifier must be equal to the mint epoch identifier set via parameters.
 // - given epochNumber must be greater than or equal to the mint start epoch set via parameters.
 func (k Keeper) AfterEpochEnd(ctx sdk.Context, epochInfo epochstypes.EpochInfo) {
+	if k.GetMinter(ctx).MintDenom == "" {
+		return
+	}
+
 	epochIdentifier := epochInfo.Identifier
 	epochNumber := epochInfo.CurrentEpoch
 	params := k.GetParams(ctx)
-
-	if params.MintDenom == "" {
-		return
-	}
 
 	// Update inflation
 	if epochIdentifier == params.InflationChangeEpochIdentifier {

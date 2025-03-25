@@ -119,5 +119,5 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 
 // MintDenom returns the minting denomination.
 func (k Keeper) MintDenom(ctx sdk.Context) string {
-	return k.GetParams(ctx).MintDenom
+	return k.GetMinter(ctx).MintDenom
 }

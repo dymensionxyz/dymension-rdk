@@ -49,6 +49,7 @@ func (suite *MintKeeperTestSuite) TestAfterDistributeMintedCoin() {
 	mintHook := mintKeeper.Hooks()
 	// Set InflationRate for coin minting
 	minter := minttypes.Minter{
+		MintDenom:            sdk.DefaultBondDenom,
 		CurrentInflationRate: sdk.NewDecWithPrec(15, 2), // 15%
 	}
 	mintKeeper.SetMinter(ctx, minter)
