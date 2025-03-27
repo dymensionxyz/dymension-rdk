@@ -11,7 +11,6 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 
-	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -22,7 +21,7 @@ import (
 )
 
 var (
-	PKS = simapp.CreateTestPubKeys(5)
+	PKS = utils.CreateTestPubKeys(5)
 
 	valConsPk1 = PKS[0]
 	valConsPk2 = PKS[1]
@@ -51,20 +50,18 @@ func assertInitial(t *testing.T, ctx sdk.Context, app *app.App, valAddrs []sdk.V
 	require.True(t, app.DistrKeeper.GetValidatorCurrentRewards(ctx, valAddrs[1]).Rewards.IsZero())
 }
 
-func fundModules(t *testing.T, ctx sdk.Context, app *app.App) {
-	fees := sdk.NewCoins(totalFeesCoin)
+func fundModules(t *testing.T, ctx sdk.Context, app *app.App, fees sdk.Coins) {
 	feeCollector := app.AccountKeeper.GetModuleAccount(ctx, authtypes.FeeCollectorName)
 	require.NotNil(t, feeCollector)
 
 	// fund fee collector
 	utils.FundModuleAccount(app, ctx, feeCollector.GetName(), fees)
-	// require.NoError(t, simapp.FundModuleAccount(app.BankKeeper, ctx, feeCollector.GetName(), fees))
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
 }
 
 func createValidators(t *testing.T, ctx sdk.Context, app *app.App) []sdk.ValAddress {
 	addrs := utils.AddTestAddrs(app, ctx, 2, sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction))
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
+	valAddrs := utils.ConvertAddrsToValAddrs(addrs)
 	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
 	// create validator with 6 power and 50% commission
@@ -103,10 +100,10 @@ func TestAllocateTokensValidatorsNoProposer(t *testing.T) {
 
 	valAddrs := createValidators(t, ctx, app)
 	assertInitial(t, ctx, app, valAddrs)
-	fundModules(t, ctx, app)
+	fundModules(t, ctx, app, sdk.NewCoins(totalFeesCoin))
 
 	// end block to bond validator and start new block
-	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
+	app.StakingKeeper.BlockValidatorUpdates(ctx)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	// allocate tokens as if both had voted and second was proposer
@@ -155,7 +152,7 @@ func TestAllocateTokensToProposerNoValidators(t *testing.T) {
 	app := utils.Setup(t, false)
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
-	fundModules(t, ctx, app)
+	fundModules(t, ctx, app, sdk.NewCoins(totalFeesCoin))
 
 	proposerReward := 0.4
 	communityTax := 0.02
@@ -201,10 +198,10 @@ func TestAllocateTokensValidatorsAndProposer(t *testing.T) {
 
 	valAddrs := createValidators(t, ctx, app)
 	assertInitial(t, ctx, app, valAddrs)
-	fundModules(t, ctx, app)
+	fundModules(t, ctx, app, sdk.NewCoins(totalFeesCoin))
 
 	// end block to bond validator and start new block
-	_ = app.StakingKeeper.BlockValidatorUpdates(ctx)
+	app.StakingKeeper.BlockValidatorUpdates(ctx)
 	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 1)
 
 	proposerReward := 0.4
@@ -269,7 +266,7 @@ func TestAllocateTokensTruncation(t *testing.T) {
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
+	valAddrs := utils.ConvertAddrsToValAddrs(addrs)
 	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
 	// create validator with 10% commission
@@ -343,7 +340,7 @@ func TestAllocateTokensToValidatorWithCommission(t *testing.T) {
 	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
 
 	addrs := utils.AddTestAddrs(app, ctx, 3, sdk.NewInt(1234))
-	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
+	valAddrs := utils.ConvertAddrsToValAddrs(addrs)
 	tstaking := teststaking.NewHelper(t, ctx, app.StakingKeeper.Keeper)
 
 	// create validator with 50% commission

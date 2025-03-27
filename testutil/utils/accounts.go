@@ -42,6 +42,17 @@ func AddTestAddrs(app *app.App, ctx sdk.Context, accNum int, accAmt math.Int) []
 	return testAddrs
 }
 
+// ConvertAddrsToValAddrs converts the provided addresses to ValAddress.
+func ConvertAddrsToValAddrs(addrs []sdk.AccAddress) []sdk.ValAddress {
+	valAddrs := make([]sdk.ValAddress, len(addrs))
+
+	for i, addr := range addrs {
+		valAddrs[i] = sdk.ValAddress(addr)
+	}
+
+	return valAddrs
+}
+
 func InitAccountWithCoins(app *app.App, ctx sdk.Context, addr sdk.AccAddress, coins sdk.Coins) {
 	err := app.BankKeeper.MintCoins(ctx, ibctransfertypes.ModuleName, coins)
 	if err != nil {
