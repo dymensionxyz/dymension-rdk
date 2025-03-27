@@ -2,6 +2,7 @@ package ante_test
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
@@ -64,4 +65,10 @@ func (s *AnteTestSuite) FundAccount(addr sdk.AccAddress, coin sdk.Coin) {
 	s.NoError(err)
 	err = s.app.BankKeeper.SendCoinsFromModuleToAccount(s.ctx, minttypes.ModuleName, addr, sdk.NewCoins(coin))
 	s.NoError(err)
+}
+
+// FundFees
+func (s *AnteTestSuite) FundFees(coins sdk.Coins) {
+	// fund fee collector
+	utils.FundModuleAccount(s.app, s.ctx, authtypes.FeeCollectorName, coins)
 }

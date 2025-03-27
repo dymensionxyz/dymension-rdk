@@ -56,7 +56,6 @@ func fundModules(t *testing.T, ctx sdk.Context, app *app.App, fees sdk.Coins) {
 
 	// fund fee collector
 	utils.FundModuleAccount(app, ctx, feeCollector.GetName(), fees)
-	// require.NoError(t, simapp.FundModuleAccount(app.BankKeeper, ctx, feeCollector.GetName(), fees))
 	app.AccountKeeper.SetAccount(ctx, feeCollector)
 }
 

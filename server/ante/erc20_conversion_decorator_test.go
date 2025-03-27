@@ -5,6 +5,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/teststaking"
 	"github.com/dymensionxyz/dymension-rdk/server/ante"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
@@ -14,7 +15,6 @@ import (
 
 func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeeded(t *testing.T) {
 	stakeAmount := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
-
 	fooDenom := "foo"
 
 	cleanCtx := s.ctx
@@ -52,19 +52,15 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 		tstaking := teststaking.NewHelper(t, s.ctx, s.app.StakingKeeper.Keeper)
 		tstaking.Denom = fooDenom
 		t.Run(tc.name, func(t *testing.T) {
-
 			addr := utils.AccAddress()
 			if tc.setup != nil {
 				tc.setup(s.ctx, addr)
 			}
 
-			msg := tstaking.CreateValidatorMsg(sdk.ValAddress(addr), ed25519.GenPrivKey().PubKey(), stakeAmount)
-			decorator := ante.NewERC20ConversionDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
-
 			builder := s.app.GetTxConfig().NewTxBuilder()
+			msg := tstaking.CreateValidatorMsg(sdk.ValAddress(addr), ed25519.GenPrivKey().PubKey(), stakeAmount)
 			err := builder.SetMsgs(msg)
 			require.NoError(t, err)
-
 			tx := builder.GetTx()
 
 			var terminatorAnteHandler sdk.AnteHandler
@@ -72,6 +68,7 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 				return ctx, nil
 			}
 
+			decorator := ante.NewERC20ConversionDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
 			_, err = decorator.AnteHandle(s.ctx, tx, false, terminatorAnteHandler)
 			if tc.expErr {
 				require.Error(t, err)
@@ -83,6 +80,31 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 	}
 }
 
-func TestERC20ConvertPostDecorator(t *testing.T) {
+func (s *AnteTestSuite) TestERC20ConvertPostDecorator(t *testing.T) {
+	// Create validator
+	stakeAmount := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
+	addr := utils.AccAddress()
 
+	// Set fees to the fee account
+	fees := sdk.NewCoins(sdk.NewCoin("foo", sdk.NewInt(100)))
+	s.FundFees(fees)
+
+	// mint some balance on the user bank account. we expect it to be converted to ERC20 as well
+	s.FundAccount(addr, sdk.NewCoin("foo", stakeAmount))
+
+	// Generate drawRewards tx
+	drawRewardsMsg := disttypes.NewMsgWithdrawDelegatorReward(addr, sdk.ValAddress(addr))
+	builder := s.app.GetTxConfig().NewTxBuilder()
+	err := builder.SetMsgs(drawRewardsMsg)
+	require.NoError(t, err)
+	tx := builder.GetTx()
+
+	// Call post handler
+	postDecorator := ante.NewERC20ConversionPostHandlerDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
+	_, err = postDecorator.PostHandle(s.ctx, tx, false, true)
+	require.NoError(t, err)
+
+	// Check that the balance has been converted to ERC20
+	balance := s.app.BankKeeper.GetBalance(s.ctx, addr, "foo")
+	require.True(t, balance.IsZero())
 }
