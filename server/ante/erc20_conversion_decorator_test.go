@@ -4,13 +4,15 @@ import (
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
+	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	disttypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/teststaking"
 	"github.com/dymensionxyz/dymension-rdk/server/ante"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
 	"github.com/dymensionxyz/dymension-rdk/utils/erc20"
-	"github.com/stretchr/testify/require"
 )
 
 func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeeded(t *testing.T) {
@@ -35,10 +37,10 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 				// fund the account with ERC20 tokens
 				s.FundAccount(addr, sdk.NewCoin("foo", stakeAmount))
 				err := erc20.ConvertCoin(ctx, s.app.Erc20Keeper, sdk.NewCoin("foo", stakeAmount), addr)
-				require.NoError(t, err)
+				s.NoError(err)
 
 				balance := s.app.BankKeeper.GetBalance(ctx, addr, fooDenom)
-				require.True(t, balance.IsZero())
+				s.True(balance.IsZero())
 			},
 		},
 		{
@@ -60,7 +62,7 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 			builder := s.app.GetTxConfig().NewTxBuilder()
 			msg := tstaking.CreateValidatorMsg(sdk.ValAddress(addr), ed25519.GenPrivKey().PubKey(), stakeAmount)
 			err := builder.SetMsgs(msg)
-			require.NoError(t, err)
+			s.NoError(err)
 			tx := builder.GetTx()
 
 			var terminatorAnteHandler sdk.AnteHandler
@@ -71,17 +73,16 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 			decorator := ante.NewERC20ConversionDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
 			_, err = decorator.AnteHandle(s.ctx, tx, false, terminatorAnteHandler)
 			if tc.expErr {
-				require.Error(t, err)
+				s.Error(err)
 				return
 			} else {
-				require.NoError(t, err)
+				s.NoError(err)
 			}
 		})
 	}
 }
 
 func (s *AnteTestSuite) TestERC20ConvertPostDecorator(t *testing.T) {
-	// Create validator
 	stakeAmount := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
 	addr := utils.AccAddress()
 
@@ -96,15 +97,55 @@ func (s *AnteTestSuite) TestERC20ConvertPostDecorator(t *testing.T) {
 	drawRewardsMsg := disttypes.NewMsgWithdrawDelegatorReward(addr, sdk.ValAddress(addr))
 	builder := s.app.GetTxConfig().NewTxBuilder()
 	err := builder.SetMsgs(drawRewardsMsg)
-	require.NoError(t, err)
+	s.NoError(err)
 	tx := builder.GetTx()
 
 	// Call post handler
 	postDecorator := ante.NewERC20ConversionPostHandlerDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
 	_, err = postDecorator.PostHandle(s.ctx, tx, false, true)
-	require.NoError(t, err)
+	s.NoError(err)
 
 	// Check that the balance has been converted to ERC20
 	balance := s.app.BankKeeper.GetBalance(s.ctx, addr, "foo")
-	require.True(t, balance.IsZero())
+	s.True(balance.IsZero())
+}
+
+func (s *AnteTestSuite) TestERC20ConvertPostDecorator_VestingAccount(t *testing.T) {
+	stakeAmount := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
+
+	pubkey := secp256k1.GenPrivKey().PubKey()
+	addr := sdk.AccAddress(pubkey.Address())
+	baseAcc := authtypes.NewBaseAccount(addr, pubkey, 0, 0)
+
+	vestingCoin := sdk.NewCoin("foo", stakeAmount)
+	vestingAcc := vestingtypes.NewContinuousVestingAccount(
+		baseAcc,
+		sdk.NewCoins(vestingCoin),
+		100,
+		200,
+	)
+	s.app.AccountKeeper.SetAccount(s.ctx, vestingAcc)
+	// we fund the vesting account with 2x the amount of tokens
+	// half of the tokens will be vested
+	s.FundAccount(addr, sdk.NewCoin("foo", stakeAmount.MulRaw(2)))
+
+	// Set fees to the fee account
+	fees := sdk.NewCoins(sdk.NewCoin("foo", sdk.NewInt(100)))
+	s.FundFees(fees)
+
+	// Generate drawRewards tx
+	drawRewardsMsg := disttypes.NewMsgWithdrawDelegatorReward(addr, sdk.ValAddress(addr))
+	builder := s.app.GetTxConfig().NewTxBuilder()
+	err := builder.SetMsgs(drawRewardsMsg)
+	s.NoError(err)
+	tx := builder.GetTx()
+
+	// Call post handler
+	postDecorator := ante.NewERC20ConversionPostHandlerDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
+	_, err = postDecorator.PostHandle(s.ctx, tx, false, true)
+	s.NoError(err)
+
+	// Check that the balance has been converted to ERC20
+	balance := s.app.BankKeeper.GetBalance(s.ctx, addr, "foo")
+	s.Equal(stakeAmount, balance.Amount)
 }
