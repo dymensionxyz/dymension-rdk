@@ -15,6 +15,12 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/utils/erc20"
 )
 
+var terminatorAnteHandler = func(ctx sdk.Context, _ sdk.Tx, simulate bool) (sdk.Context, error) {
+	return ctx, nil
+}
+
+// var terminatorAnteHandler sdk.AnteHandler
+
 func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeeded(t *testing.T) {
 	stakeAmount := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
 	fooDenom := "foo"
@@ -65,11 +71,6 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 			s.NoError(err)
 			tx := builder.GetTx()
 
-			var terminatorAnteHandler sdk.AnteHandler
-			terminatorAnteHandler = func(ctx sdk.Context, _ sdk.Tx, simulate bool) (sdk.Context, error) {
-				return ctx, nil
-			}
-
 			decorator := ante.NewERC20ConversionDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
 			_, err = decorator.AnteHandle(s.ctx, tx, false, terminatorAnteHandler)
 			if tc.expErr {
@@ -102,7 +103,7 @@ func (s *AnteTestSuite) TestERC20ConvertPostDecorator(t *testing.T) {
 
 	// Call post handler
 	postDecorator := ante.NewERC20ConversionPostHandlerDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
-	_, err = postDecorator.PostHandle(s.ctx, tx, false, true)
+	_, err = postDecorator.AnteHandle(s.ctx, tx, false, terminatorAnteHandler)
 	s.NoError(err)
 
 	// Check that the balance has been converted to ERC20
@@ -142,7 +143,7 @@ func (s *AnteTestSuite) TestERC20ConvertPostDecorator_VestingAccount(t *testing.
 
 	// Call post handler
 	postDecorator := ante.NewERC20ConversionPostHandlerDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
-	_, err = postDecorator.PostHandle(s.ctx, tx, false, true)
+	_, err = postDecorator.AnteHandle(s.ctx, tx, false, terminatorAnteHandler)
 	s.NoError(err)
 
 	// Check that the balance has been converted to ERC20

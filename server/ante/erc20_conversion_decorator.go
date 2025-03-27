@@ -11,6 +11,11 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/utils/erc20"
 )
 
+var (
+	_ sdk.AnteDecorator = (*ERC20ConversionDecorator)(nil)
+	_ sdk.AnteDecorator = (*ERC20ConversionPostHandlerDecorator)(nil)
+)
+
 // ERC20ConversionDecorator is an ante handler decorator that performs ERC20 token
 // conversions for specific message types if needed.
 // This allows to execute staking and governance messages with ERC20 tokens.
@@ -123,13 +128,8 @@ func NewERC20ConversionPostHandlerDecorator(erc20k ERC20Keeper, bankk BankKeeper
 	}
 }
 
-// PostHandle performs ERC20 conversion for distribution messages after execution
-func (d ERC20ConversionPostHandlerDecorator) PostHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, success bool) (sdk.Context, error) {
-	// If the transaction failed, don't do any post-processing
-	if !success {
-		return ctx, nil
-	}
-
+// AnteHandle performs ERC20 conversion for distribution messages after execution
+func (d ERC20ConversionPostHandlerDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	// Process each message
 	for _, msg := range tx.GetMsgs() {
 		switch m := msg.(type) {
@@ -162,6 +162,5 @@ func (d ERC20ConversionPostHandlerDecorator) PostHandle(ctx sdk.Context, tx sdk.
 			}
 		}
 	}
-
-	return ctx, nil
+	return next(ctx, tx, simulate)
 }
