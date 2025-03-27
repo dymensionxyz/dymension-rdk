@@ -7,9 +7,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils/erc20"
 	disttypes "github.com/dymensionxyz/dymension-rdk/x/dist/types"
-	"github.com/ethereum/go-ethereum/common"
-	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
 )
 
 // AllocateTokens handles distribution of the collected fees
@@ -87,8 +86,8 @@ func (k Keeper) AllocateTokensToProposer(ctx sdk.Context, proposer sdk.AccAddres
 		}
 
 		if k.erc20k.IsDenomRegistered(ctx, coin.Denom) {
-			msg := erc20types.NewMsgConvertCoin(coin, common.BytesToAddress(proposer), proposer)
-			if _, err := k.erc20k.ConvertCoin(sdk.WrapSDKContext(ctx), msg); err != nil {
+			err := erc20.ConvertCoin(ctx, k.erc20k, coin, proposer)
+			if err != nil {
 				k.Logger(ctx).Error("failed to convert coin", "err", err, "proposer", proposer)
 				return fmt.Errorf("failed to convert proposer reward: %w", err)
 			}

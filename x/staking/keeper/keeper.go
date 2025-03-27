@@ -2,7 +2,6 @@ package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/ethereum/go-ethereum/common"
 	abci "github.com/tendermint/tendermint/abci/types"
 
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -12,8 +11,8 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils/erc20"
 	types2 "github.com/dymensionxyz/dymension-rdk/x/staking/types"
-	erc20types "github.com/evmos/evmos/v12/x/erc20/types"
 )
 
 // Implements ValidatorSet interface
@@ -86,8 +85,8 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) {
 			// we continue on error, as no harm done if conversion fails
 			for _, coin := range balances {
 				if k.erc20k.IsDenomRegistered(ctx, coin.Denom) {
-					msg := erc20types.NewMsgConvertCoin(coin, common.BytesToAddress(delegatorAddress), delegatorAddress)
-					if _, err = k.erc20k.ConvertCoin(sdk.WrapSDKContext(ctx), msg); err != nil {
+					err := erc20.ConvertCoin(ctx, k.erc20k, coin, delegatorAddress)
+					if err != nil {
 						return err
 					}
 				}
