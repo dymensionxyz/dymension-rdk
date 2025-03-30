@@ -84,8 +84,8 @@ func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) {
 			// if coin has been registered to ERC20, convert it
 			// we continue on error, as no harm done if conversion fails
 			for _, coin := range balances {
-				if k.erc20k.IsDenomRegistered(ctx, coin.Denom) {
-					err := erc20.ConvertCoin(ctx, k.erc20k, coin, delegatorAddress)
+				if k.erc20k != nil && k.erc20k.IsDenomRegistered(ctx, coin.Denom) {
+					err := erc20.ConvertCoin(ctx, k.erc20k, coin, delegatorAddress, delegatorAddress)
 					if err != nil {
 						return err
 					}

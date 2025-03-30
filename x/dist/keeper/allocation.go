@@ -79,17 +79,18 @@ func (k Keeper) AllocateTokensToProposer(ctx sdk.Context, proposer sdk.AccAddres
 	// if erc20 coin, call convert coin
 	// if native coin, send to proposer address
 	for _, coin := range proposerReward {
-		err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposer, sdk.NewCoins(coin))
-		if err != nil {
-			k.Logger(ctx).Error("Send rewards to proposer.", "err", err, "proposer reward addr", proposer)
-			return fmt.Errorf("failed to send proposer reward: %w", err)
-		}
-
-		if k.erc20k.IsDenomRegistered(ctx, coin.Denom) {
-			err := erc20.ConvertCoin(ctx, k.erc20k, coin, proposer)
+		if k.erc20k != nil && k.erc20k.IsDenomRegistered(ctx, coin.Denom) {
+			senderAcc := k.authKeeper.GetModuleAccount(ctx, types.ModuleName)
+			err := erc20.ConvertCoin(ctx, k.erc20k, coin, senderAcc.GetAddress(), proposer)
 			if err != nil {
 				k.Logger(ctx).Error("failed to convert coin", "err", err, "proposer", proposer)
 				return fmt.Errorf("failed to convert proposer reward: %w", err)
+			}
+		} else {
+			err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposer, sdk.NewCoins(coin))
+			if err != nil {
+				k.Logger(ctx).Error("Send rewards to proposer.", "err", err, "proposer reward addr", proposer)
+				return fmt.Errorf("failed to send proposer reward: %w", err)
 			}
 		}
 	}

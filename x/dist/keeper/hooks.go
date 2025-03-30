@@ -36,9 +36,11 @@ func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, 
 		return err
 	}
 
-	err = erc20.ConvertAllBalances(ctx, h.DistKeeper.erc20k, h.DistKeeper.bankKeeper, withdrawAddr)
-	if err != nil {
-		return err
+	if h.DistKeeper.erc20k != nil {
+		err = erc20.ConvertAllBalances(ctx, h.DistKeeper.erc20k, h.DistKeeper.bankKeeper, withdrawAddr)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -56,9 +58,11 @@ func (h Hooks) BeforeDelegationSharesModified(ctx sdk.Context, delAddr sdk.AccAd
 		return err
 	}
 
-	err = erc20.ConvertAllBalances(ctx, h.DistKeeper.erc20k, h.DistKeeper.bankKeeper, withdrawAddr)
-	if err != nil {
-		return err
+	if h.DistKeeper.erc20k != nil {
+		err = erc20.ConvertAllBalances(ctx, h.DistKeeper.erc20k, h.DistKeeper.bankKeeper, withdrawAddr)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

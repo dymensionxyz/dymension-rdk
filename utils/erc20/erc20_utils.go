@@ -36,7 +36,7 @@ func ConvertAllBalances(ctx sdk.Context, erck ERC20ConvertCoin, bk BankKeeper, a
 		// Check if the denom is registered as an ERC20 token
 		if erck.IsDenomRegistered(ctx, balance.Denom) {
 			// Convert the coin
-			if err := ConvertCoin(ctx, erck, balance, addr); err != nil {
+			if err := ConvertCoin(ctx, erck, balance, addr, addr); err != nil {
 				return err
 			}
 		}
@@ -46,9 +46,9 @@ func ConvertAllBalances(ctx sdk.Context, erck ERC20ConvertCoin, bk BankKeeper, a
 }
 
 // ConvertCoin converts a coin to an ERC20 token
-func ConvertCoin(ctx sdk.Context, erc20keeper ERC20ConvertCoin, coin sdk.Coin, user sdk.AccAddress) error {
+func ConvertCoin(ctx sdk.Context, erc20keeper ERC20ConvertCoin, coin sdk.Coin, from, user sdk.AccAddress) error {
 	// Create a MsgConvertCoin message
-	msg := erc20types.NewMsgConvertCoin(coin, common.BytesToAddress(user), user)
+	msg := erc20types.NewMsgConvertCoin(coin, common.BytesToAddress(user), from)
 
 	// Call the ERC20 keeper to convert the coin
 	_, err := erc20keeper.ConvertCoin(sdk.WrapSDKContext(ctx), msg)

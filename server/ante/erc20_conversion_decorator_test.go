@@ -42,7 +42,7 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 			setup: func(ctx sdk.Context, addr sdk.AccAddress) {
 				// fund the account with ERC20 tokens
 				s.FundAccount(addr, sdk.NewCoin("foo", stakeAmount))
-				err := erc20.ConvertCoin(ctx, s.app.Erc20Keeper, sdk.NewCoin("foo", stakeAmount), addr)
+				err := erc20.ConvertCoin(ctx, s.app.Erc20Keeper, sdk.NewCoin("foo", stakeAmount), addr, addr)
 				s.NoError(err)
 
 				balance := s.app.BankKeeper.GetBalance(ctx, addr, fooDenom)
