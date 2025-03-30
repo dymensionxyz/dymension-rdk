@@ -12,7 +12,6 @@ type (
 	// NOTE: This is used solely for migration of the Cosmos SDK x/params managed parameters.
 	Subspace interface {
 		GetParamSet(ctx sdk.Context, ps LegacyParams)
-		SetParamSet(ctx sdk.Context, ps LegacyParams)
 		WithKeyTable(table paramtypes.KeyTable) paramtypes.Subspace
 	}
 )
@@ -40,9 +39,4 @@ func (m Migrator) Migrate1to2(ctx sdk.Context) error {
 	m.k.SetMinter(ctx, minter)
 
 	return nil
-}
-
-// setOldParams - used for testing
-func (m Migrator) SetOldParams(ctx sdk.Context, params v2.Params) {
-	m.legacySubspace.SetParamSet(ctx, &params)
 }
