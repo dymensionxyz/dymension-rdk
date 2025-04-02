@@ -90,17 +90,17 @@ type AppModule struct {
 	bankKeeper types.BankKeeper
 
 	// this is a workaround used for migration v1 to v2 params
-	emptySubspace paramstypes.Subspace
+	oldParamsSubspace paramstypes.Subspace
 }
 
 // NewAppModule creates a new AppModule object.
-func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper, bk types.BankKeeper, emptySubspace paramstypes.Subspace) AppModule {
+func NewAppModule(cdc codec.Codec, keeper keeper.Keeper, ak types.AccountKeeper, bk types.BankKeeper, oldParamsSubspace paramstypes.Subspace) AppModule {
 	return AppModule{
-		AppModuleBasic: AppModuleBasic{cdc: cdc},
-		keeper:         keeper,
-		authKeeper:     ak,
-		bankKeeper:     bk,
-		emptySubspace:  emptySubspace,
+		AppModuleBasic:    AppModuleBasic{cdc: cdc},
+		keeper:            keeper,
+		authKeeper:        ak,
+		bankKeeper:        bk,
+		oldParamsSubspace: oldParamsSubspace,
 	}
 }
 
@@ -132,7 +132,7 @@ func (am AppModule) LegacyQuerierHandler(legacyQuerierCdc *codec.LegacyAmino) sd
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQuerier(am.keeper))
 
-	migrator := keeper.NewMigrator(am.keeper, am.emptySubspace)
+	migrator := keeper.NewMigrator(am.keeper, am.oldParamsSubspace)
 
 	// register v1 -> v2 migration
 	if err := cfg.RegisterMigration(types.ModuleName, 1, migrator.Migrate1to2); err != nil {
