@@ -130,7 +130,6 @@ func (k Keeper) GetBalanceFunc() GetGaugeBalanceFunc {
 //  6. Distribute the rewards from the gauge address. Later, users will need to convert
 //     the cosmos balance to ERC20 balance after claiming the rewards
 func (k Keeper) GetEVMGaugeBalanceFunc() GetGaugeBalanceFunc {
-	fn := k.GetBalanceFunc()
 	return func(ctx sdk.Context, address sdk.AccAddress, denoms []string) sdk.Coins {
 		for _, denom := range denoms {
 			erc20Addr, err := ParseERC20Denom(denom)
@@ -184,7 +183,8 @@ func (k Keeper) GetEVMGaugeBalanceFunc() GetGaugeBalanceFunc {
 			// Now the gauge has ERC20 tokens as cosmos coins on its balance
 		}
 
-		return fn(ctx, address, denoms)
+		// Continue with the common get balance func
+		return k.GetBalanceFunc()(ctx, address, denoms)
 	}
 }
 
