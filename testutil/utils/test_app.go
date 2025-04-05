@@ -138,7 +138,7 @@ func SetupWithNoNativeDenom(t *testing.T) *app.App {
 	app, genesisState := setup(true, 5)
 
 	mintGenesis := minttypes.DefaultGenesisState()
-	mintGenesis.Params.MintDenom = ""
+	mintGenesis.Minter.MintDenom = ""
 	genesisState[minttypes.ModuleName] = app.AppCodec().MustMarshalJSON(mintGenesis)
 
 	setGenesisAndInitChain(t, app, genesisState)
