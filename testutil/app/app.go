@@ -599,6 +599,9 @@ func NewRollapp(
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/**** Module Options ****/
+	// used for x/mint v2 migrator. it's a direct access to the params store for x/mint
+	// this required as we need to access same subspace with different KeyTable
+	mintParamsDirectAccess := paramstypes.NewSubspace(appCodec, cdc, keys[paramstypes.StoreKey], keys[paramstypes.TStoreKey], minttypes.ModuleName)
 
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
@@ -613,7 +616,7 @@ func NewRollapp(
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
 		capability.NewAppModule(appCodec, *app.CapabilityKeeper),
 		gov.NewAppModule(appCodec, app.GovKeeper, app.AccountKeeper, app.BankKeeper),
-		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, app.BankKeeper),
+		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, app.BankKeeper, mintParamsDirectAccess),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		sequencers.NewAppModule(app.SequencersKeeper),
