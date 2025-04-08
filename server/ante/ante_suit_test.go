@@ -1,6 +1,8 @@
 package ante_test
 
 import (
+	"testing"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -16,6 +18,10 @@ type AnteTestSuite struct {
 
 	app *app.App
 	ctx sdk.Context
+}
+
+func TestAnteTestSuite(t *testing.T) {
+	suite.Run(t, new(AnteTestSuite))
 }
 
 func (s *AnteTestSuite) SetupTest() {
