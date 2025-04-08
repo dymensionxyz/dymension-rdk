@@ -27,6 +27,7 @@ message QueryParamsRequest {}
 message QueryParamsResponse {
   // params defines the parameters of the module.
   Params params = 1 [ (gogoproto.nullable) = false ];
+  string mint_denom = 2;
 }
 
 // QueryInflationRequest is the request type for the Query/Inflation RPC method.

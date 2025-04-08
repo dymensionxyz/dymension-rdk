@@ -24,8 +24,9 @@ func NewQuerier(k Keeper) Querier {
 func (q Querier) Params(c context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(c)
 	params := q.Keeper.GetParams(ctx)
+	minter := q.Keeper.GetMinter(ctx)
 
-	return &types.QueryParamsResponse{Params: params}, nil
+	return &types.QueryParamsResponse{Params: params, MintDenom: minter.MintDenom}, nil
 }
 
 func (q Querier) Inflation(c context.Context, _ *types.QueryInflationRequest) (*types.QueryInflationResponse, error) {
