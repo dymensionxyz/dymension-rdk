@@ -1,9 +1,13 @@
 package keeper
 
 import (
+	"fmt"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/dymensionxyz/dymension-rdk/utils"
+	"github.com/dymensionxyz/dymension-rdk/utils/erc20"
 	disttypes "github.com/dymensionxyz/dymension-rdk/x/dist/types"
 )
 
@@ -18,45 +22,38 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 	feesCollectedInt := k.bankKeeper.GetAllBalances(ctx, feeCollector.GetAddress())
 	feesCollected := sdk.NewDecCoinsFromCoins(feesCollectedInt...)
 	feePool := k.GetFeePool(ctx)
-
 	remainingFees := feesCollected
 
 	// transfer collected fees to the distribution module account
 	err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, k.feeCollectorName, types.ModuleName, feesCollectedInt)
 	if err != nil {
-		panic(err)
+		k.Logger(ctx).Error("Failed to transfer collected fees to the distribution module account", "err", err)
+		return
 	}
 
 	/* ---------------------------- Pay the proposer ---------------------------- */
-	// calculate and pay proposer reward
+	proposerMultiplier := k.GetBaseProposerReward(ctx)
+	proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
+
 	addr, found := k.seqKeeper.GetRewardAddrByConsAddr(ctx, blockProposer)
 	if !found {
 		logger.Error("Find the validator for this block. Reward not allocated.", "addr", blockProposer)
 	} else {
-		proposerReward := feesCollected.MulDecTruncate(k.GetBaseProposerReward(ctx))
-		proposerCoins, proposerRemainder := proposerReward.TruncateDecimal()
-		if !proposerCoins.IsZero() {
-			err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, proposerCoins)
-			if err != nil {
-				logger.Error("Send rewards to proposer.", "err", err, "proposer reward addr", addr)
-			} else {
-				remainingFees = feesCollected.Sub(proposerReward).Add(proposerRemainder...)
-				// update outstanding rewards
-				ctx.EventManager().EmitEvent(
-					sdk.NewEvent(
-						disttypes.EventTypeDistSequencerRewards,
-						sdk.NewAttribute(sdk.AttributeKeyAmount, proposerCoins.String()),
-						sdk.NewAttribute(disttypes.AttributeKeyRewardee, addr.String()),
-					),
-				)
-			}
+		// try to allocate to propser in cache ctx
+		err := utils.ApplyFuncIfNoError(ctx, func(ctx sdk.Context) error {
+			return k.AllocateTokensToProposer(ctx, addr, proposerReward)
+		})
+		if err == nil {
+			remainingFees = remainingFees.Sub(proposerReward)
+		} else {
+			// in case of error, the fees will go to the community pool
+			logger.Error("Failed to allocate proposer reward", "err", err)
 		}
 	}
 
 	/* ---------------------- reward the members/validators ---------------------- */
 	totalPreviousPower := k.stakingKeeper.GetLastTotalPower(ctx)
-
-	membersMultiplier := sdk.OneDec().Sub(k.GetBaseProposerReward(ctx)).Sub(k.GetCommunityTax(ctx))
+	membersMultiplier := sdk.OneDec().Sub(proposerMultiplier).Sub(k.GetCommunityTax(ctx))
 	membersRewards := feesCollected.MulDecTruncate(membersMultiplier)
 
 	k.stakingKeeper.IterateBondedValidatorsByPower(ctx, func(index int64, validator stakingtypes.ValidatorI) (stop bool) {
@@ -67,11 +64,44 @@ func (k Keeper) AllocateTokens(ctx sdk.Context, blockProposer sdk.ConsAddress) {
 		reward := membersRewards.MulDecTruncate(powerFraction)
 		k.AllocateTokensToValidator(ctx, validator, reward)
 		remainingFees = remainingFees.Sub(reward)
-
 		return false
 	})
 
 	/* ------------------------- fund the community pool ------------------------ */
 	feePool.CommunityPool = feePool.CommunityPool.Add(remainingFees...)
 	k.SetFeePool(ctx, feePool)
+}
+
+func (k Keeper) AllocateTokensToProposer(ctx sdk.Context, proposer sdk.AccAddress, proposerRewardDec sdk.DecCoins) error {
+	proposerReward, _ := proposerRewardDec.TruncateDecimal()
+
+	// handle each coin separately
+	// if erc20 coin, call convert coin
+	// if native coin, send to proposer address
+	for _, coin := range proposerReward {
+		if k.erc20k != nil && k.erc20k.IsDenomRegistered(ctx, coin.Denom) {
+			senderAcc := k.authKeeper.GetModuleAccount(ctx, types.ModuleName)
+			err := erc20.ConvertCoin(ctx, k.erc20k, coin, senderAcc.GetAddress(), proposer)
+			if err != nil {
+				k.Logger(ctx).Error("failed to convert coin", "err", err, "proposer", proposer)
+				return fmt.Errorf("failed to convert proposer reward: %w", err)
+			}
+		} else {
+			err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, proposer, sdk.NewCoins(coin))
+			if err != nil {
+				k.Logger(ctx).Error("Send rewards to proposer.", "err", err, "proposer reward addr", proposer)
+				return fmt.Errorf("failed to send proposer reward: %w", err)
+			}
+		}
+	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			disttypes.EventTypeDistSequencerRewards,
+			sdk.NewAttribute(sdk.AttributeKeyAmount, proposerReward.String()),
+			sdk.NewAttribute(disttypes.AttributeKeyRewardee, proposer.String()),
+		),
+	)
+
+	return nil
 }
