@@ -1,8 +1,6 @@
 package ante_test
 
 import (
-	"testing"
-
 	"github.com/cosmos/cosmos-sdk/crypto/keys/ed25519"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -21,7 +19,7 @@ var terminatorAnteHandler = func(ctx sdk.Context, _ sdk.Tx, simulate bool) (sdk.
 
 // var terminatorAnteHandler sdk.AnteHandler
 
-func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeeded(t *testing.T) {
+func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeeded() {
 	stakeAmount := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
 	fooDenom := "foo"
 
@@ -57,9 +55,9 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 
 	for _, tc := range tc {
 		s.ctx = cleanCtx
-		tstaking := teststaking.NewHelper(t, s.ctx, s.app.StakingKeeper.Keeper)
+		tstaking := teststaking.NewHelper(s.T(), s.ctx, s.app.StakingKeeper.Keeper)
 		tstaking.Denom = fooDenom
-		t.Run(tc.name, func(t *testing.T) {
+		s.Run(tc.name, func() {
 			addr := utils.AccAddress()
 			if tc.setup != nil {
 				tc.setup(s.ctx, addr)
@@ -83,7 +81,7 @@ func (s *AnteTestSuite) TestERC20ConvertDecorator_Staking_ConvertFromERC20IfNeed
 	}
 }
 
-func (s *AnteTestSuite) TestERC20ConvertPostDecorator(t *testing.T) {
+func (s *AnteTestSuite) TestERC20ConvertPostDecorator() {
 	stakeAmount := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
 	addr := utils.AccAddress()
 
@@ -102,7 +100,7 @@ func (s *AnteTestSuite) TestERC20ConvertPostDecorator(t *testing.T) {
 	tx := builder.GetTx()
 
 	// Call post handler
-	postDecorator := ante.NewERC20ConversionPostHandlerDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
+	postDecorator := ante.NewERC20ConversionPostHandlerDecorator(s.app.Erc20Keeper, s.app.BankKeeper, s.app.DistrKeeper)
 	_, err = postDecorator.AnteHandle(s.ctx, tx, false, terminatorAnteHandler)
 	s.NoError(err)
 
@@ -111,7 +109,7 @@ func (s *AnteTestSuite) TestERC20ConvertPostDecorator(t *testing.T) {
 	s.True(balance.IsZero())
 }
 
-func (s *AnteTestSuite) TestERC20ConvertPostDecorator_VestingAccount(t *testing.T) {
+func (s *AnteTestSuite) TestERC20ConvertPostDecorator_VestingAccount() {
 	stakeAmount := sdk.TokensFromConsensusPower(10, sdk.DefaultPowerReduction)
 
 	pubkey := secp256k1.GenPrivKey().PubKey()
@@ -142,7 +140,7 @@ func (s *AnteTestSuite) TestERC20ConvertPostDecorator_VestingAccount(t *testing.
 	tx := builder.GetTx()
 
 	// Call post handler
-	postDecorator := ante.NewERC20ConversionPostHandlerDecorator(s.app.Erc20Keeper, s.app.BankKeeper)
+	postDecorator := ante.NewERC20ConversionPostHandlerDecorator(s.app.Erc20Keeper, s.app.BankKeeper, s.app.DistrKeeper)
 	_, err = postDecorator.AnteHandle(s.ctx, tx, false, terminatorAnteHandler)
 	s.NoError(err)
 

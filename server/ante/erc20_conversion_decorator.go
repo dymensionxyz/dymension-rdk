@@ -121,10 +121,11 @@ type ERC20ConversionPostHandlerDecorator struct {
 }
 
 // NewERC20PostConversionDecorator creates a new ERC20PostConversionDecorator
-func NewERC20ConversionPostHandlerDecorator(erc20k ERC20Keeper, bankk BankKeeper) ERC20ConversionPostHandlerDecorator {
+func NewERC20ConversionPostHandlerDecorator(erc20k ERC20Keeper, bankk BankKeeper, distrk DistributionKeeper) ERC20ConversionPostHandlerDecorator {
 	return ERC20ConversionPostHandlerDecorator{
 		erc20Keeper: erc20k,
 		bankKeeper:  bankk,
+		distrKeeper: distrk,
 	}
 }
 
