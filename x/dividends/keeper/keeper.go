@@ -27,6 +27,7 @@ type Keeper struct {
 	accountKeeper types.AccountKeeper
 	distrKeeper   types.DistributionKeeper
 	bankKeeper    types.BankKeeper
+	erc20Keeper   types.Erc20Keeper // optional, used only in rollapp-evm in GetEVMGaugeBalanceFunc
 }
 
 func NewKeeper(
@@ -77,6 +78,11 @@ func NewKeeper(
 	k.schema = schema
 
 	return k
+}
+
+// SetErc20Keeper sets erc20 keeper which is optional and used only in rollapp-evm in GetEVMGaugeBalanceFunc
+func (k *Keeper) SetErc20Keeper(keeper types.Erc20Keeper) {
+	k.erc20Keeper = keeper
 }
 
 func (k *Keeper) SetGetBalanceFunc(fn GetGaugeBalanceFunc) {

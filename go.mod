@@ -355,7 +355,6 @@ replace (
 	// use Evmos geth fork
 	github.com/ethereum/go-ethereum => github.com/evmos/go-ethereum v1.10.26
 	github.com/evmos/evmos/v12 => github.com/dymensionxyz/evmos/v12 v12.1.7-0.20250128194013-c3f3d1fd3f02
-
 	github.com/gorilla/rpc => github.com/dymensionxyz/rpc v1.3.1
 	github.com/tendermint/tendermint => github.com/dymensionxyz/cometbft v0.34.29-0.20241128205759-2a9d5f015da5
 )
