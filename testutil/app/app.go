@@ -502,9 +502,7 @@ func NewRollapp(
 	)
 
 	app.GovKeeper = *govKeeper.SetHooks(
-		govtypes.NewMultiGovHooks(
-			// register the governance hooks
-		),
+		govtypes.NewMultiGovHooks(), // register the governance hooks
 	)
 
 	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
