@@ -8,9 +8,9 @@ import (
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/dymensionxyz/dymension-rdk/x/dividends/types"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/evmos/evmos/v12/contracts"
 )
-
-type GetGaugeBalanceFunc func(ctx sdk.Context, address sdk.AccAddress, denoms []string) sdk.Coins
 
 // Allocate rewards from active gauges. This function is called every block and
 // every epoch. `t` indicates whether the allocation called for blocks or epochs.
@@ -29,7 +29,7 @@ func (k Keeper) Allocate(ctx sdk.Context, frequency types.VestingFrequency) erro
 
 		var (
 			gaugeAddress = gauge.GetAccAddress()
-			gaugeBalance = k.getBalanceFn(ctx, gaugeAddress, gauge.ApprovedDenoms)
+			gaugeBalance = k.GetGaugeBalance(ctx, gaugeAddress, gauge.ApprovedDenoms)
 			gaugeRewards sdk.Coins
 		)
 
@@ -106,13 +106,70 @@ func (k Keeper) AllocateStakers(ctx sdk.Context, gaugeRewards sdk.DecCoins, tota
 	})
 }
 
-func (k Keeper) GetBalanceFunc() GetGaugeBalanceFunc {
-	return func(ctx sdk.Context, address sdk.AccAddress, denoms []string) sdk.Coins {
-		var coins []sdk.Coin
-		for _, denom := range denoms {
-			balance := k.bankKeeper.GetBalance(ctx, address, denom)
-			coins = append(coins, balance)
+func (k Keeper) GetGaugeBalance(ctx sdk.Context, address sdk.AccAddress, denoms []string) sdk.Coins {
+	if k.erc20Keeper != nil {
+		k.ConvertGaugeEVMBalance(ctx, address, denoms)
+	}
+
+	var coins []sdk.Coin
+	for _, denom := range denoms {
+		balance := k.bankKeeper.GetBalance(ctx, address, denom)
+		coins = append(coins, balance)
+	}
+	return sdk.NewCoins(coins...)
+}
+
+// ConvertGaugeEVMBalance returns a function that calculates the balance of a gauge address for EVM.
+//  1. Iterate through all the denoms
+//  2. If the denom is a ERC20 denom (starts with 'erc20' prefix), start ERC20 flow
+//  3. Get the token pair of this denom from x/erc20 module
+//  4. Using the token pair, get the respective ERC20 balance of the gauge address
+//  5. Convert all the ERC20 tokens and send to cosmos address of the gauge
+//  6. Distribute the rewards from the gauge address. Later, users will need to convert
+//     the cosmos balance to ERC20 balance after claiming the rewards
+func (k Keeper) ConvertGaugeEVMBalance(ctx sdk.Context, address sdk.AccAddress, denoms []string) {
+	for _, denom := range denoms {
+		// Get the token pair of this denom from x/erc20 module
+		tokenPairID := k.erc20Keeper.GetTokenPairID(ctx, denom)
+		tokenPair, found := k.erc20Keeper.GetTokenPair(ctx, tokenPairID)
+		if !found {
+			// If the token pair is not found, continue to the next denom
+			k.Logger(ctx).
+				With("address", address.String()).
+				With("denom", denom).
+				Error("token pair not found for denom")
+			continue
 		}
-		return sdk.NewCoins(coins...)
+
+		// Get the respective ERC20 balance of the gauge address
+		erc20 := contracts.ERC20MinterBurnerDecimalsContract.ABI
+		contract := tokenPair.GetERC20Contract()
+		balanceToken := k.erc20Keeper.BalanceOf(ctx, erc20, contract, common.BytesToAddress(address.Bytes()))
+
+		if balanceToken == nil || len(balanceToken.Bits()) == 0 {
+			// If the balance is not found, continue to the next denom
+			k.Logger(ctx).
+				With("address", address.String()).
+				With("denom", denom).
+				Info("gauge does not have any ERC20 tokens")
+			continue
+		}
+
+		// Convert all the ERC20 tokens to cosmos address of the gauge
+		// Execute it in a cache context to avoid writing to the store in case of an error
+		cacheCtx, write := ctx.CacheContext()
+		err := k.erc20Keeper.TryConvertErc20Sdk(cacheCtx, address, address, denom, math.NewIntFromBigInt(balanceToken))
+		if err != nil {
+			// If the conversion fails, continue to the next denom
+			k.Logger(ctx).
+				With("address", address.String()).
+				With("denom", denom).
+				With("error", err).
+				Error("failed to convert ERC20 to cosmos")
+			continue
+		}
+		write()
+
+		// Now the gauge has ERC20 tokens as cosmos coins on its balance
 	}
 }

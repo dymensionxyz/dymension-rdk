@@ -453,8 +453,6 @@ func NewRollapp(
 		authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 	)
 
-	app.DividendsKeeper.SetGetBalanceFunc(app.DividendsKeeper.GetBalanceFunc())
-
 	// register the staking hooks
 	// NOTE: stakingKeeper above is passed by reference, so that it will contain these hooks
 	app.StakingKeeper = *stakingKeeper.SetHooks(app.DistrKeeper.Hooks())
@@ -504,9 +502,7 @@ func NewRollapp(
 	)
 
 	app.GovKeeper = *govKeeper.SetHooks(
-		govtypes.NewMultiGovHooks(
-		// register the governance hooks
-		),
+		govtypes.NewMultiGovHooks(), // register the governance hooks
 	)
 
 	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
