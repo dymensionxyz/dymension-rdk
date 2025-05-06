@@ -34,7 +34,7 @@ func ShiftValueToEnd[T comparable](list []T, x T) []T {
 	if index == -1 {
 		return list
 	}
-	list = append(list[:index], list[index+1:]...)
+	list = slices.Delete(list, index, index+1)
 	list = append(list, x)
 	return list
 }

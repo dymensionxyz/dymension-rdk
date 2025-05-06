@@ -2,6 +2,7 @@ package consensus
 
 import (
 	"fmt"
+	"slices"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
@@ -15,10 +16,8 @@ func AllowedMessagesHandler(messageNames []string) AdmissionHandler {
 	return func(ctx sdk.Context, msg sdk.Msg) error {
 		msgName := proto.MessageName(msg)
 
-		for _, handler := range messageNames {
-			if msgName == handler {
-				return nil
-			}
+		if slices.Contains(messageNames, msgName) {
+			return nil
 		}
 
 		return fmt.Errorf("consensus message is not allowed: %s", msgName)
