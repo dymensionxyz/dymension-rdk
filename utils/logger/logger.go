@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"maps"
 	"os"
 	"strings"
 	"time"
@@ -91,9 +92,7 @@ func (l Logger) Error(msg string, keyvals ...interface{}) {
 func (l Logger) With(keyvals ...interface{}) tmlog.Logger {
 	// Make deep copy of the current fields
 	fields := map[string]interface{}{}
-	for k, v := range l.Fields {
-		fields[k] = v
-	}
+	maps.Copy(fields, l.Fields)
 
 	logger := l.Logger
 	customLogLevel := l.customLogLevel
