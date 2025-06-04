@@ -36,7 +36,7 @@ jobs:
         uses: golangci/golangci-lint-action@v8
         with:
           args: --timeout=5m0s
-          version: v1.60
+          version: v2.1.6
 
       - name: markdownlint-cli
         uses: nosborn/github-action-markdown-cli@v3.2.0
