@@ -29,14 +29,13 @@ func (k Keeper) Hooks() Hooks {
 // registered as an ERC20 token, and if so, converts the balance of the
 // delegator's withdraw address from the coin to the ERC20 token.
 func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
-	withdrawAddr := h.DistKeeper.GetDelegatorWithdrawAddr(ctx, sdk.AccAddress(valAddr))
-
 	err := h.Hooks.AfterValidatorRemoved(ctx, consAddr, valAddr)
 	if err != nil {
 		return err
 	}
 
 	if h.DistKeeper.erc20k != nil {
+		withdrawAddr := h.DistKeeper.GetDelegatorWithdrawAddr(ctx, sdk.AccAddress(valAddr))
 		err = erc20.ConvertAllBalances(ctx, h.DistKeeper.erc20k, h.DistKeeper.bankKeeper, withdrawAddr)
 		if err != nil {
 			return err
@@ -46,19 +45,18 @@ func (h Hooks) AfterValidatorRemoved(ctx sdk.Context, consAddr sdk.ConsAddress, 
 	return nil
 }
 
-// BeforeDelegationSharesModified is called before modifying the delegation shares of a delegator.
+// AfterDelegationModified is called after modifying the delegation shares of a delegator.
 // It first calls the base implementation, then it checks if the bond denom is
 // registered as an ERC20 token, and if so, converts the balance of the
 // delegator's withdraw address from the coin to the ERC20 token.
-func (h Hooks) BeforeDelegationSharesModified(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
-	withdrawAddr := h.DistKeeper.GetDelegatorWithdrawAddr(ctx, delAddr)
-
-	err := h.Hooks.BeforeDelegationSharesModified(ctx, delAddr, valAddr)
+func (h Hooks) AfterDelegationModified(ctx sdk.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
+	err := h.Hooks.AfterDelegationModified(ctx, delAddr, valAddr)
 	if err != nil {
 		return err
 	}
 
 	if h.DistKeeper.erc20k != nil {
+		withdrawAddr := h.DistKeeper.GetDelegatorWithdrawAddr(ctx, delAddr)
 		err = erc20.ConvertAllBalances(ctx, h.DistKeeper.erc20k, h.DistKeeper.bankKeeper, withdrawAddr)
 		if err != nil {
 			return err
