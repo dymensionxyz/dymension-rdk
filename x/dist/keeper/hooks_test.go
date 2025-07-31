@@ -77,7 +77,13 @@ func TestHooks(t *testing.T) {
 	}
 	delegation, found := app.StakingKeeper.GetDelegation(ctx, sdk.AccAddress(valAddrs[0]), valAddrs[0])
 	require.True(t, found)
+
+	// trigger the hook, as it's the call that withdraws the rewards on delegation change
 	err = hooks.BeforeDelegationSharesModified(ctx, delegation.GetDelegatorAddr(), delegation.GetValidatorAddr())
+	require.NoError(t, err)
+
+	// the rewards conversion happens here
+	err = hooks.AfterDelegationModified(ctx, delegation.GetDelegatorAddr(), delegation.GetValidatorAddr())
 	require.NoError(t, err)
 
 	// get balance
