@@ -31,7 +31,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState *types.GenesisState) {
 
 	balance := k.bk.GetBalance(ctx, k.ak.GetModuleAccount(ctx, types.ModuleName).GetAddress(), k.GetGenesisInfoBaseDenom(ctx))
 	if !balance.Amount.Equal(expectedTotal) {
-		panic("module account balance does not match the sum of genesis accounts")
+		panic(fmt.Sprintf("module account balance does not match the sum of genesis accounts: %s != %s", balance.Amount, expectedTotal))
 	}
 }
 
