@@ -15,6 +15,7 @@ import (
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	"github.com/tendermint/tendermint/libs/log"
 
+	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/dymensionxyz/dymension-rdk/x/sequencers/types"
 )
 
@@ -276,6 +277,289 @@ func TestBypassIBCFeeDecorator(t *testing.T) {
 			expectErr:       false,
 			expectNoFee:     true,
 			freeIBC:         true,
+		},
+		{
+			name:            "MsgGrant should bypass fees unconditionally",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}},
+			signer:          nonWhitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrant with non-whitelisted signer should still bypass fees",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}},
+			signer:          nonWhitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrant should bypass fees even when sequencer not found",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}},
+			signer:          whitelistedSigner,
+			sequencerExists: false,
+			sequencerOper:   "",
+			wl:              nil,
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrant should bypass fees even when GetWhitelistedRelayers returns error",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              nil,
+			wlError:         fmt.Errorf("some error"),
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "Multiple MsgGrant messages should all bypass fees",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}, &authz.MsgGrant{}},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrant mixed with IBC messages should fail",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}, lifecycle0},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true,
+			expectNoFee:     false,
+		},
+		{
+			name:            "MsgGrant mixed with non-IBC messages should fail",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}, nonIBCMsg},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true,
+			expectNoFee:     false,
+		},
+		{
+			name: "MsgGrant in nested MsgExec should bypass fees",
+			msgs: []sdk.Msg{
+				&authz.MsgExec{
+					Grantee: whitelistedSigner.String(),
+					Msgs: []*cdctypes.Any{
+						func() *cdctypes.Any {
+							msg, _ := cdctypes.NewAnyWithValue(&authz.MsgGrant{})
+							return msg
+						}(),
+					},
+				},
+			},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name: "MsgGrant in nested MsgSubmitProposal should bypass fees",
+			msgs: []sdk.Msg{
+				&group.MsgSubmitProposal{
+					Proposers: []string{whitelistedSigner.String()},
+					Metadata:  "==",
+					Messages: []*cdctypes.Any{
+						func() *cdctypes.Any {
+							msg, _ := cdctypes.NewAnyWithValue(&authz.MsgGrant{})
+							return msg
+						}(),
+					},
+					Exec: 0,
+				},
+			},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name: "MsgGrant in deeply nested structure should bypass fees",
+			msgs: []sdk.Msg{
+				wrapMsgInSubmitProposal(
+					wrapMsgInSubmitProposal(
+						&authz.MsgGrant{})),
+			},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrant should bypass fees regardless of freeIBC setting",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+			freeIBC:         false,
+		},
+		{
+			name:            "MsgGrant should bypass fees regardless of freeIBC setting (true)",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+			freeIBC:         true,
+		},
+		{
+			name:            "MsgGrantAllowance should bypass fees unconditionally",
+			msgs:            []sdk.Msg{&feegrant.MsgGrantAllowance{}},
+			signer:          nonWhitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrantAllowance with non-whitelisted signer should still bypass fees",
+			msgs:            []sdk.Msg{&feegrant.MsgGrantAllowance{}},
+			signer:          nonWhitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrantAllowance should bypass fees even when sequencer not found",
+			msgs:            []sdk.Msg{&feegrant.MsgGrantAllowance{}},
+			signer:          whitelistedSigner,
+			sequencerExists: false,
+			sequencerOper:   "",
+			wl:              nil,
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrantAllowance should bypass fees even when GetWhitelistedRelayers returns error",
+			msgs:            []sdk.Msg{&feegrant.MsgGrantAllowance{}},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              nil,
+			wlError:         fmt.Errorf("some error"),
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "Multiple MsgGrantAllowance messages should all bypass fees",
+			msgs:            []sdk.Msg{&feegrant.MsgGrantAllowance{}, &feegrant.MsgGrantAllowance{}},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrantAllowance mixed with IBC messages should fail",
+			msgs:            []sdk.Msg{&feegrant.MsgGrantAllowance{}, lifecycle0},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true,
+			expectNoFee:     false,
+		},
+		{
+			name:            "MsgGrantAllowance mixed with non-IBC messages should fail",
+			msgs:            []sdk.Msg{&feegrant.MsgGrantAllowance{}, nonIBCMsg},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       true,
+			expectNoFee:     false,
+		},
+		{
+			name: "MsgGrantAllowance in nested MsgExec should bypass fees",
+			msgs: []sdk.Msg{
+				&authz.MsgExec{
+					Grantee: whitelistedSigner.String(),
+					Msgs: []*cdctypes.Any{
+						func() *cdctypes.Any {
+							msg, _ := cdctypes.NewAnyWithValue(&feegrant.MsgGrantAllowance{})
+							return msg
+						}(),
+					},
+				},
+			},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name: "MsgGrantAllowance in nested MsgSubmitProposal should bypass fees",
+			msgs: []sdk.Msg{
+				&group.MsgSubmitProposal{
+					Proposers: []string{whitelistedSigner.String()},
+					Metadata:  "==",
+					Messages: []*cdctypes.Any{
+						func() *cdctypes.Any {
+							msg, _ := cdctypes.NewAnyWithValue(&feegrant.MsgGrantAllowance{})
+							return msg
+						}(),
+					},
+					Exec: 0,
+				},
+			},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+		},
+		{
+			name:            "MsgGrantAllowance should bypass fees regardless of freeIBC setting",
+			msgs:            []sdk.Msg{&feegrant.MsgGrantAllowance{}},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
+			freeIBC:         false,
+		},
+		{
+			name:            "Mixed free non-IBC messages (MsgGrant + MsgGrantAllowance) should bypass fees",
+			msgs:            []sdk.Msg{&authz.MsgGrant{}, &feegrant.MsgGrantAllowance{}},
+			signer:          whitelistedSigner,
+			sequencerExists: true,
+			sequencerOper:   operatorAddr,
+			wl:              []string{whitelistedSigner.String()},
+			expectErr:       false,
+			expectNoFee:     true,
 		},
 	}
 

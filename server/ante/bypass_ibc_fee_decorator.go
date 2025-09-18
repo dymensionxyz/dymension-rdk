@@ -7,6 +7,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
+	"github.com/cosmos/cosmos-sdk/x/feegrant"
 	"github.com/cosmos/cosmos-sdk/x/group"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
@@ -60,6 +61,7 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 	}
 	normalCnt := 0
 	lifecycleCnt := 0
+	freeNonIBCCnt := 0
 	for _, m := range leaves {
 		if isIBCNormalMsg(m) {
 			normalCnt++
@@ -67,15 +69,25 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 		if isIBCLifecycleMsg(m) {
 			lifecycleCnt++
 		}
+		if isFreeNonIBCMsg(m) {
+			freeNonIBCCnt++
+		}
 	}
-	cnt := normalCnt + lifecycleCnt
+	cnt := normalCnt + lifecycleCnt + freeNonIBCCnt
 	if cnt == 0 {
 		// no bypass
 		return d.bypassedAnte.AnteHandle(ctx, tx, simulate, next)
 	}
 	if 0 < cnt && cnt < len(leaves) {
-		return ctx, gerrc.ErrInvalidArgument.Wrap("combined ibc and non ibc messages in tx not allowed")
+		return ctx, gerrc.ErrInvalidArgument.Wrap("combined free and non-free messages in tx not allowed")
 	}
+
+	// If all messages are free non-IBC (e.g., authz.MsgGrant) bypass immediately
+	if freeNonIBCCnt == len(leaves) {
+		return next(ctx, tx, simulate)
+	}
+
+	// For IBC flows, enforce existing whitelist rules
 	wlErr := d.whitelistedRelayer(ctx, leaves)
 	if 0 < lifecycleCnt && wlErr != nil {
 		return ctx, errorsmod.Wrap(wlErr, "wlErr relayer")
@@ -84,6 +96,7 @@ func (d BypassIBCFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 		// bypass!
 		return next(ctx, tx, simulate)
 	}
+
 	// no bypass
 	return d.bypassedAnte.AnteHandle(ctx, tx, simulate, next)
 }
@@ -179,6 +192,19 @@ func isIBCLifecycleMsg(m sdk.Msg) bool {
 		return true
 	}
 	return false
+}
+
+// isFreeNonIBCMsg returns true for non-IBC messages that are allowed to bypass fees
+// unconditionally when they are the only messages in the transaction.
+func isFreeNonIBCMsg(m sdk.Msg) bool {
+	switch m.(type) {
+	case *authz.MsgGrant:
+		return true
+	case *feegrant.MsgGrantAllowance:
+		return true
+	default:
+		return false
+	}
 }
 
 // at least one ibc messages and no non-ibc messages?
