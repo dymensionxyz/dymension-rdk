@@ -7,27 +7,38 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/dymensionxyz/dymension-rdk/utils/collcompat"
-	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
+	"github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 type Keeper struct {
-	cdc                 codec.BinaryCodec
-	storeKey            storetypes.StoreKey
-	registeredHubDenoms collections.KeySet[string]
+	cdc                   codec.BinaryCodec
+	storeKey              storetypes.StoreKey
+	registeredHubDenoms   collections.KeySet[string]
+	decimalConversionPair collections.Item[types.DecimalConversionPair]
+	bankKeeper            types.BankKeeper
 }
 
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
+	bankKeeper types.BankKeeper,
 ) Keeper {
+	sb := collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey))
 	return Keeper{
-		cdc:      cdc,
-		storeKey: storeKey,
+		cdc:        cdc,
+		storeKey:   storeKey,
+		bankKeeper: bankKeeper,
 		registeredHubDenoms: collections.NewKeySet(
-			collections.NewSchemaBuilder(collcompat.NewKVStoreService(storeKey)),
-			collections.NewPrefix(hubtypes.RegisteredHubDenomsKeyPrefix),
+			sb,
+			collections.NewPrefix(types.RegisteredHubDenomsKeyPrefix),
 			"registered_hub_denoms",
 			collections.StringKey,
+		),
+		decimalConversionPair: collections.NewItem(
+			sb,
+			collections.NewPrefix(types.DecimalConversionPairKeyPrefix),
+			"decimal_conversion_pair",
+			collcompat.ProtoValue[types.DecimalConversionPair](cdc),
 		),
 	}
 }
