@@ -21,12 +21,11 @@ message RegisteredDenom {
 // DecimalConversionPair defines a pair of tokens with different decimal precisions
 // that should be converted when transferred over IBC
 message DecimalConversionPair {
-  // denom_a is the first token denom
-  string denom_a = 1;
-  // decimals_a is the decimal precision of denom_a
-  uint32 decimals_a = 2;
-  // denom_b is the second token denom
-  string denom_b = 3;
-  // decimals_b is the decimal precision of denom_b
-  uint32 decimals_b = 4;
+  // from_token is the token to be received from the hub
+  string from_token = 1;
+  // from_decimals is the decimal precision of from_token
+  uint32 from_decimals = 2;
+  // to_token is the local token to be converted to.
+  // It must have metadata defined on the rollapp, with 18 decimals precision.
+  string to_token = 3;
 }
