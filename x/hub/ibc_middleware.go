@@ -29,7 +29,7 @@ type DecimalConversionMiddleware struct {
 	porttypes.ICS4Wrapper
 	porttypes.IBCModule
 
-	transfer  porttypes.IBCModule
+	transfer  porttypes.IBCModule // used to skip the transfer stack
 	hubKeeper keeper.Keeper
 }
 
@@ -62,13 +62,13 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 	transfertypes.ModuleCdc.MustUnmarshalJSON(packet.GetData(), packetData)
 
 	// Check if there's a decimal conversion pair for this denom
-	pair, found, err := m.hubKeeper.GetConversionForDenom(ctx, packetData.Denom)
+	required, err := m.hubKeeper.ConversionRequired(ctx, packetData.Denom)
 	if err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "get decimal conversion pair"))
 	}
 
 	// No conversion needed, continue with the complete stack
-	if !found {
+	if !required {
 		return m.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
@@ -155,12 +155,12 @@ func (m *DecimalConversionMiddleware) SendPacket(
 	}
 
 	// Check if there's a decimal conversion pair for this denom
-	pair, found, err := m.hubKeeper.GetConversionForDenom(ctx, packet.Denom)
+	required, err := m.hubKeeper.ConversionRequired(ctx, packet.Denom)
 	if err != nil {
 		return 0, errorsmod.Wrapf(err, "get decimal conversion pair")
 	}
 
-	if !found {
+	if !required {
 		// No conversion needed, pass through
 		return m.ICS4Wrapper.SendPacket(ctx, chanCap, destinationPort, destinationChannel, timeoutHeight, timeoutTimestamp, data)
 	}

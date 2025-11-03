@@ -1,6 +1,8 @@
 package keeper
 
 import (
+	"errors"
+
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
@@ -56,4 +58,50 @@ func (k Keeper) GetAllHubDenoms(ctx sdk.Context) (denoms []string, _ error) {
 		denoms = append(denoms, d)
 		return
 	})
+}
+
+// SetDecimalConversionPair sets the decimal conversion pair
+func (k Keeper) SetDecimalConversionPair(ctx sdk.Context, pair types.DecimalConversionPair) error {
+	return k.decimalConversionPair.Set(ctx, pair)
+}
+
+// GetDecimalConversionPair retrieves the decimal conversion pair
+func (k Keeper) GetDecimalConversionPair(ctx sdk.Context) (types.DecimalConversionPair, error) {
+	pair, err := k.decimalConversionPair.Get(ctx)
+	if err != nil {
+		return types.DecimalConversionPair{}, err
+	}
+	return pair, nil
+}
+
+// ConversionRequired checks if a conversion is required for a given denom
+func (k Keeper) ConversionRequired(ctx sdk.Context, denom string) (bool, error) {
+	pair, err := k.GetDecimalConversionPair(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return pair.FromToken == denom || pair.ToToken == denom, nil
+}
+
+// BurnCoins burns coins from an account
+func (k Keeper) BurnCoins(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) error {
+	// Send coins from account to module
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, types.ModuleName, sdk.NewCoins(coin)); err != nil {
+		return err
+	}
+	// Burn coins from module
+	return k.bankKeeper.BurnCoins(ctx, types.ModuleName, sdk.NewCoins(coin))
+}
+
+// MintCoins mints coins to an account
+func (k Keeper) MintCoins(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) error {
+	// Mint coins to module
+	if err := k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(coin)); err != nil {
+		return err
+	}
+	// Send coins from module to account
+	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(coin))
 }
