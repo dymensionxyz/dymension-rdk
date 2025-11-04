@@ -21,7 +21,7 @@ var (
 type DecimalConversionMiddleware struct {
 	porttypes.IBCModule
 
-	transfer  porttypes.IBCModule // used to skip the transfer stack
+	transfer  porttypes.IBCModule // used to skip the transfer stack, and mint tokens directly
 	convertor keeper.Keeper
 }
 
@@ -85,22 +85,16 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid amount: %s", packetData.Amount))
 	}
 
-	// Create the coin from the packet data
-	coin := sdk.NewCoin(packetData.Denom, amount)
-
-	// Convert the coin from bridge token (custom decimals) to rollapp token (18 decimals)
-	convertedCoin, err := m.convertor.ConvertFromBridgeCoin(ctx, coin)
+	// Convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
+	convertedAmt, err := m.convertor.ConvertFromBridgeAmt(ctx, amount)
 	if err != nil {
-		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "convert coin from bridge token"))
+		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "convert amount from bridge token"))
 	}
 
-	// Burn the original tokens from the receiver
-	if err := m.convertor.BurnCoins(ctx, receiver, coin); err != nil {
-		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "burn original coins from receiver"))
-	}
+	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
 
-	// Mint the converted tokens to the receiver
-	if err := m.convertor.MintCoins(ctx, receiver, convertedCoin); err != nil {
+	// Mint the missing amount of tokens to the receiver
+	if err := m.convertor.MintCoins(ctx, receiver, delta); err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "mint converted coins to receiver"))
 	}
 
@@ -114,6 +108,9 @@ func (im DecimalConversionMiddleware) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
+
+	// FIXME: Handle the acknowledgement packet
+
 	// For acknowledgements, we don't need to convert anything
 	// The conversion was already done in SendPacket
 	return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
@@ -125,6 +122,8 @@ func (im DecimalConversionMiddleware) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
+	// FIXME: Handle the timeout packet
+
 	// For timeouts, we need to handle the refund with the original (pre-conversion) amount
 	// The underlying transfer module will handle the refund correctly
 	return im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)

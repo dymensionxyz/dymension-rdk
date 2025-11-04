@@ -9,7 +9,6 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 
 	"github.com/dymensionxyz/dymension-rdk/x/convertor/types"
-	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
 // Keeper wraps the Evmos IBC transfer keeper to perform decimal conversion
@@ -58,15 +57,6 @@ func (w Keeper) Transfer(
 		return w.transferOverride.Transfer(goCtx, msg)
 	}
 
-	// Make sure we're not trying to send the bridge denom itself
-	pair, err := w.hubKeeper.GetDecimalConversionPair(ctx)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "get decimal conversion pair")
-	}
-	if pair.FromToken == msg.Token.Denom {
-		return nil, errorsmod.Wrapf(gerrc.ErrInvalidArgument, "cannot send bridge denom itself")
-	}
-
 	// Parse sender address
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -74,33 +64,22 @@ func (w Keeper) Transfer(
 	}
 
 	// Convert the coin from rollapp token (18 decimals) to bridge token (custom decimals)
-	convertedCoin, err := w.ConvertToBridgeCoin(ctx, msg.Token)
+	convertedAmt, err := w.ConvertToBridgeAmt(ctx, msg.Token.Amount)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "convert coin to bridge token")
 	}
 
-	// Check if there's any truncation (remainder after conversion)
-	// When converting from 18 decimals to lower decimals, we might lose precision
-	reconvertedCoin, err := w.ConvertFromBridgeCoin(ctx, convertedCoin)
-	if err != nil {
-		return nil, errorsmod.Wrapf(err, "reconvert coin to check truncation")
-	}
-
-	// Burn the original tokens from the sender (since we'll be sending converted tokens instead)
-	if err := w.BurnCoins(ctx, sender, reconvertedCoin); err != nil {
+	// burn the original tokens from the sender
+	delta := sdk.NewCoin(msg.Token.Denom, msg.Token.Amount.Sub(convertedAmt))
+	if err := w.BurnCoins(ctx, sender, delta); err != nil {
 		return nil, errorsmod.Wrapf(err, "burn original tokens from sender")
-	}
-
-	// Mint the converted tokens to the sender (so the transfer keeper can then move them to escrow)
-	if err := w.MintCoins(ctx, sender, convertedCoin); err != nil {
-		return nil, errorsmod.Wrapf(err, "mint converted tokens to sender")
 	}
 
 	// Create a new message with the converted token
 	convertedMsg := &transfertypes.MsgTransfer{
 		SourcePort:       msg.SourcePort,
 		SourceChannel:    msg.SourceChannel,
-		Token:            convertedCoin,
+		Token:            sdk.NewCoin(msg.Token.Denom, convertedAmt),
 		Sender:           msg.Sender,
 		Receiver:         msg.Receiver,
 		TimeoutHeight:    msg.TimeoutHeight,
