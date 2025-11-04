@@ -18,23 +18,28 @@ import (
 // Only the Transfer method is overridden to add decimal conversion logic.
 type Keeper struct {
 	transferkeeper.Keeper
-	transferOverride types.TransferKeeper
-	hubKeeper        types.HubKeeper
-	bankKeeper       types.BankKeeper
+	transferStack types.TransferKeeper // allows to have transfer stack (e.g to support erc20 middleware)
+	hubKeeper     types.HubKeeper
+	bankKeeper    types.BankKeeper
 }
 
 // NewTransferKeeper creates a new TransferKeeper wrapper around the Evmos transfer keeper.
 func NewTransferKeeper(
 	transferKeeper transferkeeper.Keeper,
-	transferOverride types.TransferKeeper,
+	transferStack types.TransferKeeper,
 	hubKeeper types.HubKeeper,
 	bankKeeper types.BankKeeper,
 ) Keeper {
+
+	if transferStack == nil {
+		transferStack = transferKeeper
+	}
+
 	return Keeper{
-		Keeper:           transferKeeper,
-		transferOverride: transferOverride,
-		hubKeeper:        hubKeeper,
-		bankKeeper:       bankKeeper,
+		Keeper:        transferKeeper,
+		transferStack: transferStack,
+		hubKeeper:     hubKeeper,
+		bankKeeper:    bankKeeper,
 	}
 }
 
@@ -54,7 +59,7 @@ func (w Keeper) Transfer(
 
 	// If no conversion is needed, pass through to the underlying keeper
 	if !required {
-		return w.transferOverride.Transfer(goCtx, msg)
+		return w.transferStack.Transfer(goCtx, msg)
 	}
 
 	// Parse sender address

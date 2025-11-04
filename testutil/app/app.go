@@ -595,9 +595,9 @@ func NewRollapp(
 	app.TokenFactoryKeeper = tokenFactoryKeeper
 
 	var transferStack ibcporttypes.IBCModule
-	baseTransferModule := ibctransfer.NewIBCModule(app.TransferKeeper.Keeper)
+	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper.Keeper)
 	transferStack = denommetadata.NewIBCModule(
-		baseTransferModule,
+		transferStack,
 		app.BankKeeper,
 		app.TransferKeeper,
 		app.HubKeeper,
@@ -605,7 +605,7 @@ func NewRollapp(
 	)
 	// Hub decimal conversion middleware needs access to the base transfer module
 	// to skip other middleware when handling received packets
-	transferStack = convertor.NewDecimalConversionMiddleware(baseTransferModule, transferStack, app.TransferKeeper)
+	transferStack = convertor.NewDecimalConversionMiddleware(transferStack, app.TransferKeeper)
 	transferStack = hubgenkeeper.NewIBCModule(
 		transferStack,
 		app.HubGenesisKeeper,
