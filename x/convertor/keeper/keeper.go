@@ -1,4 +1,4 @@
-package hub
+package keeper
 
 import (
 	"context"
@@ -8,41 +8,44 @@ import (
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	evmostransferkeeper "github.com/evmos/evmos/v12/x/ibc/transfer/keeper"
 
-	"github.com/dymensionxyz/dymension-rdk/x/hub/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/convertor/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
-// TransferKeeperWrapper wraps the Evmos IBC transfer keeper to perform decimal conversion
+// Keeper wraps the Evmos IBC transfer keeper to perform decimal conversion
 // before tokens are moved to escrow.
 //
 // The Evmos keeper is embedded, so all its methods are automatically available.
 // Only the Transfer method is overridden to add decimal conversion logic.
-type TransferKeeperWrapper struct {
+type Keeper struct {
 	evmostransferkeeper.Keeper
-	hubKeeper keeper.Keeper
+	hubKeeper  types.HubKeeper
+	bankKeeper types.BankKeeper
 }
 
 // NewTransferKeeper creates a new TransferKeeper wrapper around the Evmos transfer keeper.
 func NewTransferKeeper(
 	transferKeeper evmostransferkeeper.Keeper,
-	hubKeeper keeper.Keeper,
-) TransferKeeperWrapper {
-	return TransferKeeperWrapper{
-		Keeper:    transferKeeper,
-		hubKeeper: hubKeeper,
+	hubKeeper types.HubKeeper,
+	bankKeeper types.BankKeeper,
+) Keeper {
+	return Keeper{
+		Keeper:     transferKeeper,
+		hubKeeper:  hubKeeper,
+		bankKeeper: bankKeeper,
 	}
 }
 
 // Transfer overrides the transfer keeper's Transfer method to perform decimal conversion
 // before the tokens are moved to escrow.
-func (w TransferKeeperWrapper) Transfer(
+func (w Keeper) Transfer(
 	goCtx context.Context,
 	msg *transfertypes.MsgTransfer,
 ) (*transfertypes.MsgTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// Check if there's a decimal conversion required for this denom
-	required, err := w.hubKeeper.ConversionRequired(ctx, msg.Token.Denom)
+	required, err := w.ConversionRequired(ctx, msg.Token.Denom)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "check if conversion required")
 	}
@@ -68,25 +71,25 @@ func (w TransferKeeperWrapper) Transfer(
 	}
 
 	// Convert the coin from rollapp token (18 decimals) to bridge token (custom decimals)
-	convertedCoin, err := w.hubKeeper.ConvertToBridgeCoin(ctx, msg.Token)
+	convertedCoin, err := w.ConvertToBridgeCoin(ctx, msg.Token)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "convert coin to bridge token")
 	}
 
 	// Check if there's any truncation (remainder after conversion)
 	// When converting from 18 decimals to lower decimals, we might lose precision
-	reconvertedCoin, err := w.hubKeeper.ConvertFromBridgeCoin(ctx, convertedCoin)
+	reconvertedCoin, err := w.ConvertFromBridgeCoin(ctx, convertedCoin)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "reconvert coin to check truncation")
 	}
 
 	// Burn the original tokens from the sender (since we'll be sending converted tokens instead)
-	if err := w.hubKeeper.BurnCoins(ctx, sender, reconvertedCoin); err != nil {
+	if err := w.BurnCoins(ctx, sender, reconvertedCoin); err != nil {
 		return nil, errorsmod.Wrapf(err, "burn original tokens from sender")
 	}
 
 	// Mint the converted tokens to the sender (so the transfer keeper can then move them to escrow)
-	if err := w.hubKeeper.MintCoins(ctx, sender, convertedCoin); err != nil {
+	if err := w.MintCoins(ctx, sender, convertedCoin); err != nil {
 		return nil, errorsmod.Wrapf(err, "mint converted tokens to sender")
 	}
 

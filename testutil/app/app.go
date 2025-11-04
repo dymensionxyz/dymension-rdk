@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dymensionxyz/dymension-rdk/x/convertor"
+	convertorkeeper "github.com/dymensionxyz/dymension-rdk/x/convertor/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/tokenfactory"
 	tokenfactorykeeper "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/types"
@@ -17,9 +19,8 @@ import (
 	hubgenesis "github.com/dymensionxyz/dymension-rdk/x/hub-genesis"
 	hubgenkeeper "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/keeper"
 	hubgentypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
-	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
-
 	hubkeeper "github.com/dymensionxyz/dymension-rdk/x/hub/keeper"
+	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 
 	"github.com/cosmos/cosmos-sdk/std"
 	"github.com/gorilla/mux"
@@ -107,7 +108,6 @@ import (
 	timeupgradetypes "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 
 	ibctransfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v6/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v6/modules/core/02-client"
@@ -152,6 +152,9 @@ import (
 	feemarket "github.com/evmos/evmos/v12/x/feemarket"
 	feemarketkeeper "github.com/evmos/evmos/v12/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
+
+	// evmostransfer "github.com/evmos/evmos/v12/x/ibc/transfer"
+	evmostransferkeeper "github.com/evmos/evmos/v12/x/ibc/transfer/keeper"
 )
 
 const (
@@ -210,7 +213,7 @@ var (
 		params.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		ibc.AppModuleBasic{},
-		ibctransfer.AppModuleBasic{},
+		convertor.AppModuleBasic{AppModuleBasic: &ibctransfer.AppModuleBasic{}},
 		vesting.AppModuleBasic{},
 		hubgenesis.AppModuleBasic{},
 		gasless.AppModuleBasic{},
@@ -233,6 +236,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		hubtypes.ModuleName:            {authtypes.Minter, authtypes.Burner},
 		hubgentypes.ModuleName:         {authtypes.Minter},
 		gaslesstypes.ModuleName:        nil,
 		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
@@ -281,7 +285,7 @@ type App struct {
 	UpgradeKeeper       upgradekeeper.Keeper
 	ParamsKeeper        paramskeeper.Keeper
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	TransferKeeper      ibctransferkeeper.Keeper
+	TransferKeeper      convertorkeeper.Keeper
 	WasmKeeper          wasmkeeper.Keeper
 	TokenFactoryKeeper  tokenfactorykeeper.Keeper
 
@@ -526,6 +530,7 @@ func NewRollapp(
 	app.HubKeeper = hubkeeper.NewKeeper(
 		appCodec,
 		keys[hubtypes.StoreKey],
+		app.BankKeeper,
 	)
 
 	app.HubGenesisKeeper = hubgenkeeper.NewKeeper(
@@ -550,8 +555,8 @@ func NewRollapp(
 	// - transfer rejecter until genesis bridge phase is finished
 	ics4Wrapper = hubgenkeeper.NewICS4Wrapper(ics4Wrapper, app.HubGenesisKeeper)
 
-	// Create Transfer Keepers
-	app.TransferKeeper = ibctransferkeeper.NewKeeper(
+	// Create Transfer Keeper
+	evmosTransferKeeper := evmostransferkeeper.NewKeeper(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
 		app.GetSubspace(ibctransfertypes.ModuleName),
@@ -561,7 +566,11 @@ func NewRollapp(
 		app.AccountKeeper,
 		app.BankKeeper,
 		scopedTransferKeeper,
+		&app.Erc20Keeper,
 	)
+
+	// Wrap the transfer keeper with decimal conversion logic
+	app.TransferKeeper = convertorkeeper.NewTransferKeeper(evmosTransferKeeper, app.HubKeeper, app.BankKeeper)
 
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		keys[tokenfactorytypes.StoreKey],
@@ -574,14 +583,17 @@ func NewRollapp(
 	app.TokenFactoryKeeper = tokenFactoryKeeper
 
 	var transferStack ibcporttypes.IBCModule
-	transferStack = ibctransfer.NewIBCModule(app.TransferKeeper)
+	baseTransferModule := ibctransfer.NewIBCModule(*app.TransferKeeper.Keeper.Keeper)
 	transferStack = denommetadata.NewIBCModule(
-		transferStack,
+		baseTransferModule,
 		app.BankKeeper,
 		app.TransferKeeper,
 		app.HubKeeper,
 		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
 	)
+	// Hub decimal conversion middleware needs access to the base transfer module
+	// to skip other middleware when handling received packets
+	transferStack = convertor.NewDecimalConversionMiddleware(baseTransferModule, transferStack, app.TransferKeeper)
 	transferStack = hubgenkeeper.NewIBCModule(
 		transferStack,
 		app.HubGenesisKeeper,
@@ -667,7 +679,7 @@ func NewRollapp(
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
-		ibctransfer.NewAppModule(app.TransferKeeper),
+		convertor.NewTransferAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper),
 		gasless.NewAppModule(appCodec, app.GaslessKeeper),

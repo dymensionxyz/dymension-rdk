@@ -1,4 +1,4 @@
-package hub
+package convertor
 
 import (
 	errorsmod "cosmossdk.io/errors"
@@ -9,9 +9,8 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 
+	"github.com/dymensionxyz/dymension-rdk/x/convertor/keeper"
 	"github.com/dymensionxyz/sdk-utils/utils/uevent"
-
-	"github.com/dymensionxyz/dymension-rdk/x/hub/keeper"
 )
 
 var (
@@ -23,7 +22,7 @@ type DecimalConversionMiddleware struct {
 	porttypes.IBCModule
 
 	transfer  porttypes.IBCModule // used to skip the transfer stack
-	hubKeeper keeper.Keeper
+	convertor keeper.Keeper
 }
 
 // NewIBCModule creates a new IBCModule for the hub module with decimal conversion middleware
@@ -37,7 +36,7 @@ func NewDecimalConversionMiddleware(
 	return DecimalConversionMiddleware{
 		IBCModule: next,
 		transfer:  transfer,
-		hubKeeper: hubKeeper,
+		convertor: hubKeeper,
 	}
 }
 
@@ -55,7 +54,7 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 	transfertypes.ModuleCdc.MustUnmarshalJSON(packet.GetData(), packetData)
 
 	// Check if there's a decimal conversion pair for this denom
-	required, err := m.hubKeeper.ConversionRequired(ctx, packetData.Denom)
+	required, err := m.convertor.ConversionRequired(ctx, packetData.Denom)
 	if err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "get decimal conversion pair"))
 	}
@@ -90,18 +89,18 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 	coin := sdk.NewCoin(packetData.Denom, amount)
 
 	// Convert the coin from bridge token (custom decimals) to rollapp token (18 decimals)
-	convertedCoin, err := m.hubKeeper.ConvertFromBridgeCoin(ctx, coin)
+	convertedCoin, err := m.convertor.ConvertFromBridgeCoin(ctx, coin)
 	if err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "convert coin from bridge token"))
 	}
 
 	// Burn the original tokens from the receiver
-	if err := m.hubKeeper.BurnCoins(ctx, receiver, coin); err != nil {
+	if err := m.convertor.BurnCoins(ctx, receiver, coin); err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "burn original coins from receiver"))
 	}
 
 	// Mint the converted tokens to the receiver
-	if err := m.hubKeeper.MintCoins(ctx, receiver, convertedCoin); err != nil {
+	if err := m.convertor.MintCoins(ctx, receiver, convertedCoin); err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "mint converted coins to receiver"))
 	}
 
