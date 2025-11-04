@@ -1,14 +1,10 @@
 package hub
 
 import (
-	"errors"
-
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v6/modules/core/02-client/types"
 	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
@@ -16,35 +12,32 @@ import (
 	"github.com/dymensionxyz/sdk-utils/utils/uevent"
 
 	"github.com/dymensionxyz/dymension-rdk/x/hub/keeper"
-	"github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
 var (
-	_ porttypes.ICS4Wrapper = &DecimalConversionMiddleware{}
-	_ porttypes.IBCModule   = &DecimalConversionMiddleware{}
+	_ porttypes.IBCModule = &DecimalConversionMiddleware{}
 )
 
 // DecimalConversionMiddleware implements the ICS26 callbacks for decimal conversion middleware
 type DecimalConversionMiddleware struct {
-	porttypes.ICS4Wrapper
 	porttypes.IBCModule
 
 	transfer  porttypes.IBCModule // used to skip the transfer stack
 	hubKeeper keeper.Keeper
 }
 
-// NewDecimalConversionMiddleware creates a new DecimalConversionMiddleware for decimal conversion
+// NewIBCModule creates a new IBCModule for the hub module with decimal conversion middleware
+// transfer: the base transfer keeper (used to skip middleware and mint tokens directly)
+// next: the next middleware in the stack (or the complete stack so far)
 func NewDecimalConversionMiddleware(
 	transfer porttypes.IBCModule,
-	completeStack porttypes.IBCModule,
-	ics4Wrapper porttypes.ICS4Wrapper,
+	next porttypes.IBCModule,
 	hubKeeper keeper.Keeper,
 ) DecimalConversionMiddleware {
 	return DecimalConversionMiddleware{
-		IBCModule:   completeStack,
-		transfer:    transfer,
-		ICS4Wrapper: ics4Wrapper,
-		hubKeeper:   hubKeeper,
+		IBCModule: next,
+		transfer:  transfer,
+		hubKeeper: hubKeeper,
 	}
 }
 
@@ -93,11 +86,13 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid amount: %s", packetData.Amount))
 	}
 
-	// Convert the amount
+	// Create the coin from the packet data
 	coin := sdk.NewCoin(packetData.Denom, amount)
-	convertedCoin, err := types.ConvertCoin(coin, pair)
+
+	// Convert the coin from bridge token (custom decimals) to rollapp token (18 decimals)
+	convertedCoin, err := m.hubKeeper.ConvertFromBridgeCoin(ctx, coin)
 	if err != nil {
-		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "convert coin"))
+		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "convert coin from bridge token"))
 	}
 
 	// Burn the original tokens from the receiver
