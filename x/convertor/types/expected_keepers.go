@@ -1,10 +1,18 @@
 package types
 
 import (
+	"context"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
+
+// TransferKeeper defines the expected interface needed to override the transfer keeper
+type TransferKeeper interface {
+	Transfer(ctx context.Context, msg *transfertypes.MsgTransfer) (*transfertypes.MsgTransferResponse, error)
+}
 
 // HubKeeper defines the expected interface needed to get the decimal conversion pair
 type HubKeeper interface {

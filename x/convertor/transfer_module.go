@@ -26,7 +26,7 @@ type AppModule struct {
 // NewAppModule creates a new transfer app module with the wrapped keeper
 func NewAppModule(wrappedKeeper keeper.Keeper) AppModule {
 	// Create the base Evmos module with the embedded keeper
-	baseModule := ibctransfer.NewAppModule(*wrappedKeeper.Keeper.Keeper)
+	baseModule := ibctransfer.NewAppModule(wrappedKeeper.Keeper)
 
 	return AppModule{
 		AppModule: &baseModule,
@@ -39,5 +39,5 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 	// Register our wrapped keeper as the MsgServer instead of the base keeper
 	// This ensures our Transfer override is used
 	transfertypes.RegisterMsgServer(cfg.MsgServer(), am.keeper)
-	transfertypes.RegisterQueryServer(cfg.QueryServer(), am.keeper.Keeper)
+	transfertypes.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }

@@ -5,8 +5,8 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	transferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
-	evmostransferkeeper "github.com/evmos/evmos/v12/x/ibc/transfer/keeper"
 
 	"github.com/dymensionxyz/dymension-rdk/x/convertor/types"
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
@@ -18,21 +18,24 @@ import (
 // The Evmos keeper is embedded, so all its methods are automatically available.
 // Only the Transfer method is overridden to add decimal conversion logic.
 type Keeper struct {
-	evmostransferkeeper.Keeper
-	hubKeeper  types.HubKeeper
-	bankKeeper types.BankKeeper
+	transferkeeper.Keeper
+	transferOverride types.TransferKeeper
+	hubKeeper        types.HubKeeper
+	bankKeeper       types.BankKeeper
 }
 
 // NewTransferKeeper creates a new TransferKeeper wrapper around the Evmos transfer keeper.
 func NewTransferKeeper(
-	transferKeeper evmostransferkeeper.Keeper,
+	transferKeeper transferkeeper.Keeper,
+	transferOverride types.TransferKeeper,
 	hubKeeper types.HubKeeper,
 	bankKeeper types.BankKeeper,
 ) Keeper {
 	return Keeper{
-		Keeper:     transferKeeper,
-		hubKeeper:  hubKeeper,
-		bankKeeper: bankKeeper,
+		Keeper:           transferKeeper,
+		transferOverride: transferOverride,
+		hubKeeper:        hubKeeper,
+		bankKeeper:       bankKeeper,
 	}
 }
 
@@ -52,7 +55,7 @@ func (w Keeper) Transfer(
 
 	// If no conversion is needed, pass through to the underlying keeper
 	if !required {
-		return w.Keeper.Transfer(goCtx, msg)
+		return w.transferOverride.Transfer(goCtx, msg)
 	}
 
 	// Make sure we're not trying to send the bridge denom itself
