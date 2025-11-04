@@ -35,10 +35,7 @@ func (p *DecimalConversionPair) Validate() error {
 	if !strings.HasPrefix(p.FromToken, "ibc/") {
 		return errorsmod.Wrap(gerrc.ErrInvalidArgument, "from_token must be an IBC denom")
 	}
-	if p.ToToken == "" {
-		return errorsmod.Wrap(gerrc.ErrInvalidArgument, "denom_b cannot be empty")
-	}
-	if p.FromDecimals == 0 || p.FromDecimals >= 18 {
+	if !(p.FromDecimals > 0 && p.FromDecimals < 18) {
 		return errorsmod.Wrapf(gerrc.ErrInvalidArgument, "from_decimals must be < 18, got %d", p.FromDecimals)
 	}
 	return nil

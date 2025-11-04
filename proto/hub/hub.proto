@@ -25,7 +25,4 @@ message DecimalConversionPair {
   string from_token = 1;
   // from_decimals is the decimal precision of from_token
   uint32 from_decimals = 2;
-  // to_token is the local token to be converted to.
-  // It must have metadata defined on the rollapp, with 18 decimals precision.
-  string to_token = 3;
 }

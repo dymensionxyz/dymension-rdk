@@ -18,7 +18,7 @@ func (k Keeper) ConversionRequired(ctx sdk.Context, denom string) (bool, error) 
 		}
 		return false, err
 	}
-	return pair.FromToken == denom || pair.ToToken == denom, nil
+	return pair.FromToken == denom, nil
 }
 
 // ConvertCoin converts a coin from one denom to another using the decimal conversion pair
@@ -32,7 +32,7 @@ func (k Keeper) ConvertFromBridgeCoin(ctx sdk.Context, coin sdk.Coin) (sdk.Coin,
 	if err != nil {
 		return sdk.Coin{}, err
 	}
-	return sdk.NewCoin(pair.ToToken, newAmt), nil
+	return sdk.NewCoin(pair.FromToken, newAmt), nil
 }
 
 // ConvertToBridgeCoin converts a coin to another denom using the decimal conversion pair
