@@ -108,6 +108,7 @@ import (
 	timeupgradetypes "github.com/dymensionxyz/dymension-rdk/x/timeupgrade/types"
 
 	ibctransfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
 	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 	ibc "github.com/cosmos/ibc-go/v6/modules/core"
 	ibcclient "github.com/cosmos/ibc-go/v6/modules/core/02-client"
@@ -553,7 +554,20 @@ func NewRollapp(
 	// - transfer rejecter until genesis bridge phase is finished
 	ics4Wrapper = hubgenkeeper.NewICS4Wrapper(ics4Wrapper, app.HubGenesisKeeper)
 
-	// Create Transfer Keeper
+	// Create transfer keeper
+	ibctransferKeeper := ibctransferkeeper.NewKeeper(
+		appCodec,
+		keys[ibctransfertypes.StoreKey],
+		app.GetSubspace(ibctransfertypes.ModuleName),
+		ics4Wrapper,
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		app.AccountKeeper,
+		app.BankKeeper,
+		scopedTransferKeeper,
+	)
+
+	// Create evmos Transfer Keeper
 	evmosTransferKeeper := evmostransferkeeper.NewKeeper(
 		appCodec,
 		keys[ibctransfertypes.StoreKey],
@@ -568,7 +582,7 @@ func NewRollapp(
 	)
 
 	// Wrap the transfer keeper with decimal conversion logic
-	app.TransferKeeper = convertorkeeper.NewTransferKeeper(evmosTransferKeeper, app.HubKeeper, app.BankKeeper)
+	app.TransferKeeper = convertorkeeper.NewTransferKeeper(ibctransferKeeper, evmosTransferKeeper, app.HubKeeper, app.BankKeeper)
 
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		keys[tokenfactorytypes.StoreKey],
@@ -581,7 +595,7 @@ func NewRollapp(
 	app.TokenFactoryKeeper = tokenFactoryKeeper
 
 	var transferStack ibcporttypes.IBCModule
-	baseTransferModule := ibctransfer.NewIBCModule(*app.TransferKeeper.Keeper.Keeper)
+	baseTransferModule := ibctransfer.NewIBCModule(app.TransferKeeper.Keeper)
 	transferStack = denommetadata.NewIBCModule(
 		baseTransferModule,
 		app.BankKeeper,
