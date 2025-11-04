@@ -20,23 +20,18 @@ var (
 // DecimalConversionMiddleware implements the ICS26 callbacks for decimal conversion middleware
 type DecimalConversionMiddleware struct {
 	porttypes.IBCModule
-
-	transfer  porttypes.IBCModule // used to skip the transfer stack, and mint tokens directly
 	convertor keeper.Keeper
 }
 
 // NewIBCModule creates a new IBCModule for the hub module with decimal conversion middleware
-// transfer: the base transfer keeper (used to skip middleware and mint tokens directly)
 // next: the next middleware in the stack (or the complete stack so far)
 func NewDecimalConversionMiddleware(
-	transfer porttypes.IBCModule,
 	next porttypes.IBCModule,
-	hubKeeper keeper.Keeper,
+	convertor keeper.Keeper,
 ) DecimalConversionMiddleware {
 	return DecimalConversionMiddleware{
 		IBCModule: next,
-		transfer:  transfer,
-		convertor: hubKeeper,
+		convertor: convertor,
 	}
 }
 
@@ -66,7 +61,7 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 
 	// First, let the underlying transfer module handle the packet
 	// This will mint the original tokens to the receiver
-	ack := m.transfer.OnRecvPacket(ctx, packet, relayer)
+	ack := m.IBCModule.OnRecvPacket(ctx, packet, relayer)
 
 	if !ack.Success() {
 		// If the underlying transfer failed, don't attempt conversion
@@ -108,12 +103,64 @@ func (im DecimalConversionMiddleware) OnAcknowledgementPacket(
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
-
-	// FIXME: Handle the acknowledgement packet
-
-	// For acknowledgements, we don't need to convert anything
 	// The conversion was already done in SendPacket
-	return im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	err := im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	if err != nil {
+		return err
+	}
+
+	// parse the acknowledgement, if it's error, it means there's a refund, and we need to convert token's decimals
+	var ack channeltypes.Acknowledgement
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
+	}
+
+	// no error, nothing to do
+	if ack.GetError() == "" {
+		return nil
+	}
+
+	// parse the packet data
+	var packetData transfertypes.FungibleTokenPacketData
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &packetData); err != nil {
+		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
+	}
+
+	// check if there's a decimal conversion pair for this denom
+	required, err := im.convertor.ConversionRequired(ctx, packetData.Denom)
+	if err != nil {
+		return errorsmod.Wrapf(err, "get decimal conversion pair")
+	}
+
+	// no conversion needed, nothing to do
+	if !required {
+		return nil
+	}
+
+	sender, err := sdk.AccAddressFromBech32(packetData.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(err, "invalid sender address")
+	}
+
+	// Parse the amount
+	amount, ok := sdk.NewIntFromString(packetData.Amount)
+	if !ok {
+		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid amount: %s", packetData.Amount)
+	}
+	// convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
+	convertedAmt, err := im.convertor.ConvertFromBridgeAmt(ctx, amount)
+	if err != nil {
+		return err
+	}
+
+	delta := sdk.NewCoin(packetData.Denom, amount.Sub(convertedAmt))
+
+	err = im.convertor.MintCoins(ctx, sender, delta)
+	if err != nil {
+		return errorsmod.Wrapf(err, "mint converted coins to sender")
+	}
+
+	return nil
 }
 
 // OnTimeoutPacket implements the IBCModule interface
@@ -122,9 +169,52 @@ func (im DecimalConversionMiddleware) OnTimeoutPacket(
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	// FIXME: Handle the timeout packet
+	// The underlying transfer module will handle the refund with the converted (rollapp) amount
+	err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
+	if err != nil {
+		return err
+	}
 
-	// For timeouts, we need to handle the refund with the original (pre-conversion) amount
-	// The underlying transfer module will handle the refund correctly
-	return im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
+	// parse the packet data
+	var packetData transfertypes.FungibleTokenPacketData
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &packetData); err != nil {
+		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
+	}
+
+	// check if there's a decimal conversion pair for this denom
+	required, err := im.convertor.ConversionRequired(ctx, packetData.Denom)
+	if err != nil {
+		return errorsmod.Wrapf(err, "get decimal conversion pair")
+	}
+
+	// no conversion needed, nothing to do
+	if !required {
+		return nil
+	}
+
+	sender, err := sdk.AccAddressFromBech32(packetData.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(err, "invalid sender address")
+	}
+
+	// Parse the amount
+	amount, ok := sdk.NewIntFromString(packetData.Amount)
+	if !ok {
+		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid amount: %s", packetData.Amount)
+	}
+
+	// convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
+	convertedAmt, err := im.convertor.ConvertFromBridgeAmt(ctx, amount)
+	if err != nil {
+		return err
+	}
+
+	delta := sdk.NewCoin(packetData.Denom, amount.Sub(convertedAmt))
+
+	err = im.convertor.MintCoins(ctx, sender, delta)
+	if err != nil {
+		return errorsmod.Wrapf(err, "mint converted coins to sender")
+	}
+
+	return nil
 }
