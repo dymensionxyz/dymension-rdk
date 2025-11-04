@@ -65,9 +65,5 @@ func (k Keeper) SetDecimalConversionPair(ctx sdk.Context, pair types.DecimalConv
 
 // GetDecimalConversionPair retrieves the decimal conversion pair
 func (k Keeper) GetDecimalConversionPair(ctx sdk.Context) (types.DecimalConversionPair, error) {
-	pair, err := k.decimalConversionPair.Get(ctx)
-	if err != nil {
-		return types.DecimalConversionPair{}, err
-	}
-	return pair, nil
+	return k.decimalConversionPair.Get(ctx)
 }

@@ -153,7 +153,6 @@ import (
 	feemarketkeeper "github.com/evmos/evmos/v12/x/feemarket/keeper"
 	feemarkettypes "github.com/evmos/evmos/v12/x/feemarket/types"
 
-	// evmostransfer "github.com/evmos/evmos/v12/x/ibc/transfer"
 	evmostransferkeeper "github.com/evmos/evmos/v12/x/ibc/transfer/keeper"
 )
 
@@ -236,7 +235,6 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		hubtypes.ModuleName:            {authtypes.Minter, authtypes.Burner},
 		hubgentypes.ModuleName:         {authtypes.Minter},
 		gaslesstypes.ModuleName:        nil,
 		evmtypes.ModuleName:            {authtypes.Minter, authtypes.Burner}, // used for secure addition and subtraction of balance using module account
@@ -679,7 +677,7 @@ func NewRollapp(
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
-		convertor.NewTransferAppModule(app.TransferKeeper),
+		convertor.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper),
 		gasless.NewAppModule(appCodec, app.GaslessKeeper),

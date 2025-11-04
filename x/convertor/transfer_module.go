@@ -23,8 +23,8 @@ type AppModule struct {
 	keeper keeper.Keeper
 }
 
-// NewTransferAppModule creates a new transfer app module with the wrapped keeper
-func NewTransferAppModule(wrappedKeeper keeper.Keeper) AppModule {
+// NewAppModule creates a new transfer app module with the wrapped keeper
+func NewAppModule(wrappedKeeper keeper.Keeper) AppModule {
 	// Create the base Evmos module with the embedded keeper
 	baseModule := ibctransfer.NewAppModule(*wrappedKeeper.Keeper.Keeper)
 
