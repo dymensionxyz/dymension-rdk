@@ -86,6 +86,8 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "convert amount from bridge token"))
 	}
 
+	// Calculate the delta to mint (difference between converted and original amount)
+	// The delta represents additional tokens needed to reach the full 18-decimal precision
 	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
 
 	// Mint the missing amount of tokens to the receiver
@@ -97,14 +99,14 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 }
 
 // OnAcknowledgementPacket implements the IBCModule interface
-func (im DecimalConversionMiddleware) OnAcknowledgementPacket(
+func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	acknowledgement []byte,
 	relayer sdk.AccAddress,
 ) error {
 	// The conversion was already done in SendPacket
-	err := im.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	err := m.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
 	if err != nil {
 		return err
 	}
@@ -127,7 +129,7 @@ func (im DecimalConversionMiddleware) OnAcknowledgementPacket(
 	}
 
 	// check if there's a decimal conversion pair for this denom
-	required, err := im.convertor.ConversionRequired(ctx, packetData.Denom)
+	required, err := m.convertor.ConversionRequired(ctx, packetData.Denom)
 	if err != nil {
 		return errorsmod.Wrapf(err, "get decimal conversion pair")
 	}
@@ -148,14 +150,16 @@ func (im DecimalConversionMiddleware) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid amount: %s", packetData.Amount)
 	}
 	// convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
-	convertedAmt, err := im.convertor.ConvertFromBridgeAmt(ctx, amount)
+	convertedAmt, err := m.convertor.ConvertFromBridgeAmt(ctx, amount)
 	if err != nil {
 		return err
 	}
 
-	delta := sdk.NewCoin(packetData.Denom, amount.Sub(convertedAmt))
+	// On refund, user received back 'amount' but originally sent 'convertedAmt'
+	// So we need to mint the difference back to them
+	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
 
-	err = im.convertor.MintCoins(ctx, sender, delta)
+	err = m.convertor.MintCoins(ctx, sender, delta)
 	if err != nil {
 		return errorsmod.Wrapf(err, "mint converted coins to sender")
 	}
@@ -164,13 +168,13 @@ func (im DecimalConversionMiddleware) OnAcknowledgementPacket(
 }
 
 // OnTimeoutPacket implements the IBCModule interface
-func (im DecimalConversionMiddleware) OnTimeoutPacket(
+func (m DecimalConversionMiddleware) OnTimeoutPacket(
 	ctx sdk.Context,
 	packet channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
 	// The underlying transfer module will handle the refund with the converted (rollapp) amount
-	err := im.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
+	err := m.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
 	if err != nil {
 		return err
 	}
@@ -182,7 +186,7 @@ func (im DecimalConversionMiddleware) OnTimeoutPacket(
 	}
 
 	// check if there's a decimal conversion pair for this denom
-	required, err := im.convertor.ConversionRequired(ctx, packetData.Denom)
+	required, err := m.convertor.ConversionRequired(ctx, packetData.Denom)
 	if err != nil {
 		return errorsmod.Wrapf(err, "get decimal conversion pair")
 	}
@@ -204,14 +208,16 @@ func (im DecimalConversionMiddleware) OnTimeoutPacket(
 	}
 
 	// convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
-	convertedAmt, err := im.convertor.ConvertFromBridgeAmt(ctx, amount)
+	convertedAmt, err := m.convertor.ConvertFromBridgeAmt(ctx, amount)
 	if err != nil {
 		return err
 	}
 
-	delta := sdk.NewCoin(packetData.Denom, amount.Sub(convertedAmt))
+	// On timeout, user received back 'amount' but originally sent 'convertedAmt'
+	// So we need to mint the difference back to them
+	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
 
-	err = im.convertor.MintCoins(ctx, sender, delta)
+	err = m.convertor.MintCoins(ctx, sender, delta)
 	if err != nil {
 		return errorsmod.Wrapf(err, "mint converted coins to sender")
 	}

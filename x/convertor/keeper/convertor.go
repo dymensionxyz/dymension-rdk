@@ -22,32 +22,62 @@ func (k Keeper) ConversionRequired(ctx sdk.Context, denom string) (bool, error) 
 	return pair.FromToken == denom, nil
 }
 
-// ConvertFromBridgeAmt converts an amount from one denom to another using the decimal conversion pair
-func (k Keeper) ConvertFromBridgeAmt(ctx sdk.Context, amount math.Int) (math.Int, error) {
+// ConvertFromBridgeAmt converts an amount from bridge token decimals to rollapp decimals (18)
+// and emits an event with the conversion details
+func (k Keeper) ConvertFromBridgeAmt(
+	ctx sdk.Context,
+	amount math.Int,
+) (math.Int, error) {
 	pair, err := k.hubKeeper.GetDecimalConversionPair(ctx)
 	if err != nil {
 		return math.Int{}, err
 	}
 
-	newAmt, err := types.ConvertAmount(amount, pair.FromDecimals, 18)
+	convertedAmt, err := types.ConvertAmount(amount, pair.FromDecimals, 18)
 	if err != nil {
 		return math.Int{}, err
 	}
-	return newAmt, nil
+
+	// Emit conversion event
+	k.emitConversionEvent(ctx, amount, convertedAmt)
+
+	return convertedAmt, nil
 }
 
-// ConvertToBridgeAmt converts an amount to another denom using the decimal conversion pair
-func (k Keeper) ConvertToBridgeAmt(ctx sdk.Context, amount math.Int) (math.Int, error) {
+// ConvertToBridgeAmt converts an amount from rollapp decimals (18) to bridge token decimals
+// and emits an event with the conversion details
+func (k Keeper) ConvertToBridgeAmt(
+	ctx sdk.Context,
+	amount math.Int,
+) (math.Int, error) {
 	pair, err := k.hubKeeper.GetDecimalConversionPair(ctx)
 	if err != nil {
 		return math.Int{}, err
 	}
 
-	newAmt, err := types.ConvertAmount(amount, 18, pair.FromDecimals)
+	convertedAmt, err := types.ConvertAmount(amount, 18, pair.FromDecimals)
 	if err != nil {
 		return math.Int{}, err
 	}
-	return newAmt, nil
+
+	// Emit conversion event
+	k.emitConversionEvent(ctx, amount, convertedAmt)
+
+	return convertedAmt, nil
+}
+
+// emitConversionEvent emits a decimal conversion event
+func (k Keeper) emitConversionEvent(
+	ctx sdk.Context,
+	originalAmt math.Int,
+	convertedAmt math.Int,
+) {
+	attrs := []sdk.Attribute{
+		sdk.NewAttribute(types.AttributeKeyOriginalAmount, originalAmt.String()),
+		sdk.NewAttribute(types.AttributeKeyConvertedAmount, convertedAmt.String()),
+	}
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeDecimalConversion, attrs...))
 }
 
 // BurnCoins burns coins from an account
