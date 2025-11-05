@@ -74,13 +74,43 @@ func (w Keeper) Transfer(
 		return nil, errorsmod.Wrapf(err, "convert coin to bridge token")
 	}
 
+	// Convert the bridge amount back to rollapp decimals to calculate the actual amount to transfer
+	convertedAmtInRollappDecimals, err := w.ConvertFromBridgeAmt(ctx, convertedAmt)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "convert bridge amount back to rollapp decimals")
+	}
+
+	// Calculate the dust/precision loss (amount that will be lost due to decimal conversion)
+	dust := msg.Token.Amount.Sub(convertedAmtInRollappDecimals)
+
 	// burn the original tokens from the sender
 	delta := sdk.NewCoin(msg.Token.Denom, msg.Token.Amount.Sub(convertedAmt))
 	if err := w.BurnCoins(ctx, sender, delta); err != nil {
 		return nil, errorsmod.Wrapf(err, "burn original tokens from sender")
 	}
 
-	// Create a new message with the converted token
+	// Log the conversion details for debugging
+	ctx.Logger().Info("Token conversion on transfer",
+		"sender", msg.Sender,
+		"original_amount", msg.Token.Amount.String(),
+		"converted_bridge_amount", convertedAmt.String(),
+		"converted_rollapp_amount", convertedAmtInRollappDecimals.String(),
+		"dust_to_burn", dust.String(),
+		"delta_to_burn", delta.String(),
+		"denom", msg.Token.Denom,
+	)
+
+	// Burn the dust from the sender (precision loss due to decimal conversion)
+	if !dust.IsZero() {
+		ctx.Logger().Error("dust", "dust", dust.String())
+		// dustCoin := sdk.NewCoin(msg.Token.Denom, dust)
+		// if err := w.BurnCoins(ctx, sender, dustCoin); err != nil {
+		// 	return nil, errorsmod.Wrapf(err, "burn dust tokens from sender")
+		// }
+	}
+
+	// Create a new message with the converted token (in bridge decimals)
+	// The IBC packet will contain this amount, which will be converted back on the receiving chain
 	convertedMsg := &transfertypes.MsgTransfer{
 		SourcePort:       msg.SourcePort,
 		SourceChannel:    msg.SourceChannel,
