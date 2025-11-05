@@ -22,15 +22,23 @@ func NewQuerier(k Keeper) Querier {
 
 func (q Querier) State(goCtx context.Context, _ *types.QueryStateRequest) (*types.QueryStateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	var state types.State
+
 	denoms, err := q.GetAllHubDenoms(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all hub denoms: %w", err)
 	}
-	var state types.State
 	for _, denom := range denoms {
 		state.Hub.RegisteredDenoms = append(state.Hub.RegisteredDenoms, &types.RegisteredDenom{
 			Base: denom,
 		})
 	}
+
+	pair, err := q.Keeper.GetDecimalConversionPair(ctx)
+	if err == nil {
+		state.Hub.DecimalConversionPair = &pair
+	}
+
 	return &types.QueryStateResponse{State: state}, nil
 }
