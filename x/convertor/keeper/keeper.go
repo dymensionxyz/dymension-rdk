@@ -80,7 +80,8 @@ func (w Keeper) Transfer(
 		return nil, errorsmod.Wrapf(err, "burn original tokens from sender")
 	}
 
-	// Create a new message with the converted token
+	// Create a new message with the converted token (in bridge decimals)
+	// The IBC packet will contain this amount, as expected by the bridge
 	convertedMsg := &transfertypes.MsgTransfer{
 		SourcePort:       msg.SourcePort,
 		SourceChannel:    msg.SourceChannel,

@@ -136,8 +136,14 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
 	}
 
+	// Parse the packet denom to IBC hash format (ibc/XXX)
+	// it's source chain denom, so we need to parse it to get the IBC denom.
+	// no source channel prefix required
+	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
+	ibcDenom := denomTrace.IBCDenom()
+
 	// check if there's a decimal conversion pair for this denom
-	required, err := m.convertor.ConversionRequired(ctx, packetData.Denom)
+	required, err := m.convertor.ConversionRequired(ctx, ibcDenom)
 	if err != nil {
 		return errorsmod.Wrapf(err, "get decimal conversion pair")
 	}
@@ -165,7 +171,7 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 
 	// On refund, user received back 'amount' but originally sent 'convertedAmt'
 	// So we need to mint the difference back to them
-	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
+	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
 
 	err = m.convertor.MintCoins(ctx, sender, delta)
 	if err != nil {
@@ -193,8 +199,14 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
 	}
 
+	// Parse the packet denom to IBC hash format (ibc/XXX)
+	// it's source chain denom, so we need to parse it to get the IBC denom.
+	// no source channel prefix required
+	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
+	ibcDenom := denomTrace.IBCDenom()
+
 	// check if there's a decimal conversion pair for this denom
-	required, err := m.convertor.ConversionRequired(ctx, packetData.Denom)
+	required, err := m.convertor.ConversionRequired(ctx, ibcDenom)
 	if err != nil {
 		return errorsmod.Wrapf(err, "get decimal conversion pair")
 	}
@@ -223,7 +235,7 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 
 	// On timeout, user received back 'amount' but originally sent 'convertedAmt'
 	// So we need to mint the difference back to them
-	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
+	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
 
 	err = m.convertor.MintCoins(ctx, sender, delta)
 	if err != nil {
