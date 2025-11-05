@@ -99,6 +99,16 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 	// Use the IBC denom (ibc/XXX) which is what was actually minted by the transfer module
 	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
 
+	// Log the conversion details for debugging
+	m.convertor.Logger(ctx).Info("Token conversion on receive",
+		"receiver", packetData.Receiver,
+		"bridge_amount", amount.String(),
+		"converted_rollapp_amount", convertedAmt.String(),
+		"delta_to_mint", delta.Amount.String(),
+		"ibc_denom", ibcDenom,
+		"source_denom", packetData.Denom,
+	)
+
 	// Mint the missing amount of tokens to the receiver
 	if err := m.convertor.MintCoins(ctx, receiver, delta); err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "mint converted coins to receiver"))
@@ -168,6 +178,15 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 	// So we need to mint the difference back to them
 	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
 
+	// Log the refund conversion details for debugging
+	m.convertor.Logger(ctx).Info("Token conversion on acknowledgement refund",
+		"sender", packetData.Sender,
+		"bridge_amount_refunded", amount.String(),
+		"original_rollapp_amount", convertedAmt.String(),
+		"delta_to_mint_back", delta.Amount.String(),
+		"denom", packetData.Denom,
+	)
+
 	err = m.convertor.MintCoins(ctx, sender, delta)
 	if err != nil {
 		return errorsmod.Wrapf(err, "mint converted coins to sender")
@@ -225,6 +244,15 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 	// On timeout, user received back 'amount' but originally sent 'convertedAmt'
 	// So we need to mint the difference back to them
 	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
+
+	// Log the timeout conversion details for debugging
+	m.convertor.Logger(ctx).Info("Token conversion on timeout refund",
+		"sender", packetData.Sender,
+		"bridge_amount_refunded", amount.String(),
+		"original_rollapp_amount", convertedAmt.String(),
+		"delta_to_mint_back", delta.Amount.String(),
+		"denom", packetData.Denom,
+	)
 
 	err = m.convertor.MintCoins(ctx, sender, delta)
 	if err != nil {

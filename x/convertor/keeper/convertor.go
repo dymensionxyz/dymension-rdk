@@ -39,6 +39,14 @@ func (k Keeper) ConvertFromBridgeAmt(
 		return math.Int{}, err
 	}
 
+	// Log conversion details
+	k.Logger(ctx).Debug("ConvertFromBridgeAmt",
+		"from_decimals", pair.FromDecimals,
+		"to_decimals", 18,
+		"input_amount", amount.String(),
+		"output_amount", convertedAmt.String(),
+	)
+
 	// Emit conversion event
 	k.emitConversionEvent(ctx, amount, convertedAmt)
 
@@ -60,6 +68,14 @@ func (k Keeper) ConvertToBridgeAmt(
 	if err != nil {
 		return math.Int{}, err
 	}
+
+	// Log conversion details
+	k.Logger(ctx).Debug("ConvertToBridgeAmt",
+		"from_decimals", 18,
+		"to_decimals", pair.FromDecimals,
+		"input_amount", amount.String(),
+		"output_amount", convertedAmt.String(),
+	)
 
 	// Emit conversion event
 	k.emitConversionEvent(ctx, amount, convertedAmt)
