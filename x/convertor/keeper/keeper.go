@@ -68,6 +68,14 @@ func (w Keeper) Transfer(
 		return nil, errorsmod.Wrapf(err, "invalid sender address")
 	}
 
+	// Log the balance before conversion
+	balanceBefore := w.bankKeeper.GetBalance(ctx, sender, msg.Token.Denom)
+	ctx.Logger().Info("Account balance before conversion",
+		"sender", msg.Sender,
+		"denom", msg.Token.Denom,
+		"balance", balanceBefore.Amount.String(),
+	)
+
 	// Convert the coin from rollapp token (18 decimals) to bridge token (custom decimals)
 	convertedAmt, err := w.ConvertToBridgeAmt(ctx, msg.Token.Amount)
 	if err != nil {
@@ -88,6 +96,15 @@ func (w Keeper) Transfer(
 	if err := w.BurnCoins(ctx, sender, delta); err != nil {
 		return nil, errorsmod.Wrapf(err, "burn original tokens from sender")
 	}
+
+	// Log the balance after burning delta
+	balanceAfterDeltaBurn := w.bankKeeper.GetBalance(ctx, sender, msg.Token.Denom)
+	ctx.Logger().Info("Account balance after delta burn",
+		"sender", msg.Sender,
+		"denom", msg.Token.Denom,
+		"balance", balanceAfterDeltaBurn.Amount.String(),
+		"delta_burned", delta.Amount.String(),
+	)
 
 	// Log the conversion details for debugging
 	ctx.Logger().Info("Token conversion on transfer",
@@ -123,5 +140,17 @@ func (w Keeper) Transfer(
 	}
 
 	// Call the underlying transfer keeper with the converted message
-	return w.Keeper.Transfer(goCtx, convertedMsg)
+	resp, err := w.Keeper.Transfer(goCtx, convertedMsg)
+
+	// Log the balance after the transfer completes
+	if err == nil {
+		balanceAfterTransfer := w.bankKeeper.GetBalance(ctx, sender, msg.Token.Denom)
+		ctx.Logger().Info("Account balance after transfer",
+			"sender", msg.Sender,
+			"denom", msg.Token.Denom,
+			"balance", balanceAfterTransfer.Amount.String(),
+		)
+	}
+
+	return resp, err
 }

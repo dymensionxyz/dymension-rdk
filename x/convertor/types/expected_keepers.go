@@ -21,6 +21,7 @@ type HubKeeper interface {
 
 // BankKeeper defines the expected interface needed to burn and mint tokens
 type BankKeeper interface {
+	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 	GetDenomMetaData(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
 	MintCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
 	BurnCoins(ctx sdk.Context, moduleName string, amt sdk.Coins) error
