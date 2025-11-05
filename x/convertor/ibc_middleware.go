@@ -183,7 +183,7 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 
 	// On refund, user received back 'amount' but originally sent 'convertedAmt'
 	// So we need to mint the difference back to them
-	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
+	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
 
 	// Log the refund conversion details for debugging
 	m.convertor.Logger(ctx).Info("Token conversion on acknowledgement refund",
@@ -191,7 +191,7 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 		"bridge_amount_refunded", amount.String(),
 		"original_rollapp_amount", convertedAmt.String(),
 		"delta_to_mint_back", delta.Amount.String(),
-		"denom", packetData.Denom,
+		"to_mint", delta,
 	)
 
 	err = m.convertor.MintCoins(ctx, sender, delta)
@@ -257,7 +257,7 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 
 	// On timeout, user received back 'amount' but originally sent 'convertedAmt'
 	// So we need to mint the difference back to them
-	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
+	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
 
 	// Log the timeout conversion details for debugging
 	m.convertor.Logger(ctx).Info("Token conversion on timeout refund",
@@ -265,7 +265,7 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 		"bridge_amount_refunded", amount.String(),
 		"original_rollapp_amount", convertedAmt.String(),
 		"delta_to_mint_back", delta.Amount.String(),
-		"denom", packetData.Denom,
+		"to_mint", delta,
 	)
 
 	err = m.convertor.MintCoins(ctx, sender, delta)
