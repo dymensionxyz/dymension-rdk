@@ -11,6 +11,7 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/x/convertor/keeper"
 	"github.com/dymensionxyz/sdk-utils/utils/uevent"
+	"github.com/dymensionxyz/sdk-utils/utils/uibc"
 )
 
 var (
@@ -48,15 +49,21 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 	packetData := new(transfertypes.FungibleTokenPacketData)
 	transfertypes.ModuleCdc.MustUnmarshalJSON(packet.GetData(), packetData)
 
-	// Check if there's a decimal conversion pair for this denom
-	required, err := m.convertor.ConversionRequired(ctx, packetData.Denom)
+	// Convert the packet denom to IBC hash format (ibc/XXX)
+	// The packet contains the denom from the source chain, we need to construct
+	// the full IBC denomination as it will appear on this chain after transfer
+	denomTrace := uibc.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
+	ibcDenom := denomTrace.IBCDenom()
+
+	// Check if there's a decimal conversion pair for this IBC denom
+	required, err := m.convertor.ConversionRequired(ctx, ibcDenom)
 	if err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "get decimal conversion pair"))
 	}
 
 	// No conversion needed, continue with the complete stack
 	if !required {
-		m.convertor.Logger(ctx).Info("no conversion needed", "denom", packetData.Denom)
+		m.convertor.Logger(ctx).Info("no conversion needed", "denom", packetData.Denom, "ibcDenom", ibcDenom)
 		return m.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
@@ -89,7 +96,8 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 
 	// Calculate the delta to mint (difference between converted and original amount)
 	// The delta represents additional tokens needed to reach the full 18-decimal precision
-	delta := sdk.NewCoin(packetData.Denom, convertedAmt.Sub(amount))
+	// Use the IBC denom (ibc/XXX) which is what was actually minted by the transfer module
+	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
 
 	// Mint the missing amount of tokens to the receiver
 	if err := m.convertor.MintCoins(ctx, receiver, delta); err != nil {
