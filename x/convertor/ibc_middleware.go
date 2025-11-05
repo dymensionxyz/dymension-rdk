@@ -56,6 +56,7 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 
 	// No conversion needed, continue with the complete stack
 	if !required {
+		m.convertor.Logger(ctx).Info("no conversion needed", "denom", packetData.Denom)
 		return m.IBCModule.OnRecvPacket(ctx, packet, relayer)
 	}
 
