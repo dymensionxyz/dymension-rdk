@@ -147,8 +147,14 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
 	}
 
+	// Convert the packet denom to IBC hash format (ibc/XXX)
+	// The packet contains the denom from the source chain, we need to construct
+	// the full IBC denomination as it will appear on this chain after transfer
+	denomTrace := uibc.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
+	ibcDenom := denomTrace.IBCDenom()
+
 	// check if there's a decimal conversion pair for this denom
-	required, err := m.convertor.ConversionRequired(ctx, packetData.Denom)
+	required, err := m.convertor.ConversionRequired(ctx, ibcDenom)
 	if err != nil {
 		return errorsmod.Wrapf(err, "get decimal conversion pair")
 	}
@@ -213,8 +219,14 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
 	}
 
+	// Convert the packet denom to IBC hash format (ibc/XXX)
+	// The packet contains the denom from the source chain, we need to construct
+	// the full IBC denomination as it will appear on this chain after transfer
+	denomTrace := uibc.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
+	ibcDenom := denomTrace.IBCDenom()
+
 	// check if there's a decimal conversion pair for this denom
-	required, err := m.convertor.ConversionRequired(ctx, packetData.Denom)
+	required, err := m.convertor.ConversionRequired(ctx, ibcDenom)
 	if err != nil {
 		return errorsmod.Wrapf(err, "get decimal conversion pair")
 	}
