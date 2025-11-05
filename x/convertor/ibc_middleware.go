@@ -147,10 +147,10 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
 	}
 
-	// Convert the packet denom to IBC hash format (ibc/XXX)
-	// The packet contains the denom from the source chain, we need to construct
-	// the full IBC denomination as it will appear on this chain after transfer
-	denomTrace := uibc.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
+	// Parse the packet denom to IBC hash format (ibc/XXX)
+	// it's source chain denom, so we need to parse it to get the IBC denom.
+	// no source channel prefix required
+	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
 	ibcDenom := denomTrace.IBCDenom()
 
 	// check if there's a decimal conversion pair for this denom
@@ -161,6 +161,7 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 
 	// no conversion needed, nothing to do
 	if !required {
+		ctx.Logger().Info("no conversion needed", "denom", packetData.Denom, "ibcDenom", ibcDenom)
 		return nil
 	}
 
@@ -219,10 +220,10 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
 	}
 
-	// Convert the packet denom to IBC hash format (ibc/XXX)
-	// The packet contains the denom from the source chain, we need to construct
-	// the full IBC denomination as it will appear on this chain after transfer
-	denomTrace := uibc.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
+	// Parse the packet denom to IBC hash format (ibc/XXX)
+	// it's source chain denom, so we need to parse it to get the IBC denom.
+	// no source channel prefix required
+	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
 	ibcDenom := denomTrace.IBCDenom()
 
 	// check if there's a decimal conversion pair for this denom
@@ -233,6 +234,7 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 
 	// no conversion needed, nothing to do
 	if !required {
+		ctx.Logger().Info("no conversion needed", "denom", packetData.Denom, "ibcDenom", ibcDenom)
 		return nil
 	}
 
