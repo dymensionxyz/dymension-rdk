@@ -10,7 +10,8 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/convertor/types"
 )
 
-// ConversionRequired checks if a conversion is required for a given denom
+// ConversionRequired checks if a conversion is required for a given denom.
+// The denom parameter should be in the IBC hash format (ibc/XXX).
 func (k Keeper) ConversionRequired(ctx sdk.Context, denom string) (bool, error) {
 	pair, err := k.hubKeeper.GetDecimalConversionPair(ctx)
 	if err != nil {
