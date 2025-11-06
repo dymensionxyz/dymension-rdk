@@ -54,3 +54,43 @@ func ConvertAmount(amount math.Int, fromDecimals, toDecimals uint32) (math.Int, 
 
 	return sdk.NewIntFromBigInt(result), nil
 }
+
+// ClearPrecisionLoss removes precision that would be lost during decimal conversion by
+// performing a round-trip conversion (down then up) and returning the result.
+//
+// This function is useful for calculating "dust" - the amount that would be lost when
+// converting from higher to lower decimal precision. The difference between the original
+// amount and the result of this function is the dust that must be burned.
+//
+// Example with 18 -> 6 decimals:
+//   - Input:  1000000000000000001 (1 token + 1 wei with 18 decimals)
+//   - Output: 1000000000000000000 (1 token with 18 decimals, dust cleared)
+//   - Dust:   1000000000000000001 - 1000000000000000000 = 1 wei
+//
+// The function only clears precision when scaling down (fromDecimals > toDecimals).
+// When scaling up or when decimals are equal, the amount is returned unchanged since
+// no precision is lost.
+//
+// Parameters:
+//   - amount: The original amount in fromDecimals precision
+//   - fromDecimals: The decimal precision of the original amount
+//   - toDecimals: The target decimal precision (typically lower than fromDecimals)
+//
+// Returns:
+//   - The amount with precision loss cleared (in fromDecimals precision)
+//   - Error if the conversion fails
+func ClearPrecisionLoss(amount math.Int, fromDecimals, toDecimals uint32) (math.Int, error) {
+	if fromDecimals <= toDecimals {
+		// No precision loss when scaling up or when decimals are equal
+		return amount, nil
+	}
+
+	// Scale down to lower decimals (this truncates any excess precision)
+	convertedAmt, err := ConvertAmount(amount, fromDecimals, toDecimals)
+	if err != nil {
+		return math.Int{}, err
+	}
+
+	// Scale back up to original decimals (precision loss is now cleared)
+	return ConvertAmount(convertedAmt, toDecimals, fromDecimals)
+}

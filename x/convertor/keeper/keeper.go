@@ -11,11 +11,13 @@ import (
 	"github.com/dymensionxyz/dymension-rdk/x/convertor/types"
 )
 
-// Keeper wraps the Evmos IBC transfer keeper to perform decimal conversion
+// Keeper wraps the IBC transfer keeper to perform decimal conversion
 // before tokens are moved to escrow.
 //
-// The Evmos keeper is embedded, so all its methods are automatically available.
+// The IBC transfer keeper is embedded, so all its methods are automatically available.
 // Only the Transfer method is overridden to add decimal conversion logic.
+//
+// transferStack: allows to have stack of transfer wrappers (e.g to support erc20 middleware)
 type Keeper struct {
 	transferkeeper.Keeper
 	transferStack types.TransferKeeper // allows to have transfer stack (e.g to support erc20 middleware)
@@ -68,14 +70,20 @@ func (w Keeper) Transfer(
 		return nil, errorsmod.Wrapf(err, "invalid sender address")
 	}
 
+	// clear the precision loss from the original transfer amount
+	transferAmt, err := types.ClearPrecisionLoss(msg.Token.Amount, 18, 6)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "clear precision loss from original transfer amount")
+	}
+
 	// Convert the coin from rollapp token (18 decimals) to bridge token (custom decimals)
-	convertedAmt, err := w.ConvertToBridgeAmt(ctx, msg.Token.Amount)
+	convertedAmt, err := w.ConvertToBridgeAmt(ctx, transferAmt)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "convert coin to bridge token")
 	}
 
 	// burn the original tokens from the sender
-	delta := sdk.NewCoin(msg.Token.Denom, msg.Token.Amount.Sub(convertedAmt))
+	delta := sdk.NewCoin(msg.Token.Denom, transferAmt.Sub(convertedAmt))
 	if err := w.BurnCoins(ctx, sender, delta); err != nil {
 		return nil, errorsmod.Wrapf(err, "burn original tokens from sender")
 	}
