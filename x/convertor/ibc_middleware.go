@@ -130,52 +130,9 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 		return nil
 	}
 
-	// parse the packet data
-	var packetData transfertypes.FungibleTokenPacketData
-	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &packetData); err != nil {
-		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
-	}
-
-	// Parse the packet denom to IBC hash format (ibc/XXX)
-	// it's source chain denom, so we need to parse it to get the IBC denom.
-	// no source channel prefix required
-	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
-	ibcDenom := denomTrace.IBCDenom()
-
-	// check if there's a decimal conversion pair for this denom
-	required, err := m.convertor.ConversionRequired(ctx, ibcDenom)
-	if err != nil {
-		return errorsmod.Wrapf(err, "get decimal conversion pair")
-	}
-
-	// no conversion needed, nothing to do
-	if !required {
-		return nil
-	}
-
-	sender, err := sdk.AccAddressFromBech32(packetData.Sender)
-	if err != nil {
-		return errorsmod.Wrapf(err, "invalid sender address")
-	}
-
-	// Parse the amount
-	amount, ok := sdk.NewIntFromString(packetData.Amount)
-	if !ok {
-		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid amount: %s", packetData.Amount)
-	}
-	// convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
-	convertedAmt, err := m.convertor.ConvertFromBridgeAmt(ctx, amount)
+	err = m.refundPacket(ctx, packet)
 	if err != nil {
 		return err
-	}
-
-	// On refund, user received back 'amount' but originally sent 'convertedAmt'
-	// So we need to mint the difference back to them
-	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
-
-	err = m.convertor.MintCoins(ctx, sender, delta)
-	if err != nil {
-		return errorsmod.Wrapf(err, "mint converted coins to sender")
 	}
 
 	return nil
@@ -193,6 +150,15 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 		return err
 	}
 
+	err = m.refundPacket(ctx, packet)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m DecimalConversionMiddleware) refundPacket(ctx sdk.Context, packet channeltypes.Packet) error {
 	// parse the packet data
 	var packetData transfertypes.FungibleTokenPacketData
 	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &packetData); err != nil {
@@ -233,7 +199,7 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 		return err
 	}
 
-	// On timeout, user received back 'amount' but originally sent 'convertedAmt'
+	// On refund, user received back 'amount' but originally sent 'convertedAmt'
 	// So we need to mint the difference back to them
 	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
 
