@@ -76,7 +76,7 @@ func (w Keeper) Transfer(
 	}
 
 	// clear the precision loss from the original transfer amount
-	transferAmt, err := types.ClearPrecisionLoss(msg.Token.Amount, 18, pair.FromDecimals)
+	transferAmt, err := types.ClearPrecisionLoss(msg.Token.Amount, types.RollappDecimals, pair.FromDecimals)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "clear precision loss from original transfer amount")
 	}

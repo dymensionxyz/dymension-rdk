@@ -9,6 +9,10 @@ import (
 	"github.com/dymensionxyz/gerr-cosmos/gerrc"
 )
 
+const (
+	RollappDecimals = 18
+)
+
 // ConvertAmount converts an amount from one token to another based on their decimal precisions.
 //
 // Scaling up (e.g., 6 decimals → 18 decimals):

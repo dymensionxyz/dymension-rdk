@@ -34,7 +34,7 @@ func (k Keeper) ConvertFromBridgeAmt(
 		return math.Int{}, err
 	}
 
-	convertedAmt, err := types.ConvertAmount(amount, pair.FromDecimals, 18)
+	convertedAmt, err := types.ConvertAmount(amount, pair.FromDecimals, types.RollappDecimals)
 	if err != nil {
 		return math.Int{}, err
 	}
@@ -56,7 +56,7 @@ func (k Keeper) ConvertToBridgeAmt(
 		return math.Int{}, err
 	}
 
-	convertedAmt, err := types.ConvertAmount(amount, 18, pair.FromDecimals)
+	convertedAmt, err := types.ConvertAmount(amount, types.RollappDecimals, pair.FromDecimals)
 	if err != nil {
 		return math.Int{}, err
 	}
