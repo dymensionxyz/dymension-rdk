@@ -64,6 +64,11 @@ func (w Keeper) Transfer(
 		return w.transferStack.Transfer(goCtx, msg)
 	}
 
+	pair, err := w.hubKeeper.GetDecimalConversionPair(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrapf(err, "get decimal conversion pair")
+	}
+
 	// Parse sender address
 	sender, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
@@ -71,7 +76,7 @@ func (w Keeper) Transfer(
 	}
 
 	// clear the precision loss from the original transfer amount
-	transferAmt, err := types.ClearPrecisionLoss(msg.Token.Amount, 18, 6)
+	transferAmt, err := types.ClearPrecisionLoss(msg.Token.Amount, 18, pair.FromDecimals)
 	if err != nil {
 		return nil, errorsmod.Wrapf(err, "clear precision loss from original transfer amount")
 	}
