@@ -1,6 +1,6 @@
 package types
 
-// Event types for the convertor module
+// Event types for the converter module
 const (
 	EventTypeDecimalConversion = "decimal_conversion"
 

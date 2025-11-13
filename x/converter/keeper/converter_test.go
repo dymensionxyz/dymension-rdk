@@ -11,7 +11,7 @@ import (
 
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
 	"github.com/dymensionxyz/dymension-rdk/testutil/utils"
-	convertorkeeper "github.com/dymensionxyz/dymension-rdk/x/convertor/keeper"
+	converterkeeper "github.com/dymensionxyz/dymension-rdk/x/converter/keeper"
 	hubtypes "github.com/dymensionxyz/dymension-rdk/x/hub/types"
 )
 
@@ -23,7 +23,7 @@ const (
 )
 
 // setupTestApp creates a test app with all keepers initialized
-func setupTestApp(t *testing.T) (*convertorkeeper.Keeper, *app.App, sdk.Context) {
+func setupTestApp(t *testing.T) (*converterkeeper.Keeper, *app.App, sdk.Context) {
 	t.Helper()
 	testApp := utils.Setup(t, false)
 	ctx := testApp.BaseApp.NewContext(false, tmproto.Header{Height: 1, ChainID: "test-1"})

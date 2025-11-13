@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/dymensionxyz/dymension-rdk/x/convertor/types"
+	"github.com/dymensionxyz/dymension-rdk/x/converter/types"
 )
 
 func TestConvertAmount(t *testing.T) {

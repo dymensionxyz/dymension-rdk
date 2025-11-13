@@ -8,7 +8,7 @@ import (
 	transferkeeper "github.com/cosmos/ibc-go/v6/modules/apps/transfer/keeper"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
 
-	"github.com/dymensionxyz/dymension-rdk/x/convertor/types"
+	"github.com/dymensionxyz/dymension-rdk/x/converter/types"
 )
 
 // Keeper wraps the IBC transfer keeper to perform decimal conversion

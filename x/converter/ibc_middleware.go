@@ -1,4 +1,4 @@
-package convertor
+package converter
 
 import (
 	errorsmod "cosmossdk.io/errors"
@@ -9,7 +9,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
 	"github.com/cosmos/ibc-go/v6/modules/core/exported"
 
-	"github.com/dymensionxyz/dymension-rdk/x/convertor/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/converter/keeper"
 	"github.com/dymensionxyz/sdk-utils/utils/uevent"
 	"github.com/dymensionxyz/sdk-utils/utils/uibc"
 )
@@ -22,18 +22,18 @@ var (
 // it allows to recieve IBC token with some decimals, and scale it to 18 decimals when entering the rollapp.
 type DecimalConversionMiddleware struct {
 	porttypes.IBCModule
-	convertor keeper.Keeper
+	converter keeper.Keeper
 }
 
 // NewIBCModule creates a new IBCModule for the hub module with decimal conversion middleware
 // next: the next middleware in the stack (or the complete stack so far)
 func NewDecimalConversionMiddleware(
 	next porttypes.IBCModule,
-	convertor keeper.Keeper,
+	converter keeper.Keeper,
 ) DecimalConversionMiddleware {
 	return DecimalConversionMiddleware{
 		IBCModule: next,
-		convertor: convertor,
+		converter: converter,
 	}
 }
 
@@ -62,7 +62,7 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 	ibcDenom := denomTrace.IBCDenom()
 
 	// Check if there's a decimal conversion pair for this IBC denom
-	required, err := m.convertor.ConversionRequired(ctx, ibcDenom)
+	required, err := m.converter.ConversionRequired(ctx, ibcDenom)
 	if err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "get decimal conversion pair"))
 	}
@@ -94,7 +94,7 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 	}
 
 	// Convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
-	convertedAmt, err := m.convertor.ConvertFromBridgeAmt(ctx, amount)
+	convertedAmt, err := m.converter.ConvertFromBridgeAmt(ctx, amount)
 	if err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "convert amount from bridge token"))
 	}
@@ -105,7 +105,7 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
 
 	// Mint the missing amount of tokens to the receiver
-	if err := m.convertor.MintCoins(ctx, receiver, delta); err != nil {
+	if err := m.converter.MintCoins(ctx, receiver, delta); err != nil {
 		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "mint converted coins to receiver"))
 	}
 
@@ -168,7 +168,7 @@ func (m DecimalConversionMiddleware) refundPacket(ctx sdk.Context, packet channe
 	ibcDenom := denomTrace.IBCDenom()
 
 	// check if there's a decimal conversion pair for this denom
-	required, err := m.convertor.ConversionRequired(ctx, ibcDenom)
+	required, err := m.converter.ConversionRequired(ctx, ibcDenom)
 	if err != nil {
 		return errorsmod.Wrapf(err, "get decimal conversion pair")
 	}
@@ -190,7 +190,7 @@ func (m DecimalConversionMiddleware) refundPacket(ctx sdk.Context, packet channe
 	}
 
 	// convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
-	convertedAmt, err := m.convertor.ConvertFromBridgeAmt(ctx, amount)
+	convertedAmt, err := m.converter.ConvertFromBridgeAmt(ctx, amount)
 	if err != nil {
 		return err
 	}
@@ -199,7 +199,7 @@ func (m DecimalConversionMiddleware) refundPacket(ctx sdk.Context, packet channe
 	// So we need to mint the difference back to them
 	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
 
-	err = m.convertor.MintCoins(ctx, sender, delta)
+	err = m.converter.MintCoins(ctx, sender, delta)
 	if err != nil {
 		return errorsmod.Wrapf(err, "mint converted coins to sender")
 	}

@@ -1,10 +1,10 @@
-package convertor
+package converter
 
 import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	ibctransfer "github.com/cosmos/ibc-go/v6/modules/apps/transfer"
 	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
-	"github.com/dymensionxyz/dymension-rdk/x/convertor/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/converter/keeper"
 )
 
 var (

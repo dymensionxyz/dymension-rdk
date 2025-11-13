@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
-	"github.com/dymensionxyz/dymension-rdk/x/convertor/types"
+	"github.com/dymensionxyz/dymension-rdk/x/converter/types"
 )
 
 // ConversionRequired checks if a conversion is required for a given denom.

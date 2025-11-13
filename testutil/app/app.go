@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dymensionxyz/dymension-rdk/x/convertor"
-	convertorkeeper "github.com/dymensionxyz/dymension-rdk/x/convertor/keeper"
+	"github.com/dymensionxyz/dymension-rdk/x/converter"
+	converterkeeper "github.com/dymensionxyz/dymension-rdk/x/converter/keeper"
 	"github.com/dymensionxyz/dymension-rdk/x/tokenfactory"
 	tokenfactorykeeper "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/keeper"
 	tokenfactorytypes "github.com/dymensionxyz/dymension-rdk/x/tokenfactory/types"
@@ -213,7 +213,7 @@ var (
 		params.AppModuleBasic{},
 		upgrade.AppModuleBasic{},
 		ibc.AppModuleBasic{},
-		convertor.AppModuleBasic{AppModuleBasic: &ibctransfer.AppModuleBasic{}},
+		converter.AppModuleBasic{AppModuleBasic: &ibctransfer.AppModuleBasic{}},
 		vesting.AppModuleBasic{},
 		hubgenesis.AppModuleBasic{},
 		gasless.AppModuleBasic{},
@@ -284,7 +284,7 @@ type App struct {
 	UpgradeKeeper       upgradekeeper.Keeper
 	ParamsKeeper        paramskeeper.Keeper
 	IBCKeeper           *ibckeeper.Keeper // IBC Keeper must be a pointer in the app, so we can SetRouter on it correctly
-	TransferKeeper      convertorkeeper.Keeper
+	TransferKeeper      converterkeeper.Keeper
 	WasmKeeper          wasmkeeper.Keeper
 	TokenFactoryKeeper  tokenfactorykeeper.Keeper
 
@@ -582,7 +582,7 @@ func NewRollapp(
 	)
 
 	// Wrap the transfer keeper with decimal conversion logic
-	app.TransferKeeper = convertorkeeper.NewTransferKeeper(ibctransferKeeper, evmosTransferKeeper, app.HubKeeper, app.BankKeeper)
+	app.TransferKeeper = converterkeeper.NewTransferKeeper(ibctransferKeeper, evmosTransferKeeper, app.HubKeeper, app.BankKeeper)
 
 	tokenFactoryKeeper := tokenfactorykeeper.NewKeeper(
 		keys[tokenfactorytypes.StoreKey],
@@ -604,7 +604,7 @@ func NewRollapp(
 		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
 	)
 
-	transferStack = convertor.NewDecimalConversionMiddleware(transferStack, app.TransferKeeper)
+	transferStack = converter.NewDecimalConversionMiddleware(transferStack, app.TransferKeeper)
 	transferStack = hubgenkeeper.NewIBCModule(
 		transferStack,
 		app.HubGenesisKeeper,
@@ -690,7 +690,7 @@ func NewRollapp(
 		wasm.NewAppModule(appCodec, &app.WasmKeeper, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		tokenfactory.NewAppModule(app.TokenFactoryKeeper, app.AccountKeeper, app.BankKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
-		convertor.NewAppModule(app.TransferKeeper),
+		converter.NewAppModule(app.TransferKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
 		hubgenesis.NewAppModule(appCodec, app.HubGenesisKeeper),
 		gasless.NewAppModule(appCodec, app.GaslessKeeper),
