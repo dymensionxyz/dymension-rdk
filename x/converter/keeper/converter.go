@@ -1,0 +1,98 @@
+package keeper
+
+import (
+	"errors"
+
+	"cosmossdk.io/collections"
+	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	ibctransfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
+	"github.com/dymensionxyz/dymension-rdk/x/converter/types"
+)
+
+// ConversionRequired checks if a conversion is required for a given denom.
+// The denom parameter should be in the IBC hash format (ibc/XXX).
+func (k Keeper) ConversionRequired(ctx sdk.Context, denom string) (bool, error) {
+	pair, err := k.hubKeeper.GetDecimalConversionPair(ctx)
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return pair.FromToken == denom, nil
+}
+
+// ConvertFromBridgeAmt converts an amount from bridge token decimals to rollapp decimals (18)
+// and emits an event with the conversion details
+func (k Keeper) ConvertFromBridgeAmt(
+	ctx sdk.Context,
+	amount math.Int,
+) (math.Int, error) {
+	pair, err := k.hubKeeper.GetDecimalConversionPair(ctx)
+	if err != nil {
+		return math.Int{}, err
+	}
+
+	convertedAmt, err := types.ConvertAmount(amount, pair.FromDecimals, types.RollappDecimals)
+	if err != nil {
+		return math.Int{}, err
+	}
+
+	// Emit conversion event
+	k.emitConversionEvent(ctx, amount, convertedAmt)
+
+	return convertedAmt, nil
+}
+
+// ConvertToBridgeAmt converts an amount from rollapp decimals (18) to bridge token decimals
+// and emits an event with the conversion details
+func (k Keeper) ConvertToBridgeAmt(
+	ctx sdk.Context,
+	amount math.Int,
+) (math.Int, error) {
+	pair, err := k.hubKeeper.GetDecimalConversionPair(ctx)
+	if err != nil {
+		return math.Int{}, err
+	}
+
+	convertedAmt, err := types.ConvertAmount(amount, types.RollappDecimals, pair.FromDecimals)
+	if err != nil {
+		return math.Int{}, err
+	}
+
+	// Emit conversion event
+	k.emitConversionEvent(ctx, amount, convertedAmt)
+
+	return convertedAmt, nil
+}
+
+// emitConversionEvent emits a decimal conversion event
+func (k Keeper) emitConversionEvent(
+	ctx sdk.Context,
+	originalAmt math.Int,
+	convertedAmt math.Int,
+) {
+	attrs := []sdk.Attribute{
+		sdk.NewAttribute(types.AttributeKeyOriginalAmount, originalAmt.String()),
+		sdk.NewAttribute(types.AttributeKeyConvertedAmount, convertedAmt.String()),
+	}
+
+	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeDecimalConversion, attrs...))
+}
+
+// BurnCoins is helper function to burn coins from an account
+func (k Keeper) BurnCoins(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) error {
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, ibctransfertypes.ModuleName, sdk.NewCoins(coin)); err != nil {
+		return err
+	}
+	return k.bankKeeper.BurnCoins(ctx, ibctransfertypes.ModuleName, sdk.NewCoins(coin))
+}
+
+// MintCoins is helper function to mint coins to an account
+func (k Keeper) MintCoins(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) error {
+	if err := k.bankKeeper.MintCoins(ctx, ibctransfertypes.ModuleName, sdk.NewCoins(coin)); err != nil {
+		return err
+	}
+	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, ibctransfertypes.ModuleName, addr, sdk.NewCoins(coin))
+}

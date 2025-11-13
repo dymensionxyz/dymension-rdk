@@ -1,0 +1,208 @@
+package converter
+
+import (
+	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
+	transfertypes "github.com/cosmos/ibc-go/v6/modules/apps/transfer/types"
+	channeltypes "github.com/cosmos/ibc-go/v6/modules/core/04-channel/types"
+	porttypes "github.com/cosmos/ibc-go/v6/modules/core/05-port/types"
+	"github.com/cosmos/ibc-go/v6/modules/core/exported"
+
+	"github.com/dymensionxyz/dymension-rdk/x/converter/keeper"
+	"github.com/dymensionxyz/sdk-utils/utils/uevent"
+	"github.com/dymensionxyz/sdk-utils/utils/uibc"
+)
+
+var (
+	_ porttypes.IBCModule = &DecimalConversionMiddleware{}
+)
+
+// DecimalConversionMiddleware implements IBC middleware, that adds scaling logic for fungible tokens with different decimals.
+// it allows to receive IBC token with some decimals, and scale it to 18 decimals when entering the rollapp.
+type DecimalConversionMiddleware struct {
+	porttypes.IBCModule
+	converter keeper.Keeper
+}
+
+// NewIBCModule creates a new IBCModule for the hub module with decimal conversion middleware
+// next: the next middleware in the stack (or the complete stack so far)
+func NewDecimalConversionMiddleware(
+	next porttypes.IBCModule,
+	converter keeper.Keeper,
+) DecimalConversionMiddleware {
+	return DecimalConversionMiddleware{
+		IBCModule: next,
+		converter: converter,
+	}
+}
+
+// OnRecvPacket handles incoming packets. It first lets the underlying transfer module
+// process the packet (which mints tokens to receiver), then performs decimal conversion
+// by burning the original tokens and minting the converted tokens to the receiver.
+func (m DecimalConversionMiddleware) OnRecvPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
+) exported.Acknowledgement {
+
+	// Parse packet data to check if conversion is needed
+	packetData := new(transfertypes.FungibleTokenPacketData)
+	transfertypes.ModuleCdc.MustUnmarshalJSON(packet.GetData(), packetData)
+
+	// skip if token's source is from receiver chain
+	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), packetData.Denom) {
+		return m.IBCModule.OnRecvPacket(ctx, packet, relayer)
+	}
+
+	// Convert the packet denom to IBC hash format (ibc/XXX)
+	// The packet contains the denom from the source chain, we need to construct
+	// the full IBC denomination as it will appear on this chain after transfer
+	denomTrace := uibc.GetForeignDenomTrace(packet.GetDestChannel(), packetData.Denom)
+	ibcDenom := denomTrace.IBCDenom()
+
+	// Check if there's a decimal conversion pair for this IBC denom
+	required, err := m.converter.ConversionRequired(ctx, ibcDenom)
+	if err != nil {
+		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "get decimal conversion pair"))
+	}
+
+	// No conversion needed, continue with the complete stack
+	if !required {
+		return m.IBCModule.OnRecvPacket(ctx, packet, relayer)
+	}
+
+	// First, let the underlying transfer module handle the packet
+	// This will mint the original tokens to the receiver
+	ack := m.IBCModule.OnRecvPacket(ctx, packet, relayer)
+
+	if !ack.Success() {
+		// If the underlying transfer failed, don't attempt conversion
+		return ack
+	}
+
+	// Parse the receiver address
+	receiver, err := sdk.AccAddressFromBech32(packetData.Receiver)
+	if err != nil {
+		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "invalid receiver address"))
+	}
+
+	// Parse the amount
+	amount, ok := sdk.NewIntFromString(packetData.Amount)
+	if !ok {
+		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid amount: %s", packetData.Amount))
+	}
+
+	// Convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
+	convertedAmt, err := m.converter.ConvertFromBridgeAmt(ctx, amount)
+	if err != nil {
+		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "convert amount from bridge token"))
+	}
+
+	// Calculate the delta to mint (difference between converted and original amount)
+	// The delta represents additional tokens needed to reach the full 18-decimal precision
+	// Use the IBC denom (ibc/XXX) which is what was actually minted by the transfer module
+	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
+
+	// Mint the missing amount of tokens to the receiver
+	if err := m.converter.MintCoins(ctx, receiver, delta); err != nil {
+		return uevent.NewErrorAcknowledgement(ctx, errorsmod.Wrapf(err, "mint converted coins to receiver"))
+	}
+
+	return ack
+}
+
+// OnAcknowledgementPacket implements the IBCModule interface
+func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	acknowledgement []byte,
+	relayer sdk.AccAddress,
+) error {
+	// The conversion was already done in SendPacket
+	err := m.IBCModule.OnAcknowledgementPacket(ctx, packet, acknowledgement, relayer)
+	if err != nil {
+		return err
+	}
+
+	// parse the acknowledgement, if it's error, it means there's a refund, and we need to convert token's decimals
+	var ack channeltypes.Acknowledgement
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet acknowledgement: %v", err)
+	}
+
+	// no error, nothing to do
+	if ack.GetError() == "" {
+		return nil
+	}
+
+	return m.refundPacket(ctx, packet)
+}
+
+// OnTimeoutPacket implements the IBCModule interface
+func (m DecimalConversionMiddleware) OnTimeoutPacket(
+	ctx sdk.Context,
+	packet channeltypes.Packet,
+	relayer sdk.AccAddress,
+) error {
+	// The underlying transfer module will handle the refund with the converted (rollapp) amount
+	err := m.IBCModule.OnTimeoutPacket(ctx, packet, relayer)
+	if err != nil {
+		return err
+	}
+
+	return m.refundPacket(ctx, packet)
+}
+
+func (m DecimalConversionMiddleware) refundPacket(ctx sdk.Context, packet channeltypes.Packet) error {
+	// parse the packet data
+	var packetData transfertypes.FungibleTokenPacketData
+	if err := transfertypes.ModuleCdc.UnmarshalJSON(packet.GetData(), &packetData); err != nil {
+		return errorsmod.Wrapf(errortypes.ErrUnknownRequest, "cannot unmarshal ICS-20 transfer packet data: %v", err)
+	}
+
+	// Parse the packet denom to IBC hash format (ibc/XXX)
+	// it's source chain denom, so we need to parse it to get the IBC denom.
+	// no source channel prefix required
+	denomTrace := transfertypes.ParseDenomTrace(packetData.Denom)
+	ibcDenom := denomTrace.IBCDenom()
+
+	// check if there's a decimal conversion pair for this denom
+	required, err := m.converter.ConversionRequired(ctx, ibcDenom)
+	if err != nil {
+		return errorsmod.Wrapf(err, "get decimal conversion pair")
+	}
+
+	// no conversion needed, nothing to do
+	if !required {
+		return nil
+	}
+
+	sender, err := sdk.AccAddressFromBech32(packetData.Sender)
+	if err != nil {
+		return errorsmod.Wrapf(err, "invalid sender address")
+	}
+
+	// Parse the amount
+	amount, ok := sdk.NewIntFromString(packetData.Amount)
+	if !ok {
+		return errorsmod.Wrapf(errortypes.ErrInvalidRequest, "invalid amount: %s", packetData.Amount)
+	}
+
+	// convert the amount from bridge token (custom decimals) to rollapp token (18 decimals)
+	convertedAmt, err := m.converter.ConvertFromBridgeAmt(ctx, amount)
+	if err != nil {
+		return err
+	}
+
+	// On refund, user received back 'amount' but originally sent 'convertedAmt'
+	// So we need to mint the difference back to them
+	delta := sdk.NewCoin(ibcDenom, convertedAmt.Sub(amount))
+
+	err = m.converter.MintCoins(ctx, sender, delta)
+	if err != nil {
+		return errorsmod.Wrapf(err, "mint converted coins to sender")
+	}
+
+	return nil
+}

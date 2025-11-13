@@ -9,9 +9,20 @@ option go_package = "github.com/dymensionxyz/dymension-rdk/x/hub/types";
 message Hub {
   // registeredDenoms is a list of registered denoms on the Hub
   repeated RegisteredDenom registered_denoms = 1;
+  // decimalConversionPair is the decimal conversion pair for this hub
+  DecimalConversionPair decimal_conversion_pair = 2;
 }
 
 message RegisteredDenom {
   // base is the base of the denom
   string base = 1;
+}
+
+// DecimalConversionPair defines a pair of tokens with different decimal precisions
+// that should be converted when transferred over IBC
+message DecimalConversionPair {
+  // from_token is the token to be received from the hub
+  string from_token = 1;
+  // from_decimals is the decimal precision of from_token
+  uint32 from_decimals = 2;
 }
