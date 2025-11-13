@@ -81,22 +81,18 @@ func (k Keeper) emitConversionEvent(
 	ctx.EventManager().EmitEvent(sdk.NewEvent(types.EventTypeDecimalConversion, attrs...))
 }
 
-// BurnCoins burns coins from an account
+// BurnCoins is helper function to burn coins from an account
 func (k Keeper) BurnCoins(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) error {
-	// Send coins from account to module
 	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, addr, ibctransfertypes.ModuleName, sdk.NewCoins(coin)); err != nil {
 		return err
 	}
-	// Burn coins from module
 	return k.bankKeeper.BurnCoins(ctx, ibctransfertypes.ModuleName, sdk.NewCoins(coin))
 }
 
-// MintCoins mints coins to an account
+// MintCoins is helper function to mint coins to an account
 func (k Keeper) MintCoins(ctx sdk.Context, addr sdk.AccAddress, coin sdk.Coin) error {
-	// Mint coins to module
 	if err := k.bankKeeper.MintCoins(ctx, ibctransfertypes.ModuleName, sdk.NewCoins(coin)); err != nil {
 		return err
 	}
-	// Send coins from module to account
 	return k.bankKeeper.SendCoinsFromModuleToAccount(ctx, ibctransfertypes.ModuleName, addr, sdk.NewCoins(coin))
 }

@@ -603,8 +603,7 @@ func NewRollapp(
 		app.HubKeeper,
 		denommetadatamoduletypes.NewMultiDenommetadataHooks(),
 	)
-	// Hub decimal conversion middleware needs access to the base transfer module
-	// to skip other middleware when handling received packets
+
 	transferStack = convertor.NewDecimalConversionMiddleware(transferStack, app.TransferKeeper)
 	transferStack = hubgenkeeper.NewIBCModule(
 		transferStack,

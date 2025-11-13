@@ -18,7 +18,8 @@ var (
 	_ porttypes.IBCModule = &DecimalConversionMiddleware{}
 )
 
-// DecimalConversionMiddleware implements the ICS26 callbacks for decimal conversion middleware
+// DecimalConversionMiddleware implements IBC middleware, that adds scaling logic for fungible tokens with different decimals.
+// it allows to recieve IBC token with some decimals, and scale it to 18 decimals when entering the rollapp.
 type DecimalConversionMiddleware struct {
 	porttypes.IBCModule
 	convertor keeper.Keeper
@@ -48,6 +49,11 @@ func (m DecimalConversionMiddleware) OnRecvPacket(
 	// Parse packet data to check if conversion is needed
 	packetData := new(transfertypes.FungibleTokenPacketData)
 	transfertypes.ModuleCdc.MustUnmarshalJSON(packet.GetData(), packetData)
+
+	// skip if token's source is from receiver chain
+	if transfertypes.ReceiverChainIsSource(packet.GetSourcePort(), packet.GetSourceChannel(), packetData.Denom) {
+		return m.IBCModule.OnRecvPacket(ctx, packet, relayer)
+	}
 
 	// Convert the packet denom to IBC hash format (ibc/XXX)
 	// The packet contains the denom from the source chain, we need to construct
@@ -130,12 +136,7 @@ func (m DecimalConversionMiddleware) OnAcknowledgementPacket(
 		return nil
 	}
 
-	err = m.refundPacket(ctx, packet)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return m.refundPacket(ctx, packet)
 }
 
 // OnTimeoutPacket implements the IBCModule interface
@@ -150,12 +151,7 @@ func (m DecimalConversionMiddleware) OnTimeoutPacket(
 		return err
 	}
 
-	err = m.refundPacket(ctx, packet)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return m.refundPacket(ctx, packet)
 }
 
 func (m DecimalConversionMiddleware) refundPacket(ctx sdk.Context, packet channeltypes.Packet) error {
