@@ -19,7 +19,7 @@ var (
 )
 
 // DecimalConversionMiddleware implements IBC middleware, that adds scaling logic for fungible tokens with different decimals.
-// it allows to recieve IBC token with some decimals, and scale it to 18 decimals when entering the rollapp.
+// it allows to receive IBC token with some decimals, and scale it to 18 decimals when entering the rollapp.
 type DecimalConversionMiddleware struct {
 	porttypes.IBCModule
 	converter keeper.Keeper
