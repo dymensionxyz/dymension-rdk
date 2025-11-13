@@ -24,7 +24,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/dymensionxyz/dymension-rdk/testutil/app"
-	"github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	hubgenesistypes "github.com/dymensionxyz/dymension-rdk/x/hub-genesis/types"
 	minttypes "github.com/dymensionxyz/dymension-rdk/x/mint/types"
 )
@@ -226,19 +225,33 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 		Coins:   sdk.Coins{sdk.NewCoin(bondDenom, bondAmt.Mul(sdk.NewInt(int64(len(valSet.Validators)))))},
 	})
 
-	genModuleAmount, ok := sdk.NewIntFromString("100000000000000000000")
-	require.True(t, ok)
-
-	balances = append(balances, banktypes.Balance{
-		Address: authtypes.NewModuleAddress(types.ModuleName).String(),
-		Coins:   sdk.Coins{sdk.NewCoin(rollAppDenom, genModuleAmount)},
-	})
-
 	// set validators and delegations
 	stakingGenesis = *stakingtypes.NewGenesisState(stakingGenesis.Params, validators, delegations)
 	genesisState[stakingtypes.ModuleName] = app.AppCodec().MustMarshalJSON(&stakingGenesis)
 
-	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, sdk.NewCoins(), []banktypes.Metadata{})
+	// Create metadata for the rollapp denom if it's not empty
+	var metadata []banktypes.Metadata
+	if rollAppDenom != "" {
+		metadata = []banktypes.Metadata{
+			{
+				Description: "Rollapp native token",
+				DenomUnits: []*banktypes.DenomUnit{
+					{
+						Denom:    rollAppDenom,
+						Exponent: 0,
+					},
+					{
+						Denom:    "ROLLAPP",
+						Exponent: 18,
+					},
+				},
+				Base:    rollAppDenom,
+				Display: "ROLLAPP",
+			},
+		}
+	}
+
+	bankGenesis := banktypes.NewGenesisState(banktypes.DefaultGenesisState().Params, balances, sdk.NewCoins(), metadata)
 	genesisState[banktypes.ModuleName] = app.AppCodec().MustMarshalJSON(bankGenesis)
 
 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
@@ -253,8 +266,9 @@ func SetupWithGenesisValSet(t *testing.T, chainID, rollAppDenom string, valSet *
 			Validators: []abci.ValidatorUpdate{
 				{PubKey: ProposerTMCons(), Power: 1},
 			},
-			AppStateBytes: stateBytes,
-			InitialHeight: 0,
+			AppStateBytes:   stateBytes,
+			InitialHeight:   0,
+			GenesisChecksum: "notempty",
 		},
 	)
 
