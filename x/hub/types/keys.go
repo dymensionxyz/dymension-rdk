@@ -12,5 +12,6 @@ const (
 )
 
 const (
-	RegisteredHubDenomsKeyPrefix = "registeredHubDenoms/value/"
+	RegisteredHubDenomsKeyPrefix   = "registeredHubDenoms/value/"
+	DecimalConversionPairKeyPrefix = "decimalConversionPair/value/"
 )
