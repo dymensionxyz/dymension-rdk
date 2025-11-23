@@ -59,7 +59,7 @@ message QuerySequencersRequest {
 // QuerySequencersResponse is response type for the Query/Sequencers RPC method
 message QuerySequencersResponse {
   // Sequencers contains all the queried sequencers.
-  repeated cosmos.staking.v1beta1.Validator sequencers = 1
+  repeated Sequencer sequencers = 1
       [ (gogoproto.nullable) = false ];
 
   // Pagination defines the pagination in the response.

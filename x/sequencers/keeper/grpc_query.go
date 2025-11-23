@@ -34,7 +34,7 @@ func (k Querier) Sequencers(c context.Context, req *types.QuerySequencersRequest
 	ctx := sdk.UnwrapSDKContext(c)
 
 	return &types.QuerySequencersResponse{
-		Sequencers: k.GetAllSequencers(ctx),
+		Sequencers: k.GetAllSequencersWithMetadata(ctx),
 	}, nil
 }
 

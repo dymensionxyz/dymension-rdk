@@ -77,6 +77,39 @@ func (k Keeper) GetAllSequencers(ctx sdk.Context) (sequencers []stakingtypes.Val
 	return sequencers
 }
 
+// GetAllSequencersWithMetadata get the set of all sequencers with reward addresses and relayers
+func (k Keeper) GetAllSequencersWithMetadata(ctx sdk.Context) (sequencers []types.Sequencer) {
+	store := ctx.KVStore(k.storeKey)
+
+	iterator := sdk.KVStorePrefixIterator(store, types.SequencersKey)
+	defer iterator.Close() // nolint: errcheck
+
+	for ; iterator.Valid(); iterator.Next() {
+		validator := stakingtypes.MustUnmarshalValidator(k.cdc, iterator.Value())
+		
+		// Get reward address (empty string if not set)
+		rewardAddr := ""
+		if addr, found := k.GetRewardAddr(ctx, validator.GetOperator()); found {
+			rewardAddr = addr.String()
+		}
+		
+		// Get whitelisted relayers (empty list if not set)
+		var relayers []string
+		if wlr, err := k.GetWhitelistedRelayers(ctx, validator.GetOperator()); err == nil {
+			relayers = wlr.Relayers
+		}
+		
+		sequencer := types.Sequencer{
+			Validator:  &validator,
+			RewardAddr: rewardAddr,
+			Relayers:   relayers,
+		}
+		sequencers = append(sequencers, sequencer)
+	}
+
+	return sequencers
+}
+
 // SetRewardAddr sets the address that rewards will be allocated to
 func (k Keeper) SetRewardAddr(ctx sdk.Context, sequencer stakingtypes.Validator, addr sdk.AccAddress) {
 	store := ctx.KVStore(k.storeKey)
