@@ -1,12 +1,31 @@
+# buf.yaml
+# Defines the configuration for buf's build, lint, and breaking change detection.
+
 version: v1beta1
 
+# Configuration for how buf builds the Protobuf module.
 build:
+  # The root directories where .proto files are located.
+  # This tells buf where to look for files when compiling or linting.
   roots:
+    # Primary application proto definitions
     - proto
+    # External dependencies (e.g., well-known types)
     - third_party/proto
+
+# Configuration for linting (style and correctness checks).
 lint:
+  # Use a combination of common and specific rules.
+  # DEFAULT is good, but adding COMMENTS ensures robust documentation.
   use:
     - DEFAULT
+    # Enforces documentation via comments on services, messages, and fields.
+    - COMMENTS 
+  
+# Configuration for breaking change detection.
 breaking:
+  # Defines which rules to check for compatibility with the previous version.
   use:
+    # FILE: Only compares the current file's contents against the previous version.
+    # Recommended alternatives for stricter checks include PACKAGE or WIRE.
     - FILE
