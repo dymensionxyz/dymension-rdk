@@ -1,12 +1,31 @@
+# Configuration file for the Buf CLI (Protocol Buffer tool).
+# Defines the project structure, linting rules, and breaking change detection strategy.
+
+# Specify the configuration version
 version: v1beta1
 
+# Define the build system configuration
 build:
+  # Root directories where Buf will look for .proto files.
   roots:
     - proto
     - third_party/proto
+
+# Define linting rules (static code analysis)
 lint:
+  # Use the default recommended set of lint rules.
   use:
     - DEFAULT
+  # Optional: Add specific rules to enforce, e.g.,
+  # except:
+  #   - SERVICE_SUFFIX
+  #   - PACKAGE_AFFINITY
+
+# Define breaking change detection rules
 breaking:
+  # Check for breaking changes against a previous version (e.g., origin/main).
+  # Using 'PACKAGE' ensures that changes breaking compatibility for any dependent
+  # package are detected, which is the recommended and safest approach.
+  # Alternatives: 'FILE' (too narrow), 'MODULE' (broader module scope).
   use:
-    - FILE
+    - PACKAGE
