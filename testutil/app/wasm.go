@@ -1,41 +1,59 @@
 package app
 
 import (
+	"fmt"
 	"strings"
 
 	wasm "github.com/CosmWasm/wasmd/x/wasm"
 )
 
+// Build-time flags. These values are injected via -ldflags during the build process.
 var (
-	// If EnabledSpecificProposals is "", and this is "true", then enable all x/wasm proposals.
-	// If EnabledSpecificProposals is "", and this is not "true", then disable all x/wasm proposals.
+	// ProposalsEnabled controls whether x/wasm governance proposals are enabled globally.
+	// Expected values: "true" or "false". Defaults to "false".
 	ProposalsEnabled = "false"
-	// If set to non-empty string it must be comma-separated list of values that are all a subset
-	// of "EnableAllProposals" (takes precedence over ProposalsEnabled)
-	// https://github.com/CosmWasm/wasmd/blob/02a54d33ff2c064f3539ae12d75d027d9c665f05/x/wasm/internal/types/proposal.go#L28-L34
+
+	// EnableSpecificProposals allows enabling a specific subset of proposal types.
+	// It expects a comma-separated string (e.g., "StoreCode,InstantiateContract").
+	// If set, this overrides 'ProposalsEnabled'.
 	EnableSpecificProposals = ""
 )
 
-// GetEnabledProposals parses the ProposalsEnabled / EnableSpecificProposals values to
-// produce a list of enabled proposals to pass into wasmd app.
+// GetEnabledProposals parses the build-time configuration flags to determine 
+// which Wasm governance proposals should be enabled in the application.
 func GetEnabledProposals() []wasm.ProposalType {
-	if EnableSpecificProposals == "" {
-		if ProposalsEnabled == "true" {
-			return wasm.EnableAllProposals
+	// 1. Check for specific overrides first
+	if EnableSpecificProposals != "" {
+		rawChunks := strings.Split(EnableSpecificProposals, ",")
+		
+		// Sanitize input: remove whitespace potentially introduced by build scripts
+		var cleanChunks []string
+		for _, chunk := range rawChunks {
+			trimmed := strings.TrimSpace(chunk)
+			if trimmed != "" {
+				cleanChunks = append(cleanChunks, trimmed)
+			}
 		}
-		return wasm.DisableAllProposals
+
+		proposals, err := wasm.ConvertToProposals(cleanChunks)
+		if err != nil {
+			// Panic with a descriptive error so the node operator knows exactly what failed.
+			panic(fmt.Errorf("invalid build configuration for 'EnableSpecificProposals': %w", err))
+		}
+		return proposals
 	}
-	chunks := strings.Split(EnableSpecificProposals, ",")
-	proposals, err := wasm.ConvertToProposals(chunks)
-	if err != nil {
-		panic(err)
+
+	// 2. Fallback to the global toggle
+	if ProposalsEnabled == "true" {
+		return wasm.EnableAllProposals
 	}
-	return proposals
+
+	return wasm.DisableAllProposals
 }
 
-// AllCapabilities returns all capabilities available with the current wasmvm
-// See https://github.com/CosmWasm/cosmwasm/blob/main/docs/CAPABILITIES-BUILT-IN.md
-// This functionality is going to be moved upstream: https://github.com/CosmWasm/wasmvm/issues/425
+// AllCapabilities returns the list of WASM capabilities supported by this chain.
+// This list allows smart contracts to use specific host chain features.
+// Note: Ensure the underlying wasmvm version supports these capabilities.
 func AllCapabilities() []string {
 	return []string{
 		"iterator",
@@ -43,5 +61,7 @@ func AllCapabilities() []string {
 		"stargate",
 		"cosmwasm_1_1",
 		"cosmwasm_1_2",
+		"cosmwasm_1_3", // Added for modern contract support
+		"cosmwasm_1_4", // Added for modern contract support
 	}
 }
