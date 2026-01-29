@@ -472,8 +472,6 @@ github.com/cosmos/gorocksdb v1.2.0 h1:d0l3jJG8M4hBouIZq0mDUHZ+zjOx044J3nGRskwTb4
 github.com/cosmos/gorocksdb v1.2.0/go.mod h1:aaKvKItm514hKfNJpUJXnnOWeBnk2GL4+Qw9NHizILw=
 github.com/cosmos/iavl v0.19.6 h1:XY78yEeNPrEYyNCKlqr9chrwoeSDJ0bV2VjocTk//OU=
 github.com/cosmos/iavl v0.19.6/go.mod h1:X9PKD3J0iFxdmgNLa7b2LYWdsGd90ToV5cAONApkEPw=
-github.com/cosmos/ibc-go/v6 v6.2.1 h1:NiaDXTRhKwf3n9kELD4VRIe5zby1yk1jBvaz9tXTQ6k=
-github.com/cosmos/ibc-go/v6 v6.2.1/go.mod h1:XLsARy4Y7+GtAqzMcxNdlQf6lx+ti1e8KcMGv5NIK7A=
 github.com/cosmos/interchain-accounts v0.4.3 h1:WedxEa/Hj/2GY7AF6CafkEPJ/Z9rhl3rT1mRwNHsdts=
 github.com/cosmos/interchain-accounts v0.4.3/go.mod h1:qibHB6y/R2YsuuZdamI2BcIUBPMyhyELDWAr8Nk8x4g=
 github.com/cosmos/ledger-cosmos-go v0.12.4 h1:drvWt+GJP7Aiw550yeb3ON/zsrgW0jgh5saFCr7pDnw=
@@ -575,6 +573,8 @@ github.com/dymensionxyz/evmos/v12 v12.1.7-0.20250128194013-c3f3d1fd3f02 h1:lIAvQ
 github.com/dymensionxyz/evmos/v12 v12.1.7-0.20250128194013-c3f3d1fd3f02/go.mod h1:CI6D89pkoiIm4BjoMFNnEaCLdKBEobLuwvhS0c1zh7Y=
 github.com/dymensionxyz/gerr-cosmos v1.0.0 h1:oi91rgOkpJWr41oX9JOyjvvBnhGY54tj513x8VlDAEc=
 github.com/dymensionxyz/gerr-cosmos v1.0.0/go.mod h1:n+0olxPogzWqFKba45mCpvrHLGmeS8W9UZjggHnWk6c=
+github.com/dymensionxyz/ibc-go/v6 v6.3.1 h1:ZUgVz5qq/LMPYjp8XD4ssoSa/wbnzgiAXr2LnxWAtLk=
+github.com/dymensionxyz/ibc-go/v6 v6.3.1/go.mod h1:Dm14j9s094bGyCEE8W4fD+2t8IneHv+cz+80Mvwjr1w=
 github.com/dymensionxyz/rpc v1.3.1 h1:7EXWIobaBes5zldRvTIg7TmNsEKjicrWA/OjCc0NaGs=
 github.com/dymensionxyz/rpc v1.3.1/go.mod h1:f+WpX8ysy8wt95iGc6auYlHcnHj2bUkhiRVkkKNys8c=
 github.com/dymensionxyz/sdk-utils v0.1.2-0.20240909101947-e1b483ada9c8 h1:J7MH912xEkmYKEg1VxDZ4RARZ/ku1OO7VOoUZQQqWEU=
