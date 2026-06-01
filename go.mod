@@ -14,7 +14,7 @@ require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.3
 	github.com/cosmos/cosmos-sdk v0.46.16
 	github.com/cosmos/gogoproto v1.5.0
-	github.com/cosmos/ibc-go/v6 v6.2.1
+	github.com/cosmos/ibc-go/v6 v6.3.1
 	github.com/dymensionxyz/dymint v1.3.0-rc04
 	github.com/dymensionxyz/gerr-cosmos v1.0.0
 	github.com/dymensionxyz/sdk-utils v0.1.2-0.20240909101947-e1b483ada9c8
@@ -287,7 +287,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.15.0 // indirect
 	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d // indirect
 	github.com/tendermint/go-amino v0.16.0 // indirect
